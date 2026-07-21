@@ -1,0 +1,322 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Environment
+
+All scripts must run inside the `stenv` conda environment (STScI pipeline stack):
+
+```bash
+conda run -n stenv python scripts/<script>.py --lens <LENS> --filt <FILTER>
+```
+
+To activate interactively: `conda activate stenv`
+
+## macOS write-hang workaround (required)
+
+On this Mac, AstroDrizzle's large FITS output writes hit a kernel lost-wakeup in the
+buffered-write path (`tofile → write() → cluster_write → copyin → lck_rw_sleep`) that
+wedges the process into an unkillable U-state (~17–26 s CPU in; only a reboot clears it).
+
+`scripts/mmap_fits_write.py` fixes this by monkeypatching `astropy.io.fits.file._array_to_file`
+to write via `mmap`+`memcpy` (the `vm_fault`-on-mapped-file path), which dodges the hang.
+It is a no-op off macOS and byte-identical to stock astropy. Every drizzle script
+imports it and calls `install()` before AstroDrizzle — keep this wiring.
+Set `DRIZZLE_MMAP_DEBUG=1` to log each mmap write. `num_cores=1` in all scripts is a related,
+separate requirement (parallel `fork` triggers the same U-state).
+
+## What This Repo Does
+
+This is an HST image reduction pipeline for gravitational lens samples (SLACS and BELLS). For each lens+filter combination it:
+1. Downloads calibrated exposures from MAST
+2. Downloads CRDS reference files
+3. Runs `updatewcs` → `TweakReg` (alignment) → `AstroDrizzle` (combination)
+4. Produces a no-CR-rejection drizzled mosaic, and a CR-rejected one too for WFPC2 or when `--cr` is given
+5. Updates three JSON tracking files in `info/`
+
+## Running a Single Lens
+
+```bash
+conda run -n stenv python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W --sample slacs
+conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0008-0004 --filt f814W --sample slacs
+conda run -n stenv python scripts/drizzle_wfc3_ir.py  --lens J0008-0004 --filt f160W --sample slacs
+conda run -n stenv python scripts/drizzle_nic2.py     --lens J0008-0004 --filt f160W --sample slacs  # deprioritised, see below
+conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0216-0813 --filt f555W --sample slacs
+```
+
+All scripts are idempotent: they skip MAST download if calibrated files are already present, and skip the entire drizzle if the final output already exists in `data/drizzled/`. To force a re-run, delete the lens's directory under `data/drizzled/` (and `data/drizzle_files/`).
+
+The ACS, WFC3/IR, and NICMOS scripts accept `--cr` to enable the CR-rejection drizzle pass (disabled by default). Without `--cr`, only the no-CR-rejection pass runs. WFPC2 always runs both passes.
+
+## Running All Lenses (WFPC2 / SLACS)
+
+```bash
+bash scripts/run_wfpc2_wf3.sh   # WF3 F606W drizzle + cutout, all 22 lenses
+bash scripts/run_all_lenses.sh  # WF3 F606W drizzle only, with a retry pass
+```
+
+Both drive `drizzle_wfpc2_wf3.py`. `run_wfpc2_wf3.sh` also runs `make_cutouts.py`
+after each drizzle; `run_all_lenses.sh` does not, but retries failures once.
+Neither carries an exclusion list — the drizzle script measures each lens's dither
+coverage itself and skips any lens that cannot reach 0.05″/px.
+
+`scripts/drizzle_wfpc2_pc.py` is **superseded** and refuses to run (it extracts the
+wrong chip *and* deletes the WF3 products on its way). Override with
+`ALLOW_SUPERSEDED_WFPC2_PC=1` only if you know why you want it.
+
+## Data Flow and Directory Layout
+
+```
+data/
+  calibrated/<sample>/<lens>/<filter>/   ← downloaded FLT/FLC/CAL files land here
+  drizzle_files/<sample>/<lens>/<filter>/ ← working directory; AstroDrizzle runs here
+      run.log                              ← stdout+stderr from the full run
+      shift_*.txt                          ← TweakReg shift files
+      *_single_sci.fits / *_single_wht.fits
+      *.png                                ← diagnostic plots
+  drizzled/<sample>/<lens>/<filter>/      ← final products copied here
+      <prefix>_cr_d*_sci.fits / _d*_wht.fits
+      <prefix>_nocrrej_d*_sci.fits / _d*_wht.fits
+  cutouts/<sample>/<lens>/<filter>/       ← recentred stamps from make_cutouts.py
+      cutout_sci.fits / cutout_noise.fits / cutout.png
+  run_logs/                               ← per-lens stdout logs from the batch runners
+  reference_files/                        ← CRDS reference files (auto-downloaded once)
+```
+
+## Instrument-Specific Script Details
+
+| Script | Input files | MAST product | Ref env var | Pixel scale | Output suffix |
+|---|---|---|---|---|---|
+| `drizzle_wfpc2_wf3.py` | `u*flt.fits` | FLT / CALWFPC2 | `uref` | 0.0996″ native → 0.05″ out | `_drw_` |
+| `drizzle_acs_wfc.py`  | `*flc.fits`  | FLC / CALACS   | `jref` | 0.05″   | `_drc_` |
+| `drizzle_wfc3_ir.py`  | `*flt.fits`  | FLT / CALWF3   | `iref` | 0.1283″ native → 0.06″ out | `_drz_` |
+| `drizzle_nic2.py`     | `*cal.fits`  | CAL / CALNIC   | `nref` | 0.0756″ | `_drz_` |
+
+The WFPC2 script extracts only the WF3 chip (SCI/ERR/DQ extension 3) into `wf3_`-prefixed files before drizzling. The other instruments are multi-extension MEF files that DrizzlePac handles natively — no chip extraction needed.
+
+### WFPC2: the lens is on WF3, not the PC
+
+For all 22 SLACS lenses with WFPC2 F606W data the lens galaxy falls on **WF3**
+(extension 3) at ~pixel (435, 424) — never on the PC. `DETECTOR = PC` in the
+primary header, and therefore the `"WFPC2/PC"` label on MAST and in
+`lens_instrument.json`, describes the *aperture*, not the chip the target lands
+on; the standard WFPC2 full-field aperture centres the target on WF3. Only the
+per-extension `DETECTOR` values identify chips (1=PC, 2=WF2, 3=WF3, 4=WF4).
+
+The superseded `drizzle_wfpc2_pc.py` extracted extension 1 and so produced 22
+mosaics of blank sky ~79″ from the lens, which is why `make_cutouts.py` failed
+on f606W with "catalogue position falls outside the mosaic".
+
+Two consequences for `drizzle_wfpc2_wf3.py`:
+
+- **Chip renumbering.** DrizzlePac indexes chips positionally as `(SCI, 1..N)`,
+  so the extracted WF3 extension must be rewritten to `EXTVER=1` or
+  `WFPC2InputImage` raises `KeyError: Extension ('SCI', 1) not found`. This does
+  not mislabel the chip: `detnum` comes from the `DETECTOR` keyword (stwcs
+  `instruments.py` `set_chip`), which stays 3, so the WF3 gain/readnoise row is
+  still the one used. DQ bits `8,1024` are WFPC2-wide and carry over unchanged.
+- **Output scale.** WF3 is 0.0996″/px. The `WFPC2-BOX` 4-point pattern (spacing
+  0.559″) dithers by half a pixel in both axes — note `POSTARG1/2` are all zero,
+  the offsets live in the WCS — which supports a ~2× finer grid. Output is
+  0.05″/px, `pixfrac=0.8`, matching the ACS mosaics so the optical bands land on
+  a common grid. `dither_phase_counts()` measures the phase coverage from the
+  exposure WCSs at runtime and the script **exits without writing anything** if
+  either axis has fewer than 2 distinct phases — a native-scale mosaic is not
+  wanted. There is no hardcoded exclusion list: which exposures a lens has depends
+  on the MAST query, so a fixed table goes stale (J0728+3835 looked unusable with
+  2 exposures and is fine with 6).
+
+### WFPC2: COPY visits, C0M-only exposures, exposure-time filtering
+
+Three traps in the WFPC2 F606W archive, all of which silently cost exposures:
+
+- **`-COPY` targets are genuine repeat visits, not duplicates.** J0728+3835 has
+  2×1100s on 2007-09-14 plus 4×1100s "-COPY" on 2007-11-05, every frame with a
+  distinct `t_min`. The old "prefer non-COPY" rule discarded two thirds of the
+  data. `drizzle_wfpc2_wf3.py` keeps both and filters on exposure time instead
+  (`MIN_EXPTIME = 10s`), which also covers the `EXPTIME=0` case the non-COPY rule
+  originally existed for.
+- **`WFPC2/WFC`-labelled observations usually ship no FLT** — only raw `C0M`
+  (science) + `C1M` (DQ). Broadening `instrument_name` alone therefore changes
+  nothing. The script downloads C0M/C1M and converts them via
+  `drizzlepac.wfpc2Data.wfpc2_to_flt`. J1218+0830 is the one lens whose extra
+  exposures are genuinely WFC-labelled 1100s science frames; on J0728+3835,
+  J0822+2652 and J1142+1001 the WFC frames are 0.5s check shots, dropped by
+  `MIN_EXPTIME`.
+- **Combining visits needs a wider search radius.** Two visits means two guide-star
+  solutions and a roll difference (J0822+2652: PA_V3 101.85 vs 87.92), needing
+  `searchrad=3`, not 1.
+
+AstroDrizzle output suffix is determined by input file type, not the output name. Use `_drc_` for FLC (ACS), `_drw_` for WFPC2 FLT, `_drz_` for everything else.
+
+## TweakReg `threshold` is per-instrument
+
+`threshold` is in **image data units**, so it does not transfer between detectors.
+A single value of 200 was tuned on the WFPC2 PC chip and then copied into every
+script, where it silently starved `minobj` and broke alignment:
+
+| Script | threshold | searchrad | Why |
+|---|---|---|---|
+| `drizzle_wfpc2_wf3.py` | 100 | 3 | 200 left too few WF3 sources: 1 of 6 frames nan, another matched spuriously at (40, −65) px. 100 and 50 both give 6/6 and a coherent ~9.5 px visit offset; ≤20 lets false matches back in |
+| `drizzle_wfc3_ir.py` | 20 | 1 | FLTs are ELECTRONS/S — sky ~0.7, 99.9th pct ~8. A 200 e/s cut found 4–6 objects/image, below `minobj=7`, so no shiftfile was written and the script died on `FileNotFoundError: shift_flt.txt`. 20 gives ~40–50 objects |
+| `drizzle_acs_wfc.py` | (unchanged) | | works on F814W and F555W as-is |
+
+When TweakReg fails with nan shifts, no shiftfile, or one wild outlier, check the
+`FINAL number of objects` lines in the log **before** touching `searchrad` — too
+few sources is the usual cause. Note the fit is not fragile: on WFC3/IR every
+threshold from 50 down to 1.5 gave the identical 4.61 px solution.
+
+## NICMOS is deprioritised
+
+Do not generate or propose NICMOS (NIC2) products unless explicitly asked. The
+field of view is far too small to be useful — 258x256 px at 0.0756″ is ~19″ across,
+against 2318x2052 at 0.06″ (~139″) for WFC3/IR — and the pipeline may be unsound.
+F160W coverage questions should be answered from WFC3/IR.
+
+All NICMOS data has been **deleted** (2026-07-21): drizzled products, working dirs,
+108 `*cal.fits` exposures, run logs, and the NICMOS CRDS reference cache — 472 MB.
+The 24 affected lenses now carry `f160W: null` in all three tracking JSONs. This is
+reversible: `scripts/drizzle_nic2.py` is intentionally kept, and re-running it
+re-downloads from MAST and re-fetches the CRDS refs automatically. That also means
+running it by accident will quietly bring all of it back.
+
+## Output pixel scales
+
+Every band is drizzled to a sub-native grid where the dither supports it. The scale
+is chosen by measurement (weight-map uniformity + stellar FWHM), not convention:
+
+| Band | Instrument | Native | Output | pixfrac |
+|---|---|---|---|---|
+| F606W | WFPC2/WF3 | 0.0996″ | 0.05″ | 0.8 |
+| F814W, F555W | ACS/WFC | 0.05″ | 0.05″ (native) | default |
+| F160W | WFC3/IR | 0.1283″ | 0.06″ | 0.8 |
+
+F160W sits on 0.06″ while the optical bands are on 0.05″. This is deliberate:
+0.05″ from 0.1283″ native is a 2.6x oversample and with only 4 exposures it opens
+real weight holes. Pixel-match at the modelling stage, not in the drizzle.
+
+**F555W needs no new script** — `drizzle_acs_wfc.py` is filter-agnostic
+(`--filt f555W`). All 16 F555W lenses are already reduced; they are exactly the 16
+lenses that have no WFPC2 F606W data (proposals 10494/10798).
+
+## Cutouts (`scripts/make_cutouts.py`)
+
+```bash
+conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W --sample slacs
+```
+
+Cuts a square stamp (default 10″) from `data/drizzled/` into `data/cutouts/`,
+writing `cutout_sci.fits`, `cutout_noise.fits` (from the weight map) and a
+3-panel PNG.
+
+The stamp is recentred on the galaxy rather than the catalogue position, and the
+peak search runs on the **CR-rejected** mosaic when one exists, even though the
+science stamp is cut from the no-CR pass. The no-CR mosaics contain cosmic rays
+by construction and a brightest-pixel search locks onto them. Suppressing CRs
+purely by widening the median window needs ~21 pix ≈ 1″ at 0.05″/px, wide enough
+to bias the peak of a compact galaxy, so centring uses data with no CRs instead.
+The CR pass loses core flux and is unfit for science, but its core is still the
+local maximum, which is all centring needs. Do not diagnose a bad recentre by
+reaching for `--median-size` first — check that a `*_cr_*` mosaic is present.
+
+Offsets around 1–2″ are not necessarily failures: several lenses (J0912+0029,
+J0956+5100) have genuine multi-knot morphology, so the brightest pixel is a knot
+rather than the catalogue centroid, and the stamp is still correctly placed.
+
+## Tracking JSONs in `info/`
+
+Three files are updated automatically by every script run:
+
+- **`lens_products.json`** — `{lens: {filter: [obsid, ...]}}` — HST rootnames downloaded from MAST
+- **`lens_instrument.json`** — `{lens: {filter: "INSTRUME/DETECTOR"}}` — e.g. `"ACS/WFC"`, `"WFPC2/WF3"`, `"WFC3/IR"`
+- **`lens_exptime.json`** — `{lens: {filter: exptime_seconds}}` — from the CR-rejected drizzle header
+
+If a lens has no data for a filter, the value is stored as `null`. All three files
+carry a key for every band (`f160W, f555W, f606W, f814W`) on every lens, so a
+missing key means the file is out of sync, not that data is absent.
+
+**`null` is overloaded for F160W.** The 24 F160W nulls do *not* mean "no data on
+MAST" — those lenses have NICMOS F160W observations that were deliberately deleted
+(see *NICMOS is deprioritised*). Only the 13 WFC3/IR lenses have F160W data that is
+wanted. `drizzle_nic2.py` also writes `null` when a MAST query genuinely returns
+nothing, so the JSONs alone cannot distinguish "dropped on purpose" from "never
+existed" — this note is the record. Re-running `drizzle_nic2.py` would silently
+repopulate those 24 entries and re-download the data.
+
+Both levels are kept sorted: lenses across the file, and **filters within each lens
+entry**. `_update_info_json` and the `lens_products` write in every drizzle script
+re-sort on each update, so the ordering survives partial runs.
+
+Note `lens_instrument.json` records `WFPC2/WF3` for F606W, not the `WFPC2/PC` string
+MAST uses — it names the chip the data actually came from.
+
+## Lens Samples
+
+- **SLACS** (38 lenses): HST proposals 10886, 11202, 10494, 10798. Coverage as of the last MAST survey:
+
+  | Band | Instrument | Lenses | Notes |
+  |---|---|---|---|
+  | F814W | ACS/WFC | 38 | all |
+  | F606W | WFPC2/WF3 | 22 | the other 16 have no WFPC2 data in any filter |
+  | F555W | ACS/WFC | 16 | exactly the 16 without F606W (props 10494/10798) |
+  | F160W | WFC3/IR | 13 | all proposal 11202, ~2397 s each |
+  | F160W | NICMOS/NIC2 | 24 | deprioritised — data deleted, entries are `null` |
+
+  So every lens has F814W, and the sample splits cleanly into 22 with WFPC2 F606W
+  and 16 with ACS F555W. F160W is WFC3/IR for 13; the remaining 24 have only
+  NICMOS, which is not wanted.
+- **BELLS** (16 lenses): WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Reduction scripts not yet written for this sample.
+- **GALLERY**: HST proposals 14189, 16734.
+
+Target names on MAST follow the pattern `SDSS<LENS>` (e.g. `SDSSJJ0008-0004`). The MAST query uses `target_name=f'SDSS{lens}%'` with a wildcard to handle minor naming variations.
+
+**COPY handling differs by instrument, deliberately:**
+
+- **ACS** (`drizzle_acs_wfc.py`) filters COPY observations out in favour of non-COPY when both exist — **except** for lenses in `mast_target_names.FORCE_COPY_LENSES`, whose non-COPY observations are unusable. Currently `{J1032+5322}` (F814W): the non-COPY frames are `EXPTIME=0`, so `force_copy(lens)` selects the COPY frames. J1032+5322 is the only ACS lens with COPY data at all — surveyed across F814W and F555W, nothing else has any.
+- **WFPC2** (`drizzle_wfpc2_wf3.py`) keeps **both**, because there the COPY sets are genuine repeat visits carrying most of the usable exposure time (see above). It rejects junk on `MIN_EXPTIME` instead of on target name.
+
+Do not "unify" these two policies without re-checking the archive — they encode different facts about different datasets.
+
+### Non-standard MAST target names (`GAL-*`)
+
+Some lenses are **not** on MAST under an `SDSS<LENS>` name — they use a `GAL-<plate>-<mjd>-<fiber>` designation instead, so the default `SDSS{lens}%` query returns no observations. The drizzle scripts resolve this automatically via `scripts/mast_target_names.py`: for a lens in the table below they query the `GAL-*` name first and fall back to `SDSS{lens}%`. **Output/directory names always stay in the J convention** (the left column) regardless of the MAST name used to fetch. Not all of these are on the current lens list yet; recorded here for future additions.
+
+| Output name (J convention) | MAST target name |
+|---|---|
+| J0216-0813 | GAL-0668-52162-428 |
+| J0737+3216 | GAL-0541-51959-145 |
+| J0912+0029 | GAL-0472-51955-429 |
+| J0956+5100 | GAL-0902-52409-068 |
+| J0959+0410 | GAL-0572-52289-495 |
+| J1205+4910 | GAL-0969-52442-134 |
+| J1250+0523 | GAL-0847-52426-549 |
+| J1402+6321 | GAL-0605-52353-503 |
+| J1420+6019 | GAL-0788-52338-605 |
+| J1627-0053 | GAL-0364-52000-084 |
+| J1630+4520 | GAL-0626-52057-518 |
+| J2238-0754 | GAL-0722-52224-442 |
+| J2300+0022 | GAL-0677-52606-520 |
+| J2303+1422 | GAL-0743-52262-304 |
+
+## AstroDrizzle Key Parameters
+
+Two drizzle passes are defined, over the same input files:
+- **CR pass** (`median=True, blot=True, driz_cr=True`): cosmic-ray cleaned science image
+- **No-CR pass** (`median=False, blot=False, driz_cr=False`): uncleaned, useful for comparison
+
+Only WFPC2 runs both unconditionally. ACS, WFC3/IR and NICMOS run the no-CR pass
+only unless `--cr` is passed. Current on-disk state reflects that: F606W, F814W and
+F555W have both passes, but **the 13 WFC3/IR F160W mosaics have no CR pass** (the 24
+CR products under `f160W` are all NICMOS).
+
+That has a consequence for `make_cutouts.py`, which prefers the CR mosaic for
+recentring: on those 13 it falls back to the science pass. Acceptable here because
+WFC3/IR FLTs are already up-the-ramp CR-rejected, so the no-CR mosaic is not
+CR-infested the way a WFPC2 or ACS one is — but re-run with `--cr` if a recentre
+looks wrong.
+
+DQ bits treated as good pixels:
+- WFPC2: `8,1024` (full-well saturated, cosmic ray corrected)
+- ACS/WFC: `256,64,16` (full-well saturated, warm pixels, stable hot pixels)
+- WFC3/IR: `64,512` (warm pixels, blobs)
+- NICMOS: `2,4,8` (uncertain linearity/dark/flat corrections — acceptable calibration imperfections; all defects, saturation, CRs excluded. Per NICMOS Data Handbook Table 2.3)
