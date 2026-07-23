@@ -149,6 +149,46 @@ Three traps in the WFPC2 F606W archive, all of which silently cost exposures:
 
 AstroDrizzle output suffix is determined by input file type, not the output name. Use `_drc_` for FLC (ACS), `_drw_` for WFPC2 FLT, `_drz_` for everything else.
 
+## WCS alignment: `--align`, and why it differs by instrument
+
+**Do not unify the three scripts on this point.** Every drizzle script takes
+`--align {mast,tweakreg}`, but the correct default is not the same for all of them.
+Verified by stacked stellar FWHM (the metric that reflects the actual product):
+
+| Instrument | Default | What it does | FWHM: default vs alternative |
+|---|---|---|---|
+| ACS/WFC | `mast` | no `updatewcs`, no TweakReg | **0.234″** vs 0.286″ (J0330-0020) |
+| WFC3/IR | `mast` | no `updatewcs`, no TweakReg | **0.364″** vs 0.512″ (J0728+3835) |
+| WFPC2/WF3 | `tweakreg` | `updatewcs(use_db=True)` + TweakReg | **0.309″** vs 0.388″ (J0029-0055) |
+
+**Why ACS and WFC3 must not re-solve.** MAST delivers those files already fitted to
+GSC 2.4.2 or GAIA eDR3 (`WCSNAME = IDC_*-FIT_REL_GSC242` / `-FIT_REL_GAIAeDR3`), with
+relative astrometry across a dither sequence good to ~0.05–0.8 px. TweakReg aligns
+every frame onto the *first* frame, so for dithered exposures it measures the dither
+itself as an error and removes it. On J0330-0020 (`ACS-WFC-DITHER-BOX`, POSTARG ±0.19″
+≈ ±3.7 px) its reported `XSH/YSH` of (−5.04, −1.65) px are exactly the POSTARG offsets;
+afterwards all four WCSs mapped a sky position to the same detector pixel to 0.01 px.
+AstroDrizzle then stacked four dithered frames as if they shared a pointing. Per-frame
+WCS error went from spread 0.82 px (a harmless common offset) to 3.61 px — **this is
+what smeared point sources and split lensed arcs into offset copies.**
+`updatewcs(use_db=False)` compounds it by stripping the `-FIT_REL_*` refinement.
+
+**Why WFPC2 is the exception.** It is the only instrument that cannot skip
+`updatewcs`: AstroDrizzle needs the NPOL (`NPOLFILE`) and detector-to-image
+(`D2IMFILE`) distortion arrays, and the WF3 chip extraction does not carry them over —
+without it AstroDrizzle stops and prompts for the missing DGEO correction. But
+`updatewcs` strips the delivered fit (`IDC_ta81040lu-FIT_IMG_GSC242` → bare
+`IDC_ta81040lu`; `use_db=True` only restores an older `GSC240` fit, which measured
+identically). With the fitted astrometry gone, TweakReg is the only remaining source
+of relative alignment, so WFPC2 keeps it.
+
+**Diagnosing this class of bug.** Compare the *spread* of the per-frame WCS error
+(predicted vs actual position of a source), not its magnitude — a common offset is a
+harmless absolute-astrometry shift, frame-to-frame scatter is what smears a stack.
+Then confirm against stacked stellar FWHM on a good number of stars. Where the two
+disagree, trust the PSF: the WCS-error audit wrongly condemned TweakReg for WFPC2
+because it centroided a single extended galaxy on the FLT before chip extraction.
+
 ## TweakReg `threshold` is per-instrument
 
 `threshold` is in **image data units**, so it does not transfer between detectors.
@@ -165,6 +205,36 @@ When TweakReg fails with nan shifts, no shiftfile, or one wild outlier, check th
 `FINAL number of objects` lines in the log **before** touching `searchrad` — too
 few sources is the usual cause. Note the fit is not fragile: on WFC3/IR every
 threshold from 50 down to 1.5 gave the identical 4.61 px solution.
+
+These values now only take effect under `--align tweakreg`, i.e. by default only for
+WFPC2. The ACS and WFC3 tuning is dead code kept for comparison runs.
+
+## ACS cosmic-ray rejection: LACosmic, not `driz_cr`
+
+`drizzle_acs_wfc.py --cr` masks cosmic rays per frame with LACosmic
+(`--cr-method lacosmic`, the default) and then drizzles a plain weighted mean
+(`median=False, blot=False, driz_cr=False`). `--cr-method drizcr` restores the old
+AstroDrizzle route.
+
+`driz_cr` detects CRs by comparing each frame to a blotted median of the stack. On a
+steep PSF core that reference is systematically low, so the core's residual reads as a
+cosmic ray: on J0330-0020 it flagged 113–206 real pixels inside the 1″ core of *every*
+frame and destroyed 37% of the deflector flux. Loosening `driz_cr_snr`/`driz_cr_scale`
+made it **worse** — the fault is the biased reference, not the threshold.
+
+| method | core flux vs no-CR | detections in the 10″ stamp |
+|---|---|---|
+| no CR rejection | 1.000 | 112 |
+| `driz_cr`, `combine_type=minmed` | 0.628 | 0 |
+| `driz_cr`, `combine_type=median` | 0.846 | — |
+| **LACosmic, `objlim=5`** | **0.993** | **7** |
+
+**`resetbits=0` is mandatory on the LACosmic CR pass.** It defaults to 4096 and would
+clear the DRIZ_CR bit the mask is written into, silently producing an un-masked
+drizzle that still looks plausible — the first run of this reported a flawless
+`core=1.000` that was really the no-CR image scored against itself. Conversely the
+no-CR passes pin `resetbits=4096` explicitly, because they run *after* the CR pass on
+the same FLCs and would otherwise inherit the mask and become silently CR-rejected.
 
 ## NICMOS is deprioritised
 
