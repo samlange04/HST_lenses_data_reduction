@@ -48,6 +48,21 @@ _p = argparse.ArgumentParser()
 _p.add_argument('--lens',   default='J0008-0004')
 _p.add_argument('--filt',   default='f606W')
 _p.add_argument('--sample', default='slacs')
+# WFPC2 KEEPS TweakReg, unlike ACS and WFC3/IR. It is the one instrument here that
+# cannot skip updatewcs -- the NPOL/D2IM distortion arrays are required and the WF3
+# chip extraction does not carry them -- and updatewcs strips the delivered
+# astrometric fit (IDC_ta81040lu-FIT_IMG_GSC242 -> bare IDC_ta81040lu; use_db=True
+# only restores an older GSC240 fit, which measured identically). With the fit gone,
+# TweakReg is the only source of relative alignment. Measured on J0029-0055
+# (stacked stellar FWHM, 32 vs 9 stars):
+#     updatewcs + TweakReg     0.309"   <- default
+#     updatewcs, no TweakReg   0.388"
+# ACS/WFC3 are the opposite: they skip updatewcs, keep their FIT_REL solutions, and
+# TweakReg only degrades them. Do not "unify" the three scripts on this point.
+_p.add_argument('--align',   default='tweakreg', choices=['mast', 'tweakreg'],
+                help="'tweakreg' (default for WFPC2) runs updatewcs + TweakReg; "
+                     "'mast' skips TweakReg and trusts the delivered WCS, which is "
+                     "correct for ACS/WFC3 but measurably worse here.")
 _a = _p.parse_args()
 
 lens   = _a.lens
@@ -288,43 +303,85 @@ print(f'Working directory: {work_path}')
 print('\n=== CRDS bestrefs ===')
 os.system('crds bestrefs --files u*flt.fits --sync-references=1 --update-bestrefs')
 
-# ── Update WCS ────────────────────────────────────────────────────────────────
+# ── Alignment ─────────────────────────────────────────────────────────────────
+# DO NOT re-solve the WCS. MAST delivers these files already fitted to GSC 2.4.2 or
+# GAIA eDR3, and their *relative* astrometry across a dither sequence is far better
+# than anything TweakReg derives here. TweakReg aligns every frame onto the FIRST
+# frame, so for dithered exposures it measures the dither itself as an error and
+# removes it, leaving AstroDrizzle to stack dithered frames as if they shared a
+# pointing. Measured as the rms frame-to-frame scatter of the WCS error (a common
+# offset is harmless; scatter is what smears the stack):
+#
+#   dataset                    as delivered   after updatewcs   after TweakReg
+#   WFC3/IR  J0728+3835           0.05 px         0.01 px        0.89 px (max 3.26)
+#   WFPC2 1-visit J0029-0055      0.19 px         0.38 px        1.54 px (max 4.69)
+#   WFPC2 2-visit J0822+2652      0.77 px         0.90 px        1.55 px (max 3.90)
+#   ACS      J0330-0020           0.82 px*        0.82 px*       3.61 px
+#     (*ACS measured as spread of |err|, same conclusion)
+#
+# Even the two-visit WFPC2 case -- different guide stars, 14 deg roll difference --
+# is already registered to 0.77 px by the delivered WCS, and TweakReg doubles the
+# error. The TweakReg threshold/searchrad tuning kept below was fixing failures in a
+# step that should not run at all; it is retained only for --align tweakreg.
+# updatewcs runs for WFPC2 in BOTH modes, unlike ACS/WFC3 where it is skipped. It is
+# not optional here: it attaches the non-polynomial (NPOLFILE) and detector-to-image
+# (D2IMFILE) distortion arrays, and the WF3 chip extraction below does not carry them
+# over, so without it AstroDrizzle stops and prompts for the missing DGEO correction.
+# It costs a little relative accuracy (spread 0.19 -> 0.38 px on J0029-0055) but that
+# is far cheaper than TweakReg (-> 1.54 px).
+# use_db matters here. use_db=False strips the delivered astrometric fit
+# (IDC_ta81040lu-FIT_IMG_GSC242 -> bare IDC_ta81040lu), which leaves relative
+# alignment resting on the IDCTAB alone -- that is why dropping TweakReg without
+# this made J0029-0055 worse (FWHM 0.309" -> 0.388"). use_db=True pulls a fitted
+# solution back from the astrometry database (IDC_ta81040lu-GSC240).
 print('\n=== updatewcs ===')
-updatewcs('u*flt.fits', use_db=False)
+updatewcs('u*flt.fits', use_db=(_a.align == 'mast'))
 
-# ── TweakReg: align exposures ─────────────────────────────────────────────────
-print('\n=== TweakReg ===')
-tweakreg.TweakReg(sorted(glob.glob('u*flt.fits')),
-                  updatehdr=True,
-                  clean=True,
-                  reusename=True,
-                  interactive=False,
-                  conv_width=3.0,
-                  # 200 was a PC-chip value and is too strict once WF3 sources
-                  # dominate the catalogue: on J0822+2652 it left only the very
-                  # brightest objects, so 1 of 6 frames went nan and another matched
-                  # spuriously at (40, -65) px. Measured on that lens, 100 and 50 both
-                  # match 6/6 with a coherent ~9.5 px visit offset; 20 and below let
-                  # false matches back in (max |shift| 52-69 px). 100 is the
-                  # conservative end of the working range.
-                  threshold=100.0,
-                  ylimit=1,
-                  shiftfile=True,
-                  outshifts='shift_flt.txt',
-                  # 1" was enough when every exposure came from one visit. Combining
-                  # the COPY and non-COPY visits means matching across a roll
-                  # difference (J0822+2652: PA_V3 101.85 vs 87.92) and a separate
-                  # guide-star solution, which needs shifts up to ~0.85" — right at
-                  # a 1" radius, where 2 of 6 frames failed to match and TweakReg
-                  # wrote nan shifts. 3" is still tight against the 80" WF3 field.
-                  searchrad=3,
-                  tolerance=3,
-                  minobj=7)
+if _a.align == 'tweakreg':
+    # ── TweakReg: align exposures ─────────────────────────────────────────────
+    print('\n=== TweakReg ===')
+    tweakreg.TweakReg(sorted(glob.glob('u*flt.fits')),
+                      updatehdr=True,
+                      clean=True,
+                      reusename=True,
+                      interactive=False,
+                      conv_width=3.0,
+                      # 200 was a PC-chip value and is too strict once WF3 sources
+                      # dominate the catalogue: on J0822+2652 it left only the very
+                      # brightest objects, so 1 of 6 frames went nan and another matched
+                      # spuriously at (40, -65) px. Measured on that lens, 100 and 50 both
+                      # match 6/6 with a coherent ~9.5 px visit offset; 20 and below let
+                      # false matches back in (max |shift| 52-69 px). 100 is the
+                      # conservative end of the working range.
+                      threshold=100.0,
+                      ylimit=1,
+                      shiftfile=True,
+                      outshifts='shift_flt.txt',
+                      # 1" was enough when every exposure came from one visit. Combining
+                      # the COPY and non-COPY visits means matching across a roll
+                      # difference (J0822+2652: PA_V3 101.85 vs 87.92) and a separate
+                      # guide-star solution, which needs shifts up to ~0.85" — right at
+                      # a 1" radius, where 2 of 6 frames failed to match and TweakReg
+                      # wrote nan shifts. 3" is still tight against the 80" WF3 field.
+                      searchrad=3,
+                      tolerance=3,
+                      minobj=7)
 
-with open('shift_flt.txt') as f:
-    for i, line in enumerate(f, 1):
-        if 'nan' in line:
-            raise ValueError(f'nan in shift_flt.txt line {i} — TweakReg alignment failed')
+    with open('shift_flt.txt') as f:
+        for i, line in enumerate(f, 1):
+            if 'nan' in line:
+                raise ValueError(f'nan in shift_flt.txt line {i} — TweakReg alignment failed')
+else:
+    _names = set()
+    for _f in sorted(glob.glob('u*flt.fits')):
+        try:
+            _names.add(fits.getval(_f, 'WCSNAME', ext=('SCI', 1)))
+        except Exception:
+            _names.add('<none>')
+    print(f'\n=== Alignment: using MAST WCS as delivered ({", ".join(sorted(_names))}) ===')
+    if not all(('GSC' in n or 'GAIA' in n or 'HSC' in n) for n in _names):
+        print('  WARNING: a frame lacks a fitted (GSC/GAIA/HSC) WCS. Relative alignment is unverified —')
+        print('           check the stacked PSF, or re-run with --align tweakreg.')
 
 # ── Extract WF3 chip only ──────────────────────────────────────────────────────
 print('\n=== Masking PC / WF2 / WF4 chips ===')

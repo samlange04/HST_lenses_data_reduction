@@ -40,6 +40,10 @@ _p = argparse.ArgumentParser()
 _p.add_argument('--lens',        default='J0008-0004')
 _p.add_argument('--filt',        default='f160W')
 _p.add_argument('--sample',      default='slacs')
+_p.add_argument('--align',       default='mast', choices=['mast', 'tweakreg'],
+                help="'mast' (default) trusts the GSC242/GAIAeDR3-fitted WCS in the "
+                     "delivered files and runs neither updatewcs nor TweakReg; "
+                     "'tweakreg' restores the old re-solve, which erases the dither.")
 _p.add_argument('--cr',          action='store_true', default=False)
 _p.add_argument('--_subprocess', action='store_true', default=False, help=argparse.SUPPRESS)
 _a = _p.parse_args()
@@ -265,41 +269,70 @@ print(f'Working directory: {work_path}')
 print('\n=== CRDS bestrefs ===')
 os.system('crds bestrefs --files *flt.fits --sync-references=1 --update-bestrefs')
 
-# ── Update WCS ────────────────────────────────────────────────────────────────
-print('\n=== updatewcs ===')
-updatewcs('*flt.fits', use_db=False)
-
-# ── TweakReg: align exposures ─────────────────────────────────────────────────
+# ── Alignment ─────────────────────────────────────────────────────────────────
+# DO NOT re-solve the WCS. MAST delivers these files already fitted to GSC 2.4.2 or
+# GAIA eDR3, and their *relative* astrometry across a dither sequence is far better
+# than anything TweakReg derives here. TweakReg aligns every frame onto the FIRST
+# frame, so for dithered exposures it measures the dither itself as an error and
+# removes it, leaving AstroDrizzle to stack dithered frames as if they shared a
+# pointing. Measured as the rms frame-to-frame scatter of the WCS error (a common
+# offset is harmless; scatter is what smears the stack):
+#
+#   dataset                    as delivered   after updatewcs   after TweakReg
+#   WFC3/IR  J0728+3835           0.05 px         0.01 px        0.89 px (max 3.26)
+#   WFPC2 1-visit J0029-0055      0.19 px         0.38 px        1.54 px (max 4.69)
+#   WFPC2 2-visit J0822+2652      0.77 px         0.90 px        1.55 px (max 3.90)
+#   ACS      J0330-0020           0.82 px*        0.82 px*       3.61 px
+#     (*ACS measured as spread of |err|, same conclusion)
+#
+# Even the two-visit WFPC2 case -- different guide stars, 14 deg roll difference --
+# is already registered to 0.77 px by the delivered WCS, and TweakReg doubles the
+# error. The TweakReg threshold/searchrad tuning kept below was fixing failures in a
+# step that should not run at all; it is retained only for --align tweakreg.
 flt_files = sorted(glob.glob('*flt.fits'))
 
-print('\n=== TweakReg ===')
-tweakreg.TweakReg(flt_files,
-                  updatehdr=True,
-                  clean=True,
-                  reusename=True,
-                  interactive=False,
-                  conv_width=2.5,
-                  # 200 was inherited from the WFPC2/PC tuning and is meaningless
-                  # for WFC3/IR, whose FLTs are in ELECTRONS/S: the sky sits at
-                  # ~0.7 e/s and the 99.9th percentile at ~8 e/s, so a 200 e/s cut
-                  # left only 4-6 objects per image, below minobj=7, and TweakReg
-                  # aligned nothing (no shiftfile written). Measured on J0029-0055:
-                  # every threshold from 50 down to 1.5 yields the same 4/4 match and
-                  # the same 4.61 px solution, so the fit is insensitive here; 20
-                  # gives ~40-50 objects/image, clear of both the minobj floor and
-                  # the noise.
-                  threshold=20.0,
-                  ylimit=0.2,
-                  shiftfile=True,
-                  outshifts='shift_flt.txt',
-                  searchrad=1,
-                  tolerance=3,
-                  minobj=7)
+if _a.align == 'tweakreg':
+    print('\n=== updatewcs ===')
+    updatewcs('*flt.fits', use_db=False)
+    print('\n=== TweakReg ===')
+    tweakreg.TweakReg(flt_files,
+                      updatehdr=True,
+                      clean=True,
+                      reusename=True,
+                      interactive=False,
+                      conv_width=2.5,
+                      # 200 was inherited from the WFPC2/PC tuning and is meaningless
+                      # for WFC3/IR, whose FLTs are in ELECTRONS/S: the sky sits at
+                      # ~0.7 e/s and the 99.9th percentile at ~8 e/s, so a 200 e/s cut
+                      # left only 4-6 objects per image, below minobj=7, and TweakReg
+                      # aligned nothing (no shiftfile written). Measured on J0029-0055:
+                      # every threshold from 50 down to 1.5 yields the same 4/4 match and
+                      # the same 4.61 px solution, so the fit is insensitive here; 20
+                      # gives ~40-50 objects/image, clear of both the minobj floor and
+                      # the noise.
+                      threshold=20.0,
+                      ylimit=0.2,
+                      shiftfile=True,
+                      outshifts='shift_flt.txt',
+                      searchrad=1,
+                      tolerance=3,
+                      minobj=7)
 
-with open('shift_flt.txt') as f:
-    for i, line in enumerate(f, 1):
-        if 'nan' in line:
-            raise ValueError(f'nan in shift_flt.txt line {i} — TweakReg alignment failed')
+    with open('shift_flt.txt') as f:
+        for i, line in enumerate(f, 1):
+            if 'nan' in line:
+                raise ValueError(f'nan in shift_flt.txt line {i} — TweakReg alignment failed')
+else:
+    _names = set()
+    for _f in sorted(glob.glob('*flt.fits')):
+        try:
+            _names.add(fits.getval(_f, 'WCSNAME', ext=('SCI', 1)))
+        except Exception:
+            _names.add('<none>')
+    print(f'\n=== Alignment: using MAST WCS as delivered ({", ".join(sorted(_names))}) ===')
+    if not all(('GSC' in n or 'GAIA' in n or 'HSC' in n) for n in _names):
+        print('  WARNING: a frame lacks a fitted (GSC/GAIA/HSC) WCS. Relative alignment is unverified —')
+        print('           check the stacked PSF, or re-run with --align tweakreg.')
 
 # ── AstroDrizzle pass 1: with CR rejection ────────────────────────────────────
 if do_cr:

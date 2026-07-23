@@ -43,17 +43,45 @@ _p.add_argument('--lens',        default='J0008-0004')
 _p.add_argument('--filt',        default='f814W')
 _p.add_argument('--sample',      default='slacs')
 _p.add_argument('--cr',          action='store_true', default=False)
-# driz_cr tuning. The AstroDrizzle defaults below assume a well-sampled median image.
-# With few exposures and a small dither the blotted median under-samples the sharp ACS
-# PSF core, so real galaxy centres get clipped as cosmic rays; raise these to loosen it.
+# CR-rejection method for the --cr pass. 'lacosmic' (default) masks cosmic rays per
+# frame with LACosmic and then drizzles a plain weighted mean; 'drizcr' is the old
+# AstroDrizzle median/blot/driz_cr route, kept for comparison. See the block comment
+# above run_lacosmic for why the default changed.
+_p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizcr'])
+# Alignment source. 'mast' trusts the GSC242/GAIAeDR3-fitted WCS in the delivered FLCs
+# and runs neither updatewcs nor TweakReg; 'tweakreg' is the old re-solve, which erases
+# the dither on these data. See the block comment above the alignment step.
+#
+# Per-lens alignment override. --align mast is right for ACS in general (the
+# delivered FIT_REL WCS beats anything TweakReg derives), but four lens/filter
+# combos ship a frame carrying no astrometric fit at all (bare IDC_4bb1536oj):
+# J0008-0004 f814W, J0912+0029 f814W/f555W, J1213+6708 f814W. Measured stacked
+# stellar FWHM on those, against a population median of 0.203":
+#     J0008-0004 f814W  mast 0.162"                 -> mast (sharpest in the sample)
+#     J0912+0029 f814W  mast 0.229"  tweakreg 0.265" -> mast
+#     J1213+6708 f814W  mast 0.227"  tweakreg 0.206" -> tweakreg   <- the one override
+# So an unfitted frame does not automatically mean TweakReg helps; measure, do not
+# assume. An explicit --align on the command line still wins over this table.
+ALIGN_OVERRIDES = {('J1213+6708', 'f814W'): 'tweakreg'}
+_p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
+_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
+_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# driz_cr tuning, only used by --cr-method drizcr. The AstroDrizzle defaults below
+# assume a well-sampled median image. With few exposures and a small dither the blotted
+# median under-samples the sharp ACS PSF core, so real galaxy centres get clipped as
+# cosmic rays; raise these to loosen it.
 _p.add_argument('--driz-cr-snr',   default='3.5 3.0')
 _p.add_argument('--driz-cr-scale', default='1.2 0.7')
-# Median-image combine method. AstroDrizzle defaults to 'minmed', which suits small
-# stacks but biases low on bright extended sources; 'median' avoids that at >=4 images.
-# None leaves AstroDrizzle's own default in place.
+# Median-image combine method, only used by --cr-method drizcr. AstroDrizzle defaults to
+# 'minmed', which suits small stacks but biases low on bright extended sources; 'median'
+# avoids that at >=4 images. None leaves AstroDrizzle's own default in place.
 _p.add_argument('--combine-type',  default=None)
 _p.add_argument('--_subprocess', action='store_true', default=False, help=argparse.SUPPRESS)
 _a = _p.parse_args()
+
+if _a.align is None:
+    _a.align = ALIGN_OVERRIDES.get((_a.lens, _a.filt), 'mast')
+    print(f'=== align: {_a.align} (default for this lens/filter) ===')
 
 lens           = _a.lens
 sample         = _a.sample
@@ -132,6 +160,12 @@ if _is_subprocess:
                                driz_sep_wcs=True, driz_sep_scale=0.05,
                                driz_sep_bits='256,64,16', driz_sep_fillval=-1,
                                median=False, blot=False, driz_cr=False,
+                               # Must clear bit 4096: when --cr ran first it left the
+                               # LACosmic mask in the input DQ, and inheriting it here
+                               # would make the "no CR rejection" product silently
+                               # CR-rejected. This is AstroDrizzle's default, pinned
+                               # explicitly because the CR pass now depends on it.
+                               resetbits=4096,
                                final_fillval=None, final_bits='256,64,16',
                                final_wcs=True, final_scale=0.05,
                                num_cores=_num_cores)
@@ -278,51 +312,142 @@ print(f'Working directory: {work_path}')
 print('\n=== CRDS bestrefs ===')
 os.system('crds bestrefs --files *flc.fits --sync-references=1 --update-bestrefs')
 
-# ── Update WCS ────────────────────────────────────────────────────────────────
-print('\n=== updatewcs ===')
-updatewcs('*flc.fits', use_db=False)
-
-# ── TweakReg: align exposures ─────────────────────────────────────────────────
+# ── Alignment ─────────────────────────────────────────────────────────────────
+# DO NOT re-solve the WCS for ACS. MAST delivers FLCs with WCSNAME
+# IDC_<idctab>-FIT_REL_GSC242, already fitted to GSC 2.4.2, whose *relative*
+# astrometry across a dither sequence is good to ~0.5 px. Both of the steps this
+# pipeline used to run made it worse, measured on J0330-0020 (4 exposures,
+# ACS-WFC-DITHER-BOX, POSTARG +-0.19" ~ +-3.7 px):
+#
+#   raw MAST GSC242, no updatewcs/TweakReg   stacked stellar FWHM 0.234"
+#   updatewcs, no TweakReg                                        0.250"
+#   updatewcs + TweakReg  (the old default)                       0.286"
+#
+#  - updatewcs(use_db=False) strips the -FIT_REL_GSC242 refinement, reverting to the
+#    bare IDCTAB solution and moving the absolute zero-point by ~10 px.
+#  - TweakReg then aligns every frame onto the *first* frame, which for dithered
+#    exposures means it measures the dither itself as an error and removes it: its
+#    reported XSH/YSH (-5.04, -1.65 px) are exactly the POSTARG offsets. Afterwards
+#    all four WCSs map a given sky position to the same detector pixel to 0.01 px,
+#    so AstroDrizzle stacks four dithered frames as if they shared a pointing.
+#    Per-frame WCS error went from 10.20/10.79/10.74/11.02 px (spread 0.82, i.e.
+#    a harmless common offset) to 10.20/11.80/13.81/13.23 (spread 3.61) — relative
+#    alignment 4.4x worse. That is what smeared point sources and split the lensed
+#    arcs into offset copies.
+#
+# TweakReg remains useful where frames genuinely need registering to each other
+# (e.g. WFPC2 combining two visits with different guide stars). It is wrong here.
+# --align tweakreg restores the old behaviour for comparison.
 flc_files = sorted(glob.glob('*flc.fits'))
 
-print('\n=== TweakReg ===')
-tweakreg.TweakReg(flc_files,
-                  updatehdr=True,
-                  clean=True,
-                  reusename=True,
-                  interactive=False,
-                  conv_width=3.5,
-                  threshold=200.0,
-                  ylimit=0.2,
-                  shiftfile=True,
-                  outshifts='shift_flc.txt',
-                  searchrad=1,
-                  tolerance=3,
-                  minobj=7)
+if _a.align == 'tweakreg':
+    print('\n=== updatewcs ===')
+    updatewcs('*flc.fits', use_db=False)
+    print('\n=== TweakReg ===')
+    tweakreg.TweakReg(flc_files,
+                      updatehdr=True,
+                      clean=True,
+                      reusename=True,
+                      interactive=False,
+                      conv_width=3.5,
+                      threshold=200.0,
+                      ylimit=0.2,
+                      shiftfile=True,
+                      outshifts='shift_flc.txt',
+                      searchrad=1,
+                      tolerance=3,
+                      minobj=7)
+    with open('shift_flc.txt') as f:
+        for i, line in enumerate(f, 1):
+            if 'nan' in line:
+                raise ValueError(f'nan in shift_flc.txt line {i} — TweakReg alignment failed')
+else:
+    _wcsnames = {fits.getval(f, 'WCSNAME', ext=('SCI', 1)) for f in flc_files}
+    print(f'\n=== Alignment: using MAST WCS as delivered ({", ".join(sorted(_wcsnames))}) ===')
+    # A fitted solution is any of GSC / GAIA / HSC. Testing only for 'GSC' fired on
+    # every GAIA-fitted lens, i.e. 30 of 54 warnings were noise and would have
+    # trained the reader to ignore the real ones.
+    if not all(('GSC' in n or 'GAIA' in n or 'HSC' in n) for n in _wcsnames):
+        print('  WARNING: a frame carries no fitted (GSC/GAIA/HSC) WCS. Relative '
+              'alignment is unverified — check the stacked PSF, or re-run with '
+              '--align tweakreg.')
 
-with open('shift_flc.txt') as f:
-    for i, line in enumerate(f, 1):
-        if 'nan' in line:
-            raise ValueError(f'nan in shift_flc.txt line {i} — TweakReg alignment failed')
+# ── CR masking: LACosmic, per frame ───────────────────────────────────────────
+# AstroDrizzle's driz_cr detects cosmic rays by comparing each frame against a blotted
+# median of the stack. On a steep PSF core that reference is systematically low, so the
+# core's residual reads as a cosmic ray: measured on J0330-0020 it flagged 113-206 real
+# pixels inside the 1" core of EVERY frame and destroyed 37% of the deflector flux
+# (combine_type='median' only recovered it to 85%). Loosening driz_cr_snr/scale made it
+# worse, because the fault is the biased reference, not the threshold.
+#
+# LACosmic works one frame at a time with an explicit object-protection term (objlim),
+# so there is no stacked reference to bias. With CRs already in DQ the final drizzle is
+# a plain weighted mean -- median/blot/driz_cr all off -- and nothing can clip the core.
+# Measured on J0330-0020: core flux 0.988 of the no-CR pass (vs 0.628 for minmed), and
+# 7 surviving detections in the 10" science stamp (vs 112 with no CR rejection).
+CR_BIT = 4096          # DRIZ_CR; excluded by final_bits='256,64,16'
+_ACS_RDNOISE, _ACS_SATLEVEL = 4.5, 84700.0   # FLC is already in electrons, so gain=1
+
+
+def run_lacosmic(files, sigclip, objlim):
+    """Flag cosmic rays into DQ bit 4096 of each FLC, in place."""
+    import astroscrappy
+    total = 0
+    for fname in files:
+        with fits.open(fname, mode='update') as hdul:
+            for ext in range(1, 3):        # ACS/WFC has two SCI chips
+                sci = hdul['SCI', ext].data.astype(np.float32)
+                dq = hdul['DQ', ext].data
+                dq &= ~CR_BIT              # clear any previous CR flags
+                # genuine defects, so LACosmic does not key off them
+                bad = (dq & (4 | 8 | 128 | 512)) > 0
+                mask, _ = astroscrappy.detect_cosmics(
+                    sci, inmask=bad, sigclip=sigclip, sigfrac=0.3, objlim=objlim,
+                    gain=1.0, readnoise=_ACS_RDNOISE, satlevel=_ACS_SATLEVEL,
+                    niter=4, sepmed=True, cleantype='medmask', fsmode='median')
+                dq[mask] |= CR_BIT
+                total += int(mask.sum())
+                hdul['DQ', ext].data = dq
+    print(f'  LACosmic flagged {total} pixels across {len(files)} frames')
+
 
 # ── AstroDrizzle pass 1: with CR rejection ────────────────────────────────────
 if do_cr:
     # DQ bits 256,64,16: full-well saturated pixels, warm pixels, stable hot pixels.
     # These are treated as good so they are not misidentified as cosmic rays.
-    print('\n=== AstroDrizzle (with CR rejection) ===')
-    _combine_kw = {} if _a.combine_type is None else {'combine_type': _a.combine_type}
-    astrodrizzle.AstroDrizzle(flc_files,
-                               **_combine_kw,
-                               output='acs_wfc_flc_cr',
-                               preserve=False, build=False, context=False,
-                               skysub=True, skymethod='localmin',
-                               driz_sep_wcs=True, driz_sep_scale=0.05,
-                               driz_sep_bits='256,64,16', driz_sep_fillval=-1,
-                               median=True, blot=True, driz_cr=True,
-                               driz_cr_snr=_a.driz_cr_snr, driz_cr_scale=_a.driz_cr_scale,
-                               final_fillval=None, final_bits='256,64,16',
-                               final_wcs=True, final_scale=0.05,
-                               num_cores=_num_cores)
+    if _a.cr_method == 'lacosmic':
+        print('\n=== LACosmic CR masking ===')
+        run_lacosmic(flc_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+        print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')
+        astrodrizzle.AstroDrizzle(flc_files,
+                                   output='acs_wfc_flc_cr',
+                                   preserve=False, build=False, context=False,
+                                   skysub=True, skymethod='localmin',
+                                   driz_sep_wcs=True, driz_sep_scale=0.05,
+                                   driz_sep_bits='256,64,16', driz_sep_fillval=-1,
+                                   median=False, blot=False, driz_cr=False,
+                                   # resetbits defaults to 4096 and would clear the very
+                                   # bit LACosmic just wrote, silently reverting to an
+                                   # unmasked drizzle that still looks plausible.
+                                   resetbits=0,
+                                   final_fillval=None, final_bits='256,64,16',
+                                   final_wcs=True, final_scale=0.05,
+                                   num_cores=_num_cores)
+    else:
+        print('\n=== AstroDrizzle (with driz_cr CR rejection) ===')
+        _combine_kw = {} if _a.combine_type is None else {'combine_type': _a.combine_type}
+        astrodrizzle.AstroDrizzle(flc_files,
+                                   **_combine_kw,
+                                   output='acs_wfc_flc_cr',
+                                   preserve=False, build=False, context=False,
+                                   skysub=True, skymethod='localmin',
+                                   driz_sep_wcs=True, driz_sep_scale=0.05,
+                                   driz_sep_bits='256,64,16', driz_sep_fillval=-1,
+                                   median=True, blot=True, driz_cr=True,
+                                   driz_cr_snr=_a.driz_cr_snr, driz_cr_scale=_a.driz_cr_scale,
+                                   final_fillval=None, final_bits='256,64,16',
+                                   final_wcs=True, final_scale=0.05,
+                                   num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
         os.remove(f)
 
@@ -351,6 +476,12 @@ else:
                                driz_sep_wcs=True, driz_sep_scale=0.05,
                                driz_sep_bits='256,64,16', driz_sep_fillval=-1,
                                median=False, blot=False, driz_cr=False,
+                               # Must clear bit 4096: when --cr ran first it left the
+                               # LACosmic mask in the input DQ, and inheriting it here
+                               # would make the "no CR rejection" product silently
+                               # CR-rejected. This is AstroDrizzle's default, pinned
+                               # explicitly because the CR pass now depends on it.
+                               resetbits=4096,
                                final_fillval=None, final_bits='256,64,16',
                                final_wcs=True, final_scale=0.05,
                                num_cores=_num_cores)

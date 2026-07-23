@@ -192,21 +192,36 @@ def main():
                    help='median filter window (pix) applied before peak-finding, to stop '
                         'cosmic rays in the no-CR data being mistaken for the galaxy; '
                         '1 disables')
+    p.add_argument('--pass', dest='drizzle_pass',
+                   choices=['auto', 'cr', 'nocrrej'], default='auto',
+                   help="which drizzle pass to cut from. 'auto' (default) prefers the "
+                        "CR-rejected pass and falls back to no-CR when no CR product "
+                        "exists (e.g. WFC3/IR F160W, which has no CR pass). 'cr' and "
+                        "'nocrrej' force one. The CR pass is the science default: ACS "
+                        "uses LACosmic masking that keeps ~99% of the deflector core "
+                        "while removing cosmic rays, so the old no-CR default put "
+                        "CR-riddled stamps in front of the user.")
     p.add_argument('--cr', action='store_true', default=False,
-                   help='cut from the CR-rejected drizzle pass instead of the no-CR pass; '
-                        'outputs are prefixed cutout_cr_ so both can sit side by side')
+                   help='deprecated alias for --pass cr')
     p.add_argument('--output', default=None,
                    help='output dir, default data/cutouts/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
-    drizzle_pass = 'cr' if a.cr else 'nocrrej'
-    # Distinct output names so a --cr run never clobbers the no-CR products, and the two
-    # can be compared directly in the same directory.
-    prefix = 'cutout_cr' if a.cr else 'cutout'
-
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
     output_dir = a.output or os.path.join(ws_path, 'data', 'cutouts', a.sample, a.lens, a.filt)
     os.makedirs(output_dir, exist_ok=True)
+
+    # Resolve which pass to cut from. --cr is a deprecated alias for --pass cr.
+    requested = 'cr' if a.cr else a.drizzle_pass
+    if requested == 'auto':
+        has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
+        drizzle_pass = 'cr' if has_cr else 'nocrrej'
+    else:
+        drizzle_pass = requested
+
+    # Distinct output names by pass so the two never clobber and can be compared in the
+    # same directory: cutout_cr_* for CR, cutout_* for no-CR.
+    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
 
     sci_file, wht_file = find_products(drizzled_dir, drizzle_pass)
     print(f"{a.lens} {a.filt}  [{drizzle_pass} pass]")
