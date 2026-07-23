@@ -14,6 +14,12 @@ data/*
 # cited source for the DQ-bit and pixel-scale choices, so they travel with the repo.
 hst_notebooks/
 
+# ── Superseded notebooks ───────────────────────────────────────────────────────
+# Exploratory / pre-pipeline notebooks. Kept locally but not versioned: they carry
+# large embedded output images and re-run churn (execution counts, timestamps) that
+# does not belong in history. The live pipeline is scripts/*.py.
+scripts/old_notebooks/
+
 # ── Generated output ───────────────────────────────────────────────────────────
 output/
 
