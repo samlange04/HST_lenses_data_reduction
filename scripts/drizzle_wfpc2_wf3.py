@@ -69,6 +69,22 @@ _p.add_argument('--align',   default='tweakreg', choices=['mast', 'tweakreg'],
 # default 'EXP' is only an effective-exposure-time map (uncalibrated, missing
 # source shot noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
+# CR-rejection method for the CR pass. 'lacosmic' (default) masks cosmic rays per
+# frame with astroscrappy; 'drizcr' is the old AstroDrizzle median/blot/driz_cr route.
+# WFPC2's driz_cr punches holes and masks real core pixels exactly like it did on ACS
+# (biased blotted-median reference on a steep core), which spikes the noise map; the
+# per-frame LACosmic route has no stacked reference to bias. See run_lacosmic below.
+_p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizcr'])
+_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
+_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# Single-visit drizzling for multi-visit lenses. --pa restricts the drizzle to frames
+# within 1 deg of that PA_V3 (one guide-star solution -> clean MAST registration);
+# --out-suffix tags the output/work dir (e.g. f606W -> f606W_v1) so the two visits do
+# not overwrite each other. Used for J0728+3835 / J0822+2652, whose two visits have a
+# 14-15 deg roll split that TweakReg cannot co-register below ~0.3": drizzle each visit
+# separately and let the modelling (PyAutoLens DatasetModel.grid_offset) fit the offset.
+_p.add_argument('--pa',          type=float, default=None)
+_p.add_argument('--out-suffix',  default='')
 _a = _p.parse_args()
 
 lens   = _a.lens
@@ -90,15 +106,21 @@ WF3_NATIVE_SCALE = 0.0996
 # frames on J0728+3835, J0822+2652 and J1142+1001 are 0.5 s. This also catches the
 # EXPTIME=0 frames that the old "prefer non-COPY" rule existed to avoid.
 MIN_EXPTIME = 10.0
-# pixfrac 0.8 measured on J0029-0055 (4 exposures): it is both the sharpest and
-# well covered. 0.7 leaves genuine weight holes (std/mean 0.44, 8.4% of interior
-# pixels below half-median weight) which degrade the PSF rather than improve it;
-# 1.0 is the most uniform (std/mean 0.09) but softer.
-#   pixfrac   std/mean   holes    median stellar FWHM
-#   0.7       0.435      8.4%     4.38 px / 0.219"
-#   0.8       0.282      1.3%     3.75 px / 0.188"   <- chosen
-#   1.0       0.093      1.1%     4.05 px / 0.203"
-DEFAULT_SCALE, DEFAULT_PIXFRAC = 0.05, 0.8
+# pixfrac 1.0 (not 0.8): F606W keeps its dither-supported 0.05" scale (WFPC2-BOX is a
+# 4-point HALF-pixel dither, purpose-built for 2x oversampling of the 0.0996" native --
+# do NOT coarsen to 0.06"; that would waste the sub-pixel sampling the dither encodes).
+# But with the noise now on calibrated ERR weight maps, the drizzle goal is a *uniform,
+# low-correlation* noise map for the likelihood, not the sharpest PSF. pixfrac 1.0 fills
+# the grid so adjacent-pixel noise correlation collapses. Measured on J0252+0039 (0.05",
+# correctly MAST-registered frames):
+#   pixfrac   noise texture   adjacent-pixel RMS
+#   0.8       3.9%            5.3%
+#   1.0       2.1%            2.1%   <- chosen
+# 0.06"/1.0 was fractionally smoother (1.9%) but sacrifices resolution for ~0.2% and is
+# not the dither-matched scale, so it is rejected. Matches the WFC3/IR F160W choice
+# (0.06"/1.0). The old pixfrac-0.8 tuning (stacked FWHM on J0029) predates ERR weighting
+# and the shift to prioritising noise-map covariance; PyAutoLens fits the PSF explicitly.
+DEFAULT_SCALE, DEFAULT_PIXFRAC = 0.05, 1.0
 
 
 def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
@@ -123,9 +145,11 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     return norm(fx), norm(fy)
 
 ws_path     = '/Users/samlange/Code/data_reduction'
+# data_path (calibrated source) always uses the base filter; only the output/work dirs
+# take --out-suffix, so both visits share the one download but write to f606W_v1 / _v2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
-work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
+output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt + _a.out_suffix)
+work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt + _a.out_suffix)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────
@@ -155,6 +179,10 @@ exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
 def _update_info_json(path, lens, filt_key, value):
+    # Separate-visit products (--out-suffix) are non-standard; leave the tracking JSONs,
+    # which describe the standard combined f606W products, untouched.
+    if _a.out_suffix:
+        return
     try:
         with open(path) as _f:
             _data = json.load(_f)
@@ -259,6 +287,11 @@ _update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/WF3')
 
 # ── Choose output scale from the actual sub-pixel dither coverage ─────────────
 _inputs = sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))
+if _a.pa is not None:
+    # keep only frames within 1 deg of the requested visit roll (--pa single-visit mode)
+    _inputs = [f for f in _inputs
+               if abs(float(fits.getheader(f).get('PA_V3', 1e9)) - _a.pa) < 1.0]
+    print(f'=== Single-visit: {len(_inputs)} frames within 1deg of PA_V3={_a.pa} ===')
 _nx, _ny = dither_phase_counts(_inputs)
 print(f'=== Dither sampling: {len(_inputs)} exposures, '
       f'{_nx} x-phases / {_ny} y-phases ===')
@@ -315,7 +348,9 @@ os.environ['uref']            = os.path.join(
     ref_path, 'references', 'hst', 'wfpc2') + os.sep
 
 # ── Copy FLT files to work directory and work there ───────────────────────────
-for f in glob.glob(os.path.join(data_path, 'u*flt.fits')):
+# Copy only the selected frames (_inputs is PA-filtered in single-visit mode), so
+# every downstream step that globs u*flt.fits in the work dir sees just this visit.
+for f in _inputs:
     shutil.copy(f, work_path)
 
 os.chdir(work_path)
@@ -444,14 +479,20 @@ flt_wf3_files = extract_wf3_chip(sorted(glob.glob('u*flt.fits')))
 _num_cores = 1
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
-def crop_to_coverage(sci_file, wht_file):
-    """Trim sci and wht to the bounding box of wht>0, updating CRPIX in-place."""
+def coverage_bbox(wht_file):
+    """Bounding box (y0, y1, x0, x1) of wht>0 in a weight map."""
     with fits.open(wht_file) as h:
         wht = h[0].data
         rows = np.any(wht > 0, axis=1)
         cols = np.any(wht > 0, axis=0)
         y0, y1 = np.where(rows)[0][[0, -1]]
         x0, x1 = np.where(cols)[0][[0, -1]]
+    return int(y0), int(y1), int(x0), int(x1)
+
+
+def crop_to_bbox(sci_file, wht_file, bbox):
+    """Trim sci and wht to a given (y0, y1, x0, x1) bbox, updating CRPIX in-place."""
+    y0, y1, x0, x1 = bbox
     for fname in (sci_file, wht_file):
         with fits.open(fname, mode='update') as h:
             h[0].data = h[0].data[y0:y1+1, x0:x1+1]
@@ -467,27 +508,84 @@ def make_log_norm(data, wht):
     vmax = np.percentile(covered, 99.9)
     return ImageNormalize(vmin=vmin, vmax=vmax, stretch=LogStretch())
 
+# ── CR rejection: LACosmic (default), same rationale as drizzle_acs_wfc.py ─────
+# driz_cr compares each frame to a blotted median of the stack; on a steep PSF core
+# that reference is biased low, so real core pixels read as CRs (measured -37% core
+# flux on ACS, and it spikes the WFPC2 noise map with masked patches + a CR trail).
+# LACosmic works one frame at a time with an object-protection term (objlim), so no
+# stacked reference biases the core, and the final drizzle is a plain weighted mean.
+CR_BIT = 4096          # not in final_bits='8,1024', so flagged CRs are excluded
+WF3_READNOISE = 5.2    # electrons, WFPC2 WF3 chip (WFPC2 Instrument Handbook Table 4.2)
+
+
+def run_lacosmic(files, sigclip, objlim):
+    """Flag cosmic rays into DQ bit 4096 of each WF3 FLT, in place.
+
+    WF3 FLT is in DN (BUNIT=COUNTS): gain=ATODGAIN converts to electrons internally,
+    satlevel=SATURATE*gain is the full well in electrons, readnoise is the WF3 value.
+    The extracted chip is the lone (SCI,1)/(DQ,1) pair. Saturated pixels (DQ bit 8)
+    are protected so the bright core is not mistaken for cosmic rays.
+    """
+    import astroscrappy
+    total = 0
+    for fname in files:
+        with fits.open(fname, mode='update') as hdul:
+            gain  = float(hdul[0].header.get('ATODGAIN', 7.0))
+            satdn = float(hdul[0].header.get('SATURATE', 4095))
+            sci = hdul['SCI', 1].data.astype(np.float32)
+            dq  = hdul['DQ', 1].data
+            dq &= ~CR_BIT                      # clear any previous CR flags
+            bad = (dq & 8) > 0                 # protect full-well saturated pixels
+            mask, _ = astroscrappy.detect_cosmics(
+                sci, inmask=bad, sigclip=sigclip, sigfrac=0.3, objlim=objlim,
+                gain=gain, readnoise=WF3_READNOISE, satlevel=satdn * gain,
+                niter=4, sepmed=True, cleantype='medmask', fsmode='median')
+            dq[mask] |= CR_BIT
+            total += int(mask.sum())
+            hdul['DQ', 1].data = dq
+    print(f'  LACosmic flagged {total} pixels across {len(files)} frames')
+
+
 # ── AstroDrizzle pass 1: with CR rejection ────────────────────────────────────
-print('\n=== AstroDrizzle (with CR rejection) ===')
-astrodrizzle.AstroDrizzle(flt_wf3_files,
-                           output='wfpc2_wf3_cr',
-                           preserve=False, build=False, context=False,
-                           skysub=True, skymethod='localmin',
-                           driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
-                           driz_sep_bits='8,1024', driz_sep_fillval=-1,
-                           median=True, blot=True, driz_cr=True,
-                           driz_cr_snr='15.0 10.0', driz_cr_scale='1.5 1.0',
-                           final_fillval=None, final_bits='8,1024',
-                           final_wcs=True, final_scale=out_scale,
-                           final_pixfrac=out_pixfrac,
-                           final_wht_type=_a.wht_type,
-                           **_common_wcs,
-                           num_cores=_num_cores)
+if _a.cr_method == 'lacosmic':
+    print('\n=== LACosmic CR masking ===')
+    run_lacosmic(flt_wf3_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+    print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')
+    astrodrizzle.AstroDrizzle(flt_wf3_files,
+                               output='wfpc2_wf3_cr',
+                               preserve=False, build=False, context=False,
+                               skysub=True, skymethod='localmin',
+                               driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
+                               driz_sep_bits='8,1024', driz_sep_fillval=-1,
+                               median=False, blot=False, driz_cr=False,
+                               # resetbits defaults to 4096 and would clear the very
+                               # bit LACosmic just wrote, silently reverting to an
+                               # unmasked drizzle that still looks plausible.
+                               resetbits=0,
+                               final_fillval=None, final_bits='8,1024',
+                               final_wcs=True, final_scale=out_scale,
+                               final_pixfrac=out_pixfrac,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
+                               num_cores=_num_cores)
+else:
+    print('\n=== AstroDrizzle (with driz_cr CR rejection) ===')
+    astrodrizzle.AstroDrizzle(flt_wf3_files,
+                               output='wfpc2_wf3_cr',
+                               preserve=False, build=False, context=False,
+                               skysub=True, skymethod='localmin',
+                               driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
+                               driz_sep_bits='8,1024', driz_sep_fillval=-1,
+                               median=True, blot=True, driz_cr=True,
+                               driz_cr_snr='15.0 10.0', driz_cr_scale='1.5 1.0',
+                               final_fillval=None, final_bits='8,1024',
+                               final_wcs=True, final_scale=out_scale,
+                               final_pixfrac=out_pixfrac,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
+                               num_cores=_num_cores)
 for f in glob.glob('*ask.fits'):
     os.remove(f)
-
-print('\n=== Cropping (CR) ===')
-crop_to_coverage('wfpc2_wf3_cr_drw_sci.fits', 'wfpc2_wf3_cr_drw_wht.fits')
 
 # ── AstroDrizzle pass 2: no CR rejection ──────────────────────────────────────
 print('\n=== AstroDrizzle (no CR rejection) ===')
@@ -498,6 +596,10 @@ astrodrizzle.AstroDrizzle(flt_wf3_files,
                            driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
                            driz_sep_bits='8,1024', driz_sep_fillval=-1,
                            median=False, blot=False, driz_cr=False,
+                           # this pass runs on the same FLTs after the LACosmic pass
+                           # wrote DQ bit 4096; reset it so the no-CR mosaic is genuinely
+                           # un-masked and not silently CR-rejected.
+                           resetbits=4096,
                            final_fillval=None, final_bits='8,1024',
                            final_wcs=True, final_scale=out_scale,
                            final_pixfrac=out_pixfrac,
@@ -507,8 +609,17 @@ astrodrizzle.AstroDrizzle(flt_wf3_files,
 for f in glob.glob('*ask.fits'):
     os.remove(f)
 
-print('\n=== Cropping (no CR) ===')
-crop_to_coverage('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits')
+print('\n=== Cropping (shared bbox for both passes) ===')
+# Crop BOTH passes to the union of their wht>0 boxes. LACosmic masks different edge
+# pixels in the CR pass than the no-CR pass, so per-pass cropping left the two products
+# differing by ~1 column and broke the residual diagnostic (and mis-registers the passes
+# pixel-for-pixel). The union box keeps every covered pixel and gives identical shapes.
+_bb_cr    = coverage_bbox('wfpc2_wf3_cr_drw_wht.fits')
+_bb_nocr  = coverage_bbox('wfpc2_wf3_nocrrej_drw_wht.fits')
+_bbox = (min(_bb_cr[0], _bb_nocr[0]), max(_bb_cr[1], _bb_nocr[1]),
+         min(_bb_cr[2], _bb_nocr[2]), max(_bb_cr[3], _bb_nocr[3]))
+crop_to_bbox('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',     _bbox)
+crop_to_bbox('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits', _bbox)
 
 print('\n=== Exposure times ===')
 for label, fname in (('CR rejected', 'wfpc2_wf3_cr_drw_sci.fits'),
