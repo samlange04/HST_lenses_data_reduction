@@ -189,6 +189,56 @@ Then confirm against stacked stellar FWHM on a good number of stars. Where the t
 disagree, trust the PSF: the WCS-error audit wrongly condemned TweakReg for WFPC2
 because it centroided a single extended galaxy on the FLT before chip extraction.
 
+### F606W absolute astrometry: `align_wfpc2_to_acs.py` (run after drizzle, before cutouts)
+
+WFPC2 F606W carries only a GSC 2.4.0 (`GSC240`) solution, ~0.3–1″ off absolute; ACS
+F814W and WFC3/IR F160W carry GAIA eDR3 / GSC242 (<0.02″, agree with each other to
+~0.01″). So the F606W mosaic sits ~0.5–0.9″ from the other bands (0.66″ measured on
+J0252+0039) — a whole-mosaic shift, not a smear, so it does not hurt the F606W stack
+but breaks cross-band registration.
+
+`scripts/align_wfpc2_to_acs.py` fixes it by tying the **deflector light-centroid** to
+the GAIA-accurate ACS F814W: an iterative windowed `centroid_com` (`stable_centroid`,
+robust to the roughly symmetric ring) in both bands, then shifts the F606W `CRVAL1/2`
+so the centroids coincide and stamps `GSC240FX=True`. It is idempotent (re-measures the
+residual, applies ~0), refuses any tie implying a shift > `MAX_SHIFT = 1.5″`, and where
+F160W exists uses it as an **independent** check (not in the fit). Verified on
+J0252+0039: 0.66″ → 0.009″ vs F814W and 0.009″ vs F160W.
+
+    conda run -n stenv python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
+
+Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.
+
+## Weight maps: `final_wht_type=ERR` (default), not `EXP`
+
+All four drizzle scripts take `--wht-type {ERR,IVM,EXP}`, default **`ERR`**, and write
+the chosen type into every AstroDrizzle pass and forward it to the no-CR subprocess.
+`cutout_noise.fits` is `1/sqrt(WHT)`, so the weight type *is* the noise model:
+
+- **`ERR`** — full inverse-variance: source Poisson + sky + read + dark. The correct
+  per-pixel σ for modelling. On J1143 the core/sky noise ratio is ~4.0 (source shot
+  noise present, as it must be).
+- **`EXP`** — effective-exposure-time map, **uncalibrated** (no source shot noise): the
+  core/sky ratio comes out a flat ~1.04, i.e. it claims the bright core is as noisy as
+  blank sky. Do not use for a likelihood.
+- **`IVM`** — background noise only, no object Poisson.
+
+(DrizzlePac Handbook pp.103,139.) The blank-sky floor is **included** in ERR, not
+something to add back. See "Drizzle correlated noise" for the covariance caveat that
+ERR does *not* capture.
+
+## Common output WCS across filters (orientation + centre)
+
+Every band is pinned to the **same output grid geometry** so the filters co-register
+pixel-for-pixel without a later reprojection: the drizzle scripts pass
+`final_rot=0.0` (North-up) and `final_ra`/`final_dec` at the lens catalogue position
+(the tangent point) into every AstroDrizzle call. The coordinates come from
+`info/slacs_coords.py`; a lens missing from that table falls back to the native drizzle
+WCS (`_common_wcs = {}`) with a printed warning. This is what lets `make_cutouts.py`
+cut all bands on a shared centre — it aligns orientation and tangent point, not the
+absolute astrometry, which is still the job of the delivered WCS (and, for F606W,
+`align_wfpc2_to_acs.py`).
+
 ## TweakReg `threshold` is per-instrument
 
 `threshold` is in **image data units**, so it does not transfer between detectors.
@@ -269,6 +319,43 @@ real weight holes. Pixel-match at the modelling stage, not in the drizzle.
 (`--filt f555W`). All 16 F555W lenses are already reduced; they are exactly the 16
 lenses that have no WFPC2 F606W data (proposals 10494/10798).
 
+## Drizzle correlated noise (matters for strong-lens modelling)
+
+Drizzling onto a **finer-than-native grid** with `pixfrac < 1` correlates adjacent
+output pixels. Each output pixel is a weighted sum of the input pixels its shrunken
+"drop" overlaps; neighbouring output pixels draw on overlapping sets of input pixels,
+so their noise is **covariant**. This is a property of drizzle resampling (Fruchter &
+Hook 2002; Casertano et al. 2000), not a defect, and it is stronger the more the grid
+is oversampled relative to native.
+
+This shows up directly as visible **texture in the noise maps**, measured as the
+fractional pixel-to-pixel RMS of a blank-sky region of the weight-derived noise map:
+
+| Band | Native → Output | Oversample | pixfrac | Noise-map texture |
+|---|---|---|---|---|
+| F814W | 0.05″ → 0.05″ | 1.0× | default | 6.2% |
+| F160W | 0.1283″ → 0.06″ | 2.1× | 0.8 | 8.8% |
+| F606W | 0.0996″ → 0.05″ | 2.0× | 0.8 | 18.8% |
+
+The texture tracks the oversampling: F814W (native, effectively no oversample) is
+nearly flat, while the 2× oversampled F606W/F160W bands show strong correlated
+structure. `final_wht_type=ERR` makes the **per-pixel variance** correct (it carries
+source Poisson + sky + read + dark), but it says nothing about the **off-diagonal
+covariance** between neighbouring pixels — a per-pixel σ map understates the true
+correlated noise. On J1143 blank sky the empirical pixel RMS was ~**1.47×** what the
+ERR map predicts, i.e. the naive per-pixel map is optimistic by that factor because it
+ignores the correlation.
+
+**Modelling implication.** A per-pixel independent-Gaussian likelihood (diagonal
+covariance) mis-estimates parameter *uncertainties* — it does not bias the best-fit
+point, but it makes error bars/evidence wrong, and worse in the oversampled
+F606W/F160W bands than in native-scale F814W. Options: build the pixel covariance into
+the likelihood; inflate the per-pixel noise by the measured correlation factor as a
+crude correction; or follow Bayer et al. (2023), who characterise the correlated noise
+with azimuthally-averaged blank-sky power spectra and fold that into the noise model.
+Prefer native-scale F814W where a clean per-pixel noise model matters most, and be
+explicit about the correlation whenever F606W/F160W drive the constraint.
+
 ## Cutouts (`scripts/make_cutouts.py`)
 
 ```bash
@@ -292,6 +379,16 @@ reaching for `--median-size` first — check that a `*_cr_*` mosaic is present.
 Offsets around 1–2″ are not necessarily failures: several lenses (J0912+0029,
 J0956+5100) have genuine multi-knot morphology, so the brightest pixel is a knot
 rather than the catalogue centroid, and the stamp is still correctly placed.
+
+**Shared centre across bands (`--center-band`, default `f814W`).** All bands are cut
+about a single centre measured from the `--center-band` mosaic (F814W: highest S/N,
+GAIA-accurate, cleanest), so the stamps co-register across filters instead of each
+band recentring on its own peak (which would leave them offset by their individual
+morphology). `--center-self` restores per-band recentring; a band whose center-band
+products are missing falls back to its own peak with a warning. The peak search itself
+still prefers the CR mosaic (`--pass {auto,cr,nocrrej}`, `auto` = CR if present).
+Combined with the common output WCS and `align_wfpc2_to_acs.py`, the three optical/IR
+bands land on a common pixel grid.
 
 ## Tracking JSONs in `info/`
 

@@ -64,6 +64,13 @@ _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizc
 # assume. An explicit --align on the command line still wins over this table.
 ALIGN_OVERRIDES = {('J1213+6708', 'f814W'): 'tweakreg'}
 _p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
+# Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
+# inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
+# CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
+# default is 'EXP', which is only an effective-exposure-time map (uncalibrated, and
+# missing source shot noise), so 1/sqrt(EXP-WHT) is not a physical noise map. See
+# DrizzlePac Handbook pp.103,139 and Bayer et al. 2023 (sigma=sqrt(N/W+sigma_sky^2)).
+_p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
 _p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
 _p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
 # driz_cr tuning, only used by --cr-method drizcr. The AstroDrizzle defaults below
@@ -98,6 +105,26 @@ output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 _work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(ws_path, 'data', 'drizzle_files')
 work_path   = os.path.join(_work_root, sample, lens, filt)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
+
+# ── Common output WCS across filters (orientation + centre) ────────────────────
+# Each band was drizzled at its native, differing roll (e.g. J0252+0039: F606W 136deg,
+# F814W -75deg, F160W -144deg) with its own tangent point, so filters of one lens did
+# not overlay. Pin every band to North-up (final_rot=0) with the tangent point
+# (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
+# and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
+# only rotation and centre are unified. Unknown lens -> native WCS (empty dict).
+sys.path.insert(0, os.path.join(ws_path, 'info'))
+try:
+    from slacs_coords import slacs_coords as _slacs_coords
+    from astropy.coordinates import SkyCoord as _SkyCoord
+    import astropy.units as _u
+    _lc = _SkyCoord(*_slacs_coords[lens], unit=(_u.hourangle, _u.deg))
+    _common_wcs = dict(final_rot=0.0, final_ra=float(_lc.ra.deg), final_dec=float(_lc.dec.deg))
+    print(f'=== Common WCS: North-up, centre ({_lc.ra.deg:.5f}, {_lc.dec.deg:.5f}) ===')
+except (KeyError, ImportError):
+    _common_wcs = {}
+    print('=== Common WCS: lens not in slacs_coords -> native drizzle WCS ===')
+
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt
@@ -168,6 +195,8 @@ if _is_subprocess:
                                resetbits=4096,
                                final_fillval=None, final_bits='256,64,16',
                                final_wcs=True, final_scale=0.05,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
                                num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
         os.remove(f)
@@ -432,6 +461,8 @@ if do_cr:
                                    resetbits=0,
                                    final_fillval=None, final_bits='256,64,16',
                                    final_wcs=True, final_scale=0.05,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
                                    num_cores=_num_cores)
     else:
         print('\n=== AstroDrizzle (with driz_cr CR rejection) ===')
@@ -447,6 +478,8 @@ if do_cr:
                                    driz_cr_snr=_a.driz_cr_snr, driz_cr_scale=_a.driz_cr_scale,
                                    final_fillval=None, final_bits='256,64,16',
                                    final_wcs=True, final_scale=0.05,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
                                    num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
         os.remove(f)
@@ -458,7 +491,8 @@ if do_cr:
     print('\n=== AstroDrizzle (no CR rejection) — launching subprocess ===')
     _result = subprocess.run(
         [sys.executable, os.path.abspath(__file__),
-         '--lens', lens, '--filt', filt, '--sample', sample, '--_subprocess'],
+         '--lens', lens, '--filt', filt, '--sample', sample,
+         '--wht-type', _a.wht_type, '--_subprocess'],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
     )
     sys.stdout.write(_result.stdout)
@@ -484,6 +518,8 @@ else:
                                resetbits=4096,
                                final_fillval=None, final_bits='256,64,16',
                                final_wcs=True, final_scale=0.05,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
                                num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
         os.remove(f)
