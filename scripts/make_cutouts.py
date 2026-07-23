@@ -125,6 +125,27 @@ def brightest_pixel_position(cutout, box=100, median_size=5):
     return xlo + ix, ylo + iy
 
 
+def _has_products(drizzled_dir):
+    return bool(glob.glob(os.path.join(drizzled_dir, '*_sci.fits')))
+
+
+def find_peak_coord(drizzled_dir, catalogue_coord, size, box, median_size):
+    """Deflector brightest-pixel sky position from a band's mosaic.
+
+    Uses the CR-rejected pass when present (no cosmic rays to lock onto), else the
+    no-CR pass. Returns (SkyCoord, path_used). May raise NoOverlapError if the
+    catalogue position is off the mosaic.
+    """
+    try:
+        cen_sci, _ = find_products(drizzled_dir, 'cr')
+    except FileNotFoundError:
+        cen_sci, _ = find_products(drizzled_dir, 'nocrrej')
+    with fits.open(cen_sci) as hdul:
+        cut = make_cutout(hdul[0].data, WCS(hdul[0].header), catalogue_coord, size)
+    x, y = brightest_pixel_position(cut, box=box, median_size=median_size)
+    return cut.wcs.pixel_to_world(x, y), cen_sci
+
+
 def make_cutout(data, wcs, position, size_arcsec):
     """Cut a square stamp of `size_arcsec` on a side, centred on `position`."""
     size = u.Quantity((size_arcsec, size_arcsec), u.arcsec)
@@ -203,6 +224,14 @@ def main():
                         "CR-riddled stamps in front of the user.")
     p.add_argument('--cr', action='store_true', default=False,
                    help='deprecated alias for --pass cr')
+    p.add_argument('--center-band', default='f814W',
+                   help='band whose deflector peak defines the shared cutout centre for '
+                        'ALL bands of a lens, so they co-register. Default f814W (highest '
+                        'S/N, GAIA-accurate). Faint bands recentred on their own brightest '
+                        'pixel mis-centre (F606W locks onto a ring knot ~0.45" off).')
+    p.add_argument('--center-self', action='store_true', default=False,
+                   help='recentre each band on its own brightest pixel (old behaviour), '
+                        'not on the shared --center-band centre')
     p.add_argument('--output', default=None,
                    help='output dir, default data/cutouts/<sample>/<lens>/<filt>')
     a = p.parse_args()
@@ -244,47 +273,41 @@ def main():
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
     print(f"  catalogue position: {ra} {dec}")
 
-    # Peak-finding runs on the CR-rejected mosaic when one exists, even when the
-    # science stamp is cut from the no-CR pass. Cosmic rays in the no-CR data
-    # otherwise steal the recentre outright: at median_size=5 this mis-centred 3 of
-    # 21 WFPC2 F606W lenses (J0008-0004 landed on a CR streak with the galaxy in the
-    # stamp corner) and 3 of 38 ACS F814W lenses. Widening the median window far
-    # enough to suppress the CRs (21 pix at 0.05"/px) starts biasing the peak of a
-    # compact galaxy, so use data that has no CRs in it instead. The CR pass loses
-    # core flux and is unfit for science, but the core is still the local maximum,
-    # which is all that is needed to locate it.
-    centring_data, centring_wcs = sci_data, wcs
-    try:
-        cen_sci, _ = find_products(drizzled_dir, 'cr')
-    except FileNotFoundError:
-        cen_sci = None
-    if cen_sci and cen_sci != sci_file:
-        with fits.open(cen_sci) as hdul:
-            centring_data = hdul[0].data
-            centring_wcs = WCS(hdul[0].header)
-        print(f"  centring on: {os.path.basename(cen_sci)}")
+    # Shared recentre. Every band of a lens is centred on the SAME sky point, taken
+    # from the --center-band mosaic (default F814W: highest S/N, GAIA-accurate, cleanest
+    # deflector peak). Recentring each band on its own brightest pixel mis-centres the
+    # faint bands -- F606W locks onto a lensed-ring knot ~0.45" from the deflector core
+    # -- so the bands would not co-register. --center-self restores per-band recentring.
+    #
+    # Peak-finding uses the CR-rejected pass when present (no cosmic rays to lock onto),
+    # else the no-CR pass; see find_peak_coord.
+    center_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.center_band)
+    if a.center_self or a.filt == a.center_band or not _has_products(center_dir):
+        peak_dir, peak_src = drizzled_dir, 'this band'
+        if not a.center_self and a.filt != a.center_band:
+            print(f"  WARNING: no {a.center_band} products for a shared centre; "
+                  f"recentring on this band instead")
     else:
-        print("  centring on: science pass (no CR-rejected mosaic available)")
+        peak_dir, peak_src = center_dir, a.center_band
 
-    # First pass: cut on the catalogue coordinate, then find the lens galaxy peak.
     try:
-        first = make_cutout(centring_data, centring_wcs, catalogue_coord, a.size)
+        peak_coord, cen_used = find_peak_coord(peak_dir, catalogue_coord,
+                                               a.size, a.box, a.median_size)
     except NoOverlapError:
         px, py = wcs.world_to_pixel(catalogue_coord)
         raise SystemExit(
-            f"ERROR: the catalogue position for {a.lens} falls outside the {a.filt} mosaic.\n"
+            f"ERROR: the catalogue position for {a.lens} falls outside the mosaic.\n"
             f"       It maps to pixel ({px:.0f}, {py:.0f}) in a "
             f"{sci_hdr['NAXIS1']}x{sci_hdr['NAXIS2']} image.\n"
             f"       The mosaic WCS does not cover the target - check the drizzle output."
         )
-    x, y = brightest_pixel_position(first, box=a.box, median_size=a.median_size)
-    peak_coord = first.wcs.pixel_to_world(x, y)
+    print(f"  centre from {peak_src}: {os.path.basename(cen_used)}")
 
     scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
     offset = catalogue_coord.separation(peak_coord).arcsec
     print(f"  pixel scale: {scale:.4f}\"/pix")
-    print(f"  recentred onto brightest pixel: offset {offset:.3f}\" "
-          f"({offset / scale:.1f} pix) from catalogue position")
+    print(f"  recentred: offset {offset:.3f}\" ({offset / scale:.1f} pix) "
+          f"from catalogue position")
 
     # Second pass: re-cut both sci and weight on the recentred position, so the stamp
     # keeps its full requested size rather than being shifted and trimmed.
