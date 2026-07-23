@@ -75,10 +75,10 @@ def find_product(lens, filt, prefix):
     return None
 
 
-def align_lens(lens):
+def align_lens(lens, f606_dir='f606W'):
     cat = SkyCoord(*slacs_coords[lens], unit=(u.hourangle, u.deg))
     ref = find_product(lens, 'f814W', 'acs_wfc_flc')      # GAIA-accurate reference
-    f606 = find_product(lens, 'f606W', 'wfpc2_wf3')
+    f606 = find_product(lens, f606_dir, 'wfpc2_wf3')       # f606_dir may be f606W_v1/_v2
     if ref is None:
         print(f'{lens}: no ACS F814W product to align against — skip')
         return
@@ -97,7 +97,7 @@ def align_lens(lens):
     dra = cref.ra.deg - c606.ra.deg
     ddec = cref.dec.deg - c606.dec.deg
     # apply to every F606W product (both passes, sci + wht)
-    d = os.path.join(WS, 'data', 'drizzled', 'slacs', lens, 'f606W')
+    d = os.path.join(WS, 'data', 'drizzled', 'slacs', lens, f606_dir)
     n = 0
     for fn in glob.glob(os.path.join(d, 'wfpc2_wf3_*_drw_*.fits')):
         with fits.open(fn, mode='update') as h:
@@ -122,6 +122,8 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('--lens')
     p.add_argument('--all', action='store_true')
+    p.add_argument('--f606-dir', default='f606W',
+                   help='F606W band subdirectory (e.g. f606W_v1/f606W_v2 for split visits)')
     a = p.parse_args()
     if a.all:
         lenses = sorted(
@@ -131,6 +133,6 @@ if __name__ == '__main__':
         for lens in lenses:
             align_lens(lens)
     elif a.lens:
-        align_lens(a.lens)
+        align_lens(a.lens, f606_dir=a.f606_dir)
     else:
         p.error('give --lens LENS or --all')
