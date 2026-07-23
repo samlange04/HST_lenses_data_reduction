@@ -155,11 +155,11 @@ AstroDrizzle output suffix is determined by input file type, not the output name
 `--align {mast,tweakreg}`, but the correct default is not the same for all of them.
 Verified by stacked stellar FWHM (the metric that reflects the actual product):
 
-| Instrument | Default | What it does | FWHM: default vs alternative |
+| Instrument | Default | What it does | Metric |
 |---|---|---|---|
-| ACS/WFC | `mast` | no `updatewcs`, no TweakReg | **0.234″** vs 0.286″ (J0330-0020) |
-| WFC3/IR | `mast` | no `updatewcs`, no TweakReg | **0.364″** vs 0.512″ (J0728+3835) |
-| WFPC2/WF3 | `tweakreg` | `updatewcs(use_db=True)` + TweakReg | **0.309″** vs 0.388″ (J0029-0055) |
+| ACS/WFC | `mast` | no `updatewcs`, no TweakReg | FWHM **0.234″** vs 0.286″ (J0330-0020) |
+| WFC3/IR | `mast` | no `updatewcs`, no TweakReg | FWHM **0.364″** vs 0.512″ (J0728+3835) |
+| WFPC2/WF3 | **`mast`** (per-lens, see audit) | `updatewcs(use_db=True)`, no TweakReg | core-registration scatter, below |
 
 **Why ACS and WFC3 must not re-solve.** MAST delivers those files already fitted to
 GSC 2.4.2 or GAIA eDR3 (`WCSNAME = IDC_*-FIT_REL_GSC242` / `-FIT_REL_GAIAeDR3`), with
@@ -173,21 +173,44 @@ WCS error went from spread 0.82 px (a harmless common offset) to 3.61 px — **t
 what smeared point sources and split lensed arcs into offset copies.**
 `updatewcs(use_db=False)` compounds it by stripping the `-FIT_REL_*` refinement.
 
-**Why WFPC2 is the exception.** It is the only instrument that cannot skip
-`updatewcs`: AstroDrizzle needs the NPOL (`NPOLFILE`) and detector-to-image
+**WFPC2 still needs `updatewcs`, but NOT TweakReg.** It is the only instrument that
+cannot skip `updatewcs`: AstroDrizzle needs the NPOL (`NPOLFILE`) and detector-to-image
 (`D2IMFILE`) distortion arrays, and the WF3 chip extraction does not carry them over —
-without it AstroDrizzle stops and prompts for the missing DGEO correction. But
-`updatewcs` strips the delivered fit (`IDC_ta81040lu-FIT_IMG_GSC242` → bare
-`IDC_ta81040lu`; `use_db=True` only restores an older `GSC240` fit, which measured
-identically). With the fitted astrometry gone, TweakReg is the only remaining source
-of relative alignment, so WFPC2 keeps it.
+without it AstroDrizzle stops and prompts for the missing DGEO correction. `--align
+mast` runs `updatewcs(use_db=True)` (which restores the `GSC240` fit) and then stops —
+no TweakReg. The `GSC240` solution is only ~0.5″ off in *absolute* astrometry, but its
+*relative* frame-to-frame registration is good to ~0.02–0.03″, which is what the stack
+needs; the absolute offset is fixed afterwards by `align_wfpc2_to_acs.py`.
+
+**Reversal (2026-07-23): WFPC2 must NOT re-solve with TweakReg either** — it is the same
+dither-erasing bug as ACS. Earlier guidance (and an FWHM comparison) had WFPC2 default
+to TweakReg, but a **per-lens core-registration audit** overturned it: for the mostly
+single-visit F606W lenses TweakReg scatters the frames by ~0.7″, splitting the deflector
+core into ~4 offset knots (visible on J0252+0039), while MAST registers the same frames
+to ~0.02″. The audit drizzles each frame separately onto the common grid and measures
+the deflector-core position scatter (LACosmic-masked so cosmic rays don't inflate it);
+the earlier FWHM metric was misleading because it centroided a single extended galaxy.
+The per-lens choice is stored in **`info/wfpc2_alignment.json`** and read by the batch
+runner. Result: **all 22 lenses use `mast`**. See `[[wfpc2_tweakreg_misregisters]]`.
+
+**Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have
+two visits at a ~14–16° roll difference (two guide-star solutions). Rather than let
+TweakReg cross-register them (its only historical justification), they are drizzled as
+**separate per-visit datasets** — `--pa <PA_V3> --out-suffix _v1/_v2`, each visit
+single-guide-star so each uses `mast`. Each product lands in `f606W_v1`/`f606W_v2`.
+Outcome: **J0822+2652** = `f606W_v1` (2×1100s) + `f606W_v2` (4×1100s); **J0728+3835** =
+`f606W_v2` only (its 2-frame visit has just 1 x-dither-phase and cannot reach 0.05″, so
+it is dropped). **J1142+1001 stays combined** — its two visits share a roll (PA 119.00 vs
+118.87), so there is no offset to separate. `align_wfpc2_to_acs.py --f606-dir f606W_v1`
+and `make_cutouts.py --filt f606W_v1` handle the suffixed dirs.
 
 **Diagnosing this class of bug.** Compare the *spread* of the per-frame WCS error
 (predicted vs actual position of a source), not its magnitude — a common offset is a
-harmless absolute-astrometry shift, frame-to-frame scatter is what smears a stack.
-Then confirm against stacked stellar FWHM on a good number of stars. Where the two
-disagree, trust the PSF: the WCS-error audit wrongly condemned TweakReg for WFPC2
-because it centroided a single extended galaxy on the FLT before chip extraction.
+harmless absolute-astrometry shift, frame-to-frame scatter is what smears a stack. The
+cleanest metric is per-frame core-registration scatter on the drizzled common grid (with
+CRs masked); confirm against the visible product (one core, not knots). Stacked stellar
+FWHM can mislead here — it centroids an extended galaxy and rewards TweakReg's internal
+self-consistency even when the deflector is split.
 
 ### F606W absolute astrometry: `align_wfpc2_to_acs.py` (run after drizzle, before cutouts)
 
@@ -256,15 +279,22 @@ When TweakReg fails with nan shifts, no shiftfile, or one wild outlier, check th
 few sources is the usual cause. Note the fit is not fragile: on WFC3/IR every
 threshold from 50 down to 1.5 gave the identical 4.61 px solution.
 
-These values now only take effect under `--align tweakreg`, i.e. by default only for
-WFPC2. The ACS and WFC3 tuning is dead code kept for comparison runs.
+These values only take effect under `--align tweakreg`. Since the per-lens audit put all
+22 WFPC2 lenses on `mast` (and ACS/WFC3 default to `mast` too), TweakReg is off in the
+standard pipeline for every band — this tuning is now comparison-run-only dead code,
+kept in case a future lens's audit picks `tweakreg`.
 
-## ACS cosmic-ray rejection: LACosmic, not `driz_cr`
+## Cosmic-ray rejection: LACosmic, not `driz_cr` (ACS **and** WFPC2)
 
 `drizzle_acs_wfc.py --cr` masks cosmic rays per frame with LACosmic
 (`--cr-method lacosmic`, the default) and then drizzles a plain weighted mean
 (`median=False, blot=False, driz_cr=False`). `--cr-method drizcr` restores the old
-AstroDrizzle route.
+AstroDrizzle route. **`drizzle_wfpc2_wf3.py` now uses the same LACosmic route for its
+CR pass** (`--cr-method lacosmic` default; `--lacosmic-sigclip 4.5`, `--lacosmic-objlim
+5.0`; gain/readnoise/saturate taken from the WF3 header — `ATODGAIN`, `WF3_READNOISE=5.2`,
+`SATURATE`). The mask is written to DQ bit 4096 with `resetbits=0`, exactly as for ACS.
+This replaced `driz_cr` for WFPC2 because `driz_cr` ate the deflector core the same way
+(WFPC2 F606W core retention: LACosmic peak 1.000, 1″ 0.979, 2″ 0.933 — matches ACS).
 
 `driz_cr` detects CRs by comparing each frame to a blotted median of the stack. On a
 steep PSF core that reference is systematically low, so the core's residual reads as a
@@ -307,13 +337,32 @@ is chosen by measurement (weight-map uniformity + stellar FWHM), not convention:
 
 | Band | Instrument | Native | Output | pixfrac |
 |---|---|---|---|---|
-| F606W | WFPC2/WF3 | 0.0996″ | 0.05″ | 0.8 |
+| F606W | WFPC2/WF3 | 0.0996″ | 0.05″ | 1.0 |
 | F814W, F555W | ACS/WFC | 0.05″ | 0.05″ (native) | default |
-| F160W | WFC3/IR | 0.1283″ | 0.06″ | 0.8 |
+| F160W | WFC3/IR | 0.1283″ | 0.06″ | 1.0 |
 
-F160W sits on 0.06″ while the optical bands are on 0.05″. This is deliberate:
-0.05″ from 0.1283″ native is a 2.6x oversample and with only 4 exposures it opens
-real weight holes. Pixel-match at the modelling stage, not in the drizzle.
+F160W sits on 0.06″ while the optical bands are on 0.05″, and this is **kept** — do
+not re-drizzle F160W to 0.05″ to grid-match. PyAutoLens ingests each band at its
+native scale and pixel-matches at the modelling stage (it even fits sub-pixel
+inter-band `grid_offset`/`grid_rotation_angle`), so a common drizzle grid buys nothing.
+Measured: 0.05″ opens no *empty* pixels on any of the 13 lenses but worsens weight
+non-uniformity (8–19% of pixels below half-median weight; J1430+4105, J1029+0420,
+J0841+3824 worst at ~17–19%) with no resolution gain, and pixfrac does not fix it
+(the under-coverage is set by the 4-point dither geometry, not the drop size).
+
+**F160W uses pixfrac 1.0, not 0.8.** With the noise now carried on calibrated ERR
+weight maps, the drizzle goal is a *uniform, low-correlation* noise map for the
+likelihood, not the sharpest PSF. On J0252+0039 (0.06″, correctly registered),
+pixfrac 1.0 drops the adjacent-pixel noise correlation from 7.3% to 2.4% (texture
+5.4%→3.3%); the PSF is marginally softer but PyAutoLens fits the PSF explicitly. The
+older pixfrac-0.8 tuning (chosen on stacked FWHM) predates ERR weighting and the shift
+to prioritising noise-map covariance for the modelling.
+
+**F606W also uses pixfrac 1.0, for the same reason.** It is 2× oversampled (0.0996″ →
+0.05″) just like F160W, so pixfrac 1.0 likewise lowers the noise-map correlation for the
+likelihood at a small PSF cost that PyAutoLens absorbs. ACS F814W/F555W keep the default
+pixfrac — they are drizzled at native 0.05″ (no oversampling), so the correlation
+penalty is already negligible and there is nothing to buy by lowering it.
 
 **F555W needs no new script** — `drizzle_acs_wfc.py` is filter-agnostic
 (`--filt f555W`). All 16 F555W lenses are already reduced; they are exactly the 16
@@ -333,18 +382,32 @@ fractional pixel-to-pixel RMS of a blank-sky region of the weight-derived noise 
 
 | Band | Native → Output | Oversample | pixfrac | Noise-map texture |
 |---|---|---|---|---|
-| F814W | 0.05″ → 0.05″ | 1.0× | default | 6.2% |
-| F160W | 0.1283″ → 0.06″ | 2.1× | 0.8 | 8.8% |
-| F606W | 0.0996″ → 0.05″ | 2.0× | 0.8 | 18.8% |
+| F814W | 0.05″ → 0.05″ | 1.0× | default | ~6% |
+| F160W | 0.1283″ → 0.06″ | 2.1× | 1.0 | ~3% (was ~5–9% at pixfrac 0.8) |
+| F606W | 0.0996″ → 0.05″ | 2.0× | 1.0 | ~4% (see correction below) |
 
-The texture tracks the oversampling: F814W (native, effectively no oversample) is
-nearly flat, while the 2× oversampled F606W/F160W bands show strong correlated
-structure. `final_wht_type=ERR` makes the **per-pixel variance** correct (it carries
-source Poisson + sky + read + dark), but it says nothing about the **off-diagonal
-covariance** between neighbouring pixels — a per-pixel σ map understates the true
-correlated noise. On J1143 blank sky the empirical pixel RMS was ~**1.47×** what the
-ERR map predicts, i.e. the naive per-pixel map is optimistic by that factor because it
-ignores the correlation.
+The texture tracks the oversampling, but **less than a first look suggested, and
+pixfrac 1.0 suppresses most of it.** Two corrections to the earlier reading of this:
+
+- **The F606W band was never the ~19% outlier the first table recorded.** That figure
+  was dominated by **TweakReg misregistration**, not drizzle oversampling: TweakReg
+  scattered the (mostly single-visit) F606W frames by ~0.7″, so the "texture" was
+  really coverage patchwork from mis-stacked frames (this is the "large patches that
+  ruin the S/N" seen on J0252). Once each lens is drizzled on its correctly-registered
+  WCS (MAST for single-visit, TweakReg only where a multi-visit roll needs it — see
+  the alignment audit), the blank-sky texture drops to ~4% at pixfrac 0.8 and lower at
+  pixfrac 1.0 — comparable to F160W, **not** a 3× outlier. See `[[wfpc2_tweakreg_misregisters]]`.
+- **F606W and F160W now ship at pixfrac 1.0**, chosen specifically to minimise this
+  correlation for the likelihood (F160W adjacent-pixel correlation 7.3%→2.4% going
+  0.8→1.0 on J0252; the PSF is fit explicitly so the marginal softening is free). The
+  older pixfrac-0.8 numbers above are the pre-change state, kept for comparison.
+
+`final_wht_type=ERR` makes the **per-pixel variance** correct (it carries source
+Poisson + sky + read + dark), but it says nothing about the **off-diagonal covariance**
+between neighbouring pixels — a per-pixel σ map understates the true correlated noise.
+On J1143 blank sky (F606W, pixfrac 0.8) the empirical pixel RMS was ~**1.47×** what the
+ERR map predicted; pixfrac 1.0 shrinks this factor but does not remove it — any
+oversampled band still has some residual correlation the diagonal σ map misses.
 
 **Modelling implication.** A per-pixel independent-Gaussian likelihood (diagonal
 covariance) mis-estimates parameter *uncertainties* — it does not bias the best-fit

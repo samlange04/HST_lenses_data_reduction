@@ -109,16 +109,25 @@ def _update_info_json(path, lens, filt_key, value):
 # WFC3/IR native is 0.1283"/px. The WFC3-IR-DITHER-BOX-MIN pattern gives 4 distinct
 # sub-pixel phases on both axes, so the data support a sub-native grid; drizzling at
 # native throws that sampling away. 0.06"/px is just under half-native and is the
-# standard WFC3/IR choice (CANDELS, 3D-HST). Measured on J0728+3835 (4 exposures):
-#   scale   pixfrac   wht std/mean   holes
-#   0.1283  1.0       0.044          0.00%
-#   0.0800  0.8       0.144          0.03%
-#   0.0650  0.8       0.176          0.13%
-#   0.0600  0.8       0.188          0.20%   <- chosen
-#   0.0600  0.7       0.288          2.45%
-# pixfrac 0.7 is clearly worse than 0.8 at either scale.
-# Note this leaves F160W on a 0.06" grid while F606W/F814W are on 0.05".
-IR_OUT_SCALE, IR_OUT_PIXFRAC = 0.06, 0.8
+# standard WFC3/IR choice (CANDELS, 3D-HST). F160W stays on 0.06" while F606W/F814W
+# are on 0.05" -- do NOT re-drizzle to 0.05" to grid-match: PyAutoLens ingests each
+# band at its native scale and pixel-matches at the modelling stage (verified in the
+# pyauto multi-wavelength API, which even fits sub-pixel inter-band grid offsets), and
+# 0.05" only worsens the weight non-uniformity (8-19% under-covered across the 13
+# lenses; J1430/J1029/J0841 worst) with no resolution gain.
+#
+# pixfrac 1.0 (not 0.8): with the noise now on calibrated ERR weight maps, the goal is
+# a *uniform, low-correlation* noise map for the likelihood, not the sharpest PSF.
+# pixfrac 1.0 fills the drizzle grid so adjacent-pixel noise correlation collapses.
+# Measured on J0252+0039 (0.06", correctly registered frames):
+#   pixfrac   noise texture   adjacent-pixel RMS
+#   0.8       5.4%            7.3%
+#   1.0       3.3%            2.4%   <- chosen
+# The PSF is marginally softer at 1.0, but PyAutoLens fits the PSF explicitly, so the
+# uniform low-covariance noise map is the better trade for the strong-lens modelling.
+# (Earlier pixfrac tuning preferred 0.8 on stacked FWHM; that predates ERR weighting
+# and the shift to prioritising noise-map covariance.)
+IR_OUT_SCALE, IR_OUT_PIXFRAC = 0.06, 1.0
 
 _num_cores = 1
 
