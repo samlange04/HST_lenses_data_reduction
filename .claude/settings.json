@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda run *)",
+      "WebFetch(domain:www.stsci.edu)",
+      "WebFetch(domain:hst-docs.stsci.edu)",
+      "WebFetch(domain:drizzlepac.readthedocs.io)",
+      "WebFetch(domain:outerspace.stsci.edu)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c 'if ((.tool_input.file_path // \"\") | endswith(\".claude/settings.json\")) then {hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"Tracked .claude/settings.json is committed to git: only non-personal, repo-required entries belong here. Personal or machine-specific grants go in settings.local.json (gitignored).\"}} else empty end'",
+            "statusMessage": "Checking settings.json guard"
+          }
+        ]
+      }
+    ]
+  }
+}

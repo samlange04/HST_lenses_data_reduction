@@ -24,7 +24,10 @@ scripts/old_notebooks/
 output/
 
 # ── Editor / agent / interpreter state ─────────────────────────────────────────
-.claude/
+# Track shared Claude Code config (.claude/settings.json) but keep personal
+# per-machine overrides (settings.local.json) out of history.
+.claude/*
+!.claude/settings.json
 .idea/
 __pycache__/
 *.py[cod]
