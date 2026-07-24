@@ -30,8 +30,13 @@ separate requirement (parallel `fork` triggers the same U-state).
 This is an HST image reduction pipeline for gravitational lens samples (SLACS and BELLS). For each lens+filter combination it:
 1. Downloads calibrated exposures from MAST
 2. Downloads CRDS reference files
-3. Runs `updatewcs` → `TweakReg` (alignment) → `AstroDrizzle` (combination)
-4. Produces a no-CR-rejection drizzled mosaic, and a CR-rejected one too for WFPC2 or when `--cr` is given
+3. Aligns and combines with `AstroDrizzle`. By default all bands trust the delivered
+   MAST WCS (`--align mast`): ACS/WFC3 skip `updatewcs` and TweakReg entirely; WFPC2 runs
+   `updatewcs` (for the distortion arrays) but **not** TweakReg. TweakReg is opt-in
+   (`--align tweakreg`) and, per the alignment audit, not used by any lens — see the WCS
+   alignment section for why re-solving smears the stack.
+4. Produces a no-CR-rejection drizzled mosaic, and a CR-rejected one (LACosmic) too for
+   WFPC2 or when `--cr` is given
 5. Updates three JSON tracking files in `info/`
 
 ## Running a Single Lens
@@ -118,8 +123,9 @@ Two consequences for `drizzle_wfpc2_wf3.py`:
 - **Output scale.** WF3 is 0.0996″/px. The `WFPC2-BOX` 4-point pattern (spacing
   0.559″) dithers by half a pixel in both axes — note `POSTARG1/2` are all zero,
   the offsets live in the WCS — which supports a ~2× finer grid. Output is
-  0.05″/px, `pixfrac=0.8`, matching the ACS mosaics so the optical bands land on
-  a common grid. `dither_phase_counts()` measures the phase coverage from the
+  0.05″/px (matching the ACS mosaics' scale) at `pixfrac=1.0` (raised from 0.8 to lower
+  noise-map correlation; see the drizzle-correlated-noise and pixel-scale sections).
+  `dither_phase_counts()` measures the phase coverage from the
   exposure WCSs at runtime and the script **exits without writing anything** if
   either axis has fewer than 2 distinct phases — a native-scale mosaic is not
   wanted. There is no hardcoded exclusion list: which exposures a lens has depends
@@ -143,9 +149,12 @@ Three traps in the WFPC2 F606W archive, all of which silently cost exposures:
   exposures are genuinely WFC-labelled 1100s science frames; on J0728+3835,
   J0822+2652 and J1142+1001 the WFC frames are 0.5s check shots, dropped by
   `MIN_EXPTIME`.
-- **Combining visits needs a wider search radius.** Two visits means two guide-star
-  solutions and a roll difference (J0822+2652: PA_V3 101.85 vs 87.92), needing
-  `searchrad=3`, not 1.
+- **Multi-visit lenses are now split, not TweakReg-combined.** Two visits means two
+  guide-star solutions and a roll difference (J0822+2652: PA_V3 101.85 vs 87.92). The old
+  approach cross-registered them with TweakReg (`searchrad=3`); the current pipeline
+  instead drizzles each visit as a separate MAST dataset (`--pa`/`--out-suffix`) — see the
+  split-visit note in the WCS alignment section. (The wider `searchrad=3` still applies if
+  you ever force `--align tweakreg` on a combined multi-visit run.)
 
 AstroDrizzle output suffix is determined by input file type, not the output name. Use `_drc_` for FLC (ACS), `_drw_` for WFPC2 FLT, `_drz_` for everything else.
 
@@ -394,9 +403,10 @@ pixfrac 1.0 suppresses most of it.** Two corrections to the earlier reading of t
   scattered the (mostly single-visit) F606W frames by ~0.7″, so the "texture" was
   really coverage patchwork from mis-stacked frames (this is the "large patches that
   ruin the S/N" seen on J0252). Once each lens is drizzled on its correctly-registered
-  WCS (MAST for single-visit, TweakReg only where a multi-visit roll needs it — see
-  the alignment audit), the blank-sky texture drops to ~4% at pixfrac 0.8 and lower at
-  pixfrac 1.0 — comparable to F160W, **not** a 3× outlier. See `[[wfpc2_tweakreg_misregisters]]`.
+  WCS (MAST for all 22 lenses per the alignment audit; the two multi-visit lenses are
+  split per visit rather than TweakReg-bridged), the blank-sky texture drops to ~4% at
+  pixfrac 0.8 and lower at pixfrac 1.0 — comparable to F160W, **not** a 3× outlier.
+  See `[[wfpc2_tweakreg_misregisters]]`.
 - **F606W and F160W now ship at pixfrac 1.0**, chosen specifically to minimise this
   correlation for the likelihood (F160W adjacent-pixel correlation 7.3%→2.4% going
   0.8→1.0 on J0252; the PSF is fit explicitly so the marginal softening is free). The
@@ -426,18 +436,23 @@ conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
 ```
 
 Cuts a square stamp (default 10″) from `data/drizzled/` into `data/cutouts/`,
-writing `cutout_sci.fits`, `cutout_noise.fits` (from the weight map) and a
-3-panel PNG.
+writing a sci FITS, a noise FITS (from the weight map) and a 3-panel PNG.
 
-The stamp is recentred on the galaxy rather than the catalogue position, and the
-peak search runs on the **CR-rejected** mosaic when one exists, even though the
-science stamp is cut from the no-CR pass. The no-CR mosaics contain cosmic rays
-by construction and a brightest-pixel search locks onto them. Suppressing CRs
-purely by widening the median window needs ~21 pix ≈ 1″ at 0.05″/px, wide enough
-to bias the peak of a compact galaxy, so centring uses data with no CRs instead.
-The CR pass loses core flux and is unfit for science, but its core is still the
-local maximum, which is all centring needs. Do not diagnose a bad recentre by
-reaching for `--median-size` first — check that a `*_cr_*` mosaic is present.
+**Which pass, and the output prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks
+the CR pass when one exists, else no-CR. The prefix encodes it so the two never clobber
+and can coexist: **`cutout_cr_*` for the CR pass, `cutout_*` for no-CR.** Consequence by
+instrument: **WFPC2 F606W always has a CR pass (LACosmic), so `auto` cuts it → the
+science stamp is `cutout_cr_*`.** This is fine — LACosmic preserves the core (unlike the
+old `driz_cr` route; see `[[acs_cr_pass_eats_core]]`), so its CR pass *is* science-grade.
+ACS/WFC3 by default run no CR pass, so `auto` → `cutout_*`. (F160W has no CR pass either
+— its FLTs are already ramp-CR-rejected.)
+
+The stamp is recentred on the galaxy rather than the catalogue position, and the peak
+search prefers the **CR-rejected** mosaic when one exists — a brightest-pixel search on a
+CR-laden no-CR mosaic locks onto cosmic rays. Suppressing CRs purely by widening the
+median window needs ~21 pix ≈ 1″ at 0.05″/px, wide enough to bias the peak of a compact
+galaxy, so centring uses CR-free data instead. Do not diagnose a bad recentre by reaching
+for `--median-size` first — check that a `*_cr_*` mosaic is present.
 
 Offsets around 1–2″ are not necessarily failures: several lenses (J0912+0029,
 J0956+5100) have genuine multi-knot morphology, so the brightest pixel is a knot
@@ -531,7 +546,11 @@ Some lenses are **not** on MAST under an `SDSS<LENS>` name — they use a `GAL-<
 ## AstroDrizzle Key Parameters
 
 Two drizzle passes are defined, over the same input files:
-- **CR pass** (`median=True, blot=True, driz_cr=True`): cosmic-ray cleaned science image
+- **CR pass**: cosmic-ray-cleaned science image. Default method is **LACosmic** — mask CRs
+  per frame, then a plain-mean drizzle (`median=False, blot=False, driz_cr=False`,
+  `resetbits=0`). `--cr-method drizcr` restores the old AstroDrizzle route
+  (`median=True, blot=True, driz_cr=True`), which eats the core — see the CR-rejection
+  section.
 - **No-CR pass** (`median=False, blot=False, driz_cr=False`): uncleaned, useful for comparison
 
 Only WFPC2 runs both unconditionally. ACS, WFC3/IR and NICMOS run the no-CR pass
