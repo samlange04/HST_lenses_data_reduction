@@ -31,7 +31,7 @@ from astropy.io import fits
 from astropy.nddata import Cutout2D
 from astropy.nddata.utils import NoOverlapError
 from astropy.wcs import WCS
-from astropy.visualization import simple_norm
+from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 from astropy.wcs.utils import proj_plane_pixel_scales
 from scipy.ndimage import median_filter
 import astropy.units as u
@@ -41,14 +41,86 @@ sys.path.insert(0, os.path.join(ws_path, 'info'))
 from slacs_coords import slacs_coords
 
 
-def noise_map_via_weight_map_from(weight_map):
+# Detectors whose calibrated ERR array is already in ELECTRONS/S rather than counts.
+# This single fact decides whether 1/sqrt(WHT) is a calibrated sigma map or is wrong
+# by a factor of the per-frame exposure time -- see weight_to_sigma_scale().
+_ERR_IN_RATE_UNITS = {('WFC3', 'IR')}
+
+
+def weight_to_sigma_scale(sci_hdr):
+    """
+    Return (K, note) such that the calibrated per-pixel sigma is K / sqrt(WHT).
+
+    `1/sqrt(WHT)` is only a sigma map when WHT is a true inverse-variance map, and
+    with `final_wht_type=ERR` that depends on the *units of the input ERR array*.
+    DrizzlePac computes the per-frame weight as
+
+        weight = (EXPTIME / ERR)**2                  # imageObject.buildERRmask
+
+    For ACS FLC (SCI and ERR both in ELECTRONS) `EXPTIME/ERR` is exactly
+    `1/sigma_rate`, so WHT is a genuine inverse variance of the ELECTRONS/S output
+    and K = 1. For WFC3/IR FLT, SCI and ERR are **already ELECTRONS/S**, so the same
+    expression evaluates to `EXPTIME/sigma_rate`: every weight is inflated by
+    EXPTIME**2 and 1/sqrt(WHT) comes out a factor EXPTIME too small. K = per-frame
+    EXPTIME undoes exactly that.
+
+    Verified on J0841+3824 with a blank-sky block-sum test (scatter of integrated
+    flux in NxN blank blocks against what the noise map predicts, which converges to
+    the truth once the block exceeds the drizzle correlation length):
+
+        F814W (ACS, K=1)          ratio 1.04 at 0.24", 1.24 at 1.44"  -> correct
+        F160W (WFC3/IR, uncorr.)  ratio 477 at 0.24",  725 at 1.44"   -> ~700x low
+
+    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the only thing left is
+    the same drizzle correlated-noise factor ACS shows independently (1.24). The
+    `D001WTSC = 1/scale**4` term does *not* enter: it cancels against the finer
+    output grid, which is why ACS (native scale, WTSC 1.0) and WFC3/IR (WTSC 20.9)
+    share one formula.
+
+    WFPC2 F606W also takes K = 1, and that is now correct rather than a placeholder.
+    It reaches the same place by a different route: DrizzlePac's IVM branch leaves the
+    supplied IVM unscaled but sets `wt_scl = exptime**2/scale**4` (against the ERR
+    branch's `1/scale**4`), so the exptime**2 the ERR mask carries internally is
+    supplied by wt_scl instead and the two paths agree. With the IVM built as
+    1/(SCI/gain + floor**2) in DN**-2, 1/sqrt(WHT) is a sigma in DN/s, matching the
+    DN/s output. Measured on J0330-0020: block ratio 0.90 / 1.07 / 1.09.
+
+    Products predating that fix are NOT calibrated and cannot be rescued by any K --
+    the error is in the noise model, not the units. The caller warns on IVMMODEL.
+    """
+    inst = (sci_hdr.get('INSTRUME', '').strip(), sci_hdr.get('DETECTOR', '').strip())
+    if inst not in _ERR_IN_RATE_UNITS:
+        return 1.0, f'{"/".join(inst)}: ERR in counts, 1/sqrt(WHT) already calibrated'
+
+    # Per-frame exposure times, not EXPTIME/NDRIZIM: the correction is only a single
+    # constant when the frames are equal, so read them and refuse to guess if not.
+    dexp = sorted({round(v, 3) for k, v in sci_hdr.items()
+                   if k.startswith('D') and k.endswith('DEXP')})
+    if not dexp:
+        raise KeyError('no D00nDEXP keywords in the drizzle header; cannot determine '
+                       'the per-frame exposure time needed to calibrate the noise map')
+    if len(dexp) > 1:
+        raise ValueError(
+            f'unequal per-frame exposure times {dexp} for {"/".join(inst)}. The ERR '
+            'units correction is a single constant only for equal-length frames; a '
+            'mixed-exposure stack needs a per-pixel treatment that is not implemented.')
+
+    return dexp[0], (f'{"/".join(inst)}: ERR in ELECTRONS/S, scaling by per-frame '
+                     f'EXPTIME={dexp[0]:.3f}s')
+
+
+def noise_map_via_weight_map_from(weight_map, scale=1.0):
     """
     Setup the noise-map from a weight map, which is a form of noise-map that comes via HST
     image-reduction and the software package MultiDrizzle.
 
-    The variance in each pixel is computed as:
+    The noise in each pixel is computed as:
 
-    Variance = 1.0 / sqrt(weight_map).
+    sigma = scale / sqrt(weight_map).
+
+    `scale` is the calibration constant from weight_to_sigma_scale() (times any
+    correlated-noise inflation); it is 1.0 for detectors whose ERR array is in counts,
+    which is the classic MultiDrizzle recipe.
 
     The weight map may contain zeros, in which case the variances are converted to large
     values to omit them from the analysis.
@@ -57,9 +129,11 @@ def noise_map_via_weight_map_from(weight_map):
     ----------
     weight_map
         The weight-value of each pixel which is converted to a variance.
+    scale
+        Multiplicative constant converting 1/sqrt(weight) into a calibrated sigma.
     """
     np.seterr(divide="ignore")
-    noise_map = 1.0 / weight_map ** 0.5
+    noise_map = scale / weight_map ** 0.5
     noise_map[noise_map > 1.0e8] = 1.0e8
     return noise_map
 
@@ -171,23 +245,29 @@ def plot_cutouts(sci_data, noise_data, output_path, title):
     Panels use origin='upper' so the orientation matches PyAutoLens, which plots row 0
     at the top - with origin='lower' the same cutout comes out mirrored in y relative to
     the autolens plots and it is easy to misidentify which neighbour is which.
-    The signal panel is log-stretched for the same reason: it makes the faint envelope
-    and any arcs visible rather than a single saturated core.
+
+    Colour/stretch (inferno + asinh, astropy.visualization) matches scripts/make_mosaics.py:
+    asinh is well-defined through zero and for negative values, so it displays the
+    negative background-noise pixels directly instead of needing them masked to NaN
+    (as a log stretch would), while still showing faint outskirts and bright cores
+    together.
     """
     noise_display = np.where(noise_data >= 1.0e8, np.nan, noise_data)
     with np.errstate(divide='ignore', invalid='ignore'):
         snr = sci_data / noise_data
 
     panels = [
-        ('signal',        sci_data,      'log'),
-        ('noise',         noise_display, 'linear'),
-        ('signal / noise', snr,          'linear'),
+        ('signal',        sci_data),
+        ('noise',         noise_display),
+        ('signal / noise', snr),
     ]
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 5.5))
-    for ax, (label, data, stretch) in zip(axes, panels):
-        norm = simple_norm(data[np.isfinite(data)], stretch, percent=99.0)
-        im = ax.imshow(data, norm=norm, origin='upper', cmap='viridis')
+    for ax, (label, data) in zip(axes, panels):
+        finite = data[np.isfinite(data)]
+        vmin, vmax = PercentileInterval(99.0).get_limits(finite)
+        norm = ImageNormalize(vmin=vmin, vmax=vmax, stretch=AsinhStretch(0.1))
+        im = ax.imshow(data, norm=norm, origin='upper', cmap='inferno')
         ax.set_title(label)
         ax.set_xlabel('pixels')
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
@@ -205,8 +285,8 @@ def main():
     p.add_argument('--lens',   default='J0008-0004')
     p.add_argument('--filt',   default='f814W')
     p.add_argument('--sample', default='slacs')
-    p.add_argument('--size',   type=float, default=10.0,
-                   help='cutout size in arcsec (square), default 10.0')
+    p.add_argument('--size',   type=float, default=20.0,
+                   help='cutout size in arcsec (square), default 20.0')
     p.add_argument('--box',    type=int, default=100,
                    help='central box size in pixels searched for the brightest pixel')
     p.add_argument('--median-size', type=int, default=5,
@@ -232,6 +312,15 @@ def main():
     p.add_argument('--center-self', action='store_true', default=False,
                    help='recentre each band on its own brightest pixel (old behaviour), '
                         'not on the shared --center-band centre')
+    p.add_argument('--corr-factor', type=float, default=1.0,
+                   help='multiply the noise map by this factor to absorb drizzle '
+                        'correlated noise (default 1.0 = off, leaving a pure per-pixel '
+                        'sigma). Drizzling correlates neighbouring output pixels, so a '
+                        'diagonal-covariance likelihood such as PyAutoLens understates '
+                        'integrated-flux uncertainties by ~1.24 (ACS F814W) and ~1.17 '
+                        '(WFC3/IR F160W), measured by a blank-sky block-sum test. Set '
+                        'this per band to correct that; leave at 1.0 if the covariance '
+                        'is handled at the modelling stage instead.')
     p.add_argument('--output', default=None,
                    help='output dir, default data/cutouts/<sample>/<lens>/<filt>')
     a = p.parse_args()
@@ -314,11 +403,36 @@ def main():
     sci_cutout = make_cutout(sci_data, wcs, peak_coord, a.size)
     wht_cutout = make_cutout(wht_data, WCS(wht_hdr), peak_coord, a.size)
 
-    noise_data = noise_map_via_weight_map_from(wht_cutout.data.astype(np.float64))
+    # Calibrate 1/sqrt(WHT) into a real sigma map. This is a units correction, not a
+    # tuning knob: see weight_to_sigma_scale().
+    units_k, note = weight_to_sigma_scale(sci_hdr)
+    print(f"  noise scale: {note}")
+    # WFPC2 weight maps come in three generations and are not separable by inspection,
+    # so key the warning on the IVMMODEL stamp written by drizzle_wfpc2_wf3.py.
+    # Absent = pre-fix product: either exptime-only weighting (block-sum 5e-4) or an
+    # IVM built from the file's ERR array, which is exactly sqrt(SCI) and so overstates
+    # the noise ~2.1x (block-sum 0.46). Both need a re-drizzle, not a scale factor.
+    if sci_hdr.get('INSTRUME', '').strip() == 'WFPC2':
+        model = str(sci_hdr.get('IVMMODEL', '')).strip()
+        if model == 'SCI/gain+floor^2':
+            print(f"  WFPC2 noise model: {model} (calibrated; block-sum 0.90-1.09)")
+        else:
+            print("  WARNING: this WFPC2 product predates the noise-model fix "
+                  f"(IVMMODEL={model or 'absent'}). Its noise map is NOT calibrated -- "
+                  "block-sum 0.46 (old IVM) or 5e-4 (exptime-only) where 1.0 is "
+                  "correct. Re-drizzle before using it for a likelihood.")
+    if a.corr_factor != 1.0:
+        print(f"  correlated-noise inflation: x{a.corr_factor:g}")
+    noise_data = noise_map_via_weight_map_from(wht_cutout.data.astype(np.float64),
+                                               scale=units_k * a.corr_factor)
+
+    noise_hdr = wht_hdr.copy()
+    noise_hdr['NOISEK'] = (units_k, 'ERR-units scale applied to 1/sqrt(WHT)')
+    noise_hdr['NOISECOR'] = (a.corr_factor, 'drizzle correlated-noise inflation applied')
 
     write_cutout(sci_cutout.data, sci_cutout.wcs, sci_hdr,
                  os.path.join(output_dir, f'{prefix}_sci.fits'))
-    write_cutout(noise_data, wht_cutout.wcs, wht_hdr,
+    write_cutout(noise_data, wht_cutout.wcs, noise_hdr,
                  os.path.join(output_dir, f'{prefix}_noise.fits'))
 
     plot_cutouts(sci_cutout.data, noise_data,

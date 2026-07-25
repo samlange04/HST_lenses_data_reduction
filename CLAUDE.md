@@ -243,8 +243,9 @@ Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py
 
 ## Weight maps: `final_wht_type=ERR` (default), not `EXP`
 
-All four drizzle scripts take `--wht-type {ERR,IVM,EXP}`, default **`ERR`**, and write
-the chosen type into every AstroDrizzle pass and forward it to the no-CR subprocess.
+All four drizzle scripts take `--wht-type {ERR,IVM,EXP}` and write the chosen type
+into every AstroDrizzle pass and forward it to the no-CR subprocess. Default is
+**`ERR`** for ACS/WFC3/NICMOS, but **`IVM`** for WFPC2 — see the override below.
 `cutout_noise.fits` is `1/sqrt(WHT)`, so the weight type *is* the noise model:
 
 - **`ERR`** — full inverse-variance: source Poisson + sky + read + dark. The correct
@@ -253,11 +254,202 @@ the chosen type into every AstroDrizzle pass and forward it to the no-CR subproc
 - **`EXP`** — effective-exposure-time map, **uncalibrated** (no source shot noise): the
   core/sky ratio comes out a flat ~1.04, i.e. it claims the bright core is as noisy as
   blank sky. Do not use for a likelihood.
-- **`IVM`** — background noise only, no object Poisson.
+- **`IVM`** — inverse-variance map. DrizzlePac's own auto-generated IVM (used when no
+  file is supplied) is background noise only, no object Poisson — but see the WFPC2
+  override below, which supplies a real per-pixel IVM instead.
 
 (DrizzlePac Handbook pp.103,139.) The blank-sky floor is **included** in ERR, not
 something to add back. See "Drizzle correlated noise" for the covariance caveat that
 ERR does *not* capture.
+
+**WFPC2 override: `drizzle_wfpc2_wf3.py` defaults to `IVM`, not `ERR`.**
+`drizzlepac.wfpc2Data.WFPC2InputImage` hardcodes `self.errExt = None` unconditionally
+(standard WFPC2 pipeline products never carry an ERR extension), so
+`imageObject.buildERRmask()` always takes the "WFPC2 not supported" branch and
+silently falls back to **exposure-time-only weighting** — confirmed firing in every
+WFPC2 `astrodrizzle.log` ("No ERR weighting will be applied ... WFPC2 data is not
+supported by this weighting type"). `--wht-type ERR` on this script is therefore a
+trap, not a calibrated noise model: measured core/sky noise ratio was exactly
+**1.000** (flat) on J0330-0020 and J1213+6708, vs ~3.5 for ACS F814W on the same
+lenses.
+
+Fix: `build_ivm_files()` in `drizzle_wfpc2_wf3.py` builds a per-frame IVM file and
+feeds it to AstroDrizzle via a two-column `@`-association file (irafglob's
+`atfile_ivm` convention), which DrizzlePac *does* honor for WFPC2.
+
+### The WFPC2 ERR array is not an error array: `ERR == sqrt(SCI)` (2026-07-25)
+
+**Do not build the IVM from the file's ERR extension** — an earlier version of
+`build_ivm_files()` did (`IVM = 1/ERR^2`) on the belief that it was "the genuine
+Poisson-correct MAST `ERR,3` array". It is not. Verified as an *identity*, not a fit:
+`ERR / sqrt(SCI)` = 1.000000 for **100.00%** of good pixels in every frame. That is
+Poisson statistics applied to **data numbers as though they were electrons** — the
+gain conversion is missing entirely and there is no read-noise term at all.
+
+With SCI in DN (`BUNIT = COUNTS`) and `ATODGAIN = 7.0 e/DN`, it overstates the true
+noise by **2.11×** at sky level. Three independent references agree on what the truth
+is, on J0330-0020 (sky 17.5 DN):
+
+| | value |
+|---|---|
+| delivered ERR | 4.184 DN |
+| measured, unclipped MAD of blank sky | 1.998 DN |
+| measured, adjacent-pixel differences / √2 | 1.981 DN |
+| physics, `sqrt(N/g + (RN/g)²)`, RN 5.2 e | 1.747 DN |
+
+The two measurements are model-free and agree to 1%; the physics line is only a
+sanity check on them. Anchor any such fix on the **measurement**.
+
+**The model now used is `var_DN = SCI/gain + floor²`**, with the Poisson slope from
+the header gain and the additive floor measured **per frame** from its own blank sky
+(`measure_noise_floor()`). The floor comes out ~8–9 e, above the nominal 5.2 e read
+noise, the excess being dark current plus scattered-light structure. Results on
+J0330-0020, blank-sky block-sum test (1.0 = calibrated):
+
+| product | 0.24″ | 0.48″ | 0.96″ |
+|---|---|---|---|
+| before (`IVM = 1/ERR²`) | 0.43 | 0.51 | 0.53 |
+| **after, CR pass** | **0.90** | **1.07** | **1.09** |
+| after, no-CR pass | 0.95 | 1.21 | 1.18 |
+
+Peak SNR 20.5 → **53.7**; sky σ fell 2.13× against the 2.11 predicted. The residual
+~1.1–1.2 is the same drizzle correlated noise ACS (1.24) and F160W (1.17) show — note
+the 0.96″ row rests on only ~60 blocks, so treat it as 1.1 ± 0.1, not a precise
+constant. **`K = 1` is correct for WFPC2** and is no longer a placeholder: DrizzlePac's
+IVM branch leaves the supplied IVM unscaled but sets `wt_scl = exptime²/scale⁴` (vs
+the ERR branch's `1/scale⁴`), so the `exptime²` the ERR mask carries internally is
+supplied by `wt_scl` instead and both paths land on a σ in DN/s.
+
+**Two traps this exposed, both worth generalising:**
+
+- **Never select blank sky by pixel *value*.** Clipping at ±2 MAD and then measuring
+  the MAD of the survivors biases the width low by ~4%; that is how the error was
+  first overstated as 2.28× when it is 2.11×. Select by *position* (a blank box), or
+  use a differencing estimator, which needs no selection at all.
+- **A model that fits at sky level can still be wrong at the core.** On one lens's
+  four frames (sky spanning only 1.2×) the additive-floor, multiplicative, and
+  wrong-effective-gain models fit equally well yet diverge ~20% at core brightness.
+  Resolved by widening the lever: across **all 92 WF3 frames** the sky spans 7.6–47 DN
+  (6×), and there the multiplicative model dies outright — `sqrt(floor)/N` runs 0.116
+  to 0.031 where it would have to be constant. A global fit gives
+  `var = 0.176·N + 0.536 DN²`, whose intercept is **5.1 e against a nominal read noise
+  of 5.2 e**.
+
+  **Do not read that 0.176 as the within-frame slope.** It is a trend *across* fields
+  with different scattered light; using it as a signal dependence inside one frame is a
+  category error. `var = SCI/gain + floor²` is algebraically
+  `(N − N_sky)/gain + var_sky_measured` — physics slope for photons above sky, anchored
+  on measurement at sky. The per-frame floor spread (6.2–10.5 e, median 8.5) is why the
+  floor is measured per frame and not assumed.
+
+**Verified across the whole sample, not just J0330-0020:** `ERR == sqrt(SCI)` to 0.1%
+on **100% of pixels in all 92 frames of all 22 lenses**, `ATODGAIN = 7.0` and
+`BUNIT = COUNTS` uniformly. That includes J1218+0830, whose frames come via
+`wfpc2_to_flt` from C0M/C1M rather than a MAST FLT — both provenances build the same
+bogus ERR. The floor measurement never hit its nominal-read-noise fallback on any
+frame, and the floor carries 24–44% of the sky variance (so it is not negligible).
+
+Products carry `IVMMODEL = 'SCI/gain+floor^2'` in the primary header. Three
+generations of WFPC2 weight map exist and are indistinguishable by inspection, so
+`make_cutouts.py` keys its warning on that keyword; absent means pre-fix. A pre-fix
+product **cannot be rescued by a scale factor** — the error is in the noise model,
+not the units — it needs a re-drizzle.
+
+### `1/sqrt(WHT)` is only a sigma map if the input ERR is in counts (2026-07-25)
+
+`make_cutouts.py` turns the weight map into `cutout_noise.fits`. The classic recipe
+`sigma = 1/sqrt(WHT)` assumes WHT is a true inverse-variance map, and **whether it is
+depends on the units of the calibrated ERR array**, because DrizzlePac computes
+
+    weight = (EXPTIME / ERR)**2          # imageObject.buildERRmask, line ~815
+
+- **ACS FLC** carries SCI *and* ERR in **ELECTRONS**, so `EXPTIME/ERR` is exactly
+  `1/sigma_rate` and 1/sqrt(WHT) is a calibrated sigma for the ELECTRONS/S output.
+- **WFC3/IR FLT** carries SCI and ERR in **ELECTRONS/S already**, so the same
+  expression is `EXPTIME/sigma_rate`: every weight inflated by EXPTIME², and the
+  noise map came out a factor **EXPTIME (599.2 s)** too small — SNR ~60,000.
+
+`weight_to_sigma_scale()` in `make_cutouts.py` applies `K = per-frame EXPTIME` for
+detectors in `_ERR_IN_RATE_UNITS` (currently `{('WFC3','IR')}`) and `K = 1` otherwise,
+and **refuses to guess** if the `D00nDEXP` per-frame exposure times are unequal — the
+correction is a single constant only for equal-length frames. All 13 SLACS F160W
+lenses are 4 × 599.232 s. `D001WTSC = 1/scale⁴` does **not** enter: it cancels against
+the finer output grid, which is why ACS (WTSC 1.0) and WFC3/IR (WTSC 20.9) share one
+formula.
+
+**The diagnostic is the blank-sky block-sum test**, not a per-pixel comparison: sum
+the background in N×N blocks, compare its scatter to `sqrt(sum(sigma²))` over the same
+block, and increase N past the drizzle correlation length. A per-pixel MAD comparison
+is *not* usable — drizzle correlation drives it to 0.73 (ACS) / 0.36 (F160W) even when
+the map is correct. Measured on J0841+3824:
+
+| band | 0.24″ | 0.96″ | 1.44″ | 1.92″ |
+|---|---|---|---|---|
+| F814W (ACS, K=1) | 1.04 | 1.24 | 1.24 | 1.28 |
+| F160W **before** | 477 | 655 | 725 | 704 |
+| F160W **after** (K=599.2) | 0.80 | 1.09 | 1.21 | 1.18 |
+
+Peak SNR went 60,000 → 219, against 225 for F814W on the same lens.
+
+**The residual ~1.2 is real and shared by every band** — it is the drizzle correlated
+noise (see the correlated-noise section), i.e. a diagonal-covariance likelihood such
+as PyAutoLens understates integrated-flux uncertainties by that much. It differs per
+band (1.24 ACS, 1.17 F160W, ~1.1 F606W), so ignoring it also mis-weights bands
+*relative to each other* in a joint fit. `make_cutouts.py --corr-factor` applies it;
+**default 1.0 (off)**, leaving a pure per-pixel sigma. Both constants are stamped into
+the noise FITS header as `NOISEK` and `NOISECOR`.
+
+**WFPC2 F606W is now calibrated too**, by a different fix — its ERR array was never a
+real error array. See the `ERR == sqrt(SCI)` section above. `K = 1` for WFPC2 is
+correct, not a placeholder.
+
+**Not regenerated**: only **J0841+3824** F160W and **J0330-0020** F606W have
+calibrated noise maps. The other 12 WFC3/IR lenses, the other 21 F606W lenses and the
+`data/mosaics/` QC grids do not.
+
+### What the calibrated ERR array actually contains (2026-07-25)
+
+Measured on J0841+3824, not taken from the handbooks, by fitting `ERR² = a·SCI + b` in
+bins of SCI over the DQ==0 pixels of a single exposure:
+
+| | slope `a` | floor `√b` (read+dark) | sky level | sky Poisson σ |
+|---|---|---|---|---|
+| ACS/WFC F814W (FLC) | 0.92 | 5.86 e | 59.8 e | 7.73 e |
+| WFC3/IR F160W (FLT) | 1.35 | 19.6 e | 466 e | 21.6 e |
+
+**Sky shot noise is included, and dominates the background σ** — it exceeds the
+read/dark floor in both bands. ERR is built from total counts *before* sky subtraction;
+AstroDrizzle later subtracts `MDRIZSKY` (59.71 e on the ACS frame) from SCI and leaves
+ERR alone, which is right — subtracting a constant removes the mean, not the variance.
+This is also why the block-sum test lands at ~1.2 and not ~1.6: had the sky term been
+dropped, the noise map would be short by that much. Do not "add the sky back".
+
+The ACS slope of 0.92 rather than 1.0 is the flat-field division correlating with the
+SCI binning, not a missing term. The IR slope of 1.35 is the up-the-ramp fit's own
+read-noise penalty; it falls to 1.17 at the bright end as Poisson takes over.
+
+**Flat-field error is NOT worth adding.** The flat reference files do carry ERR
+extensions — fractional error **0.269%** (`qb12257pj_pfl`, ACS F814W) and **0.129%**
+(`4ac1921li_pfl`, WFC3/IR F160W) — and it is not resolvable from the data whether
+CALACS/CALWF3 propagate them. It does not matter, because at the deflector core:
+
+| | core counts/exposure | Poisson σ | flat stat σ | σ inflation if added |
+|---|---|---|---|---|
+| F814W | 10,446 e | 102.2 e (0.98%) | 28.1 e | +3.7% |
+| F160W | 27,077 e | 164.6 e (0.61%) | 34.9 e | +2.2% |
+
+and it reaches parity with Poisson only at ~138,000 e (ACS) / ~601,000 e (IR) per
+exposure, 13× and 22× the core. Two reasons not to add it: it is several times smaller
+than the drizzle correlated-noise factor (~1.24) already unaccounted for, and — more
+fundamentally — flat error is a **fixed detector pattern, not a random per-pixel draw**.
+Four dither positions only partially decorrelate it, so what survives is structured
+residual that a diagonal σ map cannot represent; putting it in σ files a systematic into
+a statistical slot and misstates the correlation structure to the likelihood.
+
+**At the core the dominant unmodelled term is PSF error, not the flat.** Poisson σ is
+0.98% of the signal at the F814W core, so a 1% PSF mismatch already equals the entire
+photon-noise budget. If a lens fit shows χ² concentrated on the deflector centre, look
+there — not at the noise map.
 
 ## Common output WCS across filters (orientation + centre)
 
@@ -435,7 +627,7 @@ explicit about the correlation whenever F606W/F160W drive the constraint.
 conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W --sample slacs
 ```
 
-Cuts a square stamp (default 10″) from `data/drizzled/` into `data/cutouts/`,
+Cuts a square stamp (default 20″) from `data/drizzled/` into `data/cutouts/`,
 writing a sci FITS, a noise FITS (from the weight map) and a 3-panel PNG.
 
 **Which pass, and the output prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks
@@ -567,5 +759,193 @@ looks wrong.
 DQ bits treated as good pixels:
 - WFPC2: `8,1024` (full-well saturated, cosmic ray corrected)
 - ACS/WFC: `256,64,16` (full-well saturated, warm pixels, stable hot pixels)
-- WFC3/IR: `64,512` (warm pixels, blobs)
+- WFC3/IR: `512` only (IR flat-field "blobs") — see the quadrupled-defects note below.
+  Write it as `'512'`, **never** `''`
 - NICMOS: `2,4,8` (uncertain linearity/dark/flat corrections — acceptable calibration imperfections; all defects, saturation, CRs excluded. Per NICMOS Data Handbook Table 2.3)
+
+### WFC3/IR quadrupled defects, and the `bits=''` trap (2026-07-25)
+
+The user reported F160W noise maps where "each spot turned into 4". Two rounds of
+diagnosis; the first was wrong, and its "fix" made things worse. Both are recorded
+because the failure mode is the transferable lesson.
+
+**`final_bits=''` / `driz_sep_bits=''` disables DQ masking entirely.**
+`astropy.nddata.bitmask.interpret_bit_flags('')` returns `None`, and AstroDrizzle then
+logs `bits : None` and keeps *every* flagged pixel as good — the exact opposite of the
+intent. Measured: of 32,210 DQ-flagged pixels per frame only 3,328 ended up masked, and
+those came from the static mask, not DQ. It also silently voids any CR flag written into
+DQ 4096 — 97.7% of a LACosmic run's flags were discarded this way, which is why an
+earlier "LACosmic doesn't help / `driz_cr` doesn't help" conclusion was meaningless.
+**`0` is the spelling that means "reject everything flagged"; `''` and `None` mean
+"reject nothing".** `drizzle_wfc3_ir.py` now asserts this at import.
+
+**Why the defects quadruple.** The no-CR pass (the only pass F160W uses) runs
+`median=False, blot=False, driz_cr=False` — no cross-frame rejection at all. A
+detector-fixed defect kept as "good" is drizzled as-is at each dither position, and the
+standard WFC3-IR-DITHER-BOX has 4, so one detector pixel becomes 4 sky replicas.
+Confirmed on J0841+3824: 39 single-frame defects in the 20″ stamp mapped back to only
+**15 distinct detector pixels**, each appearing 3–5 times, and 38 of 39 carried
+**DQ = 48** (16 hot + 32 unstable).
+
+**The right bit list is `'512'`,** measured rather than assumed:
+
+| DQ class | n/frame | median \|residual\| | 90th pct | how it behaves |
+|---|---|---|---|---|
+| DQ==0 (clean) | 996k | 0.67 MAD | 1.7 | reference |
+| 16 hot | 7,140 | 1.93 MAD | 16.1 | **bright — must mask** |
+| 32 unstable | 14,434 | 2.26 MAD | 62.4 | **bright — must mask** |
+| 512 blob | 12,480 | 0.70 MAD | 1.8 | indistinguishable from clean |
+| 64 warm | **0** | — | — | never set in these FLTs |
+
+So 512 is kept as good (free — masking it would raise zero-coverage sky pixels from
+0.19% to 0.77%), 64 is dropped from the string because it never fires, and everything
+else is rejected. Result on J0841+3824, fresh whole-field census outside r>3″:
+single-frame defects **28% → 5%** of detected peaks (42% → 9% among the brighter half),
+with all 67 real sources retained.
+
+**Do not add CR rejection to F160W.** Both routes damage point sources, because at
+0.1283″/px the IR PSF is ~1 px FWHM and looks like an outlier:
+
+| route | defects left | field star | deflector core |
+|---|---|---|---|
+| no CR (current) | 5 of 92 peaks | intact | 1.000 |
+| `driz_cr` | 1 of 87 | peak −10% | F(1″) 0.983 |
+| LACosmic | 0 of 96 | **zeroed** (59 px at WHT=0) | F(1″) 1.000 |
+
+`objlim` does not rescue LACosmic — at 5/15/20/30/50/100 it still clips the star, while
+never catching more than 12% of the unflagged >5σ outliers it exists to remove.
+`--cr-method {lacosmic,drizcr}` exists on the script for comparison runs only.
+
+**The noise map still shows the quadruplets, and that is now correct.** Masking a defect
+in 1 of 4 frames leaves 3 frames of coverage there, so σ rises by √(4/3) = 15.5%. The
+dots are an honest statement that those pixels have 3 frames instead of 4, not injected
+flux. Before the fix the same defects were contaminating the *science* image; now they
+are confined to the weight map. Nothing short of more dither positions removes the
+genuine ones, and inflating the weights to hide them would be a lie to the likelihood.
+
+### `--dq-refine`: most of the inherited flags are not justified by the data
+
+The speckle above was still much heavier than it needed to be, because WFC3/IR hot and
+unstable flags are inherited from the **dark reference file**, which characterises a
+pixel across a whole anneal cycle — a pixel that misbehaved once is flagged in every
+exposure of the cycle. Measured on J0841+3824, fraction of pixels whose residual from a
+5×5 local median exceeds 3 MAD *in the same exposure that flags them* (unflagged pixels
+sit at 1.2% for scale):
+
+| DQ | n/frame | actually deviant |
+|---|---|---|
+| 16 hot | 7,140 | 37% |
+| 32 unstable | 14,434 | 43% |
+| 8 deviant zero-read | 3,140 | 35% |
+| 4 bad detector px | 3,815 | 68% — **keep**, a permanent defect |
+| 512 blob | 12,480 | 1.9% — already kept as good |
+
+So ~60% of what was being masked was indistinguishable from clean sky in the very frame
+where it was discarded. `refine_dq_flags()` in `drizzle_wfc3_ir.py` clears bits **8, 16,
+32** (`_SOFT_DQ`) on pixels that are not deviant at `--dq-refine` σ (default 3.0; 0
+disables), per exposure, so a pixel stays masked in the frames where it actually
+misbehaves. It errs conservative on real sources — a flagged pixel on a steep PSF has a
+large local-median residual and keeps its flag. It runs on the **copies in
+`data/drizzle_files/`**, never on `data/calibrated/`. It also clears **DQ 4096**, which
+is not a calibration flag at all: driz_cr/LACosmic write it and it persists in the file,
+so a rejected experiment's flags leak into later runs (5,730 px/frame were still present
+from the abandoned LACosmic tests).
+
+Measured effect: masked pixels **1.96% → 0.82%** per frame, and in the 20″ stamp the
+blank-sky σ excess >5% went **3.88% → 1.39%** of blank-sky pixels, in **480 → 190
+clumps**. This is the floor for the approach: the pixels still masked are genuinely bad
+(median deviation **9.2σ**, 81% >3σ, 22% >30σ), and with 4 dither positions each one
+necessarily leaves a 3-of-4 coverage mark.
+
+**Two framings to avoid when judging this.** (1) The weight map is a **continuum, not
+quantised** into 4/3/2/1 frames — binning `WHT/plateau` into coverage steps overstates
+the damage badly (it read "26% of the mosaic degraded", which is not a meaningful
+number). (2) Most of the σ structure in the stamp is **legitimate ERR weighting**: with
+`final_wht_type=ERR` the weight correctly drops wherever there is source flux, so ~48%
+of on-source pixels carry >5% σ excess and should. Judge this by the **blank-sky** clump
+count only, with on-source pixels masked out — that is the number that isolates coverage
+deficits from correct inverse-variance behaviour.
+
+### Why F814W shows no "quadrupling" (it does — as stripes)
+
+A natural question once the F160W dots are understood, and the answer is **not** that ACS
+has cleaner data. Measured on J0841+3824, same frame count (4), same metric:
+
+| | F814W (ACS/WFC) | F160W (WFC3/IR) |
+|---|---|---|
+| masked per frame | **1.58%** | 0.81% |
+| footprint of one masked input px | **1.00 output px** | **4.57 output px** |
+| stable hot px (16) | 41,150 — **kept as good** | masked |
+| warm px (64) | 49,222 — **kept as good** | never set |
+| dominant masked population | CRs, 72,162 (random per frame) | hot/unstable (detector-fixed) |
+| detector-fixed masked population | bad columns, 52,422 | hot/unstable |
+
+Four causes, only one of which is about the defects:
+
+1. **No footprint amplification.** ACS drizzles native 0.05″ → 0.05″, so a masked input
+   pixel marks exactly one output pixel. F160W's 0.1283″ → 0.06″ wipes 4.57. This is what
+   turns an isolated bad pixel into a visible *blob* instead of an invisible single pixel,
+   and it is the single biggest difference between the bands.
+2. **ACS deliberately keeps the population that would quadruple.** `final_bits='256,64,16'`
+   keeps stable-hot and warm pixels as good — exactly what dominates F160W's speckle. The
+   opposite trade: let them into the science image rather than punch coverage holes. On a
+   CCD that is defensible (stable, dark-corrected); WFC3/IR's "unstable" flag by definition
+   means the pixel is not reproducible. **Do not "unify" the two bit lists.**
+3. **What ACS masks is mostly cosmic rays** (72,162/frame, 27% of its masked total). CRs
+   land at random positions per frame, so they never replicate — they scatter as
+   single-pixel marks.
+4. **The one detector-fixed thing ACS masks is bad columns**, and those *do* quadruple.
+   With `final_rot=0.0` the detector columns rotate by the roll angle, so the 4 dither
+   replicas appear as **4 parallel diagonal stripes** in the noise map — same physics as
+   the F160W dots, rendered as lines because the defect is a line. See the ACS bad-column
+   note; this is what those stripes are.
+
+**After `--dq-refine`, F160W has the more uniform blank sky of the two.** σ excess on
+blank sky: F814W 50th −4.4%, 90th **+13.1%**, 99th **+22.8%**; F160W 50th −3.7%, 90th
+−0.5%, 99th +6.8%. F814W's larger blank-sky excess by *area* (22.65% vs 1.39%) is one
+6,178-px connected region (the stripes) plus a haze of 2-px CR marks, against F160W
+clumps that top out at 17 px. The F160W dots are more *legible*, not more numerous — so
+do not rank the two bands' noise maps by eye.
+
+### Scale/pixfrac scan: 0.06″ + pixfrac 1.0 is right, and coarsening does not help
+
+Run on J0841+3824's DQ-refined frames, drizzling the same exposures onto six grids and
+cutting the same 20″ field from each. **Speckle area is in arcsec², never pixels** —
+pixel counts are not comparable across output scales, which is the trap in this whole
+comparison:
+
+| scale | pixfrac | speckle area | clumps | texture | adj corr | PSF FWHM |
+|---|---|---|---|---|---|---|
+| **0.06″** | **1.0** (current) | 2.69 □″ | 195 | 4.81% | 63.1% | **0.253″** |
+| 0.06″ | 0.8 | 5.32 □″ | 931 | 6.94% | 53.5% | 0.235″ |
+| 0.08″ | 1.0 | 2.20 □″ | 171 | 4.74% | 55.2% | 0.264″ |
+| 0.08″ | 0.8 | 7.76 □″ | 1,023 | 6.22% | 44.2% | 0.247″ |
+| 0.10″ | 1.0 | 1.81 □″ | 132 | 4.68% | 49.1% | 0.293″ |
+| 0.1283″ (native) | 1.0 | 1.35 □″ | 75 | 4.63% | 49.8% | 0.310″ |
+
+**Coarsening the grid does not remove defects.** The sky area a masked pixel costs is
+set by the **input** pixel size (0.1283″); a coarser output grid just renders the same
+patch in fewer, bigger pixels. Hence 0.06″ → 0.08″ cuts the affected area only **18%**,
+not the ~43% a naive `(0.1283/scale)²` argument predicts. That ratio describes pixel
+*count* — it is why F160W defects read as blobs and ACS's as single pixels — and it must
+not be used to argue for a scale change.
+
+**pixfrac 0.8 is decisively wrong**, and this is much stronger evidence than the original
+stacked-FWHM argument: it doubles the speckle area at 0.06″ (2.69 → 5.32 □″) and triples
+it at 0.08″ (2.20 → 7.76 □″), with clump counts 195 → 931 and 171 → 1,023, and it puts a
+visible waffle texture into the noise map. It does lower adjacent-pixel correlation by
+~10 points at fixed scale — the known trade — but nowhere near enough to justify that.
+
+**The resolution cost is real**: FWHM 0.253″ → 0.264″ at 0.08″ (+4%) → 0.310″ at native
+(+22%, and visibly pixelated — 1.2 px per FWHM is undersampled for PSF convolution).
+So 0.08″ is defensible (4% resolution for 18% less speckle) but marginal, and native is
+not. **Keep 0.06″ / pixfrac 1.0** — settled by the user on 2026-07-26 after reviewing
+this scan. It is a decision, not a provisional default: do not reopen it or re-drizzle
+F160W to another scale without being asked.
+
+Caveat on the `adj corr` column: cross-scale values are not strictly comparable, because
+the high-pass filter used to isolate the noise spans a different physical size at each
+scale. The fixed-scale pixfrac comparison is clean.
+
+**Not regenerated**: only **J0841+3824** carries post-fix products. The other 12 WFC3/IR
+F160W lenses (and the `data/mosaics/` QC grids) still have pre-fix products.

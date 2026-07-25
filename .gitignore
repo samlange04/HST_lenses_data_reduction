@@ -5,9 +5,11 @@
 # ~185 GB across ~3900 FITS files, so it must never enter git history.
 #
 # data/cutouts is the deliberate exception: the final science stamps are small
-# (~75 MB) and worth versioning across pipeline changes.
+# (~75 MB) and worth versioning across pipeline changes. data/mosaics is the same
+# deal: small QC grids generated from the cutouts by scripts/make_mosaics.py.
 data/*
 !data/cutouts/
+!data/mosaics/
 
 # ── Large external material ────────────────────────────────────────────────────
 # info/data_handbooks is intentionally NOT ignored: the instrument handbooks are the

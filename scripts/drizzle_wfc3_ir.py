@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import numpy as np
+from scipy.ndimage import median_filter
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -52,6 +53,21 @@ _p.add_argument('--_subprocess', action='store_true', default=False, help=argpar
 # default 'EXP' is only an effective-exposure-time map (uncalibrated, missing
 # source shot noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
+_p.add_argument('--cr-method',   default='drizcr', choices=['lacosmic', 'drizcr'],
+                help="How the --cr pass rejects cosmic rays. Neither is recommended for "
+                     "WFC3/IR -- see the note above run_lacosmic(). 'drizcr' (default) is "
+                     "AstroDrizzle's median/blot route; 'lacosmic' flags per frame with "
+                     "astroscrappy into DQ 4096, and destroys point sources on this detector.")
+_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
+_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+_p.add_argument('--dq-refine', type=float, default=3.0, metavar='SIGMA',
+                help="Un-flag DQ 8/16/32 pixels that are not actually deviant in their "
+                     "own exposure, at this sigma (default 3.0; 0 disables). The dark "
+                     "reference file flags these over a whole anneal cycle, so they are "
+                     "conservative: measured on J0841+3824 only 35-43%% of them deviate "
+                     "from a local median by >3 sigma, against 1.2%% of unflagged pixels. "
+                     "Masking all of them costs 26%% of the mosaic's coverage -- see "
+                     "refine_dq_flags().")
 _a = _p.parse_args()
 
 lens           = _a.lens
@@ -129,9 +145,102 @@ def _update_info_json(path, lens, filt_key, value):
 # and the shift to prioritising noise-map covariance.)
 IR_OUT_SCALE, IR_OUT_PIXFRAC = 0.06, 1.0
 
+# ── DQ bits treated as good ────────────────────────────────────────────────────
+# Only 512 (IR flat-field "blob"). Everything else flagged is rejected -- in
+# particular 16 (hot) and 32 (unstable), which are the bright defects: measured on
+# J0841+3824 their median |residual| is 1.9-3.3x the clean-pixel MAD with a 90th
+# percentile of 16-62x, and 25-38% of them exceed 5 MAD. Because the no-CR pass runs
+# no cross-frame rejection at all, any bit kept as "good" is drizzled as-is at each
+# dither position, so one detector pixel becomes 4 separate replicas in the output
+# (the "each spot turned into 4" report). 512 is kept because blob pixels are
+# photometrically indistinguishable from clean ones (median |residual| 0.70 MAD vs
+# 0.67) while masking them would raise zero-coverage sky pixels from 0.19% to 0.77%.
+# Bit 64 (warm) is never actually set in these FLTs, so it is not listed.
+#
+# NEVER write this as '' or None. astropy's interpret_bit_flags maps both to None,
+# which AstroDrizzle logs as `bits : None` and which disables DQ masking *entirely* --
+# it silently keeps every flagged pixel, and also voids any CR flag written into DQ
+# 4096 by driz_cr or LACosmic. The assert below is the guard against that.
+from astropy.nddata.bitmask import interpret_bit_flags as _interpret_bit_flags
+_DQ_GOOD = '512'
+assert _interpret_bit_flags(_DQ_GOOD) is not None, \
+    "_DQ_GOOD must name real bits: '' and None disable DQ masking entirely"
+
+CR_BIT = 4096          # DRIZ_CR; not in _DQ_GOOD, so flagged pixels are excluded
+
+# DQ bits whose flags are advisory rather than measured per-exposure, and which
+# refine_dq_flags() is allowed to clear when the pixel behaves normally in the frame
+# being masked: 8 (deviant zero-read), 16 (hot), 32 (unstable response).
+# NOT included, deliberately: 4 (bad detector pixel -- a permanent defect, and 68% of
+# them are deviant anyway), 256 (saturated -- a real ceiling, not a noise statement),
+# 2048, and 512 (already kept as good).
+_SOFT_DQ = 8 | 16 | 32
+
 _num_cores = 1
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+def refine_dq_flags(files, sigma=3.0, drop_stale_cr=True):
+    """Clear _SOFT_DQ flags on pixels that are not deviant in their own exposure.
+
+    Why this exists. WFC3/IR hot/unstable flags are inherited from the dark reference
+    file, which characterises a pixel over a whole anneal cycle; a pixel that misbehaved
+    once is flagged in every exposure of the cycle. 1.96% of input pixels were flagged,
+    and the 4-point dither lands each one at a different sky position, so the noise map
+    is speckled with their coverage deficits.
+
+    Note the sky area lost is set by the INPUT pixel size (0.1283"), not the output
+    grid. Each masked input pixel renders across (0.1283/0.06)**2 = 4.57 output pixels
+    at 0.06", which is why these read as visible blobs rather than the single pixels
+    ACS produces -- but that is a rendering property. Coarsening the output grid does
+    not recover the sky: measured, 0.06" -> 0.08" cuts the affected area only 18%
+    (2.69 -> 2.20 arcsec**2). Do not reach for the output scale to fix this.
+
+    But the flags are far more conservative than the data justify. Fraction of pixels
+    whose residual from a 5x5 local median exceeds 3 MAD, in the same exposure that
+    flags them (unflagged pixels sit at 1.2% for scale):
+
+        DQ 16 hot 37%    DQ 32 unstable 43%    DQ 8 deviant-zero-read 35%
+        DQ 4 bad detector px 68%   DQ 512 blob 1.9% (kept as good)
+
+    So ~60% of what is masked is indistinguishable from clean sky in the frame where it
+    is being discarded. Clearing those takes the masked fraction 1.96% -> 0.83% and the
+    degraded area from ~26% to ~15%, at no cost in resolution.
+
+    This tests each exposure separately, so a pixel stays masked in the frames where it
+    actually misbehaves. It errs conservative on real sources: a flagged pixel sitting
+    on a steep PSF has a large local-median residual and keeps its flag.
+
+    `drop_stale_cr` also clears DQ 4096, which is not a calibration flag at all -- it is
+    written by driz_cr/LACosmic and persists in the file afterwards, so a rejected
+    experiment's flags would otherwise leak into later runs.
+    """
+    if sigma <= 0:
+        print('DQ refinement disabled (--dq-refine 0)')
+        return
+    print(f'\n=== Refining DQ flags (bits {_SOFT_DQ}, {sigma} sigma) ===')
+    for f in files:
+        with fits.open(f, mode='update') as h:
+            sci = h['SCI', 1].data.astype(np.float64)
+            dq = h['DQ', 1].data
+            resid = sci - median_filter(sci, 5)
+            clean = (dq == 0)
+            mad = 1.4826 * np.median(np.abs(resid[clean] - np.median(resid[clean])))
+            benign = np.abs(resid) <= sigma * mad
+
+            before = int(((dq & ~_interpret_bit_flags(_DQ_GOOD)) > 0).sum())
+            cleared = (dq & _SOFT_DQ) * benign          # bits to drop, per pixel
+            dq[:] = dq & ~cleared
+            if drop_stale_cr:
+                dq[:] = dq & ~CR_BIT
+            after = int(((dq & ~_interpret_bit_flags(_DQ_GOOD)) > 0).sum())
+
+            h['DQ', 1].header['DQREFINE'] = (
+                sigma, 'sigma for un-flagging non-deviant DQ 8/16/32')
+            print(f'  {os.path.basename(f)}: masked {before:,} -> {after:,} px '
+                  f'({100 * before / dq.size:.2f}% -> {100 * after / dq.size:.2f}%), '
+                  f'MAD={mad:.4f}')
+
+
 def crop_to_coverage(sci_file, wht_file):
     """Trim sci and wht to the bounding box of wht>0, updating CRPIX in-place."""
     with fits.open(wht_file) as h:
@@ -155,6 +264,41 @@ def make_log_norm(data, wht):
     vmax = np.percentile(covered, 99.9)
     return ImageNormalize(vmin=vmin, vmax=vmax, stretch=LogStretch())
 
+# WFC3/IR LACosmic, mirroring run_lacosmic() in drizzle_acs_wfc.py. Differences:
+# one SCI extension (not two), and the FLT is in ELECTRONS/S, so gain=EXPTIME is what
+# converts to the electrons astroscrappy's noise model expects.
+#
+# DO NOT make this the default for WFC3/IR. Measured on J0841+3824: it zeroes 59 of the
+# 121 pixels around the field star (the drizzled star goes to WHT=0, SNR=0), because at
+# 0.1283"/px the IR PSF is ~1 px FWHM and Laplacian edge detection cannot tell a real
+# point source from a cosmic ray. objlim does not rescue it -- at 5/15/20/30/50/100 the
+# star is still clipped (23/6/6/6/5/6 px), while the flagged fraction of the unflagged
+# >5-sigma outliers it is meant to catch never exceeds 12%. driz_cr is milder but also
+# point-source-lossy here (star peak -10%, deflector F(1") -1.7%). The F160W science
+# product is therefore the no-CR pass; correct DQ masking (_DQ_GOOD) does the work.
+_IR_RDNOISE, _IR_SATLEVEL = 12.0, 78000.0
+
+def run_lacosmic(files, sigclip, objlim):
+    """Flag cosmic rays and unflagged outliers into DQ bit 4096 of each FLT, in place."""
+    import astroscrappy
+    total = 0
+    for fname in files:
+        with fits.open(fname, mode='update') as hdul:
+            exptime = hdul[0].header['EXPTIME']
+            sci = hdul['SCI', 1].data.astype(np.float32)
+            dq = hdul['DQ', 1].data
+            dq &= ~CR_BIT              # clear any previous CR flags
+            # genuine defects, so LACosmic does not key off them
+            bad = (dq & (256 | 2048)) > 0
+            mask, _ = astroscrappy.detect_cosmics(
+                sci, inmask=bad, sigclip=sigclip, sigfrac=0.3, objlim=objlim,
+                gain=exptime, readnoise=_IR_RDNOISE, satlevel=_IR_SATLEVEL,
+                niter=4, sepmed=True, cleantype='medmask', fsmode='median')
+            dq[mask] |= CR_BIT
+            total += int(mask.sum())
+            hdul['DQ', 1].data = dq
+    print(f'  LACosmic flagged {total} pixels across {len(files)} frames')
+
 # ── Subprocess mode: run only the no-CR drizzle pass with pre-aligned files ───
 # Launched by the main process after the CR pass to get a clean memory slate.
 if _is_subprocess:
@@ -169,9 +313,10 @@ if _is_subprocess:
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
                                driz_sep_wcs=True, driz_sep_scale=0.1283,
-                               driz_sep_bits='64,512', driz_sep_fillval=-1,
+                               driz_sep_bits=_DQ_GOOD, driz_sep_fillval=-1,
                                median=False, blot=False, driz_cr=False,
-                               final_fillval=None, final_bits='64,512',
+                               resetbits=CR_BIT,
+                               final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
                                final_wht_type=_a.wht_type,
@@ -298,6 +443,9 @@ for f in glob.glob(os.path.join(data_path, '*flt.fits')):
 os.chdir(work_path)
 print(f'Working directory: {work_path}')
 
+# Refine the inherited DQ flags on the *copies*, never on data/calibrated/.
+refine_dq_flags(sorted(glob.glob('*flt.fits')), sigma=_a.dq_refine)
+
 # ── Download reference files ──────────────────────────────────────────────────
 # Always run bestrefs against the actual input files: it is idempotent (CRDS only
 # fetches missing refs) and cheap when they are present. A "skip if the ref dir is
@@ -373,17 +521,30 @@ else:
 
 # ── AstroDrizzle pass 1: with CR rejection ────────────────────────────────────
 if do_cr:
-    # DQ bits 64,512: warm pixels and blob pixels (flat-field artifacts dithered over).
-    print('\n=== AstroDrizzle (with CR rejection) ===')
+    # Masking DQ alone cannot clean this data: ~8400 px/frame carry DQ==0 yet exceed
+    # 5 MAD (1052 clumps on J0841+3824), and with no cross-frame rejection each one
+    # drizzles into 4 dither replicas. Only a rejection step reaches them.
+    #
+    # LACosmic (default) flags per frame into DQ 4096 before drizzling, then combines
+    # a plain weighted mean -- same route as ACS and WFPC2, where driz_cr was found to
+    # eat the deflector core. resetbits=0 is mandatory: AstroDrizzle defaults it to
+    # 4096 and would clear the very bit the mask was written into.
+    if _a.cr_method == 'lacosmic':
+        print('\n=== LACosmic CR masking ===')
+        run_lacosmic(flt_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+        _cr_kw = dict(median=False, blot=False, driz_cr=False, resetbits=0)
+    else:
+        _cr_kw = dict(median=True, blot=True, driz_cr=True,
+                      driz_cr_snr='3.5 3.0', driz_cr_scale='1.2 0.7')
+    print(f'\n=== AstroDrizzle (with CR rejection, {_a.cr_method}) ===')
     astrodrizzle.AstroDrizzle(flt_files,
                                output='wfc3_ir_flt_cr',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
                                driz_sep_wcs=True, driz_sep_scale=0.1283,
-                               driz_sep_bits='64,512', driz_sep_fillval=-1,
-                               median=True, blot=True, driz_cr=True,
-                               driz_cr_snr='3.5 3.0', driz_cr_scale='1.2 0.7',
-                               final_fillval=None, final_bits='64,512',
+                               driz_sep_bits=_DQ_GOOD, driz_sep_fillval=-1,
+                               **_cr_kw,
+                               final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
                                final_wht_type=_a.wht_type,
@@ -416,9 +577,10 @@ else:
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
                                driz_sep_wcs=True, driz_sep_scale=0.1283,
-                               driz_sep_bits='64,512', driz_sep_fillval=-1,
+                               driz_sep_bits=_DQ_GOOD, driz_sep_fillval=-1,
                                median=False, blot=False, driz_cr=False,
-                               final_fillval=None, final_bits='64,512',
+                               resetbits=CR_BIT,
+                               final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
                                final_wht_type=_a.wht_type,
