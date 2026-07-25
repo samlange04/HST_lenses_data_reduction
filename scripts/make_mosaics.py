@@ -20,7 +20,7 @@ smoothly (no NaN-masking artifacts) while still showing faint outskirts and brig
 cores together.
 
 Usage:
-    conda run -n stenv python scripts/make_mosaics.py --sample slacs
+    conda run -n stenv python scripts/make_mosaics.py --sample slacs_gold
 """
 
 import argparse
@@ -37,6 +37,10 @@ from astropy.io import fits
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 
 ws_path = '/Users/samlange/Code/data_reduction'
+
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mast_target_names
 
 NCOLS = 5
 CMAP = 'inferno'
@@ -269,9 +273,11 @@ def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default='slacs',
-                   help='sample subdirectory under data/cutouts/ to mosaic (default slacs; '
-                        'other samples, e.g. bells, will work once their cutouts exist)')
+    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                   help='sample subdirectory under data/cutouts/ to mosaic. Defined in '
+                        'info/lens_samples.json (default '
+                        f'{mast_target_names.DEFAULT_SAMPLE}; slacs_other and gallery '
+                        'will work once their cutouts exist)')
     a = p.parse_args()
 
     cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample)
