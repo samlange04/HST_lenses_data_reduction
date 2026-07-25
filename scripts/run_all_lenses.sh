@@ -1,60 +1,25 @@
 #!/usr/bin/env bash
-
-LENSES=(
-    J0008-0004 J0029-0055 J0157-0056 J0216-0813 J0252+0039
-    J0330-0020 J0728+3835 J0737+3216 J0822+2652 J0841+3824
-    J0903+4116 J0912+0029 J0936+0913 J0946+1006 J0956+5100
-    J0959+0410 J1020+1122 J1023+4230 J1029+0420 J1032+5322
-    J1142+1001 J1143-0144 J1205+4910 J1213+6708 J1218+0830
-    J1250+0523 J1402+6321 J1420+6019 J1430+4105 J1432+6317
-    J1451-0239 J1525+3327 J1627-0053 J1630+4520 J2238-0754
-    J2300+0022 J2303+1422 J2341+0000
-)
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-LOG_DIR="$SCRIPT_DIR/../data/run_logs"
-mkdir -p "$LOG_DIR"
-
-run_lens() {
-    local lens="$1" log="$LOG_DIR/${1}.log"
-    if conda run -n stenv python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
-            > "$log" 2>&1; then
-        echo "  OK"
-        return 0
-    else
-        echo "  FAILED — see $log"
-        return 1
-    fi
-}
-
-# ── First pass ─────────────────────────────────────────────────────────────────
-FAILED=()
-TOTAL=${#LENSES[@]}
-COUNT=0
-for lens in "${LENSES[@]}"; do
-    COUNT=$((COUNT + 1))
-    echo "[$COUNT/$TOTAL] $lens"
-    run_lens "$lens" || FAILED+=("$lens")
-done
-
-# ── Re-run failures ────────────────────────────────────────────────────────────
-if [ ${#FAILED[@]} -gt 0 ]; then
-    echo ""
-    echo "=== Re-running ${#FAILED[@]} failed lenses ==="
-    STILL_FAILED=()
-    for lens in "${FAILED[@]}"; do
-        echo "  $lens"
-        run_lens "$lens" || STILL_FAILED+=("$lens")
-    done
-
-    if [ ${#STILL_FAILED[@]} -gt 0 ]; then
-        echo ""
-        echo "Still failed after retry:"
-        for lens in "${STILL_FAILED[@]}"; do
-            echo "  $lens"
-        done
-    fi
-fi
-
-echo ""
-echo "Done ($TOTAL lenses)"
+# ── RETIRED 2026-07-26 — use run_wfpc2_wf3.sh ─────────────────────────────────
+# This was a second, independently-maintained WFPC2 F606W driver, and it drifted
+# badly from the pipeline it was supposed to run. By the time it was retired it:
+#
+#   * passed no --align, so it used the drizzle script's then-default 'tweakreg' --
+#     the mode the per-lens core-registration audit rejected for all 22 lenses,
+#     which scatters frames ~0.7" and splits the deflector core into ~4 knots;
+#   * had no split-visit handling, so J0728+3835 and J0822+2652 would have been
+#     drizzled as single combined datasets across a ~15 deg roll difference, and
+#     would have rewritten the per-visit tracking-JSON keys back to a bogus
+#     combined 'f606W' entry;
+#   * skipped align_wfpc2_to_acs.py entirely, leaving every product ~0.3-0.9" off
+#     the other bands in absolute astrometry -- invisible in a single-band look;
+#   * iterated all 38 SLACS lenses, including the 16 with no WFPC2 data at all.
+#
+# Its one feature the other runner lacked -- a retry pass over failures -- has been
+# absorbed into run_wfpc2_wf3.sh. Keeping two drivers is what allowed the drift, so
+# there is now one. This stub refuses rather than being deleted so that an old
+# invocation fails loudly instead of hitting "command not found" and being retyped.
+echo "run_all_lenses.sh is retired: it ran TweakReg alignment (rejected by the" >&2
+echo "per-lens audit), skipped the astrometric tie to ACS, and mishandled the" >&2
+echo "split-visit lenses. Use scripts/run_wfpc2_wf3.sh, which does drizzle ->" >&2
+echo "align_wfpc2_to_acs -> make_cutouts per lens and retries failures." >&2
+exit 1

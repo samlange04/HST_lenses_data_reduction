@@ -48,21 +48,26 @@ _p = argparse.ArgumentParser()
 _p.add_argument('--lens',   default='J0008-0004')
 _p.add_argument('--filt',   default='f606W')
 _p.add_argument('--sample', default='slacs')
-# WFPC2 KEEPS TweakReg, unlike ACS and WFC3/IR. It is the one instrument here that
-# cannot skip updatewcs -- the NPOL/D2IM distortion arrays are required and the WF3
-# chip extraction does not carry them -- and updatewcs strips the delivered
-# astrometric fit (IDC_ta81040lu-FIT_IMG_GSC242 -> bare IDC_ta81040lu; use_db=True
-# only restores an older GSC240 fit, which measured identically). With the fit gone,
-# TweakReg is the only source of relative alignment. Measured on J0029-0055
-# (stacked stellar FWHM, 32 vs 9 stars):
-#     updatewcs + TweakReg     0.309"   <- default
-#     updatewcs, no TweakReg   0.388"
-# ACS/WFC3 are the opposite: they skip updatewcs, keep their FIT_REL solutions, and
-# TweakReg only degrades them. Do not "unify" the three scripts on this point.
-_p.add_argument('--align',   default='tweakreg', choices=['mast', 'tweakreg'],
-                help="'tweakreg' (default for WFPC2) runs updatewcs + TweakReg; "
-                     "'mast' skips TweakReg and trusts the delivered WCS, which is "
-                     "correct for ACS/WFC3 but measurably worse here.")
+# WFPC2 runs updatewcs but NOT TweakReg. It is the one instrument here that cannot
+# skip updatewcs -- the NPOL/D2IM distortion arrays are required and the WF3 chip
+# extraction does not carry them -- so --align mast means updatewcs(use_db=True),
+# which restores the GSC240 fit, and then stops. ACS/WFC3 skip updatewcs entirely.
+# Do not "unify" the three scripts on this point.
+#
+# DEFAULT REVERSED 2026-07-26: was 'tweakreg'. The per-lens core-registration audit
+# (info/wfpc2_alignment.json) put ALL 22 lenses on 'mast', but the default was never
+# changed to match, so any direct run -- and the batch runner, which passed no
+# --align at all -- silently used the mode the audit rejected. TweakReg aligns every
+# frame onto the first, which for a dithered single-visit sequence measures the
+# dither itself as error and removes it: frames scatter by ~0.7" and the deflector
+# core splits into ~4 offset knots (visible on J0252+0039), against ~0.02" for MAST.
+# The older FWHM comparison that favoured TweakReg (J0029-0055, 0.309" vs 0.388")
+# was misleading -- it centroided a single extended galaxy, which rewards TweakReg's
+# internal self-consistency even while the deflector is being split.
+_p.add_argument('--align',   default='mast', choices=['mast', 'tweakreg'],
+                help="'mast' (default) runs updatewcs and trusts the delivered WCS; "
+                     "'tweakreg' additionally re-solves with TweakReg, which the "
+                     "per-lens audit rejected for every lens -- comparison runs only.")
 # Drizzle output weight type. 'IVM' (default HERE, unlike the other three drizzle
 # scripts which default to 'ERR') makes the WHT extension a full inverse-variance
 # map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a CALIBRATED
@@ -192,16 +197,19 @@ except (KeyError, ImportError):
 
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
-filt_key             = filt  # e.g. 'f606W'
+filt_key             = filt  # e.g. 'f606W' — the MAST filter name, used for querying
+# Tracking-JSON key. It mirrors the product directory, so a split-visit run
+# (--out-suffix _v1) is recorded under 'f606W_v1' and NOT under 'f606W'. Writing
+# these under the bare filter name is what left J0728+3835 claiming a combined
+# 6600s/6-obsid f606W product that has never existed on disk (the real product is
+# f606W_v2, 4400s/4 frames — its 2-frame visit is dropped for want of dither phase).
+# That error was invisible precisely because the key was present and plausible.
+product_key          = filt + _a.out_suffix
 json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
 def _update_info_json(path, lens, filt_key, value):
-    # Separate-visit products (--out-suffix) are non-standard; leave the tracking JSONs,
-    # which describe the standard combined f606W products, untouched.
-    if _a.out_suffix:
-        return
     try:
         with open(path) as _f:
             _data = json.load(_f)
@@ -280,29 +288,20 @@ else:
                 os.remove(_f)
                 print(f'  rejected {os.path.basename(_f)}: EXPTIME={_exp}s < {MIN_EXPTIME}s')
 
-        obs_ids = sorted(
-            os.path.basename(f).replace('_flt.fits', '')
-            for f in glob.glob(os.path.join(data_path, 'u*flt.fits'))
-        )
-        if lens not in lens_products:
-            lens_products[lens] = {}
-        lens_products[lens][filt_key] = obs_ids
-        lens_products[lens] = dict(sorted(lens_products[lens].items()))
-        with open(json_path, 'w') as _f:
-            json.dump(dict(sorted(lens_products.items())), _f, indent=4)
-        print(f'  Downloaded {len(obs_ids)} exposures, updated lens_products.json')
+        print(f'  Downloaded {len(glob.glob(os.path.join(data_path, "u*flt.fits")))} '
+              f'exposures')
     except Exception as e:
         print(f'  MAST query failed: {e}')
 
 if not glob.glob(os.path.join(data_path, 'u*flt.fits')):
-    _update_info_json(exptime_json_path,    lens, filt_key, None)
-    _update_info_json(instrument_json_path, lens, filt_key, None)
+    _update_info_json(exptime_json_path,    lens, product_key, None)
+    _update_info_json(instrument_json_path, lens, product_key, None)
     sys.exit(f'No files found for {lens} {filt_key} — check target name and filter')
 
 # Save instrument from first FLT header
 with fits.open(sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))[0]) as _h:
     _instrume = _h[0].header['INSTRUME'].strip()
-_update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/WF3')
+_update_info_json(instrument_json_path, lens, product_key, f'{_instrume}/WF3')
 
 # ── Choose output scale from the actual sub-pixel dither coverage ─────────────
 _inputs = sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))
@@ -311,6 +310,21 @@ if _a.pa is not None:
     _inputs = [f for f in _inputs
                if abs(float(fits.getheader(f).get('PA_V3', 1e9)) - _a.pa) < 1.0]
     print(f'=== Single-visit: {len(_inputs)} frames within 1deg of PA_V3={_a.pa} ===')
+
+# Record provenance from the frames that actually reach the drizzle, not from
+# everything the MAST download left in data/calibrated/. Those differ whenever --pa
+# selects one visit out of two, and recording the download instead is what made
+# lens_products.json list all 6 J0728+3835 obsids against a 4-frame product. Written
+# here rather than inside the download block so that a re-run on already-downloaded
+# data still refreshes it; a lens that exits below for want of dither phase writes
+# nothing, which is correct — no product exists for it.
+lens_products.setdefault(lens, {})[product_key] = sorted(
+    os.path.basename(f).replace('_flt.fits', '') for f in _inputs
+)
+lens_products[lens] = dict(sorted(lens_products[lens].items()))
+with open(json_path, 'w') as _f:
+    json.dump(dict(sorted(lens_products.items())), _f, indent=4)
+
 _nx, _ny = dither_phase_counts(_inputs)
 print(f'=== Dither sampling: {len(_inputs)} exposures, '
       f'{_nx} x-phases / {_ny} y-phases ===')
@@ -742,7 +756,7 @@ for label, fname in (('CR rejected', 'wfpc2_wf3_cr_drw_sci.fits'),
                      ('No CR rejection', 'wfpc2_wf3_nocrrej_drw_sci.fits')):
     exptime = fits.getheader(fname)['EXPTIME']
     print(f'  {label}: {exptime:.1f} s')
-_update_info_json(exptime_json_path, lens, filt_key, exptime)
+_update_info_json(exptime_json_path, lens, product_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
 # Stamp the noise model into the products. Nothing else distinguishes a calibrated
@@ -756,6 +770,14 @@ for fname in ('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',
               'wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits'):
     with fits.open(fname, mode='update') as _h:
         _h[0].header['IVMMODEL'] = (_ivm_model, 'WFPC2 noise model behind the WHT map')
+        # AstroDrizzle writes count RATES (D001OUUN='cps') but leaves BUNIT at the
+        # value inherited from the input FLT, which for WFPC2 is 'COUNTS' (DN). Left
+        # alone, the product claims counts while holding DN/s — an EXPTIME-sized
+        # (4400x) error for anything that reads BUNIT to set units. ACS/WFC3 are not
+        # affected: their FLT/FLC BUNIT already says ELECTRONS/S or is rewritten.
+        # Only the SCI files: the WHT map is correctly 'UNITLESS'.
+        if fname.endswith('_sci.fits'):
+            _h[0].header['BUNIT'] = ('COUNTS/S', 'DN per second (drizzle final_units=cps)')
     shutil.copy(fname, output_path)
     print(f'  {fname}')
 

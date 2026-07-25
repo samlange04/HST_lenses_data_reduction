@@ -18,8 +18,10 @@ import sys
 # produced 22 mosaics of blank sky ~79" from the target. Use drizzle_wfpc2_wf3.py.
 # The guard matters because this script rmtree's data/drizzled/<lens>/<filt>/
 # before drizzling, so running it would delete the good WF3 products.
+# Raised rather than sys.exit()'d so that an accidental run fails loudly with a
+# traceback and a non-zero status that a batch runner cannot mistake for a clean skip.
 if not os.environ.get('ALLOW_SUPERSEDED_WFPC2_PC'):
-    sys.exit(
+    raise NotImplementedError(
         'drizzle_wfpc2_pc.py is superseded: the SLACS lenses sit on WF3, not the PC, '
         'so this script writes blank-sky mosaics and deletes the WF3 products on its '
         'way there. Use scripts/drizzle_wfpc2_wf3.py instead. '
