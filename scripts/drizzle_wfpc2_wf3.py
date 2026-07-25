@@ -63,12 +63,31 @@ _p.add_argument('--align',   default='tweakreg', choices=['mast', 'tweakreg'],
                 help="'tweakreg' (default for WFPC2) runs updatewcs + TweakReg; "
                      "'mast' skips TweakReg and trusts the delivered WCS, which is "
                      "correct for ACS/WFC3 but measurably worse here.")
-# Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
-# inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
-# CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
-# default 'EXP' is only an effective-exposure-time map (uncalibrated, missing
-# source shot noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
-_p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
+# Drizzle output weight type. 'IVM' (default HERE, unlike the other three drizzle
+# scripts which default to 'ERR') makes the WHT extension a full inverse-variance
+# map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a CALIBRATED
+# per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own default 'EXP'
+# is only an effective-exposure-time map (uncalibrated, missing source shot
+# noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
+#
+# WFPC2-SPECIFIC: 'ERR' does NOT work here. drizzlepac.wfpc2Data.WFPC2InputImage
+# hardcodes self.errExt = None unconditionally (standard WFPC2 pipeline products
+# never carry an ERR extension), so imageObject.buildERRmask() always takes the
+# "WFPC2 not supported" branch and silently falls back to exposure-time-only
+# weighting -- confirmed firing in every run.log ("No ERR weighting will be
+# applied ... WFPC2 data is not supported by this weighting type"). Measured
+# effect: the resulting noise map is flat, core/sky ratio 1.000 on J0330-0020 and
+# J1213+6708, vs ~3.5 for ACS F814W on the same lenses (source Poisson correctly
+# elevating the core). build_ivm_files() below builds a genuine per-frame IVM and
+# DrizzlePac *does* honor a user-supplied IVM file. 'ERR' is kept as a choice only
+# for comparison/debugging; do not use it expecting calibrated noise.
+#
+# DO NOT build the IVM from the file's own ERR array. It is not a real error array:
+# ERR == sqrt(SCI) exactly (an identity over 100.00% of good pixels, not a fit),
+# i.e. Poisson applied to DN as if DN were electrons -- no gain conversion, no
+# read-noise term. It overstates the true noise by ~2.1x at sky level. The model
+# used instead is var_DN = SCI/gain + floor^2, with the floor measured per frame.
+_p.add_argument('--wht-type',    default='IVM', choices=['ERR', 'IVM', 'EXP'])
 # CR-rejection method for the CR pass. 'lacosmic' (default) masks cosmic rays per
 # frame with astroscrappy; 'drizcr' is the old AstroDrizzle median/blot/driz_cr route.
 # WFPC2's driz_cr punches holes and masks real core pixels exactly like it did on ACS
@@ -476,6 +495,103 @@ def extract_wf3_chip(flt_files):
 
 flt_wf3_files = extract_wf3_chip(sorted(glob.glob('u*flt.fits')))
 
+# ── Build per-frame IVM files from the real ERR array ──────────────────────────
+# See the --wht-type help above: DrizzlePac's WFPC2 driver hardcodes errExt=None
+# and never reads ERR for WFPC2, no matter what's in the file. IVM = 1/ERR^2 is
+# the inverse-variance-map DrizzlePac *does* support as a user-supplied file, fed
+# via a two-column @-file (irafglob's ivmlist convention: 'atfile_ivm' reads the
+# second whitespace-separated word per line). ERR itself doesn't change between
+# the CR and no-CR passes (only DQ does), so these are built once and reused.
+WF3_READNOISE = 5.2    # electrons, WFPC2 WF3 chip (WFPC2 Instrument Handbook Table 4.2)
+
+
+def measure_noise_floor(sci, dq, gain):
+    """Measure the frame's own additive variance floor, in DN^2.
+
+    The Poisson term of the noise model is physics (counts/gain), but the additive
+    term is not just read noise: dark current and flat-field error land there too,
+    and on these frames the total measures ~7.4 e against a nominal RN of 5.2 e. So
+    it is measured per frame rather than assumed.
+
+    The estimator is the MAD of the second difference along x,
+    0.5*(x[i-1] + x[i+1]) - x[i], which has variance 1.5*sigma^2. Two properties
+    matter: it cancels linear gradients (so the galaxy and any sky slope do not
+    inflate it), and it involves no selection on pixel *value* -- clipping pixels
+    at +-N MAD and then re-measuring the MAD of the survivors biases the width low
+    by ~4%, which is how an earlier version of this measurement overstated the
+    error in the delivered ERR array as 2.28x when it is 2.11x.
+    """
+    ok = (dq[:, :-2] == 0) & (dq[:, 1:-1] == 0) & (dq[:, 2:] == 0)
+    d = (0.5 * (sci[:, :-2] + sci[:, 2:]) - sci[:, 1:-1])[ok]
+    sky = float(np.median(sci[dq == 0]))
+    var = (1.4826 * np.median(np.abs(d - np.median(d)))) ** 2 / 1.5
+    floor2 = var - sky / gain
+    if not np.isfinite(floor2) or floor2 <= 0:
+        # Measured sky variance below the Poisson floor is unphysical; fall back to
+        # nominal read noise rather than silently producing an over-confident IVM.
+        floor2 = (WF3_READNOISE / gain) ** 2
+        print(f'    WARNING: measured floor non-positive, using nominal RN '
+              f'{WF3_READNOISE} e -> {floor2:.3f} DN^2')
+    return floor2, sky, var
+
+
+# See the --wht-type help above for why a user-supplied IVM file is the only route
+# that works for WFPC2 (DrizzlePac's WFPC2 driver hardcodes errExt=None). It is fed
+# via a two-column @-file (irafglob's ivmlist convention: 'atfile_ivm' reads the
+# second whitespace-separated word per line). The model depends only on SCI and DQ,
+# and DQ changes between the CR and no-CR passes only in bit 4096, which does not
+# enter the variance -- so these are built once and reused.
+#
+# The IVM is built from a NOISE MODEL, not from the file's ERR array. The ERR array
+# delivered in these WFPC2 FLTs is exactly sqrt(SCI) -- verified as an identity, not
+# a fit: ERR/sqrt(SCI) == 1.000000 for 100.00% of good pixels. That is Poisson
+# statistics applied to DATA NUMBERS as though they were electrons, so it omits the
+# gain conversion entirely and carries no read-noise term at all. It overstates the
+# true noise by ~2.1x at sky level (see the ERR-array section in CLAUDE.md).
+def build_ivm_files(wf3_files):
+    """Write '<sci> -> IVM,1' files with IVM = 1/(SCI/gain + floor^2), in DN^-2."""
+    ivm_files = []
+    for fname in wf3_files:
+        with fits.open(fname) as hdul:
+            sci  = hdul['SCI', 1].data.astype(np.float64)
+            dq   = hdul['DQ', 1].data
+            gain = float(hdul[0].header.get('ATODGAIN', 7.0))
+
+        floor2, sky, skyvar = measure_noise_floor(sci, dq, gain)
+        # Poisson on total collected counts (sky + source; bias and dark are already
+        # subtracted by CALWFPC2, so their variance sits in the floor). Negative
+        # pixels are noise excursions about zero, not negative variance.
+        var = np.clip(sci, 0.0, None) / gain + floor2
+        ivm = np.zeros(sci.shape, dtype=np.float32)
+        good = np.isfinite(var) & (var > 0)
+        ivm[good] = (1.0 / var[good]).astype(np.float32)
+
+        out = 'ivm_' + os.path.basename(fname)
+        ivm_hdu = fits.ImageHDU(data=ivm, name='IVM')
+        ivm_hdu.header['EXTVER']   = 1
+        ivm_hdu.header['IVMGAIN']  = (gain, 'e/DN used for the Poisson term')
+        ivm_hdu.header['IVMFLOOR'] = (floor2, 'DN^2 additive variance floor (measured)')
+        ivm_hdu.header['IVMSKY']   = (sky, 'DN median sky level of the frame')
+        fits.HDUList([fits.PrimaryHDU(), ivm_hdu]).writeto(out, overwrite=True)
+        ivm_files.append(out)
+
+        print(f'  {os.path.basename(fname)}: sky {sky:7.2f} DN, gain {gain:.2f} e/DN, '
+              f'measured sky var {skyvar:6.3f} = Poisson {sky / gain:6.3f} + floor '
+              f'{floor2:5.3f} DN^2 (floor {np.sqrt(floor2) * gain:.1f} e)')
+    return ivm_files
+
+if _a.wht_type == 'IVM':
+    print('\n=== Building per-frame IVM files (1/ERR^2) — WFPC2 ERR weighting is unsupported by DrizzlePac ===')
+    _ivm_files = build_ivm_files(flt_wf3_files)
+    _ivm_assoc_path = 'wf3_ivm_association.lst'
+    with open(_ivm_assoc_path, 'w') as _f:
+        for _sci_f, _ivm_f in zip(flt_wf3_files, _ivm_files):
+            _f.write(f'{_sci_f} {_ivm_f}\n')
+    drizzle_input = '@' + _ivm_assoc_path
+    print(f'  Built {len(_ivm_files)} IVM files -> {_ivm_assoc_path}')
+else:
+    drizzle_input = flt_wf3_files
+
 _num_cores = 1
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -515,7 +631,7 @@ def make_log_norm(data, wht):
 # LACosmic works one frame at a time with an object-protection term (objlim), so no
 # stacked reference biases the core, and the final drizzle is a plain weighted mean.
 CR_BIT = 4096          # not in final_bits='8,1024', so flagged CRs are excluded
-WF3_READNOISE = 5.2    # electrons, WFPC2 WF3 chip (WFPC2 Instrument Handbook Table 4.2)
+# WF3_READNOISE is defined above build_ivm_files, which runs first and needs it.
 
 
 def run_lacosmic(files, sigclip, objlim):
@@ -551,7 +667,7 @@ if _a.cr_method == 'lacosmic':
     print('\n=== LACosmic CR masking ===')
     run_lacosmic(flt_wf3_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
     print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')
-    astrodrizzle.AstroDrizzle(flt_wf3_files,
+    astrodrizzle.AstroDrizzle(drizzle_input,
                                output='wfpc2_wf3_cr',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
@@ -570,7 +686,7 @@ if _a.cr_method == 'lacosmic':
                                num_cores=_num_cores)
 else:
     print('\n=== AstroDrizzle (with driz_cr CR rejection) ===')
-    astrodrizzle.AstroDrizzle(flt_wf3_files,
+    astrodrizzle.AstroDrizzle(drizzle_input,
                                output='wfpc2_wf3_cr',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
@@ -589,7 +705,7 @@ for f in glob.glob('*ask.fits'):
 
 # ── AstroDrizzle pass 2: no CR rejection ──────────────────────────────────────
 print('\n=== AstroDrizzle (no CR rejection) ===')
-astrodrizzle.AstroDrizzle(flt_wf3_files,
+astrodrizzle.AstroDrizzle(drizzle_input,
                            output='wfpc2_wf3_nocrrej',
                            preserve=False, build=False, context=False,
                            skysub=True, skymethod='localmin',
@@ -629,9 +745,17 @@ for label, fname in (('CR rejected', 'wfpc2_wf3_cr_drw_sci.fits'),
 _update_info_json(exptime_json_path, lens, filt_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
+# Stamp the noise model into the products. Nothing else distinguishes a calibrated
+# WFPC2 weight map from the two earlier uncalibrated generations (exptime-only, and
+# IVM built from the bogus ERR=sqrt(SCI) array), and they are not separable by
+# inspection -- so make_cutouts.py keys its "do not use for a likelihood" warning on
+# this keyword rather than on the instrument name.
+_ivm_model = ('SCI/gain+floor^2' if _a.wht_type == 'IVM' else _a.wht_type)
 print('\n=== Copying final products to output directory ===')
 for fname in ('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',
               'wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits'):
+    with fits.open(fname, mode='update') as _h:
+        _h[0].header['IVMMODEL'] = (_ivm_model, 'WFPC2 noise model behind the WHT map')
     shutil.copy(fname, output_path)
     print(f'  {fname}')
 
