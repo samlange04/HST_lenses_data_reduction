@@ -37,7 +37,9 @@ from photutils.centroids import centroid_com
 
 WS = '/Users/samlange/Code/data_reduction'
 sys.path.insert(0, os.path.join(WS, 'info'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
+import mast_target_names
 
 MAX_SHIFT = 1.5   # arcsec; a larger apparent offset means the tie failed -> skip
 
@@ -65,9 +67,9 @@ def stable_centroid(path, cat, box=2.5, niter=8, tol=0.003):
     return pos
 
 
-def find_product(lens, filt, prefix):
+def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE):
     """The CR-pass sci product for a band (falls back to no-CR)."""
-    d = os.path.join(WS, 'data', 'drizzled', 'slacs', lens, filt)
+    d = os.path.join(WS, 'data', 'drizzled', sample, lens, filt)
     for tag in ('cr', 'nocrrej'):
         hit = glob.glob(os.path.join(d, f'{prefix}_{tag}_*_sci.fits'))
         if hit:
@@ -75,10 +77,10 @@ def find_product(lens, filt, prefix):
     return None
 
 
-def align_lens(lens, f606_dir='f606W'):
+def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE):
     cat = SkyCoord(*slacs_coords[lens], unit=(u.hourangle, u.deg))
-    ref = find_product(lens, 'f814W', 'acs_wfc_flc')      # GAIA-accurate reference
-    f606 = find_product(lens, f606_dir, 'wfpc2_wf3')       # f606_dir may be f606W_v1/_v2
+    ref = find_product(lens, 'f814W', 'acs_wfc_flc', sample)   # GAIA-accurate reference
+    f606 = find_product(lens, f606_dir, 'wfpc2_wf3', sample)   # f606_dir may be f606W_v1/_v2
     if ref is None:
         print(f'{lens}: no ACS F814W product to align against — skip')
         return
@@ -97,7 +99,7 @@ def align_lens(lens, f606_dir='f606W'):
     dra = cref.ra.deg - c606.ra.deg
     ddec = cref.dec.deg - c606.dec.deg
     # apply to every F606W product (both passes, sci + wht)
-    d = os.path.join(WS, 'data', 'drizzled', 'slacs', lens, f606_dir)
+    d = os.path.join(WS, 'data', 'drizzled', sample, lens, f606_dir)
     n = 0
     for fn in glob.glob(os.path.join(d, 'wfpc2_wf3_*_drw_*.fits')):
         with fits.open(fn, mode='update') as h:
@@ -107,7 +109,7 @@ def align_lens(lens, f606_dir='f606W'):
             h.flush()
         n += 1
     # verify independently against F160W if present
-    f160 = find_product(lens, 'f160W', 'wfc3_ir_flt')
+    f160 = find_product(lens, 'f160W', 'wfc3_ir_flt', sample)
     chk = ''
     if f160:
         c160 = stable_centroid(f160, cat)
@@ -124,15 +126,20 @@ if __name__ == '__main__':
     p.add_argument('--all', action='store_true')
     p.add_argument('--f606-dir', default='f606W',
                    help='F606W band subdirectory (e.g. f606W_v1/f606W_v2 for split visits)')
+    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                   help='sample subdirectory of data/drizzled/. Defined in '
+                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     a = p.parse_args()
     if a.all:
+        # Glob the products rather than the sample list: only a lens that actually has a
+        # drizzled F606W product can be tied, and split-visit lenses have no bare f606W.
         lenses = sorted(
             os.path.basename(os.path.dirname(d))
-            for d in glob.glob(os.path.join(WS, 'data', 'drizzled', 'slacs', '*', 'f606W'))
+            for d in glob.glob(os.path.join(WS, 'data', 'drizzled', a.sample, '*', 'f606W'))
         )
         for lens in lenses:
-            align_lens(lens)
+            align_lens(lens, sample=a.sample)
     elif a.lens:
-        align_lens(a.lens, f606_dir=a.f606_dir)
+        align_lens(a.lens, f606_dir=a.f606_dir, sample=a.sample)
     else:
         p.error('give --lens LENS or --all')

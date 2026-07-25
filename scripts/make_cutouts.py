@@ -38,7 +38,9 @@ import astropy.units as u
 
 ws_path = '/Users/samlange/Code/data_reduction'
 sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
+import mast_target_names
 
 
 # Detectors whose calibrated ERR array is already in ELECTRONS/S rather than counts.
@@ -284,7 +286,10 @@ def main():
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--lens',   default='J0008-0004')
     p.add_argument('--filt',   default='f814W')
-    p.add_argument('--sample', default='slacs')
+    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                   help='sample subdirectory of data/drizzled/ and data/cutouts/. '
+                        'Defined in info/lens_samples.json '
+                        f'(default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--size',   type=float, default=20.0,
                    help='cutout size in arcsec (square), default 20.0')
     p.add_argument('--box',    type=int, default=100,
@@ -299,7 +304,9 @@ def main():
                         "CR-rejected pass and falls back to no-CR when no CR product "
                         "exists (e.g. WFC3/IR F160W, which has no CR pass). 'cr' and "
                         "'nocrrej' force one. The CR pass is the science default: ACS "
-                        "uses LACosmic masking that keeps ~99% of the deflector core "
+                        # '%%' not '%': argparse runs the help through %-interpolation,
+                        # so a literal percent sign here crashes --help entirely.
+                        "uses LACosmic masking that keeps ~99%% of the deflector core "
                         "while removing cosmic rays, so the old no-CR default put "
                         "CR-riddled stamps in front of the user.")
     p.add_argument('--cr', action='store_true', default=False,

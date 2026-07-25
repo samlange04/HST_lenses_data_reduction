@@ -41,7 +41,10 @@ import mast_target_names
 _p = argparse.ArgumentParser()
 _p.add_argument('--lens',        default='J0008-0004')
 _p.add_argument('--filt',        default='f814W')
-_p.add_argument('--sample',      default='slacs')
+_p.add_argument('--sample',      default=mast_target_names.DEFAULT_SAMPLE,
+                help='sample the lens belongs to; sets the <sample> level of every '
+                     'data/ path. Defined in info/lens_samples.json '
+                     f'(default {mast_target_names.DEFAULT_SAMPLE})')
 _p.add_argument('--cr',          action='store_true', default=False)
 # CR-rejection method for the --cr pass. 'lacosmic' (default) masks cosmic rays per
 # frame with LACosmic and then drizzles a plain weighted mean; 'drizcr' is the old
@@ -208,6 +211,13 @@ if _is_subprocess:
 with open(json_path) as _f:
     lens_products = json.load(_f)
 
+# Distinguishes "MAST has nothing for this lens+filter" (an ordinary outcome -- every
+# lens in a sample is tried on every run, most have no data in most bands) from "the
+# download broke" (a real failure). Conflating them is what would let a network error
+# be silently recorded as `null` = no data. See the no-data exit below.
+_mast_empty = False
+_mast_error = None
+
 if glob.glob(os.path.join(data_path, '*flc.fits')):
     print(f'=== MAST download: FLC files already present in {data_path}, skipping ===')
 else:
@@ -215,7 +225,7 @@ else:
     os.makedirs(data_path, exist_ok=True)
     try:
         obs_table = None
-        for _pat in mast_target_names.target_patterns(lens):
+        for _pat in mast_target_names.target_patterns(lens, sample):
             obs_table = Observations.query_criteria(
                 target_name=_pat,
                 obs_collection='HST',
@@ -226,6 +236,10 @@ else:
                 print(f'  MAST target {_pat}: {len(obs_table)} observations')
                 break
             print(f'  MAST target {_pat}: no observations')
+        if obs_table is None or len(obs_table) == 0:
+            # Not an error: this lens simply has no ACS/WFC data in this filter.
+            _mast_empty = True
+            raise mast_target_names.NoMastData()
         _copy_mask     = np.array(['COPY' in t.upper() for t in obs_table['target_name']])
         _non_copy      = [t for t in obs_table['target_name'] if 'COPY' not in t.upper()]
         if mast_target_names.force_copy(lens) and _copy_mask.any():
@@ -250,13 +264,25 @@ else:
 
         print(f'  Downloaded '
               f'{len(glob.glob(os.path.join(data_path, "*flc.fits")))} exposures')
+    except mast_target_names.NoMastData:
+        print(f'  No ACS/WFC {filt_key.upper()} observations for {lens} on MAST')
     except Exception as e:
+        _mast_error = e
         print(f'  MAST query failed: {e}')
 
 if not glob.glob(os.path.join(data_path, '*flc.fits')):
     _update_info_json(exptime_json_path,    lens, filt_key, None)
     _update_info_json(instrument_json_path, lens, filt_key, None)
-    sys.exit(f'No files found for {lens} {filt_key} — check target name and filter')
+    if _mast_empty:
+        # Ordinary outcome, not a failure: exit 0 so a batch runner sweeping the whole
+        # sample records "no data" and moves on instead of counting it as an error.
+        print(f'=== NO DATA: {lens} has no ACS/WFC {filt_key.upper()} on MAST '
+              f'(recorded as null) ===')
+        sys.exit(0)
+    if _mast_error is not None:
+        sys.exit(f'MAST download failed for {lens} {filt_key}: {_mast_error}')
+    sys.exit(f'No files found for {lens} {filt_key} — MAST listed observations but no '
+             f'FLC files landed in {data_path}')
 
 # Save instrument from first FLC header
 with fits.open(sorted(glob.glob(os.path.join(data_path, '*flc.fits')))[0]) as _h:

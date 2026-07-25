@@ -10,22 +10,31 @@
 # discards any previous tie, because align_wfpc2_to_acs.py edits CRVAL1/2 in the
 # drizzled product -- so the tie must be re-applied after every drizzle, not once.
 #
-# All 22 lenses are included. J0728+3835 was previously excluded for having only 2
-# exposures on one x-phase; with the -COPY visit it has 6. No exclusion list is needed
-# because the drizzle script measures each lens's dither coverage itself and skips any
-# lens that cannot reach 0.05"/px.
+# Usage: run_wfpc2_wf3.sh [SAMPLE]      (default: mast_target_names.DEFAULT_SAMPLE)
 #
-# Written for macOS's bash 3.2: no associative arrays, no `[[ -v ]]`.
+# EVERY lens in the sample is tried, not a hand-maintained subset. Only 22 of the 38
+# slacs_gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and
+# exit 0 as "no data", which is cheaper than keeping a second list in sync with the
+# archive. No exclusion list is needed for dither coverage either -- the drizzle script
+# measures each lens's phase coverage itself and skips any lens that cannot reach
+# 0.05"/px. (J0728+3835 was once excluded for having only 2 exposures on one x-phase;
+# with the -COPY visit it has 6, which is exactly the kind of staleness a fixed list
+# accumulates.)
+#
+# Written for macOS's bash 3.2: no `mapfile`, no associative arrays, no `[[ -v ]]`.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$(dirname "$SCRIPT_DIR")"
 LOGDIR="$WS/data/run_logs"; mkdir -p "$LOGDIR"
 ALIGN_JSON="$WS/info/wfpc2_alignment.json"
 
-LENSES=(J0008-0004 J0029-0055 J0157-0056 J0252+0039 J0330-0020 J0728+3835
-        J0822+2652 J0841+3824 J0903+4116 J0936+0913 J0946+1006 J1020+1122
-        J1023+4230 J1029+0420 J1032+5322 J1142+1001 J1213+6708 J1218+0830
-        J1430+4105 J1432+6317 J1525+3327 J2341+0000)
+SAMPLE="$(conda run -n stenv python "$SCRIPT_DIR/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
+LENSES=()
+while IFS= read -r _l; do
+  [ -n "$_l" ] && LENSES+=("$_l")
+done < <(conda run -n stenv python "$SCRIPT_DIR/mast_target_names.py" "$SAMPLE")
+[ "${#LENSES[@]}" -gt 0 ] || { echo "No lenses in sample '$SAMPLE'" >&2; exit 1; }
+echo "=== WFPC2/WF3: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
 # ── Split-visit lenses ─────────────────────────────────────────────────────────
 # J0728+3835 and J0822+2652 each have two visits at a ~14-16 deg roll difference, i.e.
@@ -71,7 +80,7 @@ run_product() {
 
   printf '  %-10s align=%-8s ' "$key" "$align"
   if ! conda run -n stenv python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
-         --filt f606W --sample slacs --align "$align" $extra > "$log" 2>&1; then
+         --filt f606W --sample "$SAMPLE" --align "$align" $extra > "$log" 2>&1; then
     # A lens skipped for insufficient dither phase is an intended outcome, not a
     # failure -- the script exits non-zero without writing, so separate the two.
     if grep -q 'cannot drizzle to' "$log"; then
@@ -80,15 +89,22 @@ run_product() {
     echo "DRIZZLE FAILED (see $log)"; return 1
   fi
 
+  # A lens with no WFPC2 data exits 0 without writing a product -- the common case here,
+  # since only 22 of the 38 slacs_gold lenses have F606W. Stop before the align and
+  # cutout stages, which would both fail on a product that does not exist.
+  if grep -q '^=== NO DATA:' "$log"; then
+    echo "no data"; return 0
+  fi
+
   # Absolute-astrometry tie to ACS F814W. Idempotent (re-measures the residual and
   # applies ~0), so it is safe on a product the drizzle skipped as already-existing.
   if ! conda run -n stenv python "$SCRIPT_DIR/align_wfpc2_to_acs.py" --lens "$lens" \
-         --f606-dir "$key" >> "$log" 2>&1; then
+         --f606-dir "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
     echo "ALIGN FAILED (see $log)"; return 1
   fi
 
   if ! conda run -n stenv python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
-         --filt "$key" --sample slacs >> "$log" 2>&1; then
+         --filt "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
   fi
   echo "OK"
