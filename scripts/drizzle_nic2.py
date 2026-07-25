@@ -20,6 +20,29 @@ import glob
 import shutil
 import subprocess
 import sys
+
+# ── DEPRIORITISED — do not run ────────────────────────────────────────────────
+# NIC2's field of view is far too small to be useful here (258x256 px at 0.0756" is
+# ~19" across, against ~139" for WFC3/IR), and the pipeline may be unsound. All
+# NICMOS data was deleted on 2026-07-21 — drizzled products, working dirs, 108
+# *cal.fits exposures, run logs and the NICMOS CRDS cache, 472 MB — and the 24
+# affected lenses now carry f160W: null in all three tracking JSONs.
+#
+# The guard exists because that deletion is silently reversible: this script
+# re-downloads from MAST and re-fetches the CRDS refs automatically, so an
+# accidental run brings all 472 MB back AND repopulates the 24 null entries,
+# overwriting the record that they were dropped on purpose. The script itself is
+# kept deliberately (F160W is answered from WFC3/IR), hence an override rather than
+# deletion. Raised, not sys.exit()'d, so the failure is loud and non-zero.
+if not os.environ.get('ALLOW_NICMOS'):
+    raise NotImplementedError(
+        'drizzle_nic2.py is deprioritised: NIC2 has too small a field of view to be '
+        'useful and all NICMOS data was deliberately deleted (2026-07-21). Running '
+        'this re-downloads ~472 MB from MAST and overwrites the f160W: null entries '
+        'that record the deletion. Answer F160W questions from WFC3/IR '
+        '(drizzle_wfc3_ir.py) instead. Set ALLOW_NICMOS=1 to override.'
+    )
+
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')

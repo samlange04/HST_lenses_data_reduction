@@ -368,17 +368,8 @@ else:
             shutil.move(flt_file, data_path)
         shutil.rmtree(os.path.join(data_path, 'mastDownload'), ignore_errors=True)
 
-        obs_ids = sorted(
-            os.path.basename(f).replace('_flt.fits', '')
-            for f in glob.glob(os.path.join(data_path, '*flt.fits'))
-        )
-        if lens not in lens_products:
-            lens_products[lens] = {}
-        lens_products[lens][filt_key] = obs_ids
-        lens_products[lens] = dict(sorted(lens_products[lens].items()))
-        with open(json_path, 'w') as _f:
-            json.dump(dict(sorted(lens_products.items())), _f, indent=4)
-        print(f'  Downloaded {len(obs_ids)} exposures, updated lens_products.json')
+        print(f'  Downloaded '
+              f'{len(glob.glob(os.path.join(data_path, "*flt.fits")))} exposures')
     except Exception as e:
         print(f'  MAST query failed: {e}')
 
@@ -392,6 +383,22 @@ with fits.open(sorted(glob.glob(os.path.join(data_path, '*flt.fits')))[0]) as _h
     _instrume = _h[0].header['INSTRUME'].strip()
     _detector = _h[0].header.get('DETECTOR', 'IR').strip()
 _update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/{_detector}')
+
+# ── Provenance ────────────────────────────────────────────────────────────────
+# Record the frames that actually reach the drizzle, not everything the download left
+# in data/calibrated/, and refresh on every run -- this used to sit inside the download
+# block, so a re-run on already-present files never updated it. EXPTIME=0 frames are
+# excluded because AstroDrizzle drops them (that mismatch was real on four ACS
+# entries; no WFC3/IR lens currently has one, but the rule is the same).
+_obs_ids = sorted(
+    os.path.basename(f).replace('_flt.fits', '')
+    for f in glob.glob(os.path.join(data_path, '*flt.fits'))
+    if fits.getheader(f)['EXPTIME'] > 0
+)
+lens_products.setdefault(lens, {})[filt_key] = _obs_ids
+lens_products[lens] = dict(sorted(lens_products[lens].items()))
+with open(json_path, 'w') as _f:
+    json.dump(dict(sorted(lens_products.items())), _f, indent=4)
 
 # Skip drizzle if final products already exist
 _skip_sentinel = 'wfc3_ir_flt_cr_drz_sci.fits' if do_cr else 'wfc3_ir_flt_nocrrej_drz_sci.fits'

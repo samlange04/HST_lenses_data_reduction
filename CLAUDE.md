@@ -56,18 +56,54 @@ The ACS, WFC3/IR, and NICMOS scripts accept `--cr` to enable the CR-rejection dr
 ## Running All Lenses (WFPC2 / SLACS)
 
 ```bash
-bash scripts/run_wfpc2_wf3.sh   # WF3 F606W drizzle + cutout, all 22 lenses
-bash scripts/run_all_lenses.sh  # WF3 F606W drizzle only, with a retry pass
+bash scripts/run_wfpc2_wf3.sh   # the only WFPC2 driver: drizzle -> align -> cutout
 ```
 
-Both drive `drizzle_wfpc2_wf3.py`. `run_wfpc2_wf3.sh` also runs `make_cutouts.py`
-after each drizzle; `run_all_lenses.sh` does not, but retries failures once.
-Neither carries an exclusion list — the drizzle script measures each lens's dither
-coverage itself and skips any lens that cannot reach 0.05″/px.
+**`run_wfpc2_wf3.sh` is the single driver, and it runs the full three-stage order**
+(`drizzle_wfpc2_wf3.py` → `align_wfpc2_to_acs.py` → `make_cutouts.py`) for each of
+the 22 lenses. It reads the per-lens mode from `info/wfpc2_alignment.json`, expands
+the two split-visit lenses into their per-visit products, and retries failures once.
+It carries no exclusion list — the drizzle script measures each lens's dither
+coverage and skips any lens that cannot reach 0.05″/px, which the runner reports as
+`SKIPPED (dither phase)` rather than counting as a failure.
 
-`scripts/drizzle_wfpc2_pc.py` is **superseded** and refuses to run (it extracts the
-wrong chip *and* deletes the WF3 products on its way). Override with
-`ALLOW_SUPERSEDED_WFPC2_PC=1` only if you know why you want it.
+**It was rebuilt on 2026-07-26 because it had drifted into producing quietly wrong
+products** — worth knowing, because the same three traps apply to anything else that
+drives this pipeline:
+
+- it passed **no `--align`**, so it took the drizzle script's default, which was
+  still `tweakreg` — the mode the per-lens audit rejected for all 22 lenses. **The
+  script default is now `mast`**; CLAUDE.md had documented the reversal but the
+  `argparse` default was never changed to match, so the audit result was live only
+  for anyone who passed the flag by hand.
+- it had **no split-visit handling**, so J0728+3835 and J0822+2652 would have been
+  drizzled as single combined datasets across a ~15° roll difference *and* would have
+  rewritten their per-visit tracking-JSON keys back into a bogus combined `f606W`.
+- it **skipped `align_wfpc2_to_acs.py`**, which is not optional: a re-drizzle discards
+  the tie (the tie is a `CRVAL1/2` edit on the drizzled product), so it has to be
+  re-applied after *every* drizzle. Skipping it gives stamps that look perfect alone
+  and are ~0.3–0.9″ off the other bands.
+
+`scripts/run_all_lenses.sh` is **retired** — it was a second, independently maintained
+driver with all three faults above, and keeping two is what allowed the drift. It now
+refuses to run and points at `run_wfpc2_wf3.sh`, which absorbed its retry pass.
+
+`scripts/run_cutouts_all.sh` globs `<filt>*`, not `<filt>`, so the per-visit product
+directories are included. With a bare `<filt>` the two split-visit lenses matched
+nothing and their stamps were silently never regenerated — no error, just two lenses
+left on stale cutouts.
+
+**Two scripts are guarded and raise `NotImplementedError` on import** (2026-07-26).
+The raise is deliberate — it fails with a traceback and a non-zero status that a
+batch runner cannot mistake for a clean skip, and it fires before any MAST or CRDS
+network call. Both keep an environment override, because both are retained on
+purpose rather than deleted:
+
+- `scripts/drizzle_wfpc2_pc.py` — **superseded**: extracts the wrong chip *and*
+  `rmtree`s the good WF3 products on its way. Override `ALLOW_SUPERSEDED_WFPC2_PC=1`.
+- `scripts/drizzle_nic2.py` — **deprioritised**: an accidental run re-downloads
+  ~472 MB from MAST and overwrites the 24 `f160W: null` entries that are the only
+  record the NICMOS data was dropped on purpose. Override `ALLOW_NICMOS=1`.
 
 ## Data Flow and Directory Layout
 
@@ -201,6 +237,13 @@ the deflector-core position scatter (LACosmic-masked so cosmic rays don't inflat
 the earlier FWHM metric was misleading because it centroided a single extended galaxy.
 The per-lens choice is stored in **`info/wfpc2_alignment.json`** and read by the batch
 runner. Result: **all 22 lenses use `mast`**. See `[[wfpc2_tweakreg_misregisters]]`.
+
+That claim was aspirational until 2026-07-26: the runner passed no `--align` at all
+and the script's `argparse` default was still `tweakreg`, so **the audit result was
+live only for someone who passed the flag by hand.** Both are fixed — the default is
+`mast`, and `run_wfpc2_wf3.sh` genuinely reads the JSON per lens. A lens absent from
+the file falls back to `mast`; `tweakreg` is never a safe fallback, because it erases
+the dither it is asked to align.
 
 **Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have
 two visits at a ~14–16° roll difference (two guide-star solutions). Rather than let
@@ -354,6 +397,26 @@ generations of WFPC2 weight map exist and are indistinguishable by inspection, s
 `make_cutouts.py` keys its warning on that keyword; absent means pre-fix. A pre-fix
 product **cannot be rescued by a scale factor** — the error is in the noise model,
 not the units — it needs a re-drizzle.
+
+### F606W `BUNIT` said `counts` while holding count rates (fixed 2026-07-26)
+
+AstroDrizzle writes count **rates** (it records `D001OUUN = 'cps'`) but does not
+rewrite `BUNIT`, which stays at whatever the input carried. For WFPC2 that is
+`BUNIT = 'COUNTS'` (DN), so every F606W product claimed counts while holding DN/s —
+an **EXPTIME-sized (4400x) error** for anything that reads `BUNIT` to set units. ACS
+is unaffected (`ELECTRONS/S`), which is why the discrepancy only shows up when the
+bands are compared.
+
+`drizzle_wfpc2_wf3.py` now stamps `BUNIT = 'COUNTS/S'` on the SCI products in the
+same loop that stamps `IVMMODEL` (the WHT map is correctly `UNITLESS` and is left
+alone). All 92 existing F606W sci/noise files — drizzled and cutouts — were
+rewritten in place, header-only, guarded on `D001OUUN == 'cps'`; pixel data verified
+byte-identical against `HEAD`.
+
+Note the two optical bands are still in **different unit systems**: F606W in DN/s
+(instrumental) against F814W in e/s. That is self-consistent per band because
+`PHOTFLAM` is defined per data unit, but any cross-band flux comparison has to go
+through `PHOTFLAM` — it cannot compare raw pixel values.
 
 ### `1/sqrt(WHT)` is only a sigma map if the input ERR is in counts (2026-07-25)
 
@@ -528,8 +591,10 @@ All NICMOS data has been **deleted** (2026-07-21): drizzled products, working di
 108 `*cal.fits` exposures, run logs, and the NICMOS CRDS reference cache — 472 MB.
 The 24 affected lenses now carry `f160W: null` in all three tracking JSONs. This is
 reversible: `scripts/drizzle_nic2.py` is intentionally kept, and re-running it
-re-downloads from MAST and re-fetches the CRDS refs automatically. That also means
-running it by accident will quietly bring all of it back.
+re-downloads from MAST and re-fetches the CRDS refs automatically. That is exactly
+why it can no longer be run by accident — since 2026-07-26 it raises
+`NotImplementedError` on import unless `ALLOW_NICMOS=1` is set. Use that override
+when the re-download is what you actually want.
 
 ## Output pixel scales
 
@@ -668,9 +733,45 @@ Three files are updated automatically by every script run:
 - **`lens_instrument.json`** — `{lens: {filter: "INSTRUME/DETECTOR"}}` — e.g. `"ACS/WFC"`, `"WFPC2/WF3"`, `"WFC3/IR"`
 - **`lens_exptime.json`** — `{lens: {filter: exptime_seconds}}` — from the CR-rejected drizzle header
 
-If a lens has no data for a filter, the value is stored as `null`. All three files
-carry a key for every band (`f160W, f555W, f606W, f814W`) on every lens, so a
-missing key means the file is out of sync, not that data is absent.
+If a lens has no data for a filter, the value is stored as `null`.
+
+**The key is the product directory, not the filter (2026-07-26).** For nearly every
+lens those coincide (`f606W`), but a **split-visit lens is keyed per visit** —
+`f606W_v1` / `f606W_v2`, matching `data/drizzled/<lens>/<key>/` — and carries **no
+bare `f606W` key at all**. So the old invariant ("all three files carry a key for
+every band on every lens; a missing key means the file is out of sync") no longer
+holds for J0728+3835 and J0822+2652. Check keys against the product directories
+instead.
+
+That change fixed a live error. Both split lenses had been recording a combined
+`f606W`: 6 obsids and **6600 s** for each, describing a product that has never
+existed on disk. J0728+3835's real product is `f606W_v2` alone — 4400 s, 4 frames —
+its 2-frame visit having been dropped for want of dither phase, and J0822+2652 has
+two products (2200 s + 4400 s). **The failure was invisible because the key was
+present and plausible**, which is the opposite of the "missing key = out of sync"
+check above and the reason that check is not sufficient on its own. Root cause:
+`drizzle_wfpc2_wf3.py` keyed its JSON writes on the bare filter while writing
+products to a `--out-suffix` directory. It now keys on `product_key = filt +
+out_suffix`.
+
+**`lens_products.json` records the frames that reached the drizzle, not the whole
+download.** All three scripts now write it after the input list is settled, so a
+re-run on already-downloaded data refreshes it (it used to sit inside the download
+block and never update). The two sets differ for two reasons:
+
+- **WFPC2**: `--pa` selects one visit out of two, and a lens that exits for want of
+  dither phase writes nothing at all — correct, since no product exists.
+- **ACS/WFC3**: AstroDrizzle silently drops `EXPTIME=0` frames, so recording the
+  download overstated four entries — J0008-0004 f814W (4 recorded vs 3 drizzled),
+  J0912+0029 f555W (8 vs 5) and f814W (8 vs 7), J1213+6708 f814W (5 vs 4). Those
+  frames are now excluded from the record but **not deleted**, unlike WFPC2 where
+  `MIN_EXPTIME` removes them outright because they would otherwise reach the drizzle.
+
+Exposure times were correct throughout — they come from the drizzle header.
+
+When auditing obsid counts against `NDRIZIM`, note **ACS/WFC FLCs are 2-chip MEFs**,
+so `NDRIZIM = 2 x exposures` there and 1× for WFPC2/WFC3. Comparing them directly
+reports 54 false mismatches.
 
 **`null` is overloaded for F160W.** The 24 F160W nulls do *not* mean "no data on
 MAST" — those lenses have NICMOS F160W observations that were deliberately deleted

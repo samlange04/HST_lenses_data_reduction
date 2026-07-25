@@ -248,17 +248,8 @@ else:
             shutil.move(flc_file, data_path)
         shutil.rmtree(os.path.join(data_path, 'mastDownload'), ignore_errors=True)
 
-        obs_ids = sorted(
-            os.path.basename(f).replace('_flc.fits', '')
-            for f in glob.glob(os.path.join(data_path, '*flc.fits'))
-        )
-        if lens not in lens_products:
-            lens_products[lens] = {}
-        lens_products[lens][filt_key] = obs_ids
-        lens_products[lens] = dict(sorted(lens_products[lens].items()))
-        with open(json_path, 'w') as _f:
-            json.dump(dict(sorted(lens_products.items())), _f, indent=4)
-        print(f'  Downloaded {len(obs_ids)} exposures, updated lens_products.json')
+        print(f'  Downloaded '
+              f'{len(glob.glob(os.path.join(data_path, "*flc.fits")))} exposures')
     except Exception as e:
         print(f'  MAST query failed: {e}')
 
@@ -272,6 +263,28 @@ with fits.open(sorted(glob.glob(os.path.join(data_path, '*flc.fits')))[0]) as _h
     _instrume  = _h[0].header['INSTRUME'].strip()
     _detector  = _h[0].header.get('DETECTOR', 'WFC').strip()
 _update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/{_detector}')
+
+# ── Provenance ────────────────────────────────────────────────────────────────
+# Record the frames that actually reach the drizzle, not everything the download
+# left in data/calibrated/. Two reasons this is not the same set:
+#   * AstroDrizzle silently drops EXPTIME=0 frames, so listing the download
+#     overstated the product on J0008-0004 f814W (4 recorded vs 3 drizzled),
+#     J0912+0029 f555W (8 vs 5) and f814W (8 vs 7), and J1213+6708 f814W (5 vs 4).
+#   * this used to live inside the download block, so a re-run on already-present
+#     files never refreshed it at all.
+# EXPTIME=0 frames are only filtered out of the record here, not deleted -- unlike
+# WFPC2, where they are removed outright (MIN_EXPTIME) because they would otherwise
+# reach the drizzle. Keep in mind when auditing: ACS/WFC FLCs are 2-chip MEFs, so the
+# product's NDRIZIM is 2 x the number of exposures listed here.
+_obs_ids = sorted(
+    os.path.basename(f).replace('_flc.fits', '')
+    for f in glob.glob(os.path.join(data_path, '*flc.fits'))
+    if fits.getheader(f)['EXPTIME'] > 0
+)
+lens_products.setdefault(lens, {})[filt_key] = _obs_ids
+lens_products[lens] = dict(sorted(lens_products[lens].items()))
+with open(json_path, 'w') as _f:
+    json.dump(dict(sorted(lens_products.items())), _f, indent=4)
 
 # Skip drizzle if final products already exist
 _skip_sentinel = 'acs_wfc_flc_cr_drc_sci.fits' if do_cr else 'acs_wfc_flc_nocrrej_drc_sci.fits'
