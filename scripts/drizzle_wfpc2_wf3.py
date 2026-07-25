@@ -47,7 +47,10 @@ mmap_fits_write.install()
 _p = argparse.ArgumentParser()
 _p.add_argument('--lens',   default='J0008-0004')
 _p.add_argument('--filt',   default='f606W')
-_p.add_argument('--sample', default='slacs')
+_p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                help='sample the lens belongs to; sets the <sample> level of every '
+                     'data/ path. Defined in info/lens_samples.json '
+                     f'(default {mast_target_names.DEFAULT_SAMPLE})')
 # WFPC2 runs updatewcs but NOT TweakReg. It is the one instrument here that cannot
 # skip updatewcs -- the NPOL/D2IM distortion arrays are required and the WF3 chip
 # extraction does not carry them -- so --align mast means updatewcs(use_db=True),
@@ -226,6 +229,14 @@ def _update_info_json(path, lens, filt_key, value):
 with open(json_path) as _f:
     lens_products = json.load(_f)
 
+# Distinguishes "MAST has nothing for this lens+filter" (an ordinary outcome -- every
+# lens in a sample is tried on every run, most have no data in most bands) from "the
+# download broke" (a real failure). Conflating them is what would let a network error
+# be silently recorded as `null` = no data. See the no-data exit below.
+_mast_empty = False
+_mast_error = None
+_all_too_short = False
+
 if glob.glob(os.path.join(data_path, 'u*flt.fits')):
     print(f'=== MAST download: FLT files already present in {data_path}, skipping ===')
 else:
@@ -233,7 +244,7 @@ else:
     os.makedirs(data_path, exist_ok=True)
     try:
         obs_table = None
-        for _pat in mast_target_names.target_patterns(lens):
+        for _pat in mast_target_names.target_patterns(lens, sample):
             obs_table = Observations.query_criteria(
                 target_name=_pat,
                 obs_collection='HST',
@@ -244,6 +255,11 @@ else:
                 print(f'  MAST target {_pat}: {len(obs_table)} observations')
                 break
             print(f'  MAST target {_pat}: no observations')
+        if obs_table is None or len(obs_table) == 0:
+            # Not an error: this lens simply has no WFPC2 data in this filter. 16 of the
+            # 38 slacs_gold lenses are in exactly this position.
+            _mast_empty = True
+            raise mast_target_names.NoMastData()
         # Keep COPY *and* non-COPY. For WFPC2 SLACS these are genuine repeat visits
         # months apart, not archive duplicates of the same photons (J0728+3835:
         # 2 x 1100s on 2007-09-14 plus 4 x 1100s "-COPY" on 2007-11-05; distinct
@@ -282,21 +298,39 @@ else:
             print(f'  converted {os.path.basename(_c0m)} -> {os.path.basename(_flt)}')
 
         # Drop check shots / zero-exposure frames before they reach the drizzle.
+        _n_before = len(glob.glob(os.path.join(data_path, 'u*flt.fits')))
         for _f in sorted(glob.glob(os.path.join(data_path, 'u*flt.fits'))):
             _exp = fits.getheader(_f)['EXPTIME']
             if _exp < MIN_EXPTIME:
                 os.remove(_f)
                 print(f'  rejected {os.path.basename(_f)}: EXPTIME={_exp}s < {MIN_EXPTIME}s')
+        _n_after = len(glob.glob(os.path.join(data_path, 'u*flt.fits')))
+        # Every frame was a check shot. Also an ordinary outcome, not a broken download:
+        # some lenses' only WFPC2 F606W frames are 0.5s pointing verifications.
+        if _n_before and not _n_after:
+            _all_too_short = True
 
-        print(f'  Downloaded {len(glob.glob(os.path.join(data_path, "u*flt.fits")))} '
-              f'exposures')
+        print(f'  Downloaded {_n_after} exposures')
+    except mast_target_names.NoMastData:
+        print(f'  No WFPC2 {filt_key.upper()} observations for {lens} on MAST')
     except Exception as e:
+        _mast_error = e
         print(f'  MAST query failed: {e}')
 
 if not glob.glob(os.path.join(data_path, 'u*flt.fits')):
     _update_info_json(exptime_json_path,    lens, product_key, None)
     _update_info_json(instrument_json_path, lens, product_key, None)
-    sys.exit(f'No files found for {lens} {filt_key} — check target name and filter')
+    if _mast_empty or _all_too_short:
+        # Ordinary outcome, not a failure: exit 0 so a batch runner sweeping the whole
+        # sample records "no data" and moves on instead of counting it as an error.
+        _why = (f'no WFPC2 {filt_key.upper()} on MAST' if _mast_empty
+                else f'every frame is shorter than MIN_EXPTIME={MIN_EXPTIME}s')
+        print(f'=== NO DATA: {lens} — {_why} (recorded as null) ===')
+        sys.exit(0)
+    if _mast_error is not None:
+        sys.exit(f'MAST download failed for {lens} {filt_key}: {_mast_error}')
+    sys.exit(f'No files found for {lens} {filt_key} — MAST listed observations but no '
+             f'FLT files landed in {data_path}')
 
 # Save instrument from first FLT header
 with fits.open(sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))[0]) as _h:

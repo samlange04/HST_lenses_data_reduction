@@ -41,31 +41,51 @@ This is an HST image reduction pipeline for gravitational lens samples (SLACS an
 
 ## Running a Single Lens
 
+`--sample` defaults to **`slacs_gold`** everywhere and is shown below only for the
+record. It sets the `<sample>` level of every `data/` path
+(`data/drizzled/slacs_gold/<lens>/<filt>/`), so passing the wrong one silently writes a
+correct product into the wrong tree.
+
 ```bash
-conda run -n stenv python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W --sample slacs
-conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0008-0004 --filt f814W --sample slacs
-conda run -n stenv python scripts/drizzle_wfc3_ir.py  --lens J0008-0004 --filt f160W --sample slacs
-conda run -n stenv python scripts/drizzle_nic2.py     --lens J0008-0004 --filt f160W --sample slacs  # deprioritised, see below
-conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0216-0813 --filt f555W --sample slacs
+conda run -n stenv python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W --sample slacs_gold
+conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0008-0004 --filt f814W --sample slacs_gold
+conda run -n stenv python scripts/drizzle_wfc3_ir.py  --lens J0008-0004 --filt f160W --sample slacs_gold
+conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0216-0813 --filt f555W --sample slacs_gold
 ```
 
 All scripts are idempotent: they skip MAST download if calibrated files are already present, and skip the entire drizzle if the final output already exists in `data/drizzled/`. To force a re-run, delete the lens's directory under `data/drizzled/` (and `data/drizzle_files/`).
 
+A lens with no data for the requested instrument+filter prints `=== NO DATA: ...`,
+records `null` in the tracking JSONs and **exits 0** — see *Lens Samples*.
+
 The ACS, WFC3/IR, and NICMOS scripts accept `--cr` to enable the CR-rejection drizzle pass (disabled by default). Without `--cr`, only the no-CR-rejection pass runs. WFPC2 always runs both passes.
 
-## Running All Lenses (WFPC2 / SLACS)
+## Running All Lenses
+
+Every runner takes an optional sample argument and defaults to `slacs_gold`:
 
 ```bash
-bash scripts/run_wfpc2_wf3.sh   # the only WFPC2 driver: drizzle -> align -> cutout
+bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
+bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
+bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
+bash scripts/run_cutouts_all.sh              # stamps for whatever products exist
+bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
 ```
 
-**`run_wfpc2_wf3.sh` is the single driver, and it runs the full three-stage order**
-(`drizzle_wfpc2_wf3.py` → `align_wfpc2_to_acs.py` → `make_cutouts.py`) for each of
-the 22 lenses. It reads the per-lens mode from `info/wfpc2_alignment.json`, expands
-the two split-visit lenses into their per-visit products, and retries failures once.
-It carries no exclusion list — the drizzle script measures each lens's dither
-coverage and skips any lens that cannot reach 0.05″/px, which the runner reports as
-`SKIPPED (dither phase)` rather than counting as a failure.
+All four take their lens roster from `info/lens_samples.json` via
+`scripts/mast_target_names.py` (`run_cutouts_all.sh` is the deliberate exception — it
+globs `data/drizzled/`, because a stamp can only be cut from a mosaic that exists). They
+report `ok` / `no data` / `FAILED` separately, so the 16 `slacs_gold` lenses with no
+WFPC2 data are not mistaken for errors.
+
+**`run_wfpc2_wf3.sh` is the single WFPC2 driver, and it runs the full three-stage order**
+(`drizzle_wfpc2_wf3.py` → `align_wfpc2_to_acs.py` → `make_cutouts.py`) for every lens in
+the sample. It reads the per-lens alignment mode from `info/wfpc2_alignment.json`, expands
+the two split-visit lenses into their per-visit products, and retries failures once. It
+carries no exclusion list — the drizzle script measures each lens's dither coverage and
+skips any lens that cannot reach 0.05″/px, which the runner reports as
+`SKIPPED (dither phase)` rather than counting as a failure. It stops before the align and
+cutout stages on a `no data` lens, since both would fail on a product that does not exist.
 
 **It was rebuilt on 2026-07-26 because it had drifted into producing quietly wrong
 products** — worth knowing, because the same three traps apply to anything else that
@@ -84,26 +104,33 @@ drives this pipeline:
   re-applied after *every* drizzle. Skipping it gives stamps that look perfect alone
   and are ~0.3–0.9″ off the other bands.
 
-`scripts/run_all_lenses.sh` is **retired** — it was a second, independently maintained
-driver with all three faults above, and keeping two is what allowed the drift. It now
-refuses to run and points at `run_wfpc2_wf3.sh`, which absorbed its retry pass.
+`scripts/stale_scripts/run_all_lenses.sh` is **retired** — it was a second, independently
+maintained driver with all three faults above, and keeping two is what allowed the drift.
+It now refuses to run and points at `run_wfpc2_wf3.sh`, which absorbed its retry pass.
 
 `scripts/run_cutouts_all.sh` globs `<filt>*`, not `<filt>`, so the per-visit product
 directories are included. With a bare `<filt>` the two split-visit lenses matched
 nothing and their stamps were silently never regenerated — no error, just two lenses
 left on stale cutouts.
 
-**Two scripts are guarded and raise `NotImplementedError` on import** (2026-07-26).
-The raise is deliberate — it fails with a traceback and a non-zero status that a
-batch runner cannot mistake for a clean skip, and it fires before any MAST or CRDS
-network call. Both keep an environment override, because both are retained on
-purpose rather than deleted:
+### `scripts/stale_scripts/` (moved there 2026-07-26)
 
-- `scripts/drizzle_wfpc2_pc.py` — **superseded**: extracts the wrong chip *and*
-  `rmtree`s the good WF3 products on its way. Override `ALLOW_SUPERSEDED_WFPC2_PC=1`.
-- `scripts/drizzle_nic2.py` — **deprioritised**: an accidental run re-downloads
-  ~472 MB from MAST and overwrites the 24 `f160W: null` entries that are the only
-  record the NICMOS data was dropped on purpose. Override `ALLOW_NICMOS=1`.
+Four scripts live in `scripts/stale_scripts/` rather than alongside the live pipeline.
+They are retained on purpose, not deleted — but **nothing in the pipeline invokes
+them**, and the path change is itself part of the guard:
+
+- `drizzle_wfpc2_pc.py` — **superseded**: extracts the wrong chip *and* `rmtree`s the
+  good WF3 products on its way. Override `ALLOW_SUPERSEDED_WFPC2_PC=1`.
+- `drizzle_nic2.py` — **deprioritised**: an accidental run re-downloads ~472 MB from
+  MAST and repopulates the `f160W` NICMOS entries. Override `ALLOW_NICMOS=1`.
+- `run_all_lenses.sh` — retired WFPC2 driver (see above); refuses to run.
+- `rebuild_stenv_arm64.sh` — one-off plan to rebuild `stenv` as native arm64, written
+  when the U-state write hang was thought to be a Rosetta artefact. Never used: the
+  cause was the buffered-write path, fixed in-process by `scripts/mmap_fits_write.py`.
+
+The first two also **raise `NotImplementedError` on import**. That raise is deliberate —
+it fails with a traceback and a non-zero status a batch runner cannot mistake for a
+clean skip, and it fires before any MAST or CRDS network call.
 
 ## Data Flow and Directory Layout
 
@@ -281,6 +308,7 @@ F160W exists uses it as an **independent** check (not in the fit). Verified on
 J0252+0039: 0.66″ → 0.009″ vs F814W and 0.009″ vs F160W.
 
     conda run -n stenv python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
+    # takes --sample too (default slacs_gold); --all globs that sample's f606W products
 
 Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.
 
@@ -589,8 +617,9 @@ F160W coverage questions should be answered from WFC3/IR.
 
 All NICMOS data has been **deleted** (2026-07-21): drizzled products, working dirs,
 108 `*cal.fits` exposures, run logs, and the NICMOS CRDS reference cache — 472 MB.
-The 24 affected lenses now carry `f160W: null` in all three tracking JSONs. This is
-reversible: `scripts/drizzle_nic2.py` is intentionally kept, and re-running it
+The 24 affected lenses carried `f160W: null` in all three tracking JSONs until the
+2026-07-26 full reset emptied those files (see *Tracking JSONs*). This is
+reversible: `scripts/stale_scripts/drizzle_nic2.py` is intentionally kept, and re-running it
 re-downloads from MAST and re-fetches the CRDS refs automatically. That is exactly
 why it can no longer be run by accident — since 2026-07-26 it raises
 `NotImplementedError` on import unless `ALLOW_NICMOS=1` is set. Use that override
@@ -689,7 +718,7 @@ explicit about the correlation whenever F606W/F160W drive the constraint.
 ## Cutouts (`scripts/make_cutouts.py`)
 
 ```bash
-conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W --sample slacs
+conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W --sample slacs_gold
 ```
 
 Cuts a square stamp (default 20″) from `data/drizzled/` into `data/cutouts/`,
@@ -726,6 +755,19 @@ Combined with the common output WCS and `align_wfpc2_to_acs.py`, the three optic
 bands land on a common pixel grid.
 
 ## Tracking JSONs in `info/`
+
+> **Full reset, 2026-07-26.** All three files were emptied to `{}` and every product
+> under `data/` was deleted (`calibrated/`, `drizzle_files/`, `drizzled/`, `cutouts/`,
+> `mosaics/`, `run_logs/`) as a deliberate clean restart — the accumulated products
+> predated too many pipeline fixes to be trusted. Kept: `data/reference_files/` (CRDS
+> cache) and `data/pre_drizzled/` (46 MAST-delivered mosaics, not pipeline output).
+> The sample was also renamed in the same pass: what these files called `slacs` is now
+> **`slacs_gold`**, so any surviving `data/*/slacs/` path is pre-reset.
+> **Every "current on-disk state" claim elsewhere in this file is therefore stale** —
+> including the two *Not regenerated* notes and the F160W-`null` note below, which
+> describe a tracking state that no longer exists. The *reasoning* in those sections
+> is still valid and is why the reruns must be done with the current scripts; only the
+> inventory is void.
 
 Three files are updated automatically by every script run:
 
@@ -790,34 +832,72 @@ MAST uses — it names the chip the data actually came from.
 
 ## Lens Samples
 
-- **SLACS** (38 lenses): HST proposals 10886, 11202, 10494, 10798. Coverage as of the last MAST survey:
+**`info/lens_samples.json` is the single source of truth** for which lenses are in which
+sample, and for the per-lens MAST quirks (`mast_target`, `force_copy`). Read it only
+through `scripts/mast_target_names.py` — never parse it elsewhere and never keep a second
+lens list in a script or runner. `info/list_of_lenses.txt` was exactly such a second copy
+and was deleted on 2026-07-26.
 
-  | Band | Instrument | Lenses | Notes |
-  |---|---|---|---|
-  | F814W | ACS/WFC | 38 | all |
-  | F606W | WFPC2/WF3 | 22 | the other 16 have no WFPC2 data in any filter |
-  | F555W | ACS/WFC | 16 | exactly the 16 without F606W (props 10494/10798) |
-  | F160W | WFC3/IR | 13 | all proposal 11202, ~2397 s each |
-  | F160W | NICMOS/NIC2 | 24 | deprioritised — data deleted, entries are `null` |
+```bash
+conda run -n stenv python scripts/mast_target_names.py --list        # samples + sizes
+conda run -n stenv python scripts/mast_target_names.py slacs_gold    # lens names
+```
 
-  So every lens has F814W, and the sample splits cleanly into 22 with WFPC2 F606W
-  and 16 with ACS F555W. F160W is WFC3/IR for 13; the remaining 24 have only
-  NICMOS, which is not wanted.
-- **BELLS** (16 lenses): WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Reduction scripts not yet written for this sample.
-- **GALLERY**: HST proposals 14189, 16734.
+| Sample | Lenses | What it is |
+|---|---|---|
+| **`slacs_gold`** | 38 | The lenses reduced so far — the working sample and **the default `--sample` of every script** (`mast_target_names.DEFAULT_SAMPLE`) |
+| **`slacs_other`** | 93 | The rest of SLACS from Bolton et al. 2008 Table 4 (`info/slacs_coords.py`, 131 total). Not yet reduced |
+| **`gallery`** | 16 | BELLS GALLERY, HST proposals 14189, 16734. WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Reduction scripts not yet written |
 
-Target names on MAST follow the pattern `SDSS<LENS>` (e.g. `SDSSJJ0008-0004`). The MAST query uses `target_name=f'SDSS{lens}%'` with a wildcard to handle minor naming variations.
+`slacs_gold` band coverage, as of the last MAST survey:
+
+| Band | Instrument | Lenses | Notes |
+|---|---|---|---|
+| F814W | ACS/WFC | 38 | all |
+| F606W | WFPC2/WF3 | 22 | the other 16 have no WFPC2 data in any filter |
+| F555W | ACS/WFC | 16 | exactly the 16 without F606W (props 10494/10798) |
+| F160W | WFC3/IR | 13 | all proposal 11202, ~2397 s each |
+| F160W | NICMOS/NIC2 | 24 | deprioritised — data deleted, see *NICMOS is deprioritised* |
+
+So every `slacs_gold` lens has F814W, and the sample splits cleanly into 22 with WFPC2
+F606W and 16 with ACS F555W. HST proposals: 10886, 11202, 10494, 10798.
+
+**Two caveats on the other two samples.** `slacs_other` has **no `GAL-*` names surveyed**,
+so for those lenses "no observations" may only mean the lens is archived under a
+designation nobody has looked up — weaker evidence than the same result on `slacs_gold`,
+where all 14 GAL names are known. And `gallery` lenses are **not in `info/slacs_coords.py`**
+(it is SLACS only), so they get no common output WCS: the drizzle scripts fall back to the
+native WCS with a printed warning. Both need work before those samples are reduced.
+
+**Every lens is tried on every run; only the ones with data are downloaded.** A lens with
+no data for an instrument+filter is an ordinary outcome, not a failure — the drizzle
+script records `null` in the tracking JSONs, prints a line beginning `=== NO DATA:` and
+**exits 0**. The batch runners count those separately from failures. This is why the
+runners iterate the sample roster rather than globbing `data/calibrated/`: a glob only
+re-runs what is already on disk, so it does nothing after a wipe and never picks up a
+newly added lens. A genuine download error still exits non-zero — the two are kept apart
+by `mast_target_names.NoMastData`, a dedicated exception the download block's broad
+`except Exception` cannot swallow. Getting that wrong would silently record a network
+failure as "this lens has no data".
+
+Target names on MAST follow the pattern `SDSS<LENS>` (e.g. `SDSSJ0008-0004`). The MAST
+query uses `target_name=f'SDSS{lens}%'` with a wildcard to handle minor naming variations.
 
 **COPY handling differs by instrument, deliberately:**
 
-- **ACS** (`drizzle_acs_wfc.py`) filters COPY observations out in favour of non-COPY when both exist — **except** for lenses in `mast_target_names.FORCE_COPY_LENSES`, whose non-COPY observations are unusable. Currently `{J1032+5322}` (F814W): the non-COPY frames are `EXPTIME=0`, so `force_copy(lens)` selects the COPY frames. J1032+5322 is the only ACS lens with COPY data at all — surveyed across F814W and F555W, nothing else has any.
+- **ACS** (`drizzle_acs_wfc.py`) filters COPY observations out in favour of non-COPY when both exist — **except** for lenses carrying `"force_copy": true` in `info/lens_samples.json`, whose non-COPY observations are unusable. Currently only `J1032+5322` (F814W): the non-COPY frames are `EXPTIME=0`, so `mast_target_names.force_copy(lens)` selects the COPY frames. J1032+5322 is the only ACS lens in `slacs_gold` with COPY data at all — surveyed across F814W and F555W, nothing else has any.
 - **WFPC2** (`drizzle_wfpc2_wf3.py`) keeps **both**, because there the COPY sets are genuine repeat visits carrying most of the usable exposure time (see above). It rejects junk on `MIN_EXPTIME` instead of on target name.
 
 Do not "unify" these two policies without re-checking the archive — they encode different facts about different datasets.
 
 ### Non-standard MAST target names (`GAL-*`)
 
-Some lenses are **not** on MAST under an `SDSS<LENS>` name — they use a `GAL-<plate>-<mjd>-<fiber>` designation instead, so the default `SDSS{lens}%` query returns no observations. The drizzle scripts resolve this automatically via `scripts/mast_target_names.py`: for a lens in the table below they query the `GAL-*` name first and fall back to `SDSS{lens}%`. **Output/directory names always stay in the J convention** (the left column) regardless of the MAST name used to fetch. Not all of these are on the current lens list yet; recorded here for future additions.
+Some lenses are **not** on MAST under an `SDSS<LENS>` name — they use a `GAL-<plate>-<mjd>-<fiber>` designation instead, so the default `SDSS{lens}%` query returns no observations. The drizzle scripts resolve this automatically via `scripts/mast_target_names.py`: for a lens carrying a `mast_target` in `info/lens_samples.json` they query the `GAL-*` name first and fall back to `SDSS{lens}%`. **Output/directory names always stay in the J convention** (the left column) regardless of the MAST name used to fetch.
+
+The table below is a **copy for reading**; the live values are the `mast_target` entries
+in `info/lens_samples.json`. Edit the JSON, not this table. All 14 are in `slacs_gold` —
+no `GAL-*` names have been surveyed for `slacs_other` or `gallery`, which is why a
+no-data result on those samples is not conclusive.
 
 | Output name (J convention) | MAST target name |
 |---|---|
