@@ -21,7 +21,11 @@ ok=0; fail=0
 for filt in f606W f814W f555W f160W; do
   for d in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
     [ -d "$d" ] || continue
-    ls "$d"/*nocrrej*sci.fits >/dev/null 2>&1 || continue
+    # Any final drizzle product (CR or no-CR) means the mosaic exists and is cuttable.
+    # Must NOT key on *nocrrej* specifically: ACS/WFPC2 now default to a CR-only pass, so
+    # their dirs hold only *_cr_*; F160W (no CR pass) holds only *nocrrej*. make_cutouts
+    # --pass auto picks the right one.
+    ls "$d"/*_sci.fits >/dev/null 2>&1 || continue
     lens=$(basename "$(dirname "$d")")
     key=$(basename "$d")
     if conda run -n stenv python "$SD/make_cutouts.py" --lens "$lens" --filt "$key" \
