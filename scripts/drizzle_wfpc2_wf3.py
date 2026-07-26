@@ -104,6 +104,12 @@ _p.add_argument('--wht-type',    default='IVM', choices=['ERR', 'IVM', 'EXP'])
 _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizcr'])
 _p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
 _p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# The LACosmic CR pass is the science product for WFPC2 (LACosmic preserves the core, so
+# the CR mosaic is what make_cutouts --pass auto cuts). The no-CR ("nocrrej") pass used to
+# run unconditionally as a comparison; it is now opt-in via --nocrrej and off by default —
+# it doubles the drizzle time and nothing downstream reads it.
+_p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=False,
+                help='also produce the no-CR comparison drizzle (off by default)')
 # Single-visit drizzling for multi-visit lenses. --pa restricts the drizzle to frames
 # within 1 deg of that PA_V3 (one guide-star solution -> clean MAST registration);
 # --out-suffix tags the output/work dir (e.g. f606W -> f606W_v1) so the two visits do
@@ -114,9 +120,10 @@ _p.add_argument('--pa',          type=float, default=None)
 _p.add_argument('--out-suffix',  default='')
 _a = _p.parse_args()
 
-lens   = _a.lens
-sample = _a.sample
-filt   = _a.filt
+lens       = _a.lens
+sample     = _a.sample
+filt       = _a.filt
+do_nocrrej = _a.nocrrej
 
 # ── Output sampling ────────────────────────────────────────────────────────────
 # WF3 native scale is 0.0996"/px. The WFPC2-BOX 4-point pattern (spacing 0.559")
@@ -751,45 +758,54 @@ else:
 for f in glob.glob('*ask.fits'):
     os.remove(f)
 
-# ── AstroDrizzle pass 2: no CR rejection ──────────────────────────────────────
-print('\n=== AstroDrizzle (no CR rejection) ===')
-astrodrizzle.AstroDrizzle(drizzle_input,
-                           output='wfpc2_wf3_nocrrej',
-                           preserve=False, build=False, context=False,
-                           skysub=True, skymethod='localmin',
-                           driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
-                           driz_sep_bits='8,1024', driz_sep_fillval=-1,
-                           median=False, blot=False, driz_cr=False,
-                           # this pass runs on the same FLTs after the LACosmic pass
-                           # wrote DQ bit 4096; reset it so the no-CR mosaic is genuinely
-                           # un-masked and not silently CR-rejected.
-                           resetbits=4096,
-                           final_fillval=None, final_bits='8,1024',
-                           final_wcs=True, final_scale=out_scale,
-                           final_pixfrac=out_pixfrac,
-                           final_wht_type=_a.wht_type,
-                           **_common_wcs,
-                           num_cores=_num_cores)
-for f in glob.glob('*ask.fits'):
-    os.remove(f)
+# ── AstroDrizzle pass 2: no CR rejection (opt-in via --nocrrej) ───────────────
+if do_nocrrej:
+    print('\n=== AstroDrizzle (no CR rejection) ===')
+    astrodrizzle.AstroDrizzle(drizzle_input,
+                               output='wfpc2_wf3_nocrrej',
+                               preserve=False, build=False, context=False,
+                               skysub=True, skymethod='localmin',
+                               driz_sep_wcs=True, driz_sep_scale=WF3_NATIVE_SCALE,
+                               driz_sep_bits='8,1024', driz_sep_fillval=-1,
+                               median=False, blot=False, driz_cr=False,
+                               # this pass runs on the same FLTs after the LACosmic pass
+                               # wrote DQ bit 4096; reset it so the no-CR mosaic is genuinely
+                               # un-masked and not silently CR-rejected.
+                               resetbits=4096,
+                               final_fillval=None, final_bits='8,1024',
+                               final_wcs=True, final_scale=out_scale,
+                               final_pixfrac=out_pixfrac,
+                               final_wht_type=_a.wht_type,
+                               **_common_wcs,
+                               num_cores=_num_cores)
+    for f in glob.glob('*ask.fits'):
+        os.remove(f)
 
-print('\n=== Cropping (shared bbox for both passes) ===')
-# Crop BOTH passes to the union of their wht>0 boxes. LACosmic masks different edge
-# pixels in the CR pass than the no-CR pass, so per-pass cropping left the two products
-# differing by ~1 column and broke the residual diagnostic (and mis-registers the passes
-# pixel-for-pixel). The union box keeps every covered pixel and gives identical shapes.
-_bb_cr    = coverage_bbox('wfpc2_wf3_cr_drw_wht.fits')
-_bb_nocr  = coverage_bbox('wfpc2_wf3_nocrrej_drw_wht.fits')
-_bbox = (min(_bb_cr[0], _bb_nocr[0]), max(_bb_cr[1], _bb_nocr[1]),
-         min(_bb_cr[2], _bb_nocr[2]), max(_bb_cr[3], _bb_nocr[3]))
-crop_to_bbox('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',     _bbox)
-crop_to_bbox('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits', _bbox)
+if do_nocrrej:
+    print('\n=== Cropping (shared bbox for both passes) ===')
+    # Crop BOTH passes to the union of their wht>0 boxes. LACosmic masks different edge
+    # pixels in the CR pass than the no-CR pass, so per-pass cropping left the two products
+    # differing by ~1 column and broke the residual diagnostic (and mis-registers the passes
+    # pixel-for-pixel). The union box keeps every covered pixel and gives identical shapes.
+    _bb_cr    = coverage_bbox('wfpc2_wf3_cr_drw_wht.fits')
+    _bb_nocr  = coverage_bbox('wfpc2_wf3_nocrrej_drw_wht.fits')
+    _bbox = (min(_bb_cr[0], _bb_nocr[0]), max(_bb_cr[1], _bb_nocr[1]),
+             min(_bb_cr[2], _bb_nocr[2]), max(_bb_cr[3], _bb_nocr[3]))
+    crop_to_bbox('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',     _bbox)
+    crop_to_bbox('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits', _bbox)
+else:
+    print('\n=== Cropping (CR pass) ===')
+    _bbox = coverage_bbox('wfpc2_wf3_cr_drw_wht.fits')
+    crop_to_bbox('wfpc2_wf3_cr_drw_sci.fits', 'wfpc2_wf3_cr_drw_wht.fits', _bbox)
 
 print('\n=== Exposure times ===')
-for label, fname in (('CR rejected', 'wfpc2_wf3_cr_drw_sci.fits'),
-                     ('No CR rejection', 'wfpc2_wf3_nocrrej_drw_sci.fits')):
-    exptime = fits.getheader(fname)['EXPTIME']
-    print(f'  {label}: {exptime:.1f} s')
+_passes = [('CR rejected', 'wfpc2_wf3_cr_drw_sci.fits')]
+if do_nocrrej:
+    _passes.append(('No CR rejection', 'wfpc2_wf3_nocrrej_drw_sci.fits'))
+for label, fname in _passes:
+    print(f'  {label}: {fits.getheader(fname)["EXPTIME"]:.1f} s')
+# Record from the CR pass (the science product); EXPTIME is identical between passes.
+exptime = fits.getheader('wfpc2_wf3_cr_drw_sci.fits')['EXPTIME']
 _update_info_json(exptime_json_path, lens, product_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
@@ -800,8 +816,10 @@ _update_info_json(exptime_json_path, lens, product_key, exptime)
 # this keyword rather than on the instrument name.
 _ivm_model = ('SCI/gain+floor^2' if _a.wht_type == 'IVM' else _a.wht_type)
 print('\n=== Copying final products to output directory ===')
-for fname in ('wfpc2_wf3_cr_drw_sci.fits',     'wfpc2_wf3_cr_drw_wht.fits',
-              'wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits'):
+_copy_files = ['wfpc2_wf3_cr_drw_sci.fits', 'wfpc2_wf3_cr_drw_wht.fits']
+if do_nocrrej:
+    _copy_files += ['wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits']
+for fname in _copy_files:
     with fits.open(fname, mode='update') as _h:
         _h[0].header['IVMMODEL'] = (_ivm_model, 'WFPC2 noise model behind the WHT map')
         # AstroDrizzle writes count RATES (D001OUUN='cps') but leaves BUNIT at the
@@ -852,38 +870,39 @@ save_drizzled_png('wfpc2_wf3_cr_drw_sci.fits', 'wfpc2_wf3_cr_drw_wht.fits',
                   os.path.join(output_path, 'drizzled_cr.png'), title='(CR rejection)')
 print('  drizzled_cr.png')
 
-save_drizzled_png('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits',
-                  os.path.join(output_path, 'drizzled_nocrrej.png'), title='(no CR rejection)')
-print('  drizzled_nocrrej.png')
+if do_nocrrej:
+    save_drizzled_png('wfpc2_wf3_nocrrej_drw_sci.fits', 'wfpc2_wf3_nocrrej_drw_wht.fits',
+                      os.path.join(output_path, 'drizzled_nocrrej.png'), title='(no CR rejection)')
+    print('  drizzled_nocrrej.png')
 
-# 3-panel comparison with shared SCI normalization
-sci_cr      = fits.getdata('wfpc2_wf3_cr_drw_sci.fits')
-sci_nocrrej = fits.getdata('wfpc2_wf3_nocrrej_drw_sci.fits')
-wht         = fits.getdata('wfpc2_wf3_cr_drw_wht.fits')
-residual    = sci_cr - sci_nocrrej
+    # 3-panel comparison with shared SCI normalization
+    sci_cr      = fits.getdata('wfpc2_wf3_cr_drw_sci.fits')
+    sci_nocrrej = fits.getdata('wfpc2_wf3_nocrrej_drw_sci.fits')
+    wht         = fits.getdata('wfpc2_wf3_cr_drw_wht.fits')
+    residual    = sci_cr - sci_nocrrej
 
-combined = np.concatenate([sci_nocrrej[wht > 0], sci_cr[wht > 0]])
-combined = combined[np.isfinite(combined)]
-vmin      = max(np.percentile(combined, 10), 1e-4)
-vmax_sci  = np.percentile(combined, 99.9)
-shared_norm = ImageNormalize(vmin=vmin, vmax=vmax_sci, stretch=LogStretch())
+    combined = np.concatenate([sci_nocrrej[wht > 0], sci_cr[wht > 0]])
+    combined = combined[np.isfinite(combined)]
+    vmin      = max(np.percentile(combined, 10), 1e-4)
+    vmax_sci  = np.percentile(combined, 99.9)
+    shared_norm = ImageNormalize(vmin=vmin, vmax=vmax_sci, stretch=LogStretch())
 
-covered_res = residual[wht > 0]
-covered_res = covered_res[np.isfinite(covered_res)]
-vmax_res    = np.percentile(np.abs(covered_res), 99.5)
+    covered_res = residual[wht > 0]
+    covered_res = covered_res[np.isfinite(covered_res)]
+    vmax_res    = np.percentile(np.abs(covered_res), 99.5)
 
-fig, axes = plt.subplots(1, 3, figsize=(24, 8))
-axes[0].imshow(sci_nocrrej, norm=shared_norm, cmap='gray', origin='lower')
-axes[0].set_title('No CR rejection')
-axes[1].imshow(sci_cr, norm=shared_norm, cmap='gray', origin='lower')
-axes[1].set_title('CR rejection (snr=15/10, scale=1.5/1.0)')
-im = axes[2].imshow(residual, cmap='RdBu_r', vmin=-vmax_res, vmax=vmax_res, origin='lower')
-axes[2].set_title('CR rejected minus no CR rejection')
-plt.colorbar(im, ax=axes[2], label='counts/s')
-fig.tight_layout()
-fig.savefig(os.path.join(work_path, 'drizzled_diff.png'), dpi=150, bbox_inches='tight')
-plt.close(fig)
-print('  drizzled_diff.png')
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8))
+    axes[0].imshow(sci_nocrrej, norm=shared_norm, cmap='gray', origin='lower')
+    axes[0].set_title('No CR rejection')
+    axes[1].imshow(sci_cr, norm=shared_norm, cmap='gray', origin='lower')
+    axes[1].set_title('CR rejection (snr=15/10, scale=1.5/1.0)')
+    im = axes[2].imshow(residual, cmap='RdBu_r', vmin=-vmax_res, vmax=vmax_res, origin='lower')
+    axes[2].set_title('CR rejected minus no CR rejection')
+    plt.colorbar(im, ax=axes[2], label='counts/s')
+    fig.tight_layout()
+    fig.savefig(os.path.join(work_path, 'drizzled_diff.png'), dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print('  drizzled_diff.png')
 
 print(f'\nDone. Output in: {output_path}')
 
