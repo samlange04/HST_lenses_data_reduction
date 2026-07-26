@@ -42,8 +42,9 @@ HST image reduction for gravitational-lens samples (SLACS, BELLS). Per lens+filt
    (`--align mast`) by default: ACS/WFC3 skip `updatewcs` and TweakReg; WFPC2 runs
    `updatewcs` (for the distortion arrays) but **not** TweakReg. TweakReg is opt-in
    (`--align tweakreg`) and used by no lens — see *WCS alignment*.
-4. Produce a no-CR-rejection mosaic, plus a CR-rejected one (LACosmic) for WFPC2 or when
-   `--cr` is given.
+4. Produce a CR-rejected mosaic (LACosmic) — now the default and the science product for
+   ACS and WFPC2. The no-CR-rejection mosaic is opt-in (`--nocrrej`) for comparison only.
+   WFC3/IR F160W has no CR pass (see *Cosmic-ray rejection*).
 5. Update three JSON tracking files in `info/`.
 
 ## Running a single lens
@@ -65,8 +66,11 @@ dir under `data/drizzled/` (and `data/drizzle_files/`).
 A lens with no data for the requested instrument+filter prints `=== NO DATA: ...`, records
 `null` in the tracking JSONs, and **exits 0** — see *Lens Samples*.
 
-ACS/WFC3/NICMOS take `--cr` to enable the CR-rejection pass (off by default). WFPC2 always
-runs both passes.
+The **CR-rejection pass (LACosmic) is the default** for ACS and WFPC2, and is the product
+downstream reads. The no-CR pass is opt-in for comparison via `--nocrrej` (`--no-nocrrej`
+is the default). ACS also accepts `--no-cr` to skip CR (e.g. with `--nocrrej` for a no-CR
+only run). WFC3/IR F160W has no CR pass at all — do not add one (see *Cosmic-ray
+rejection*).
 
 ## Running all lenses
 
@@ -397,9 +401,10 @@ noise FITS (from the weight map), and a 3-panel PNG.
 
 - **Pass + prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks the CR pass when one
   exists, else no-CR. The prefix encodes it so the two coexist: **`cutout_cr_*` for CR,
-  `cutout_*` for no-CR.** So WFPC2 F606W (always has a LACosmic CR pass) → `auto` cuts
-  `cutout_cr_*`, which is science-grade (LACosmic preserves the core). ACS/WFC3 default to
-  no CR pass → `cutout_*`. → memory: cutout_centring_on_cr_pass
+  `cutout_*` for no-CR.** ACS F814W/F555W and WFPC2 F606W now default to a LACosmic CR pass
+  → `auto` cuts `cutout_cr_*`, which is science-grade (LACosmic preserves the core). WFC3/IR
+  F160W has no CR pass, so `auto` falls back to `cutout_*` there. → memory:
+  cutout_centring_on_cr_pass
 - **Recentring.** The stamp recentres on the galaxy, and the peak search prefers the CR
   mosaic — a brightest-pixel search on a CR-laden no-CR mosaic locks onto cosmic rays. Don't
   reach for `--median-size` for a bad recentre; check a `*_cr_*` mosaic is present.
@@ -502,16 +507,18 @@ is why a no-data result there isn't conclusive).
 
 ## AstroDrizzle key parameters
 
-Two passes over the same inputs:
-- **CR pass**: default **LACosmic** — mask CRs per frame, then a plain-mean drizzle
-  (`median=False, blot=False, driz_cr=False`, `resetbits=0`). `--cr-method drizcr` restores
-  the AstroDrizzle route (which eats the core).
-- **No-CR pass** (`median=False, blot=False, driz_cr=False`): uncleaned, for comparison.
+- **CR pass** (default for ACS + WFPC2): **LACosmic** — mask CRs per frame, then a
+  plain-mean drizzle (`median=False, blot=False, driz_cr=False`, `resetbits=0`). This is the
+  product downstream reads. `--cr-method drizcr` restores the AstroDrizzle route (which eats
+  the core).
+- **No-CR pass** (`median=False, blot=False, driz_cr=False`): uncleaned, opt-in via
+  `--nocrrej` for comparison. When both passes run they share one crop bbox (union of the two
+  wht>0 boxes) so they register pixel-for-pixel.
 
-Only WFPC2 runs both unconditionally; ACS/WFC3/NICMOS run no-CR only unless `--cr`. WFC3/IR
-F160W therefore has no CR pass — `make_cutouts.py` falls back to the science pass for
-recentring (acceptable: FLTs are already up-the-ramp CR-rejected; re-run with `--cr` if a
-recentre looks wrong).
+ACS and WFPC2 default to **CR-only** (`--nocrrej` adds the no-CR pass; ACS `--no-cr` skips
+CR). WFC3/IR F160W has no CR pass at all — `make_cutouts.py` falls back to the science pass
+for recentring (acceptable: FLTs are already up-the-ramp CR-rejected; re-run with `--cr` if
+a recentre looks wrong).
 
 **DQ bits treated as good** (do not unify these — they encode different detector facts):
 - WFPC2: `8,1024`

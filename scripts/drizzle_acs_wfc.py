@@ -45,7 +45,14 @@ _p.add_argument('--sample',      default=mast_target_names.DEFAULT_SAMPLE,
                 help='sample the lens belongs to; sets the <sample> level of every '
                      'data/ path. Defined in info/lens_samples.json '
                      f'(default {mast_target_names.DEFAULT_SAMPLE})')
-_p.add_argument('--cr',          action='store_true', default=False)
+# CR rejection is now the science default: the LACosmic CR pass is the product the rest
+# of the pipeline consumes (make_cutouts --pass auto cuts the _cr_ mosaic). Pass --no-cr
+# to skip it. The no-CR ("nocrrej") pass is opt-in for comparison only via --nocrrej;
+# by default it is not produced — it doubles the drizzle time and nothing downstream
+# reads it. (Was the reverse: no-CR always, CR opt-in via --cr.)
+_p.add_argument('--cr',      action=argparse.BooleanOptionalAction, default=True)
+_p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=False,
+                help='also produce the no-CR comparison drizzle (off by default)')
 # CR-rejection method for the --cr pass. 'lacosmic' (default) masks cosmic rays per
 # frame with LACosmic and then drizzles a plain weighted mean; 'drizcr' is the old
 # AstroDrizzle median/blot/driz_cr route, kept for comparison. See the block comment
@@ -97,7 +104,10 @@ lens           = _a.lens
 sample         = _a.sample
 filt           = _a.filt
 do_cr          = _a.cr
+do_nocrrej     = _a.nocrrej
 _is_subprocess = _a._subprocess
+if not do_cr and not do_nocrrej:
+    _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
 ws_path     = '/Users/samlange/Code/data_reduction'
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
@@ -527,17 +537,20 @@ if do_cr:
     crop_to_coverage('acs_wfc_flc_cr_drc_sci.fits', 'acs_wfc_flc_cr_drc_wht.fits')
 
     # ── AstroDrizzle pass 2: no CR rejection in subprocess to free memory ─────
-    print('\n=== AstroDrizzle (no CR rejection) — launching subprocess ===')
-    _result = subprocess.run(
-        [sys.executable, os.path.abspath(__file__),
-         '--lens', lens, '--filt', filt, '--sample', sample,
-         '--wht-type', _a.wht_type, '--_subprocess'],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-    )
-    sys.stdout.write(_result.stdout)
-    sys.stdout.flush()
-    if _result.returncode != 0:
-        raise RuntimeError(f'no-CR subprocess exited with code {_result.returncode}')
+    # Only when explicitly requested (--nocrrej); it is a comparison product, not
+    # consumed downstream. The subprocess gets a clean memory slate after the CR pass.
+    if do_nocrrej:
+        print('\n=== AstroDrizzle (no CR rejection) — launching subprocess ===')
+        _result = subprocess.run(
+            [sys.executable, os.path.abspath(__file__),
+             '--lens', lens, '--filt', filt, '--sample', sample,
+             '--wht-type', _a.wht_type, '--_subprocess'],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        )
+        sys.stdout.write(_result.stdout)
+        sys.stdout.flush()
+        if _result.returncode != 0:
+            raise RuntimeError(f'no-CR subprocess exited with code {_result.returncode}')
 
 else:
     # ── AstroDrizzle pass 2: no CR rejection ──────────────────────────────────
@@ -567,17 +580,23 @@ else:
     crop_to_coverage('acs_wfc_flc_nocrrej_drc_sci.fits', 'acs_wfc_flc_nocrrej_drc_wht.fits')
 
 print('\n=== Exposure times ===')
-exptime = fits.getheader('acs_wfc_flc_nocrrej_drc_sci.fits')['EXPTIME']
-print(f'  No CR rejection: {exptime:.1f} s')
+# The CR pass is the primary product; record its EXPTIME (identical between passes,
+# but read from whichever product actually exists).
+_primary_sci = 'acs_wfc_flc_cr_drc_sci.fits' if do_cr else 'acs_wfc_flc_nocrrej_drc_sci.fits'
 if do_cr:
     print(f'  CR rejected: {fits.getheader("acs_wfc_flc_cr_drc_sci.fits")["EXPTIME"]:.1f} s')
+if do_nocrrej:
+    print(f'  No CR rejection: {fits.getheader("acs_wfc_flc_nocrrej_drc_sci.fits")["EXPTIME"]:.1f} s')
+exptime = fits.getheader(_primary_sci)['EXPTIME']
 _update_info_json(exptime_json_path, lens, filt_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
 print('\n=== Copying final products to output directory ===')
-_copy = ['acs_wfc_flc_nocrrej_drc_sci.fits', 'acs_wfc_flc_nocrrej_drc_wht.fits']
+_copy = []
 if do_cr:
-    _copy = ['acs_wfc_flc_cr_drc_sci.fits', 'acs_wfc_flc_cr_drc_wht.fits'] + _copy
+    _copy += ['acs_wfc_flc_cr_drc_sci.fits', 'acs_wfc_flc_cr_drc_wht.fits']
+if do_nocrrej:
+    _copy += ['acs_wfc_flc_nocrrej_drc_sci.fits', 'acs_wfc_flc_nocrrej_drc_wht.fits']
 for fname in _copy:
     shutil.copy(fname, output_path)
     print(f'  {fname}')
@@ -619,11 +638,12 @@ if do_cr:
                       os.path.join(output_path, 'drizzled_cr.png'), title='(CR rejection)')
     print('  drizzled_cr.png')
 
-save_drizzled_png('acs_wfc_flc_nocrrej_drc_sci.fits', 'acs_wfc_flc_nocrrej_drc_wht.fits',
-                  os.path.join(output_path, 'drizzled_nocrrej.png'), title='(no CR rejection)')
-print('  drizzled_nocrrej.png')
+if do_nocrrej:
+    save_drizzled_png('acs_wfc_flc_nocrrej_drc_sci.fits', 'acs_wfc_flc_nocrrej_drc_wht.fits',
+                      os.path.join(output_path, 'drizzled_nocrrej.png'), title='(no CR rejection)')
+    print('  drizzled_nocrrej.png')
 
-if do_cr:
+if do_cr and do_nocrrej:
     sci_cr      = fits.getdata('acs_wfc_flc_cr_drc_sci.fits')
     sci_nocrrej = fits.getdata('acs_wfc_flc_nocrrej_drc_sci.fits')
     wht         = fits.getdata('acs_wfc_flc_cr_drc_wht.fits')
