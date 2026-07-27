@@ -24,6 +24,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from astropy.io import fits
+from astropy.wcs import WCS
 from astropy.visualization import LogStretch, ImageNormalize
 from astroquery.mast import Observations
 from drizzlepac import tweakreg, astrodrizzle
@@ -136,6 +137,7 @@ try:
     print(f'=== Common WCS: North-up, centre ({_lc.ra.deg:.5f}, {_lc.dec.deg:.5f}) ===')
 except (KeyError, ImportError):
     _common_wcs = {}
+    _lc = None
     print('=== Common WCS: lens not in slacs_coords -> native drizzle WCS ===')
 
 
@@ -606,6 +608,50 @@ print('\n=== Saving plots ===')
 
 single_sci_files = sorted(glob.glob('*_single_sci.fits'))
 single_wht_files = sorted(glob.glob('*_single_wht.fits'))
+
+# ── Registration QC ──────────────────────────────────────────────────────────────
+# A per-visit WCS solution can land far off even though --align mast trusts every
+# delivered WCS as correct (e.g. an old GSC240 fit vs a GAIA-tied fit on another visit
+# of the same lens) -- AstroDrizzle does not detect this itself, it just combines the
+# bad frame's light into the wrong pixels, diluting the true source and creating a
+# ghost elsewhere. Found on J0912+0029 F814W (2026-07-27): a 2005 visit's GSC240 fit
+# sat ~24" off a 2006 visit's GAIA fit. Catch it by checking, for every contributing
+# frame, whether its own single-drizzle image actually has flux at the catalogue
+# position -- a real mismatch shows up as one frame's peak there being far below its
+# siblings', not as a shifted peak. (A free-roaming search for the shifted peak is not
+# used here: it routinely locks onto an unrelated bright star/galaxy elsewhere in the
+# field instead of the real ghost.)
+if _lc is not None and len(single_sci_files) >= 2:
+    print('\n=== Registration QC ===')
+    _qc_box = 30  # +-1.5" around the catalogue position
+    _hdr0 = fits.getheader(single_sci_files[0])
+    _xt, _yt = WCS(_hdr0).all_world2pix(_lc.ra.deg, _lc.dec.deg, 0)
+    _xt, _yt = int(round(float(_xt))), int(round(float(_yt)))
+    print(f'  checking {len(single_sci_files)} contributing frames at catalogue position...')
+    _peaks = []
+    for _f in single_sci_files:
+        _data = fits.getdata(_f)
+        _y0, _y1 = max(0, _yt - _qc_box), min(_data.shape[0], _yt + _qc_box)
+        _x0, _x1 = max(0, _xt - _qc_box), min(_data.shape[1], _xt + _qc_box)
+        _sub = _data[_y0:_y1, _x0:_x1]
+        _peaks.append((os.path.basename(_f).replace('_single_sci.fits', ''),
+                        float(np.nanmax(_sub)) if _sub.size else float('nan')))
+    _med = float(np.nanmedian([_p for _, _p in _peaks])) if _peaks else float('nan')
+    if not (_med > 0):
+        print('  (zero/undefined median peak -- nothing to compare)')
+    else:
+        _bad = False
+        for _name, _p in _peaks:
+            _ratio = _p / _med if np.isfinite(_p) else float('nan')
+            _flag = np.isfinite(_ratio) and _ratio < 0.35
+            _bad = _bad or _flag
+            print(f'  {_name}: peak={_p:.3g} ({_ratio:.2f}x median)' + ('  <-- WARNING' if _flag else ''))
+        if _bad:
+            print('  WARNING: possible cross-visit WCS mismatch -- inspect before '
+                  'trusting this product (see CLAUDE.md "WCS alignment")')
+        else:
+            print('  OK - all frames consistent')
+
 if single_sci_files:
     n = len(single_sci_files)
     fig, axes = plt.subplots(1, n, figsize=(8 * n, 8))
