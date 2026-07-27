@@ -59,7 +59,7 @@ from photutils.centroids import centroid_com
 from photutils.detection import DAOStarFinder
 from photutils.psf import EPSFBuilder, extract_stars
 
-ws_path = '/Users/samlange/Code/data_reduction'
+ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
