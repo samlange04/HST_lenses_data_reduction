@@ -426,13 +426,29 @@ bash scripts/run_psf_all.sh            # every drizzled product; globs data/driz
 is keyed on `INSTRUME` alone because the drizzled primary header says `DETECTOR=PC`, the
 aperture — see *WFPC2: the lens is on WF3*). Builds an **empirical ePSF** from field stars in
 the full drizzled mosaic (photutils `DAOStarFinder → extract_stars → EPSFBuilder`, a
-production port of `old_notebooks/load_data.ipynb`), and **falls back to an STScI STDPSF
-model** (`psf_models.py`) when a field is too star-poor. Outputs to
-`data/psf/<sample>/<lens>/<filt>/`: **`psf_kernel.fits`** (image-scale, odd, unit-sum —
-a drop-in `al.Kernel2D` at the band pixel scale), **`psf_epsf.fits`** (the oversampled ePSF),
-and **`psf.png`** (QA: star montage / kernel / radial profile). Records `info/lens_psf.json`
-(`{lens:{filt:{method,n_stars,fwhm_pix,oversample,kernel_size}}}`, `null` + exit 0 on no data).
-Run **after** the drizzles (a PSF needs a mosaic). → memory: psf_generation
+production port of `old_notebooks/load_data.ipynb`), and **falls back to a model** when a
+field is too star-poor — for WFPC2 F606W a **native ePSF from the MAST PSF database**, else
+an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
+- **`data/psf/<sample>/<lens>/<filt>/`** (archival characterisation): **`psf_kernel.fits`**
+  — the **full** kernel (whole ePSF footprint binned to image scale, `star_size` px:
+  35/41/51), **`psf_epsf.fits`** (oversampled ePSF), **`psf.png`** (4-panel QA: star montage
+  · kernel linear · kernel **log** · radial profile).
+- **`data/cutouts/<sample>/<lens>/<filt>/`** (modelling-ready): **`cutout_[cr_]psf.fits`** —
+  the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
+  radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
+
+Records `info/lens_psf.json` (`{lens:{filt:{method,n_stars,fwhm_pix,oversample,kernel_size,
+cutout_kernel_size,trim_threshold}}}`, `null` + exit 0 on no data). Run **after** the
+drizzles (a PSF needs a mosaic). → memory: psf_generation, psf_kernel_sizing
+
+**Kernel size is an amplitude cut, not enclosed-energy.** The trimmed modelling kernel is cut
+where the azimuthally-averaged PSF drops below `trim_threshold`×peak — the extent over which
+the PSF still spreads flux above ~that level, which is what a *convolution* kernel needs. A
+95% enclosed-energy cut is **wrong** here: EE is area-weighted (a photometry criterion) and
+integrates the noisy empirical wing, so it under-sizes — on J0252 F606W it truncates at ~18px
+while the PSF is still ~1% of peak, vs ~31px for amplitude-1e-3. The cut is band-adaptive by
+construction (sharp ACS F814W → 19–27px; broad F160W → 29–41px; F606W → 31px).
+→ memory: psf_kernel_sizing
 
 **Star selection is fully automatic; per-lens tweaks live in `info/psf_stars.json`** (absent
 lens/filt ⇒ automatic). Overrides: `include`/`exclude` coords or boxes, and any parameter
@@ -468,6 +484,26 @@ strictly better ACS model than STDPSF. Records method `model_acs_fdpsf`; grids c
 empirical ePSF is preferred when stars exist; **STDPSF stays the fallback-of-the-fallback**
 if a retrieval fails. Verified J0252 F814W: 0.100″ (STDPSF F814W 0.096″, empirical 0.125″).
 
+**WFPC2 F606W model = native ePSF from the MAST PSF database (`psf_models.py`,
+`scripts/mast_api_psf.py`; Dauphin et al., ISR WFC3 2021-12).** STDPSF has no WFPC2 F606W
+grid, so the STDPSF path substitutes WFPC2 F555W (right chip, wrong filter) — historically
+the least-verified product in the pipeline. Instead `wfpc2_f606w_db_epsf()` queries the MAST
+PSF database for good-quality (`qfit<0.05`), unsaturated (`n_sat_pixels=0`) **WF3 (chip 3)**
+F606W star cutouts near the lens position (`x_cal/y_cal` within ±200px of ~435,424 — every
+F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` cutouts, gates them
+(inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
+and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
+`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `_v1/_v2`)
+reuses it; records method `model_wfpc2_psfdb`. Still detector-frame (omits drizzle
+broadening), so the lens's-own-field empirical build is still preferred where stars exist —
+this is the model **fallback, slotted ABOVE the STDPSF F555W proxy** (which is now
+fallback-of-the-fallback). **Traps:** the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext
+(1=PC…4=WF4) — **query chip 3 for WF3**, not chip 1 (PC has a different pixel scale *and*
+PSF); split-visit filter keys (`f606W_v1`) must be normalised to the base filter before any
+STDPSF/pivot lookup (`_base_filter`), or the model path KeyErrors. FWHM 0.212″ (broader than
+the 0.178″ F555W proxy — it includes the real drizzle-broadened empirical wings the STDPSF
+omits). → memory: wfpc2_f606w_mast_psf_db
+
 **STDPSF fallback (`psf_models.py`, Anderson & King 2000; Dauphin et al. 2021; Anderson
 2016):** 4×-supersampled 101×101 grids read by photutils
 `GriddedPSFModel.read(..., format='stdpsf')`, cached under `data/reference_files/stdpsf/`.
@@ -483,22 +519,24 @@ Used for WFPC2/WFC3, and for ACS only when the focus-diverse retrieval fails.
 - It is the **detector-frame** ePSF and omits AstroDrizzle broadening (Anderson 2016), so it
   runs slightly sharp — the **empirical ePSF is the true drizzled PSF and always preferred**
   when enough stars exist. WFPC2 fields are usually star-poor (A&K build ePSFs from globular
-  clusters, which these are not), so F606W commonly uses the F555W-proxy model.
+  clusters, which these are not), so F606W falls to the model — now the native MAST-PSF-DB
+  ePSF above, with this F555W proxy only as its fallback.
 
-**Current state and open limitations.** `info/lens_psf.json` currently has only
-**J0252+0039** (all three bands) — `run_psf_all.sh` has not yet been run across
-`slacs_gold`, so this is not a completed campaign. Consequences worth checking as more
-lenses run:
-- All gate thresholds (`min_snr=30`, ePSF core ≥15× outskirt noise, flux floor 5%,
-  `fwhm_tol_hi=1.4·psf_fwhm`, `star_size=35` for WFPC2) were derived from this one field and
-  are unvalidated against the star-density range of the other 37 lenses.
+**Current state and open limitations.** `run_psf_all.sh` **has been run across all of
+`slacs_gold`** — `info/lens_psf.json` holds **90 products, 0 failures** (2026-07-27). Method
+breakdown: **F814W** 33 empirical + 5 focus-diverse; **F555W** 16 empirical; **F606W** 23/23
+`model_wfpc2_psfdb` (native MAST-DB, no more F555W proxy); **F160W** 6 empirical + 7
+exact-filter STDPSF. The gate thresholds (`min_snr=30`, core ≥15× outskirt, flux floor 5%,
+`fwhm_tol_hi=1.4`, `star_size=35` for WFPC2) **generalised fine** across the star-density
+range (empirical succeeded 33/38 F814W, 16/16 F555W) — no retune needed. Open items:
 - **No PSF uncertainty is propagated.** The kernel is a point estimate; an ePSF built from
   as few as 3–5 stars has no accompanying error/covariance for downstream lens modelling.
-- WFPC2 F606W's worst case compounds two weaknesses at once: star-poor fields fall to the
-  model path, and the model path there is STDPSF's filter-substituted (F555W-proxy),
-  detector-frame grid — the least-verified PSF product in the pipeline.
-- F160W's WFC3 MAST PSF DB alternative was evaluated and deliberately deferred (heavier,
-  still detector-frame) — not an oversight if it comes up again.
+  Genuinely new work — not addressed by having more lenses.
+- **F160W full kernel may be tight.** Its `star_size=41` full extent is small enough that the
+  amplitude-1e-3 trim hits the 41px cap for some lenses (the broad IR PSF is still >1e-3 of
+  peak at the stamp edge) — consider a larger F160W `star_size` if wing fidelity matters.
+- F160W's 7 STDPSF models are **exact-filter** (F160W has a real grid), so acceptable; the
+  same MAST PSF DB carries WFC3/IR F160W if a native build is ever wanted (marginal gain).
 
 ## Tracking JSONs in `info/`
 
