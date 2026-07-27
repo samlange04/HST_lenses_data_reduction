@@ -110,7 +110,7 @@ _is_subprocess = _a._subprocess
 if not do_cr and not do_nocrrej:
     _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
-ws_path     = '/Users/samlange/Code/data_reduction'
+ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large

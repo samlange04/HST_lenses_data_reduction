@@ -36,7 +36,7 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 from scipy.ndimage import median_filter
 import astropy.units as u
 
-ws_path = '/Users/samlange/Code/data_reduction'
+ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords

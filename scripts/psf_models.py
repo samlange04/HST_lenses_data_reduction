@@ -40,7 +40,7 @@ import urllib.request
 import numpy as np
 from photutils.psf import GriddedPSFModel
 
-ws_path = '/Users/samlange/Code/data_reduction'
+ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 _CACHE = os.path.join(ws_path, 'data', 'reference_files', 'stdpsf')
 _STDPSF_BASE = 'https://www.stsci.edu/~jayander/HST1PASS/LIB/PSFs/STDPSFs'
 

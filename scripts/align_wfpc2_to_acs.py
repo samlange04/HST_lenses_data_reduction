@@ -35,7 +35,7 @@ from astropy.nddata import Cutout2D
 from scipy.ndimage import median_filter
 from photutils.centroids import centroid_com
 
-WS = '/Users/samlange/Code/data_reduction'
+WS = '/Users/samlange/Code/HST_lenses_data_reduction'
 sys.path.insert(0, os.path.join(WS, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords

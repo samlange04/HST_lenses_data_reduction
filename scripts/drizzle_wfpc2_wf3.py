@@ -178,7 +178,7 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     norm = lambda s: len({0.0 if v in (0.0, 1.0) else v for v in s})
     return norm(fx), norm(fy)
 
-ws_path     = '/Users/samlange/Code/data_reduction'
+ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
 # take --out-suffix, so both visits share the one download but write to f606W_v1 / _v2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
