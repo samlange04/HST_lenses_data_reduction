@@ -1,0 +1,25 @@
+{
+    "J0252+0039": {
+        "f160W": {
+            "method": "model",
+            "n_stars": 1,
+            "fwhm_pix": 3.157,
+            "oversample": 2,
+            "kernel_size": 31
+        },
+        "f606W": {
+            "method": "model",
+            "n_stars": 0,
+            "fwhm_pix": 3.5689,
+            "oversample": 2,
+            "kernel_size": 31
+        },
+        "f814W": {
+            "method": "empirical",
+            "n_stars": 5,
+            "fwhm_pix": 2.5027,
+            "oversample": 2,
+            "kernel_size": 31
+        }
+    }
+}
