@@ -35,6 +35,7 @@ Grids are cached under data/reference_files/stdpsf/ and downloaded once from STS
 import glob
 import json
 import os
+import re
 import urllib.request
 
 import numpy as np
@@ -78,11 +79,21 @@ _PIVOT = {
 _GRID_CACHE = {}
 
 
+def _base_filter(filt):
+    """Strip a split-visit suffix (f606W_v1 -> f606W) for filter-library lookups.
+
+    Multi-visit lenses (J0728, J0822) are keyed per visit at the product-directory
+    level, but the optics are identical across visits, so the model PSF is the base
+    filter's. Without this the STDPSF path KeyErrors on the raw directory name.
+    """
+    return re.sub(r'_v\d+$', '', filt)
+
+
 def _resolve_filter(inst_key, filt):
     """Exact STDPSF filter if published, else the nearest by pivot wavelength."""
     if inst_key not in _LIB:
         raise KeyError(f'no STDPSF library mapping for instrument {inst_key!r}')
-    fu = filt.upper()
+    fu = _base_filter(filt).upper()
     avail = _LIB[inst_key]['filters']
     if fu in avail:
         return fu, False
@@ -135,7 +146,8 @@ def model_psf(inst_key, filt, oversample, size, out_scale):
     stdpsf_filt, substituted = _resolve_filter(inst_key, filt)
     if substituted:
         print(f'  NOTE: no STDPSF for {inst_key} {filt}; using nearest band '
-              f'{stdpsf_filt} ({_PIVOT[filt.upper()]}->{_PIVOT[stdpsf_filt]} nm)')
+              f'{stdpsf_filt} ({_PIVOT[_base_filter(filt).upper()]}->'
+              f'{_PIVOT[stdpsf_filt]} nm)')
     grid = _load_grid(inst_key, stdpsf_filt)
 
     # Evaluate at the centre of the fiducial-PSF grid (representative; the drizzled-mosaic
@@ -153,6 +165,120 @@ def model_psf(inst_key, filt, oversample, size, out_scale):
     if stamp.sum() > 0:
         stamp /= stamp.sum()
     return stamp
+
+
+# ── WFPC2 F606W native ePSF from the MAST PSF database ───────────────────────────
+# The STDPSF library carries no WFPC2 F606W grid, so model_psf() substitutes WFPC2
+# F555W (right chip, wrong filter) -- the least-verified product in the pipeline. The
+# MAST PSF database (Dauphin et al., ISR WFC3 2021-12) instead holds ~140k good,
+# unsaturated WF3 F606W point-source cutouts. We build ONE native-F606W WF3 ePSF from
+# the best-qfit stars near the lens position -- every WFPC2 F606W lens puts its target
+# at the same WF3 spot (~435,424), so a single shared model serves all of them -- and
+# cache it. Still a detector-frame ePSF (omits AstroDrizzle broadening), so the
+# lens's-own-field empirical build is preferred where stars exist; this is the model
+# FALLBACK, slotted ABOVE the STDPSF F555W proxy.
+
+_WFPC2_F606W_DB_CACHE = os.path.join(ws_path, 'data', 'reference_files', 'wfpc2_f606w_psfdb')
+_WF3_LENS_XY = (435, 424)     # lens galaxy position on WF3 (chip 3); see CLAUDE.md
+_F606W_DB = dict(
+    qfit_max=0.05,        # low qfit == good template fit; ~8.6k WF3 F606W stars qualify
+    radius=200,           # x_cal/y_cal box half-width around the lens WF3 position
+    n_download=300,       # best-qfit candidates to fetch (many are edge-contaminated)
+    build_oversample=4,   # EPSFBuilder oversampling relative to the WF3 detector scale
+    inner_half=13,        # crop to a 27x27 inner box -> drop edge neighbours / warm pixels
+    max_center_off=2.0,   # reject a cutout whose windowed centroid is >2px off centre
+    min_stars=15,         # need at least this many clean stars, else fall back to STDPSF
+    maxiters=12,
+)
+
+
+def wfpc2_f606w_db_epsf(oversample, size, out_scale, force_rebuild=False):
+    """Native WF3 F606W ePSF (MAST PSF database) on the make_psf output grid.
+
+    Returns an array `oversample` times finer than `out_scale`, spanning `size` output
+    pixels -- the same convention as model_psf(). Builds+caches a single shared ePSF the
+    first time; later calls reload it. Raises RuntimeError if a usable ePSF can't be
+    built so make_psf falls back to the STDPSF F555W proxy.
+    """
+    data, samp = _wfpc2_f606w_db_build(force_rebuild=force_rebuild)
+    return _resample_centered(data, samp, out_scale, oversample, size)
+
+
+def _wfpc2_f606w_db_build(force_rebuild=False):
+    """(oversampled ePSF array, arcsec/pixel sampling) for WF3 F606W, cached to FITS."""
+    import mast_api_psf
+    from astropy.io import fits
+    from photutils.psf import EPSFStar, EPSFStars, EPSFBuilder
+    from photutils.centroids import centroid_com
+
+    cfg = _F606W_DB
+    samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
+    os.makedirs(_WFPC2_F606W_DB_CACHE, exist_ok=True)
+    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf.fits')
+    if os.path.exists(cache) and not force_rebuild:
+        return np.asarray(fits.getdata(cache), float), samp
+
+    lx, ly = _WF3_LENS_XY
+    r = cfg['radius']
+    cols = ['id', 'rootname', 'filter_1', 'chip', 'x_cal', 'y_cal', 'qfit',
+            'n_sat_pixels', 'subarray']
+    params = {'filter_1': ['F606W'], 'chip': ['3'], 'n_sat_pixels': ['0'],
+              'qfit': [{'min': 0.0, 'max': cfg['qfit_max']}],
+              'x_cal': [{'min': lx - r, 'max': lx + r}],
+              'y_cal': [{'min': ly - r, 'max': ly + r}]}
+    obs = mast_api_psf.mast_query_psf_database(
+        'WFPC2', mast_api_psf.set_filters(params), columns=cols)
+    if len(obs) == 0:
+        raise RuntimeError('MAST PSF DB returned no WF3 F606W stars')
+    obs.sort('qfit')
+    obs = obs[:cfg['n_download']]
+    uris = mast_api_psf.make_dataURIs(obs, 'WFPC2', file_suffix=['c0m'])
+
+    cutdir = os.path.join(_WFPC2_F606W_DB_CACHE, 'cutouts')
+    os.makedirs(cutdir, exist_ok=True)
+    half = cfg['inner_half']
+    stars = []
+    for uri in uris:
+        fn = os.path.join(cutdir, uri.split('/')[-1])
+        if not os.path.exists(fn) or os.path.getsize(fn) < 1000:
+            try:
+                mast_api_psf.download_request_file(uri, fn)
+            except Exception:
+                continue
+        try:
+            d = np.nan_to_num(np.asarray(fits.getdata(fn), float))
+        except Exception:
+            continue
+        cy, cx = (np.array(d.shape) - 1) // 2
+        sub = d[cy - half:cy + half + 1, cx - half:cx + half + 1]
+        if sub.shape != (2 * half + 1, 2 * half + 1):
+            continue
+        sub = sub - np.median(d)                 # per-stamp sky
+        c = centroid_com(np.clip(sub, 0, None))  # windowed centroid drops edge contaminants
+        if not np.all(np.isfinite(c)) or np.hypot(c[0] - half, c[1] - half) > cfg['max_center_off']:
+            continue
+        peak = sub.max()
+        if peak <= 0:
+            continue
+        stars.append(EPSFStar(sub / peak, cutout_center=(float(c[0]), float(c[1]))))
+    if len(stars) < cfg['min_stars']:
+        raise RuntimeError(f'only {len(stars)} usable WF3 F606W DB stars '
+                           f'(<{cfg["min_stars"]})')
+
+    builder = EPSFBuilder(oversampling=cfg['build_oversample'], maxiters=cfg['maxiters'],
+                          recentering_maxiters=8, progress_bar=False)
+    epsf, _ = builder(EPSFStars(stars))
+    data = np.nan_to_num(np.asarray(epsf.data, float))
+
+    hdr = fits.Header()
+    hdr['PSFSRC'] = ('MAST_PSF_DB', 'WFPC2 F606W PSF DB (Dauphin ISR WFC3 2021-12)')
+    hdr['NSTARS'] = (len(stars), 'WF3 F606W star cutouts used')
+    hdr['QFITMAX'] = (cfg['qfit_max'], 'max qfit selected')
+    hdr['BUILDOVR'] = (cfg['build_oversample'], 'EPSFBuilder oversampling vs WF3 scale')
+    hdr['PIXSCALE'] = (round(samp, 5), 'ePSF arcsec/pixel')
+    fits.writeto(cache, data, hdr, overwrite=True)
+    print(f'    built WF3 F606W MAST-PSF-DB ePSF from {len(stars)} stars -> {cache}')
+    return data, samp
 
 
 # ── ACS/WFC focus-diverse ePSF (preferred ACS model over the static STDPSF) ──────

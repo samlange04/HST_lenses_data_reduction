@@ -50,7 +50,8 @@ from astropy.modeling import fitting, models
 from astropy.nddata import NDData, block_reduce
 from astropy.stats import sigma_clipped_stats
 from astropy.table import Table
-from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
+from astropy.visualization import (AsinhStretch, ImageNormalize, LinearStretch,
+                                   LogStretch, PercentileInterval)
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 import astropy.units as u
@@ -389,6 +390,34 @@ def oversampled_to_kernel(epsf_data, oversample, kernel_size):
                      'cannot normalise a kernel from it')
 
 
+def trim_kernel_to_amplitude(kernel, threshold=1e-3, min_half=3):
+    """Crop a full image-scale kernel to the radius where the azimuthally-averaged PSF
+    drops below `threshold` x peak, then renormalise to unit sum.
+
+    This is the amplitude-based extent that matters for a *convolution* kernel: it keeps
+    the PSF out to where it still spreads flux above ~this fraction of the peak. It is
+    deliberately NOT an enclosed-energy cut -- EE is area-weighted and, being an integral
+    of the noisy empirical wing, under-sizes (a 95% EE cut truncates while the PSF is still
+    ~1% of peak; see the info/ PSF handbooks and the psf.png log panel). Band-adaptive by
+    construction: broad PSFs (F160W, F606W) keep more pixels than the sharp ACS core.
+    Returns (odd, centred, unit-sum kernel, its size).
+    """
+    arr = np.asarray(kernel, float)
+    ny, nx = arr.shape
+    cy, cx = ny // 2, nx // 2
+    yy, xx = np.mgrid[:ny, :nx]
+    rint = np.round(np.hypot(xx - cx, yy - cy)).astype(int)
+    peak = arr[cy, cx] if arr[cy, cx] > 0 else float(arr.max())
+    prof = np.array([arr[rint == k].mean() if (rint == k).any() else 0.0
+                     for k in range(rint.max() + 1)])          # azimuthal mean per radius
+    below = np.where(prof < threshold * peak)[0]
+    half = int(below[0]) if len(below) else int(rint.max())
+    half = min(max(min_half, half), cy, cx)                    # never exceed the full kernel
+    sub = arr[cy - half:cy + half + 1, cx - half:cx + half + 1]
+    s = sub.sum()
+    return (sub / s if s > 0 else sub), 2 * half + 1
+
+
 def measure_fwhm(kernel):
     """Approximate FWHM (pixels) of a kernel via a 2D Gaussian fit; None on failure."""
     try:
@@ -412,9 +441,10 @@ def write_fits(data, header, path):
 
 
 def plot_psf(kernel, epsf_data, star_stamps, scale_arcsec, fwhm_pix, output_path, title):
-    """QA panel: selected-star montage, the image-scale kernel, and its radial profile."""
-    fig = plt.figure(figsize=(16, 5.5))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1])
+    """QA panel: selected-star montage, the image-scale kernel on linear *and* log
+    stretch (core vs faint wings), and its radial profile."""
+    fig = plt.figure(figsize=(20, 5.5))
+    gs = fig.add_gridspec(1, 4, width_ratios=[1.2, 1, 1, 1])
 
     # (1) montage of the extracted star stamps
     ax0 = fig.add_subplot(gs[0])
@@ -434,20 +464,28 @@ def plot_psf(kernel, epsf_data, star_stamps, scale_arcsec, fwhm_pix, output_path
     ax0.set_title(f'selected stars (n={n})')
     ax0.set_xticks([]); ax0.set_yticks([])
 
-    # (2) the delivered image-scale kernel
+    # (2) the delivered image-scale kernel -- linear stretch (shows the core)
     ax1 = fig.add_subplot(gs[1])
-    norm = ImageNormalize(vmin=PercentileInterval(99.9).get_limits(kernel)[0],
-                          vmax=kernel.max(), stretch=AsinhStretch(0.05))
-    im1 = ax1.imshow(kernel, norm=norm, origin='upper', cmap='inferno')
-    ttl = 'psf_kernel'
+    peak = float(kernel.max())
+    norm_lin = ImageNormalize(vmin=0.0, vmax=peak, stretch=LinearStretch())
+    im1 = ax1.imshow(kernel, norm=norm_lin, origin='upper', cmap='inferno')
+    ttl = 'psf_kernel (linear)'
     if fwhm_pix is not None:
-        ttl += f'  (FWHM {fwhm_pix:.2f} px = {fwhm_pix * scale_arcsec:.3f}")'
+        ttl += f'  FWHM {fwhm_pix:.2f}px={fwhm_pix * scale_arcsec:.3f}"'
     ax1.set_title(ttl)
     ax1.set_xlabel('pixels')
     fig.colorbar(im1, ax=ax1, fraction=0.046, pad=0.04)
 
-    # (3) radial profile of the kernel
-    ax2 = fig.add_subplot(gs[2])
+    # (3) same kernel -- log stretch (shows the faint wings)
+    ax_log = fig.add_subplot(gs[2])
+    norm_log = ImageNormalize(vmin=peak * 1e-4, vmax=peak, stretch=LogStretch())
+    im_log = ax_log.imshow(kernel, norm=norm_log, origin='upper', cmap='inferno')
+    ax_log.set_title('psf_kernel (log, 1e-4..1)')
+    ax_log.set_xlabel('pixels')
+    fig.colorbar(im_log, ax=ax_log, fraction=0.046, pad=0.04)
+
+    # (4) radial profile of the kernel
+    ax2 = fig.add_subplot(gs[3])
     ny, nx = kernel.shape
     yy, xx = np.mgrid[:ny, :nx]
     rr = np.sqrt((xx - nx // 2) ** 2 + (yy - ny // 2) ** 2).ravel()
@@ -513,6 +551,10 @@ def main():
                    help="'auto' (default) builds an empirical ePSF and falls back to the "
                         "STDPSF model only when usable stars < --min-stars; 'empirical' "
                         "forces the star build (fails if too few); 'model' forces STDPSF.")
+    p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
+                   help="amplitude fraction of peak at which the trimmed modelling kernel "
+                        "(data/cutouts/<...>_psf.fits) is cut. Default 1e-3 -- an "
+                        "amplitude criterion, not enclosed-energy (which under-sizes).")
     # Tunables: None here means 'unset' so instrument defaults / JSON overrides win; a
     # value on the command line takes precedence over both. See resolve_params().
     p.add_argument('--threshold-scale', dest='threshold_scale', type=float, default=None)
@@ -658,18 +700,36 @@ def main():
             except Exception as exc:
                 print(f'  WARNING: focus-diverse ePSF unavailable ({exc}); '
                       f'falling back to STDPSF')
+        # WFPC2 F606W: prefer a native-filter ePSF built from the MAST PSF database
+        # (Dauphin ISR WFC3 2021-12) over the STDPSF F555W-substituted proxy. STDPSF
+        # stays the fallback-of-the-fallback if the DB query/build fails.
+        elif inst_key == 'WFPC2' and a.filt.split('_')[0].upper() == 'F606W':
+            try:
+                print(f'  method: MODEL (WFPC2 F606W MAST PSF DB)  [{tag}]')
+                epsf_data = psf_models.wfpc2_f606w_db_epsf(
+                    oversample=oversample, size=star_size, out_scale=scale)
+                method_used = 'model_wfpc2_psfdb'
+            except Exception as exc:
+                print(f'  WARNING: WFPC2 F606W PSF-DB unavailable ({exc}); '
+                      f'falling back to STDPSF')
         if method_used is None:
             print(f'  method: MODEL (STDPSF)  [{tag}]')
             epsf_data = psf_models.model_psf(inst_key, a.filt, oversample=oversample,
                                              size=star_size, out_scale=scale)
             method_used = 'model'
 
-    kernel = oversampled_to_kernel(epsf_data, oversample, kernel_size)
+    # Full kernel (whole ePSF footprint binned to image scale) is the archival product in
+    # data/psf/. The trimmed, amplitude-sized kernel for modelling goes next to the science
+    # stamp in data/cutouts/ (see trim_kernel_to_amplitude / the --trim-threshold flag).
+    kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
+    trimmed, trim_size = trim_kernel_to_amplitude(kernel, a.trim_threshold)
     fwhm_pix = measure_fwhm(kernel)
     if fwhm_pix is not None:
         print(f'  kernel FWHM: {fwhm_pix:.2f} px = {fwhm_pix * scale:.3f}"')
+    print(f'  full kernel {kernel.shape[0]}px -> trimmed {trim_size}px '
+          f'(amplitude<{a.trim_threshold:g} of peak)')
 
-    # ── Write products ─────────────────────────────────────────────────────────
+    # ── Write the full kernel + ePSF + QA plot to data/psf/ ─────────────────────
     khdr = fits.Header()
     khdr['PSFMETH'] = (method_used, 'empirical ePSF or STDPSF model')
     khdr['PSFNSTAR'] = (n_stars, 'stars used (0 for model)')
@@ -679,6 +739,7 @@ def main():
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (a.lens, 'lens')
     khdr['PSFFILT'] = (a.filt, 'filter')
+    khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in data/cutouts/)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
     ehdr = fits.Header()
@@ -691,12 +752,24 @@ def main():
              os.path.join(output_dir, 'psf.png'),
              title=f'{a.lens}  {a.filt}  [{method_used}]  ({n_stars} stars)')
 
+    # ── Write the trimmed modelling kernel to data/cutouts/ (pass-matched prefix) ─
+    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample, a.lens, a.filt)
+    os.makedirs(cutouts_dir, exist_ok=True)
+    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
+    thdr = khdr.copy()
+    thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
+    thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
+    thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
+    write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
+
     update_info_json(psf_json, a.lens, a.filt, {
         'method': method_used,
         'n_stars': n_stars,
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'oversample': oversample,
-        'kernel_size': kernel_size,
+        'kernel_size': int(kernel.shape[0]),
+        'cutout_kernel_size': int(trim_size),
+        'trim_threshold': a.trim_threshold,
     })
     print('  done')
 
