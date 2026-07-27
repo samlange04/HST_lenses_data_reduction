@@ -59,7 +59,7 @@ lens   = _a.lens
 sample = _a.sample
 filt   = _a.filt
 
-ws_path     = '/Users/samlange/Code/data_reduction'
+ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
