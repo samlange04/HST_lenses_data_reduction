@@ -40,7 +40,22 @@ ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
+from gallery_coords import gallery_coords
 import mast_target_names
+
+# Catalogue positions live in different tables by sample (SLACS lenses in
+# slacs_coords.py, BELLS GALLERY in gallery_coords.py). Both are keyed on the J-name and
+# the names don't collide, so resolve a lens by looking through both. Order is
+# irrelevant; a lens in neither is a real error.
+_COORD_TABLES = (slacs_coords, gallery_coords)
+
+
+def catalogue_coord_for(lens):
+    """(ra, dec) HMS/DMS strings for a lens, from whichever coords table holds it."""
+    for table in _COORD_TABLES:
+        if lens in table:
+            return table[lens]
+    raise KeyError(f"{lens} not in slacs_coords or gallery_coords (info/*_coords.py)")
 
 
 # Detectors whose calibrated ERR array is already in ELECTRONS/S rather than counts.
@@ -363,9 +378,7 @@ def main():
 
     wcs = WCS(sci_hdr)
 
-    if a.lens not in slacs_coords:
-        raise KeyError(f"{a.lens} not in slacs_coords (info/slacs_coords.py)")
-    ra, dec = slacs_coords[a.lens]
+    ra, dec = catalogue_coord_for(a.lens)
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
     print(f"  catalogue position: {ra} {dec}")
 
