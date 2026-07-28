@@ -96,6 +96,12 @@ run_product() {
     echo "no data"; return 0
   fi
 
+  # A lens whose surviving frames total below BLOCK_EXPTIME also exits 0 without a
+  # product -- same reason: stop before align/cutout, which have nothing to work on.
+  if grep -q '^=== BLOCKED (exptime):' "$log"; then
+    echo "blocked (exptime)"; return 0
+  fi
+
   # Absolute-astrometry tie to ACS F814W. Idempotent (re-measures the residual and
   # applies ~0), so it is safe on a product the drizzle skipped as already-existing.
   if ! conda run -n stenv python "$SCRIPT_DIR/align_wfpc2_to_acs.py" --lens "$lens" \
@@ -107,7 +113,11 @@ run_product() {
          --filt "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
   fi
-  echo "OK"
+  if grep -q '^  EXPTIME WARNING:' "$log"; then
+    echo "OK (low exptime)"
+  else
+    echo "OK"
+  fi
 }
 
 FAILED=()
