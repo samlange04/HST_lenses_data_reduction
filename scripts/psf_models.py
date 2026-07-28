@@ -79,6 +79,41 @@ _PIVOT = {
 _GRID_CACHE = {}
 
 
+# ── Detector-frame -> North-up rotation ──────────────────────────────────────────
+# Every model ePSF here (STDPSF, the WFPC2 F606W DB build, the ACS focus-diverse ePSF)
+# is in the *detector* frame: its x/y axes are the exposure's detector axes, so its
+# diffraction spikes and asymmetric wing structure are rotated by the exposure roll
+# (ORIENTAT, up to ~105 deg for SLACS) relative to the North-up drizzled science image
+# (final_rot=0.0). Resampling to the output scale WITHOUT this rotation leaves the model
+# PSF misoriented against the data. The empirical ePSF is immune -- it is built from the
+# North-up mosaic itself. We rotate via the exposure CD matrix rather than an ORIENTAT
+# angle so rotation, parity (detector-to-sky handedness) and scale are all handled at once.
+
+def _northup_M(cd_det, out_scale, oversample, pix_per_src):
+    """2x2 map: output-subpixel index offset [i(col); j(row)] -> source-pixel offset
+    [dcol; drow], taking a detector-frame ePSF into the North-up output grid.
+
+    `cd_det` is the exposure CD (deg per detector pixel; its columns are how detector
+    x,y map to sky). The output grid is North-up at `out_scale` arcsec/output-pixel
+    (CD_out = diag(-s, s), matching every drizzled product: CD1_1<0, CD2_2>0). `pix_per_src`
+    is source pixels per detector pixel (the ePSF supersampling; 1 when sampling a
+    GriddedPSFModel directly in detector pixels). Reduces to an isotropic scale when the
+    detector frame is itself North-up.
+    """
+    s = out_scale / 3600.0
+    cd_out = np.array([[-s, 0.0], [0.0, s]])
+    return pix_per_src * (np.linalg.inv(np.asarray(cd_det, float)) @ cd_out) / oversample
+
+
+def _grid_from_M(cx, cy, M, n):
+    """Sampling coords (xx=col, yy=row) for an n x n stamp centred at (cx, cy) under map M."""
+    offs = np.arange(n) - (n - 1) / 2.0
+    I, J = np.meshgrid(offs, offs)          # I: col(x) offset, J: row(y) offset
+    xx = cx + M[0, 0] * I + M[0, 1] * J
+    yy = cy + M[1, 0] * I + M[1, 1] * J
+    return xx, yy
+
+
 def _base_filter(filt):
     """Strip a split-visit suffix (f606W_v1 -> f606W) for filter-library lookups.
 
@@ -134,12 +169,16 @@ def _load_grid(inst_key, stdpsf_filt):
     return _GRID_CACHE[ck]
 
 
-def model_psf(inst_key, filt, oversample, size, out_scale):
+def model_psf(inst_key, filt, oversample, size, out_scale, cd_detector=None):
     """Oversampled model-PSF stamp for (inst_key, filt) at the detector grid centre.
 
     Returns an array on a grid `oversample` times finer than the drizzled output scale
     (`out_scale`, arcsec), spanning `size` output pixels -- the same convention as the
     empirical ePSF, so make_psf.oversampled_to_kernel() can bin either to the kernel.
+
+    When `cd_detector` (the exposure CD, deg/detector-pixel) is given, the sampling grid is
+    rotated so the detector-frame STDPSF lands in the North-up drizzle frame; without it the
+    stamp is only scaled (legacy behaviour), leaving it misoriented by the exposure roll.
     """
     if inst_key not in _DET_SCALE:
         raise KeyError(f'no detector pixel scale recorded for {inst_key!r}')
@@ -156,10 +195,17 @@ def model_psf(inst_key, filt, oversample, size, out_scale):
     yp = np.array([p[1] for p in grid.grid_xypos], float)
     xc, yc = float(xp.mean()), float(yp.mean())
 
-    step = (out_scale / _DET_SCALE[inst_key]) / oversample   # detector px per sub-sample
     n = size * oversample
-    offs = (np.arange(n) - (n - 1) / 2.0) * step
-    xx, yy = np.meshgrid(xc + offs, yc + offs)
+    if cd_detector is not None:
+        # grid.evaluate samples in detector pixels, so pix_per_src = 1.
+        M = _northup_M(cd_detector, out_scale, oversample, pix_per_src=1.0)
+        xx, yy = _grid_from_M(xc, yc, M, n)
+    else:
+        print('  NOTE: no detector CD available; STDPSF left in the detector frame '
+              '(not rotated to North-up)')
+        step = (out_scale / _DET_SCALE[inst_key]) / oversample   # detector px per sub-sample
+        offs = (np.arange(n) - (n - 1) / 2.0) * step
+        xx, yy = np.meshgrid(xc + offs, yc + offs)
 
     stamp = np.asarray(grid.evaluate(xx, yy, flux=1.0, x_0=xc, y_0=yc), dtype=float)
     if stamp.sum() > 0:
@@ -192,16 +238,20 @@ _F606W_DB = dict(
 )
 
 
-def wfpc2_f606w_db_epsf(oversample, size, out_scale, force_rebuild=False):
+def wfpc2_f606w_db_epsf(oversample, size, out_scale, cd_detector=None,
+                        force_rebuild=False):
     """Native WF3 F606W ePSF (MAST PSF database) on the make_psf output grid.
 
     Returns an array `oversample` times finer than `out_scale`, spanning `size` output
-    pixels -- the same convention as model_psf(). Builds+caches a single shared ePSF the
-    first time; later calls reload it. Raises RuntimeError if a usable ePSF can't be
-    built so make_psf falls back to the STDPSF F555W proxy.
+    pixels -- the same convention as model_psf(). Builds+caches a single shared *detector-
+    frame* ePSF the first time; later calls reload it. The shared ePSF is rotated per lens
+    into the North-up output frame via `cd_detector` (that lens's WF3 exposure CD) at resample
+    time -- so one cached build serves every roll. Raises RuntimeError if a usable ePSF can't
+    be built so make_psf falls back to the STDPSF F555W proxy.
     """
     data, samp = _wfpc2_f606w_db_build(force_rebuild=force_rebuild)
-    return _resample_centered(data, samp, out_scale, oversample, size)
+    return _resample_centered(data, samp, out_scale, oversample, size,
+                              cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
 
 
 def _wfpc2_f606w_db_build(force_rebuild=False):
@@ -297,11 +347,12 @@ def _wfpc2_f606w_db_build(force_rebuild=False):
 # STDPSF model_psf().
 
 def _fd_detector_position(rootname, calibrated_dir, catalogue_coord):
-    """(x, y, chip) of the lens on an ACS/WFC exposure, or None if it can't be resolved.
+    """(x, y, chip, cd) of the lens on an ACS/WFC exposure, or None if unresolved.
 
     Reads the FLC's per-chip SCI WCS and returns the 1-indexed detector coordinate on
     whichever chip contains the lens, naming it 'WFC1' (CCDCHIP=1) or 'WFC2' (CCDCHIP=2)
-    as acstools.interp_epsf expects. None -> caller uses the grid centre.
+    as acstools.interp_epsf expects, plus that chip's 2x2 CD matrix (deg/detector-pixel)
+    for the North-up rotation. None -> caller uses the grid centre and no rotation.
     """
     from astropy.io import fits
     from astropy.wcs import WCS
@@ -313,21 +364,29 @@ def _fd_detector_position(rootname, calibrated_dir, catalogue_coord):
             for hdu in hdul:
                 if hdu.header.get('EXTNAME') != 'SCI':
                     continue
-                x, y = WCS(hdu.header, hdul).world_to_pixel(catalogue_coord)
+                h = hdu.header
+                x, y = WCS(h, hdul).world_to_pixel(catalogue_coord)
                 if 0.5 < x < 4096.5 and 0.5 < y < 2048.5:
-                    chip = 'WFC1' if int(hdu.header.get('CCDCHIP', 1)) == 1 else 'WFC2'
-                    return float(x), float(y), chip
+                    chip = 'WFC1' if int(h.get('CCDCHIP', 1)) == 1 else 'WFC2'
+                    cd = np.array([[h['CD1_1'], h['CD1_2']],
+                                   [h['CD2_1'], h['CD2_2']]], float)
+                    return float(x), float(y), chip, cd
     except Exception:
         return None
     return None
 
 
-def _resample_centered(src, src_scale, out_scale, oversample, size):
-    """Bilinear-resample `src` (centred on its centroid) onto the make_psf output grid.
+def _resample_centered(src, src_scale, out_scale, oversample, size,
+                       cd_detector=None, det_scale=None):
+    """Cubic-resample `src` (centred on its centroid) onto the make_psf output grid.
 
     `src` is sampled at `src_scale` arcsec/pixel; the returned (size*oversample)^2 stamp is
     at `out_scale/oversample` arcsec/pixel -- matching model_psf()'s convention so
     oversampled_to_kernel() can bin it. Unit-sum normalised.
+
+    When `cd_detector` (exposure CD, deg/detector-pixel) and `det_scale` (arcsec/detector-
+    pixel) are given, the detector-frame `src` is rotated into the North-up output frame;
+    otherwise it is only scaled (legacy behaviour, leaving the roll misorientation in place).
     """
     from photutils.centroids import centroid_com
     from scipy.ndimage import map_coordinates
@@ -342,11 +401,17 @@ def _resample_centered(src, src_scale, out_scale, oversample, size):
     if not (np.isfinite(cx) and np.isfinite(cy)):
         cx, cy = nx / 2.0, ny / 2.0
 
-    step = (out_scale / oversample) / src_scale     # source pixels per output subpixel
     n = size * oversample
-    offs = (np.arange(n) - (n - 1) / 2.0) * step
-    xx, yy = np.meshgrid(cx + offs, cy + offs)
-    stamp = map_coordinates(src, [yy.ravel(), xx.ravel()], order=1,
+    if cd_detector is not None and det_scale is not None:
+        # src is supersampled relative to the detector by det_scale/src_scale.
+        M = _northup_M(cd_detector, out_scale, oversample,
+                       pix_per_src=det_scale / src_scale)
+        xx, yy = _grid_from_M(cx, cy, M, n)
+    else:
+        step = (out_scale / oversample) / src_scale     # source pixels per output subpixel
+        offs = (np.arange(n) - (n - 1) / 2.0) * step
+        xx, yy = np.meshgrid(cx + offs, cy + offs)
+    stamp = map_coordinates(src, [yy.ravel(), xx.ravel()], order=3,
                             mode='constant', cval=0.0).reshape(n, n)
     stamp = np.clip(stamp, 0.0, None)
     if stamp.sum() > 0:
@@ -370,8 +435,12 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
         raise RuntimeError('no exposure rootnames in info/lens_products.json for '
                            f'{lens} {filt}; cannot build a focus-diverse ePSF')
     os.makedirs(_ACS_FD_CACHE, exist_ok=True)
+    src_scale = _DET_SCALE['ACS/WFC'] / _ACS_FD_SUPERSAMPLE   # arcsec per supersampled pixel
 
-    supersampled = []
+    # Each exposure's ePSF is detector-frame at that exposure's roll. The drizzled PSF is
+    # the exposure-average IN THE NORTH-UP FRAME, so we rotate every exposure to North-up
+    # (via its own chip CD) BEFORE averaging -- correct even if the exposures span rolls.
+    northup = []
     for root in rootnames:
         try:
             path = psf_retriever(root, _ACS_FD_CACHE)
@@ -381,21 +450,24 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
         grid = fits.getdata(path, ext=0)
         pos = _fd_detector_position(root, calibrated_dir, catalogue_coord)
         if pos is None:
-            x, y, chip = 2048.0, 1024.0, 'WFC1'   # grid centre when the FLC is unavailable
-            print(f'    {root}: FLC position unavailable, using grid centre')
+            x, y, chip, cd = 2048.0, 1024.0, 'WFC1', None   # grid centre, no rotation
+            print(f'    {root}: FLC position/CD unavailable, using grid centre unrotated')
         else:
-            x, y, chip = pos
+            x, y, chip, cd = pos
         P = interp_epsf(grid, int(round(x)), int(round(y)), chip)
         if P is None or not np.all(np.isfinite(P)) or np.asarray(P).sum() <= 0:
             print(f'    {root}: interp_epsf returned no usable ePSF; skipping')
             continue
         P = np.asarray(P, dtype=float)
-        supersampled.append(P / P.sum())
+        northup.append(_resample_centered(P / P.sum(), src_scale, out_scale, oversample,
+                                          size, cd_detector=cd,
+                                          det_scale=_DET_SCALE['ACS/WFC']))
 
-    if not supersampled:
+    if not northup:
         raise RuntimeError(f'no focus-diverse ePSF could be retrieved for {lens} {filt}')
 
-    mean_epsf = np.mean(supersampled, axis=0)
-    src_scale = _DET_SCALE['ACS/WFC'] / _ACS_FD_SUPERSAMPLE   # arcsec per supersampled pixel
-    print(f'    focus-diverse ePSF from {len(supersampled)}/{len(rootnames)} exposures')
-    return _resample_centered(mean_epsf, src_scale, out_scale, oversample, size)
+    mean_epsf = np.mean(northup, axis=0)
+    print(f'    focus-diverse ePSF from {len(northup)}/{len(rootnames)} exposures')
+    if mean_epsf.sum() > 0:
+        mean_epsf = mean_epsf / mean_epsf.sum()
+    return mean_epsf
