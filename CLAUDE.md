@@ -642,16 +642,21 @@ fine — no retune needed. Open items:
 - **No PSF uncertainty is propagated.** The kernel is a point estimate; an ePSF built from
   as few as 3–5 stars has no accompanying error/covariance for downstream lens modelling.
   Genuinely new work — not addressed by having more lenses.
-- **Model-PSF rotation switched to cubic resampling** (`_resample_centered`, order 3, was
-  order 1/bilinear — bilinear softened the model kernel slightly, e.g. F606W DB FWHM
-  0.212″→0.221″). Code changed 2026-07-28; **`info/lens_psf.json` and the on-disk model-tier
-  kernels (`model`, `model_acs_fdpsf`, `model_wfpc2_psfdb` — 37 products) still reflect the
-  old bilinear resample** until `run_psf_all.sh --models-only` is re-run. The empirical build
-  is preferred where stars exist anyway, so this only affects the model-fallback tier.
-- F160W's 9 STDPSF models are **exact-filter** (F160W has a real grid), so acceptable; the
-  same MAST PSF DB carries WFC3/IR F160W if a native build is ever wanted (marginal gain — it
-  would still be detector-frame, so it needs the same rotation and wouldn't recover drizzle
-  broadening).
+- **Model-PSF rotation uses cubic resampling** (`_resample_centered`, order 3, was order
+  1/bilinear — bilinear softened the model kernel slightly, e.g. F606W DB FWHM 0.212″→0.221″).
+  Code and the regenerated model-tier products (`model`, `model_acs_fdpsf`,
+  `model_wfpc2_psfdb`) are **committed together** (commit 92b1003, 2026-07-28); `info/lens_psf.json`
+  and the on-disk `cutout_[cr_]psf.fits` kernels reflect the cubic resample. (`data/psf/` archival
+  kernels are gitignored, not tracked.) No longer an open item.
+- F160W's 9 STDPSF models are **exact-filter** (F160W has a real grid), so acceptable. Using the
+  MAST PSF DB to build a *native* WFC3/IR F160W ePSF for injection instead of STDPSF was
+  **prototyped and measured (2026-07-28): no gain** — the native-DB kernel is indistinguishable
+  from exact-filter STDPSF (FWHM 3.97 vs 3.93px on J0728+3835, wings agree to ≤1e-3) and neither
+  closes the ~2–3% wing deficit vs the empirical drizzled truth, because a DB build averages
+  breathing out just like STDPSF. Unlike the WFPC2 F606W DB win (which replaced a *wrong-filter*
+  proxy), F160W already has the right-filter grid, so there's nothing to fix. Only focus-matched
+  retrieval (à la ACS focus-diverse) could close the wing gap — not the DB. → memory:
+  f160w_mast_db_injection_no_gain
 
 ## Tracking JSONs in `info/`
 
