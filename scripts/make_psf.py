@@ -94,6 +94,14 @@ _BASE = dict(
     flux_floor_frac=0.05,    # drop stars fainter than this x the brightest kept star:
                              # EPSFBuilder normalises each star by its flux, so a faint
                              # star's background noise is amplified into the ePSF wings.
+    pedestal_bad=3.0e-3,     # empirical wing pedestal (median of the outer annulus / peak)
+                             # above this -> poor build, fall back to the model. Chosen to
+                             # pass every ACS/F555W empirical build (worst ~2.6e-4) and the
+                             # good F160W builds (<=1.2e-3) while dropping bad ones (J0936
+                             # 6.6e-3). See wing_stats / the hybrid gate in main().
+    scatter_bad=3.0e-3,      # empirical wing scatter (std of the outer annulus / peak)
+                             # above this -> poor build. Worst clean ACS ~2.0e-3; catches
+                             # the noisy F160W builds (J0936 7.8e-3, J0946 6.6e-3).
 )
 # `fwhm` is the DAOStarFinder detection kernel; `psf_fwhm` is the true stellar PSF FWHM
 # (pixels, at the drizzled scale) that the per-candidate shape cut selects around --
@@ -418,6 +426,98 @@ def trim_kernel_to_amplitude(kernel, threshold=1e-3, min_half=3):
     return (sub / s if s > 0 else sub), 2 * half + 1
 
 
+def wing_stats(kernel, inner_frac=0.75):
+    """(pedestal_frac, scatter_frac): median and std of the kernel's outer annulus over the
+    central peak. The annulus is radius in [inner_frac*half, half] of the full kernel; a
+    healthy ePSF wing sits near zero there. Gates poor empirical builds and quantifies the
+    residual background the pedestal subtraction removes.
+    """
+    arr = np.asarray(kernel, float)
+    ny, nx = arr.shape
+    cy, cx = ny // 2, nx // 2
+    yy, xx = np.mgrid[:ny, :nx]
+    rint = np.round(np.hypot(xx - cx, yy - cy)).astype(int)
+    peak = arr[cy, cx] if arr[cy, cx] > 0 else float(arr.max())
+    half = min(cy, cx)
+    ann = (rint >= int(inner_frac * half)) & (rint <= half)
+    if not ann.any() or peak <= 0:
+        return 0.0, 0.0
+    return float(np.median(arr[ann]) / peak), float(arr[ann].std() / peak)
+
+
+def subtract_pedestal(kernel):
+    """Remove the ePSF's residual flat background (median of the outer annulus) and
+    renormalise to unit sum. Returns (kernel, pedestal_frac).
+
+    EPSFBuilder leaves a small DC floor in the ePSF wings. Left in, a ~1e-3-of-peak pedestal
+    across the kernel becomes several percent of the (renormalised) flux as a spurious
+    uniform background -- and it stops trim_kernel_to_amplitude from ever crossing the
+    amplitude threshold, so the trimmed kernel caps at the full size. This is a near no-op
+    for clean builds (ACS ~1e-4) and matters for oversampled bands (F160W empirical ~1e-3,
+    the WFPC2 F606W DB ePSF ~1e-3). Applied to every kernel regardless of method.
+    """
+    arr = np.asarray(kernel, float)
+    ny, nx = arr.shape
+    cy, cx = ny // 2, nx // 2
+    yy, xx = np.mgrid[:ny, :nx]
+    rint = np.round(np.hypot(xx - cx, yy - cy)).astype(int)
+    peak = arr[cy, cx] if arr[cy, cx] > 0 else float(arr.max())
+    half = min(cy, cx)
+    ann = (rint >= int(0.75 * half)) & (rint <= half)
+    ped = float(np.median(arr[ann])) if ann.any() else 0.0
+    out = arr - ped
+    s = out.sum()
+    if s > 0:
+        out = out / s
+    return out, (float(ped / peak) if peak > 0 else 0.0)
+
+
+def representative_input_cd(inst_key, lens, filt, sample):
+    """2x2 CD (deg/detector-pixel) of a contributing exposure, in the detector frame a model
+    ePSF lives in -- so a detector-frame model PSF can be rotated into the North-up drizzle
+    frame (psf_models._northup_M). Empirical ePSFs need no CD (built from the North-up mosaic).
+
+    WFPC2: the extracted WF3 file under data/drizzle_files (single WF3 chip; carries the
+    correct per-visit roll for split-visit products, keyed by the suffixed `filt`). WFC3/IR:
+    the calibrated FLT SCI. ACS/WFC: the calibrated FLC first SCI (fallback only -- the
+    focus-diverse path reads per-exposure CDs itself). None if none is found.
+    """
+    def cd_of(hdr):
+        if 'CD1_1' not in hdr:
+            return None
+        return np.array([[hdr['CD1_1'], hdr['CD1_2']],
+                         [hdr['CD2_1'], hdr['CD2_2']]], float)
+
+    def first_sci_cd(path):
+        with fits.open(path) as h:
+            for hd in h:
+                if hd.header.get('EXTNAME') == 'SCI':
+                    cd = cd_of(hd.header)
+                    if cd is not None:
+                        return cd
+        return None
+
+    if inst_key == 'WFPC2':
+        dd = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
+        cands = [f for f in sorted(glob.glob(os.path.join(dd, 'wf3_*flt.fits')))
+                 if all(t not in os.path.basename(f) for t in ('ivm', 'd2im', 'hlet'))]
+        for f in cands:
+            cd = first_sci_cd(f)
+            if cd is not None:
+                return cd
+        return None
+
+    pat = {'WFC3/IR': '*flt.fits', 'ACS/WFC': '*flc.fits'}.get(inst_key)
+    if pat is None:
+        return None
+    cd_dir = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
+    for f in sorted(glob.glob(os.path.join(cd_dir, pat))):
+        cd = first_sci_cd(f)
+        if cd is not None:
+            return cd
+    return None
+
+
 def measure_fwhm(kernel):
     """Approximate FWHM (pixels) of a kernel via a 2D Gaussian fit; None on failure."""
     try:
@@ -668,9 +768,24 @@ def main():
                                          params['maxiters'])
         cand = np.asarray(epsf.data, dtype=float)
         if validate_epsf(cand, oversample):
-            epsf_data = cand
-            star_stamps = [np.asarray(s.data, dtype=float) for s in stars]
-            method_used = 'empirical'
+            # Hybrid quality gate: a validated ePSF can still have a noisy / pedestalled wing
+            # (star-poor oversampled fields, esp. F160W). Measure the wing and, under auto,
+            # fall back to the model rather than ship a poor empirical kernel.
+            k_prov = oversampled_to_kernel(cand, oversample, star_size)
+            ped_frac, scat_frac = wing_stats(k_prov)
+            poor = ped_frac > params['pedestal_bad'] or scat_frac > params['scatter_bad']
+            if poor and method == 'auto':
+                print(f'  WARNING: empirical ePSF wings poor (pedestal={ped_frac:.1e}, '
+                      f'scatter={scat_frac:.1e} > {params["pedestal_bad"]:.0e}); '
+                      f'falling back to the model')
+                use_model = True
+            else:
+                if poor:
+                    print(f'  WARNING: keeping forced-empirical ePSF despite poor wings '
+                          f'(pedestal={ped_frac:.1e}, scatter={scat_frac:.1e})')
+                epsf_data = cand
+                star_stamps = [np.asarray(s.data, dtype=float) for s in stars]
+                method_used = 'empirical'
         elif method == 'empirical':
             raise SystemExit(
                 f'ERROR: the empirical ePSF for {a.lens} {a.filt} diverged ({n_stars} '
@@ -684,6 +799,12 @@ def main():
     if method_used is None:
         tag = 'forced' if method == 'model' else \
               (f'{n_stars} stars < {params["min_stars"]}' if too_few else 'empirical failed')
+        # Detector CD for rotating the (detector-frame) model PSF into the North-up drizzle
+        # frame. ACS focus-diverse reads per-exposure CDs itself, so this is only used by the
+        # WFPC2 DB and STDPSF paths below.
+        cd_det = representative_input_cd(inst_key, a.lens, a.filt, a.sample)
+        if cd_det is None and inst_key != 'ACS/WFC':
+            print('  WARNING: no input CD found; model PSF will not be rotated to North-up')
         # ACS/WFC: prefer the focus-diverse, observation-matched ePSF (native F555W/F814W,
         # focus-corrected, at the lens position) over the static STDPSF. STDPSF stays the
         # fallback-of-the-fallback if a retrieval fails. Other instruments use STDPSF.
@@ -707,7 +828,8 @@ def main():
             try:
                 print(f'  method: MODEL (WFPC2 F606W MAST PSF DB)  [{tag}]')
                 epsf_data = psf_models.wfpc2_f606w_db_epsf(
-                    oversample=oversample, size=star_size, out_scale=scale)
+                    oversample=oversample, size=star_size, out_scale=scale,
+                    cd_detector=cd_det)
                 method_used = 'model_wfpc2_psfdb'
             except Exception as exc:
                 print(f'  WARNING: WFPC2 F606W PSF-DB unavailable ({exc}); '
@@ -715,13 +837,17 @@ def main():
         if method_used is None:
             print(f'  method: MODEL (STDPSF)  [{tag}]')
             epsf_data = psf_models.model_psf(inst_key, a.filt, oversample=oversample,
-                                             size=star_size, out_scale=scale)
+                                             size=star_size, out_scale=scale,
+                                             cd_detector=cd_det)
             method_used = 'model'
 
     # Full kernel (whole ePSF footprint binned to image scale) is the archival product in
     # data/psf/. The trimmed, amplitude-sized kernel for modelling goes next to the science
     # stamp in data/cutouts/ (see trim_kernel_to_amplitude / the --trim-threshold flag).
     kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
+    kernel, pedestal_frac = subtract_pedestal(kernel)
+    if abs(pedestal_frac) >= 1e-4:
+        print(f'  pedestal removed: {pedestal_frac:.2e} of peak (flat ePSF-wing floor)')
     trimmed, trim_size = trim_kernel_to_amplitude(kernel, a.trim_threshold)
     fwhm_pix = measure_fwhm(kernel)
     if fwhm_pix is not None:
@@ -740,6 +866,7 @@ def main():
     khdr['PSFLENS'] = (a.lens, 'lens')
     khdr['PSFFILT'] = (a.filt, 'filter')
     khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in data/cutouts/)')
+    khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
     ehdr = fits.Header()
@@ -770,6 +897,7 @@ def main():
         'kernel_size': int(kernel.shape[0]),
         'cutout_kernel_size': int(trim_size),
         'trim_threshold': a.trim_threshold,
+        'pedestal_frac': round(pedestal_frac, 6),
     })
     print('  done')
 
