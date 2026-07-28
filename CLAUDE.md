@@ -133,6 +133,25 @@ The first two also **raise `NotImplementedError` on import** — a deliberate gu
 loudly with a non-zero status a batch runner can't mistake for a clean skip, before any
 network call.
 
+### Total-exposure-time gate
+
+All three drizzle scripts (`drizzle_acs_wfc.py`, `drizzle_wfc3_ir.py`,
+`drizzle_wfpc2_wf3.py`) sum `EXPTIME` over the frames that would actually reach the
+drizzle (post `EXPTIME=0`/`MIN_EXPTIME` filtering, post `--pa` visit selection for WFPC2)
+and gate on the total before doing the expensive drizzle work — added because
+`slacs_other` runs generally shorter total exposures than `slacs_gold`.
+
+- **`BLOCK_EXPTIME = 500s`** — no product is written. Same outcome/shape as no MAST
+  data: tracking JSONs get `null`, the script prints `=== BLOCKED (exptime): ... ===`
+  and exits 0, so a batch runner counts it separately from a failure (`run_acs_all.sh` /
+  `run_wfc3_all.sh` track it in a `blocked` counter; `run_wfpc2_wf3.sh` reports
+  `blocked (exptime)` and skips the align/cutout stages, same as `no data`).
+- **`WARN_EXPTIME = 1200s`** — the drizzle proceeds; the script prints
+  `  EXPTIME WARNING: ...` and the batch runners report `OK (low exptime)`.
+
+Checked against `info/lens_exptime.json`: no current `slacs_gold` product falls under
+either threshold, so this is a no-op until `slacs_other` is reduced.
+
 ## Data flow and directory layout
 
 ```

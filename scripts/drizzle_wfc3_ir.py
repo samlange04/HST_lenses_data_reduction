@@ -48,6 +48,11 @@ _p.add_argument('--align',       default='mast', choices=['mast', 'tweakreg'],
                 help="'mast' (default) trusts the GSC242/GAIAeDR3-fitted WCS in the "
                      "delivered files and runs neither updatewcs nor TweakReg; "
                      "'tweakreg' restores the old re-solve, which erases the dither.")
+# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>0 only).
+# slacs_other runs generally shorter total exposures than slacs_gold; below
+# BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
+# BLOCK and WARN the drizzle proceeds but is flagged.
+WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 _p.add_argument('--cr',          action='store_true', default=False)
 _p.add_argument('--_subprocess', action='store_true', default=False, help=argparse.SUPPRESS)
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
@@ -416,11 +421,23 @@ _update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/{_detector
 # block, so a re-run on already-present files never updated it. EXPTIME=0 frames are
 # excluded because AstroDrizzle drops them (that mismatch was real on four ACS
 # entries; no WFC3/IR lens currently has one, but the rule is the same).
-_obs_ids = sorted(
-    os.path.basename(f).replace('_flt.fits', '')
+_frames = [
+    (os.path.basename(f).replace('_flt.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flt.fits'))
-    if fits.getheader(f)['EXPTIME'] > 0
-)
+]
+_obs_ids = sorted(rootname for rootname, exp in _frames if exp > 0)
+_total_exptime = sum(exp for _, exp in _frames if exp > 0)
+
+if _total_exptime < BLOCK_EXPTIME:
+    _update_info_json(exptime_json_path,    lens, filt_key, None)
+    _update_info_json(instrument_json_path, lens, filt_key, None)
+    print(f'=== BLOCKED (exptime): {lens} {filt_key} total exptime {_total_exptime:.1f}s '
+          f'< {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
+    sys.exit(0)
+if _total_exptime < WARN_EXPTIME:
+    print(f'  EXPTIME WARNING: {lens} {filt_key} total exptime {_total_exptime:.1f}s '
+          f'< {WARN_EXPTIME:.0f}s (proceeding)')
+
 lens_products.setdefault(lens, {})[filt_key] = _obs_ids
 lens_products[lens] = dict(sorted(lens_products[lens].items()))
 with open(json_path, 'w') as _f:

@@ -75,6 +75,11 @@ _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizc
 # assume. An explicit --align on the command line still wins over this table.
 ALIGN_OVERRIDES = {('J1213+6708', 'f814W'): 'tweakreg'}
 _p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
+# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>0 only).
+# slacs_other runs generally shorter total exposures than slacs_gold; below
+# BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
+# BLOCK and WARN the drizzle proceeds but is flagged.
+WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
 # inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
 # CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
@@ -314,11 +319,23 @@ _update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/{_detector
 # WFPC2, where they are removed outright (MIN_EXPTIME) because they would otherwise
 # reach the drizzle. Keep in mind when auditing: ACS/WFC FLCs are 2-chip MEFs, so the
 # product's NDRIZIM is 2 x the number of exposures listed here.
-_obs_ids = sorted(
-    os.path.basename(f).replace('_flc.fits', '')
+_frames = [
+    (os.path.basename(f).replace('_flc.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flc.fits'))
-    if fits.getheader(f)['EXPTIME'] > 0
-)
+]
+_obs_ids = sorted(rootname for rootname, exp in _frames if exp > 0)
+_total_exptime = sum(exp for _, exp in _frames if exp > 0)
+
+if _total_exptime < BLOCK_EXPTIME:
+    _update_info_json(exptime_json_path,    lens, filt_key, None)
+    _update_info_json(instrument_json_path, lens, filt_key, None)
+    print(f'=== BLOCKED (exptime): {lens} {filt_key} total exptime {_total_exptime:.1f}s '
+          f'< {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
+    sys.exit(0)
+if _total_exptime < WARN_EXPTIME:
+    print(f'  EXPTIME WARNING: {lens} {filt_key} total exptime {_total_exptime:.1f}s '
+          f'< {WARN_EXPTIME:.0f}s (proceeding)')
+
 lens_products.setdefault(lens, {})[filt_key] = _obs_ids
 lens_products[lens] = dict(sorted(lens_products[lens].items()))
 with open(json_path, 'w') as _f:
