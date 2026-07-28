@@ -140,6 +140,13 @@ WF3_NATIVE_SCALE = 0.0996
 # frames on J0728+3835, J0822+2652 and J1142+1001 are 0.5 s. This also catches the
 # EXPTIME=0 frames that the old "prefer non-COPY" rule existed to avoid.
 MIN_EXPTIME = 10.0
+
+# Total-exposure-time gate, checked on the surviving (post-MIN_EXPTIME, post--pa)
+# frame set. slacs_other runs generally shorter total exposures than slacs_gold;
+# below BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
+# BLOCK and WARN the drizzle proceeds but is flagged.
+WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
+
 # pixfrac 1.0 (not 0.8): F606W keeps its dither-supported 0.05" scale (WFPC2-BOX is a
 # 4-point HALF-pixel dither, purpose-built for 2x oversampling of the 0.0996" native --
 # do NOT coarsen to 0.06"; that would waste the sub-pixel sampling the dither encodes).
@@ -351,6 +358,17 @@ if _a.pa is not None:
     _inputs = [f for f in _inputs
                if abs(float(fits.getheader(f).get('PA_V3', 1e9)) - _a.pa) < 1.0]
     print(f'=== Single-visit: {len(_inputs)} frames within 1deg of PA_V3={_a.pa} ===')
+
+_total_exptime = sum(fits.getheader(f)['EXPTIME'] for f in _inputs)
+if _total_exptime < BLOCK_EXPTIME:
+    _update_info_json(exptime_json_path,    lens, product_key, None)
+    _update_info_json(instrument_json_path, lens, product_key, None)
+    print(f'=== BLOCKED (exptime): {lens} {product_key} total exptime '
+          f'{_total_exptime:.1f}s < {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
+    sys.exit(0)
+if _total_exptime < WARN_EXPTIME:
+    print(f'  EXPTIME WARNING: {lens} {product_key} total exptime {_total_exptime:.1f}s '
+          f'< {WARN_EXPTIME:.0f}s (proceeding)')
 
 # Record provenance from the frames that actually reach the drizzle, not from
 # everything the MAST download left in data/calibrated/. Those differ whenever --pa

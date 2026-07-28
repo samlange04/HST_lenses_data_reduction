@@ -25,23 +25,31 @@ done < <(conda run -n stenv python "$SD/mast_target_names.py" "$SAMPLE")
 [ "${#LENSES[@]}" -gt 0 ] || { echo "No lenses in sample '$SAMPLE'" >&2; exit 1; }
 echo "=== WFC3/IR: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
-ok=0; nodata=0; fail=0; FAILED=()
+ok=0; nodata=0; blocked=0; fail=0; FAILED=()
 for lens in "${LENSES[@]}"; do
   log="$LOG/${lens}_f160W_wfc3.log"
   rm -rf "$WS/data/drizzled/$SAMPLE/$lens/f160W" "$WS/data/drizzle_files/$SAMPLE/$lens/f160W"
   printf '%-12s f160W ' "$lens"
   if conda run -n stenv python "$SD/drizzle_wfc3_ir.py" --lens "$lens" --filt f160W \
        --sample "$SAMPLE" --align mast > "$log" 2>&1; then
-    # An exit-0 run that wrote nothing is the "MAST has no data" path, not a product.
+    # An exit-0 run that wrote nothing is either "MAST has no data" or "total exptime
+    # below BLOCK_EXPTIME" -- both are ordinary outcomes, not a product and not a failure.
     if grep -q '^=== NO DATA:' "$log"; then
       echo "no data"; nodata=$((nodata + 1))
+    elif grep -q '^=== BLOCKED (exptime):' "$log"; then
+      echo "blocked (exptime)"; blocked=$((blocked + 1))
     else
-      echo OK; ok=$((ok + 1))
+      if grep -q '^  EXPTIME WARNING:' "$log"; then
+        echo "OK (low exptime)"
+      else
+        echo OK
+      fi
+      ok=$((ok + 1))
     fi
   else
     echo "FAILED (see $log)"; fail=$((fail + 1)); FAILED+=("$lens")
   fi
 done
 
-echo "=== WFC3/IR $SAMPLE done $(date +%H:%M:%S): $ok ok, $nodata no data, $fail failed ==="
+echo "=== WFC3/IR $SAMPLE done $(date +%H:%M:%S): $ok ok, $nodata no data, $blocked blocked (exptime), $fail failed ==="
 if [ "$fail" -gt 0 ]; then printf '  FAILED: %s\n' "${FAILED[@]}"; exit 1; fi
