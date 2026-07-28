@@ -173,25 +173,54 @@
         }
     },
     "gallery": {
-        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). No coordinate table yet, so the common output WCS falls back to the native drizzle WCS. MAST target names unverified. Reduction scripts not yet written.",
-        "coords": null,
+        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) — L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in CLAUDE.md). Reduction scripts not yet written.",
+        "coords": "info/gallery_coords.py",
         "lenses": {
-            "J0029+2544": {},
-            "J0113+0250": {},
-            "J0201+3228": {},
-            "J0237-0641": {},
-            "J0742+3341": {},
-            "J0755+3445": {},
-            "J0856+2010": {},
-            "J0918+5105": {},
-            "J1110+2808": {},
-            "J1110+3649": {},
-            "J1116+0915": {},
-            "J1141+2216": {},
-            "J1201+4743": {},
-            "J1226+5457": {},
-            "J2228+1205": {},
-            "J2342-0120": {}
+            "J0029+2544": {
+                "mast_target": "SDSSJ002927.38+254401.7"
+            },
+            "J0201+3228": {
+                "mast_target": "SDSSJ020121.39+322829.6"
+            },
+            "J0237-0641": {
+                "mast_target": "SDSSJ023740.63-064112.9"
+            },
+            "J0742+3341": {
+                "mast_target": "SDSSJ074249.68+334148.9"
+            },
+            "J0755+3445": {
+                "mast_target": "SDSSJ075523.52+344539.5"
+            },
+            "J0856+2010": {
+                "mast_target": "SDSSJ085621.59+201040.5"
+            },
+            "J0918+5104": {
+                "mast_target": "SDSSJ091859.21+510452.5"
+            },
+            "J1110+2808": {
+                "mast_target": "SDSSJ111027.11+280838.4"
+            },
+            "J1110+3649": {
+                "mast_target": "SDSSJ111040.42+364924.4"
+            },
+            "J1116+0915": {
+                "mast_target": "SDSSJ111634.55+091503.0"
+            },
+            "J1141+2216": {
+                "mast_target": "SDSSJ114154.71+221628.8"
+            },
+            "J1201+4743": {
+                "mast_target": "SDSSJ120159.02+474323.2"
+            },
+            "J1226+5457": {
+                "mast_target": "SDSSJ122656.45+545739.0"
+            },
+            "J2228+1205": {
+                "mast_target": "SDSSJ222825.76+120503.9"
+            },
+            "J2342-0120": {
+                "mast_target": "SDSSJ234248.68-012032.5"
+            }
         }
     }
 }
