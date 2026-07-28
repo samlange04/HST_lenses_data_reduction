@@ -439,6 +439,7 @@ noise FITS (from the weight map), and a 3-panel PNG.
 ```bash
 conda run -n stenv python scripts/make_psf.py --lens J0252+0039 --filt f814W
 bash scripts/run_psf_all.sh            # every drizzled product; globs data/drizzled/ like run_cutouts_all.sh
+bash scripts/run_psf_all.sh --models-only   # skip existing empirical builds; rebuild only the model tier
 ```
 
 **One filter-agnostic script, per-instrument defaults** (keyed on `INSTRUME/DETECTOR`; WFPC2
@@ -499,7 +500,8 @@ exposures (the drizzled PSF is the exposure-average), and resamples the 4×-supe
 detector grid to the output scale. This is **native F555W and F814W** — no filter
 substitution — and matched to the HST focus/breathing of the actual exposures, so it's a
 strictly better ACS model than STDPSF. Records method `model_acs_fdpsf`; grids cached under
-`data/reference_files/acs_fdpsf/`. Still detector-frame (omits drizzle broadening), so the
+`data/reference_files/acs_fdpsf/`. Detector-frame (omits drizzle broadening) but **rotated
+per-exposure to North-up before averaging** (see *Model PSFs are rotated to North-up*), so the
 empirical ePSF is preferred when stars exist; **STDPSF stays the fallback-of-the-fallback**
 if a retrieval fails. Verified J0252 F814W: 0.100″ (STDPSF F814W 0.096″, empirical 0.125″).
 
@@ -513,15 +515,17 @@ F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` cutouts
 (inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
 and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
 `data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `_v1/_v2`)
-reuses it; records method `model_wfpc2_psfdb`. Still detector-frame (omits drizzle
-broadening), so the lens's-own-field empirical build is still preferred where stars exist —
-this is the model **fallback, slotted ABOVE the STDPSF F555W proxy** (which is now
-fallback-of-the-fallback). **Traps:** the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext
-(1=PC…4=WF4) — **query chip 3 for WF3**, not chip 1 (PC has a different pixel scale *and*
-PSF); split-visit filter keys (`f606W_v1`) must be normalised to the base filter before any
-STDPSF/pivot lookup (`_base_filter`), or the model path KeyErrors. FWHM 0.212″ (broader than
-the 0.178″ F555W proxy — it includes the real drizzle-broadened empirical wings the STDPSF
-omits). → memory: wfpc2_f606w_mast_psf_db
+reuses it; records method `model_wfpc2_psfdb`. The cached ePSF is detector-frame; each lens
+**rotates it to North-up at resample time via that lens's WF3 exposure CD** (so one shared
+build serves every roll — see *Model PSFs are rotated to North-up*), and the pedestal
+subtraction removes its ~1e-3 wing floor. Detector-frame still omits drizzle broadening, so
+the lens's-own-field empirical build is preferred where stars exist — this is the model
+**fallback, slotted ABOVE the STDPSF F555W proxy** (now fallback-of-the-fallback). **Traps:**
+the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext (1=PC…4=WF4) — **query chip 3 for
+WF3**, not chip 1 (PC has a different pixel scale *and* PSF); split-visit filter keys
+(`f606W_v1`) must be normalised to the base filter before any STDPSF/pivot lookup
+(`_base_filter`), or the model path KeyErrors. FWHM ~0.22″ (post-rotation). → memory:
+wfpc2_f606w_mast_psf_db
 
 **STDPSF fallback (`psf_models.py`, Anderson & King 2000; Dauphin et al. 2021; Anderson
 2016):** 4×-supersampled 101×101 grids read by photutils
@@ -537,25 +541,117 @@ Used for WFPC2/WFC3, and for ACS only when the focus-diverse retrieval fails.
   output scale (WFC3/IR 0.1283″→0.06″); skipping this makes the model the wrong size.
 - It is the **detector-frame** ePSF and omits AstroDrizzle broadening (Anderson 2016), so it
   runs slightly sharp — the **empirical ePSF is the true drizzled PSF and always preferred**
-  when enough stars exist. WFPC2 fields are usually star-poor (A&K build ePSFs from globular
-  clusters, which these are not), so F606W falls to the model — now the native MAST-PSF-DB
-  ePSF above, with this F555W proxy only as its fallback.
+  when enough stars exist. It is **rotated to North-up** like the other model tiers (see
+  below). WFPC2 fields are usually star-poor (A&K build ePSFs from globular clusters, which
+  these are not), so F606W falls to the model — now the native MAST-PSF-DB ePSF above, with
+  this F555W proxy only as its fallback.
+
+### Model PSFs are rotated to North-up; empirical ones already are
+
+→ memory: psf_model_northup_rotation. Every **model** ePSF (STDPSF, ACS focus-diverse, WFPC2
+MAST-DB) is a *detector-frame* build: its axes are the exposure's detector axes, so its
+diffraction spikes / asymmetric wings sit at the exposure roll (`ORIENTAT`, up to ~105° for
+SLACS) relative to the North-up drizzled science image (`final_rot=0.0`). `psf_models`
+resamples each into the output frame through the exposure **CD matrix** (`_northup_M` —
+rotation + parity + scale in one map, not an Euler angle), the CD read from a contributing
+exposure by `make_psf.representative_input_cd`: WFPC2 from the extracted WF3 file in
+`data/drizzle_files` (single WF3 chip, correct **per-visit** roll for the split lenses),
+WFC3/IR from the calibrated FLT SCI, ACS per-exposure from each FLC (rotated **before** the
+focus-diverse exposure-average, so multi-roll is handled). The **empirical ePSF needs no
+rotation** — it is cut from the North-up mosaic itself, which is exactly *why* its orientation
+can be trusted. Verified against the WCS chain on all three detectors (ACS/WFPC2/WFC3-IR).
+Without a CD the model is left unrotated with a printed NOTE (a degraded but not wrong-scale
+fallback).
+
+### Drizzle-broadened model PSF by injection (`make_psf_inject.py`, the Anderson 2016 route)
+
+Every model tier above is a **detector-frame** ePSF that `psf_models` resamples/rotates to
+North-up *analytically* — reproducing orientation and scale but **not** the extra blur
+AstroDrizzle's resampling puts on a point source, so the analytic model kernel runs sharp
+(Anderson 2016, WFC3/IR ISR). `make_psf_inject.py` implements the rigorous fix that ISR
+names: inject the model PSF as artificial stars into the individual exposures and **re-drizzle
+them exactly as the science frames were**, so the drizzled star carries the broadening,
+North-up orientation, and exposure-average weighting for free — all produced by the real
+drizzle, not emulated. **Model tier only** (empirical builds are already the drizzled PSF, cut
+from the mosaic). It is a **parallel comparison product** — nothing downstream changes:
+
+- **Reuses the persisted `data/drizzle_files/<sample>/<lens>/<filt>/` inputs** the science
+  drizzle consumed (ACS `<root>_flc`, WFC3/IR `<root>_flt`, WFPC2 extracted `wf3_<root>_flt`
+  + per-frame IVM + the two-column `@`-association), inheriting every prep step (WF3
+  extraction+renumbering, distortion, updatewcs, IVM weighting). **Requires those inputs
+  present** — re-run the band's drizzle first if `drizzle_files` was cleared.
+- Per frame: **zeroes SCI, adds the detector-frame model PSF** at the lens position (that
+  frame's WCS), keeping ERR/DQ/IVM untouched (weighting identical to science; the injected
+  star is clean so no CR pass). Model source mirrors make_psf: ACS focus-diverse per exposure
+  (STDPSF fallback), WFC3/IR exact-filter STDPSF, WFPC2 the shared MAST-DB ePSF (STDPSF F555W
+  fallback) — recorded as `inject_acs_fdpsf` / `inject_stdpsf` / `inject_wfpc2_psfdb`.
+- Re-drizzles onto the **same output grid** (`final_rot=0`, `final_ra/dec`=lens, per-band
+  `final_scale`/`pixfrac`/`bits`/`wht_type` lifted from the drizzle scripts). The drizzled
+  star is the broadened North-up PSF at the modelling scale; the kernel is cut/centred at
+  image scale, then `subtract_pedestal`/`trim_kernel_to_amplitude` as usual.
+
+Outputs alongside make_psf, non-clobbering: `data/psf/<...>/psf_kernel_injected.fits` +
+`psf_injected.png`; `data/cutouts/<...>/cutout_[cr_]psf_injected.fits` (trimmed); records
+`info/lens_psf_injected.json` (`null`+exit 0 on no data). Runner:
+`bash scripts/run_psf_inject_all.sh` (model tier only; `--all` also runs empirical products
+for validation). **Validated** on F160W where an empirical truth exists on the same lens:
+analytic-STDPSF 3.15px → **injected-STDPSF 3.5–3.9px ≈ empirical 3.8px** (drizzle broadening
+recovered; the residual is the real optical wing STDPSF underestimates, not a broadening
+error). ACS broadens little (native 0.05″, small resampling — FD 1.65→1.76px); F160W and
+WFPC2 broaden more (0.1283→0.06″, 0.0996→0.05″). → memory: psf_injection_drizzle_broadening
+
+### Pedestal subtraction (`subtract_pedestal`) — every kernel
+
+→ memory: psf_kernel_sizing. EPSFBuilder leaves a small flat DC floor in the ePSF wings. Left
+in, a ~1e-3-of-peak pedestal across the kernel is several % of the (renormalised) flux as a
+spurious *uniform background*, **and** it stops the amplitude trim from ever crossing 1e-3 —
+the trimmed kernel then caps at the full `star_size` (this was the real cause of the old
+"F160W full kernel too tight", not a genuinely larger IR PSF; the clean STDPSF F160W trims to
+27–29px). The outer-annulus median is subtracted from every full kernel before the archival
+write **and** the trim, recorded as `PSFPED` / `pedestal_frac`. Near no-op on the sharp ACS
+bands (~1e-4); real on F606W (~1e-3) and F160W empirical (~1e-3). Applied to all methods.
+
+### F160W hybrid quality gate
+
+A *validated* empirical ePSF whose wing pedestal or scatter exceeds
+`pedestal_bad`/`scatter_bad` (both 3e-3, in `_BASE`) is dropped to the model under `--method
+auto` — star-poor oversampled F160W fields build noisy wings that still pass the core checks.
+Thresholds chosen to pass every clean ACS/F555W build (worst scatter ~2e-3) and the good F160W
+empirical builds (≤1.2e-3) while dropping the noisy ones (J0936 7.8e-3, J0946 6.6e-3). Keeps
+the drizzle-broadened empirical PSF (FWHM ~3.8px, which the detector-frame model lacks at
+3.15px) where the build is clean, and the reproducible model where it isn't.
+
+### `run_psf_all.sh --models-only`
+
+`run_psf_all.sh [SAMPLE] [--all|--models-only]`. Default `--all` rebuilds everything. Use
+`--models-only` after changing only model-PSF code (e.g. the rotation): it skips any product
+whose *existing* `lens_psf.json` method is `empirical` (that code never touches the empirical
+builds — cut from the North-up mosaic; the pedestal is a ~1e-4 no-op on ACS) and rebuilds the
+model tier plus any not-yet-built product. The skip set is "empirical AND already recorded",
+so a new lens still builds.
 
 **Current state and open limitations.** `run_psf_all.sh` **has been run across all of
-`slacs_gold`** — `info/lens_psf.json` holds **90 products, 0 failures** (2026-07-27). Method
-breakdown: **F814W** 33 empirical + 5 focus-diverse; **F555W** 16 empirical; **F606W** 23/23
-`model_wfpc2_psfdb` (native MAST-DB, no more F555W proxy); **F160W** 6 empirical + 7
-exact-filter STDPSF. The gate thresholds (`min_snr=30`, core ≥15× outskirt, flux floor 5%,
-`fwhm_tol_hi=1.4`, `star_size=35` for WFPC2) **generalised fine** across the star-density
-range (empirical succeeded 33/38 F814W, 16/16 F555W) — no retune needed. Open items:
+`slacs_gold`** — `info/lens_psf.json` holds **90 products, 0 failures** (2026-07-28), each
+carrying `pedestal_frac`; the model tier is rotated to North-up. Method breakdown: **F814W**
+33 empirical + 5 focus-diverse; **F555W** 16 empirical; **F606W** 23/23 `model_wfpc2_psfdb`
+(native MAST-DB, no more F555W proxy); **F160W** 4 empirical + 9 exact-filter STDPSF `model`
+(the hybrid gate dropped J0936/J0946 from the previous 6 empirical). No capped trims remain
+(all F160W 27–29px). The gate thresholds (`min_snr=30`, core ≥15× outskirt, flux floor 5%,
+`fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3) generalised
+fine — no retune needed. Open items:
 - **No PSF uncertainty is propagated.** The kernel is a point estimate; an ePSF built from
   as few as 3–5 stars has no accompanying error/covariance for downstream lens modelling.
   Genuinely new work — not addressed by having more lenses.
-- **F160W full kernel may be tight.** Its `star_size=41` full extent is small enough that the
-  amplitude-1e-3 trim hits the 41px cap for some lenses (the broad IR PSF is still >1e-3 of
-  peak at the stamp edge) — consider a larger F160W `star_size` if wing fidelity matters.
-- F160W's 7 STDPSF models are **exact-filter** (F160W has a real grid), so acceptable; the
-  same MAST PSF DB carries WFC3/IR F160W if a native build is ever wanted (marginal gain).
+- **Model-PSF rotation switched to cubic resampling** (`_resample_centered`, order 3, was
+  order 1/bilinear — bilinear softened the model kernel slightly, e.g. F606W DB FWHM
+  0.212″→0.221″). Code changed 2026-07-28; **`info/lens_psf.json` and the on-disk model-tier
+  kernels (`model`, `model_acs_fdpsf`, `model_wfpc2_psfdb` — 37 products) still reflect the
+  old bilinear resample** until `run_psf_all.sh --models-only` is re-run. The empirical build
+  is preferred where stars exist anyway, so this only affects the model-fallback tier.
+- F160W's 9 STDPSF models are **exact-filter** (F160W has a real grid), so acceptable; the
+  same MAST PSF DB carries WFC3/IR F160W if a native build is ever wanted (marginal gain — it
+  would still be detector-frame, so it needs the same rotation and wouldn't recover drizzle
+  broadening).
 
 ## Tracking JSONs in `info/`
 
@@ -615,10 +711,13 @@ have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WF
 prop 11202). NICMOS F160W (24 lenses) is deprioritised and its data deleted. HST props:
 10886, 11202, 10494, 10798.
 
-Caveats on the other samples: `slacs_other` has **no `GAL-*` names surveyed**, so "no
-observations" there may just mean the lens is archived under an unlooked-up designation;
-`gallery` lenses are **not in `info/slacs_coords.py`** so they get no common output WCS
-(native-WCS fallback with a warning). Both need work before reduction.
+Caveats on the other samples: `slacs_other`'s naming is settled — all 93 lenses resolve under
+plain `SDSS{lens}%`, no `GAL-*` overrides needed (verified; see *Non-standard MAST target
+names*), so a "no observations" result there is a real absence, not a naming gap. `gallery`
+has a different, also-verified naming quirk (full SDSS coordinate designation, not the short
+J-name — same section) and its lenses are **not in `info/slacs_coords.py`**, so they get no
+common output WCS (native-WCS fallback with a warning). Both still need work before
+reduction.
 
 **Every lens is tried every run; only ones with data download.** No-data is an ordinary
 outcome (`null`, `=== NO DATA:` line, exit 0), counted separately from failures by the
@@ -644,8 +743,19 @@ Some lenses aren't on MAST under `SDSS<LENS>` — they use `GAL-<plate>-<mjd>-<f
 resolve this via `mast_target_names.py`: a lens with a `mast_target` in `lens_samples.json`
 queries the `GAL-*` name first, falls back to `SDSS{lens}%`. **Output/directory names stay
 in the J convention.** The live values are the `mast_target` entries in the JSON — edit
-those, not any table. All 14 are in `slacs_gold`; none surveyed for the other samples (which
-is why a no-data result there isn't conclusive).
+those, not any table. **Verified fact, not just current state:** all 14 `GAL-*` overrides are
+in `slacs_gold`, and `slacs_other`'s 93 lenses have been surveyed and confirmed to need none —
+no SLACS lens outside `slacs_gold` should ever need a `mast_target` override for this reason.
+If one shows up in `slacs_other`, treat it as a bug/regression to investigate, not a new
+legitimate case.
+
+`gallery` (BELLS GALLERY) has a separate, also-verified naming mismatch: those targets sit on
+MAST under their **full SDSS coordinate designation** (e.g. `SDSSJ002927.38+254401.7`), not a
+short name at all — `GAL-*` doesn't apply here. Once gallery scripts exist, that full
+designation is the `mast_target` to query, but `info/`, `data/`, and every output path must
+stay keyed on the short J-name (`J0029+2544`), matching the SLACS convention. Not yet wired
+into `lens_samples.json` (gallery scripts aren't written), but the naming fact itself is
+settled, not speculative.
 
 ## AstroDrizzle key parameters
 
