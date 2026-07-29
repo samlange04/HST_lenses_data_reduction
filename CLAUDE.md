@@ -453,9 +453,10 @@ noise FITS (from the weight map), and a 3-panel PNG.
   centre from the `--center-band` mosaic (highest S/N, GAIA-accurate) so stamps co-register
   across filters. `--center-self` restores per-band recentring; a band whose center-band
   products are missing falls back to its own peak with a warning. **Never use
-  `--center-self` on gallery's UV bands** (F225W, F275W) — the early-type deflector is
-  UV-dark and a self-centred peak search locks onto the bright lensed arc instead; see
-  *BELLS GALLERY* below.
+  `--center-self` on gallery's UV bands** (F225W, F275W) — a self-centred peak search locks
+  onto noise or an unrelated field source, not the lens. These bands are in fact unusable
+  for lens science sample-wide (confirmed, not just hard to centre) — see *BELLS GALLERY*
+  below.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -654,15 +655,52 @@ builds — cut from the North-up mosaic; the pedestal is a ~1e-4 no-op on ACS) a
 model tier plus any not-yet-built product. The skip set is "empirical AND already recorded",
 so a new lens still builds.
 
-**Current state and open limitations.** `run_psf_all.sh` **has been run across all of
-`slacs_gold`** — `info/lens_psf.json` holds **90 products, 0 failures** (2026-07-28), each
-carrying `pedestal_frac`; the model tier is rotated to North-up. Method breakdown: **F814W**
-33 empirical + 5 focus-diverse; **F555W** 16 empirical; **F606W** 23/23 `model_wfpc2_psfdb`
-(native MAST-DB, no more F555W proxy); **F160W** 4 empirical + 9 exact-filter STDPSF `model`
-(the hybrid gate dropped J0936/J0946 from the previous 6 empirical). No capped trims remain
-(all F160W 27–29px). The gate thresholds (`min_snr=30`, core ≥15× outskirt, flux floor 5%,
-`fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3) generalised
-fine — no retune needed. **Not yet run for `slacs_other`** (reduced 2026-07-29, same three
+### Empirical PSFs are built from the no-CR pass, not the CR pass
+
+→ memory: empirical_psf_from_nocr_pass. The LACosmic CR pass flags sharp **field-star
+cores** as cosmic rays and masks them in most frames — the drizzled star gets a hole in
+its core and many stars fall below the `min_snr`/shape gates and are dropped. The extended
+deflector is preserved (why LACosmic beats driz_cr), so the CR *science* image keeps the
+true PSF while the CR-*built* star PSF is the corrupted one (J0008 f814W: 3 stars + a core
+hole vs 11 clean stars from no-CR). So `make_psf.py` builds the empirical ePSF from the
+**least-CR-rejected mosaic on disk**: `star_pass` defaults to a `*_nocrrej_*` pass when
+present, else the output pass. It's decoupled from the cutout name — the kernel is still
+`cutout_cr_psf.fits` (`PSFPASS=cr, PSFSTARP=nocrrej`) because the point-source PSF is
+**pass-independent** (verified: CR/no-CR sky identical, deflector core byte-identical, only
+CR-hit pixels differ — so the no-CR PSF is the *correct*, consistent PSF for the CR
+science). A per-lens `"psf_star_pass"` override forces a pass. This default is the **standard for
+every LACosmic dataset** (the rule is instrument-generic). It helps where the field has
+real stars whose cores the CR pass ate: **ACS/WFC** (big win, below). It was **tested on
+WFPC2/WF3 F606W (2026-07-29) and does not help** — 0 stars pass the gates on *both* passes
+(fields genuinely star-poor, why the MAST-DB tier exists; and with 2–6 frames the no-CR
+mosaic is CR-infested), so **F606W stays on the MAST-DB model and gets no no-CR pass**.
+(WFPC2 also has no `--no-cr` flag and its skip fires on the cr product, so generating no-CR
+there rebuilds *both* passes and loses the `align_wfpc2_to_acs` tie.) **WFC3/UVIS (gallery)**
+is a LACosmic dataset that should benefit like ACS, and will the moment `make_psf` gains
+UVIS support and no-CR UVIS passes exist — no further code change needed.
+
+A **no-CR pass exists for every ACS product** (generated 2026-07-29 by the safe move-aside
+method — `mv` the cr files out, drizzle `--no-cr --nocrrej`, `mv` back; **never** run
+`--no-cr` on a lens whose cr you want kept in place, the drizzle script `rmtree`s its output
+dir on every non-skipped run). Grids are pixel-identical between passes (crop = dither
+footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/psf_stars.json`
+(was empty) now carries per-lens star exclusions/overrides — box order is
+`[xmin,xmax,ymin,ymax]`; → memory: psf_stars_exclusion_traps.
+
+**Current state and open limitations.** `run_psf_all.sh`/`make_psf.py` **has been run
+across all of `slacs_gold`**; `info/lens_psf.json` holds all products, 0 failures. All ACS
+empirical PSFs were **rebuilt from the no-CR pass (2026-07-29)**: total ACS stars **344 →
+599 (+74%)**, with **4 model→empirical conversions** (J0157, J1023, J1525, J2341 f814W).
+Method breakdown: **F814W** 37 empirical + 1 `model_acs_fdpsf` (only J1213+6708, a star-poor
+field stuck at 2 stars); **F555W** 16 empirical; **F606W** `model_wfpc2_psfdb` (native
+MAST-DB, no more F555W proxy); **F160W** 3 empirical + 10 exact-filter STDPSF `model`
+(F160W has no CR pass, so unaffected by the no-CR change; the hybrid gate dropped the noisy
+empirical builds). Each product carries `pedestal_frac`; the model tier is rotated to
+North-up. Vet after any no-CR rebuild: more stars can surface a close double / galaxy
+(fixed J1451-0239 f814W double); high-count builds dilute a single bad star, low-count
+(≤~6, e.g. J0029 at 3) ones don't. The gate thresholds (`min_snr=30`, core ≥15× outskirt,
+flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3)
+generalised fine — no retune needed. **Not yet run for `slacs_other`** (reduced 2026-07-29, same three
 instruments so `run_psf_all.sh slacs_other` needs no code change) **or `gallery`** (needs
 WFC3/UVIS support in `make_psf.py`/`psf_models.py` first — see *BELLS GALLERY* below). Open
 items:
@@ -773,7 +811,11 @@ WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery lenses are 
 `info/slacs_coords.py`** — they use `info/gallery_coords.py` instead, read by
 `drizzle_wfc3_uvis.py` for the common output WCS; a lens absent from that table falls back
 to native drizzle WCS with a warning. No PSF products: `make_psf.py`/`psf_models.py` have no
-WFC3/UVIS support (only ACS/WFC, WFC3/IR, WFPC2/WF3 are keyed).
+WFC3/UVIS support (only ACS/WFC, WFC3/IR, WFPC2/WF3 are keyed). **F225W/F275W are confirmed
+unusable for lens science across the whole sample** (arc undetected, not just the deflector
+— see *BELLS GALLERY* below); **J1110+2808 is usable only in F606W** (its F814W/F438W show
+no arc despite ~2× the exposure of every other gallery lens, F275W is pure noise). No further
+reduction effort (PSF, tuning) on either — reduced correctly, just not lensing-useful.
 
 Caveat carried over from before both samples were reduced: `slacs_other`'s naming is
 settled — all lenses resolve under plain `SDSS{lens}%`, no `GAL-*` overrides needed
@@ -910,21 +952,45 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
-- **UV bands show almost no deflector.** F225W (and to a lesser extent F275W) deflectors
-  are early-type and UV-dark, while the lensed source stays bright (often star-forming) —
-  a self-centred cutout recentre locks onto the arc or blank sky, not the galaxy. Always
-  cut UV bands with the default `--center-band f814W` in `make_cutouts.py`, never
-  `--center-self`, and make sure F814W is drizzled first (`run_gallery_uvis_all.sh` already
-  orders filters this way). → memory: gallery_uvis_uv_deflector_faint
+- **F225W/F275W are unusable for lens science, sample-wide — confirmed, not just a faint
+  deflector.** The original assumption was that the early-type deflector is UV-dark while
+  the lensed arc stays bright, so only recentring needed care. A 2026-07-29 same-stretch
+  S/N check across three lenses showed the **arc is undetected too**: J1110+2808 F275W
+  (15768s — the deepest UV exposure in the sample) is pure noise at the lens position;
+  J0742+3341 F275W detects an unrelated bright edge-on foreground spiral at S/N~6 elsewhere
+  in the frame, but the deflector+ring itself sits at S/N~2.5 (vs ~14 in F606W) — i.e. at
+  noise; J2342-0120 F225W detects an off-centre field source but nothing at the lens
+  centroid. **Do not spend further effort on F225W/F275W** — no PSF work (moot anyway, see
+  below), no further recentring/alignment tuning. The drizzled products stay on disk as a
+  correctly-reduced record of what MAST delivered, not as science-ready cutouts. → memory:
+  gallery_uv_bands_unusable (supersedes the "arc stays bright" framing in
+  gallery_uvis_uv_deflector_faint)
+  - The centring mechanism that motivated the original caveat is still real if these are
+    ever re-cut: **never use `--center-self`** on F225W/F275W — a self-centred peak search
+    locks onto noise or a field source, not the lens. Cut with `--center-band f814W`
+    (default) so the stamp geometry is at least correct even though nothing but noise
+    should be expected there.
 - **No PSF support yet.** `make_psf.py`/`psf_models.py` key off `ACS/WFC`, `WFC3/IR`, and
   `WFPC2` — WFC3/UVIS isn't wired in, so gallery has no `psf_kernel.fits` /
   `cutout_[cr_]psf.fits` products and no `info/lens_psf.json` entries.
+- **Per-lens caveat: J1110+2808 is usable only in F606W.** Its F814W/F438W frames run
+  ~2× the exposure time of every other gallery lens with those bands (2360–2372s vs
+  ~940–1425s elsewhere: 4 frames at 590–602s each vs 3 frames at ~350–475s), and F275W runs
+  15768s (also the sample's deepest). Despite that depth, a same-stretch S/N comparison
+  (2026-07-29) found the near-deflector knots clearly visible in F606W are simply absent in
+  F814W (deflector-dominated, no knots) and F438W (barely even the deflector detected); its
+  F275W is pure noise at the lens position, consistent with the F225W/F275W finding above.
+  **Do not build PSFs or spend further reduction effort on this lens's F814W/F438W/F275W
+  products** — they're correctly reduced, just not lensing-useful; only its F606W product
+  is. → memory: j1110_2808_f606w_only
 
 Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 each,
 F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
 GALLERY actually has on MAST, not a pipeline gap. `run_cutouts_all.sh` was extended to glob
 the UV/blue bands (`f438W f275W f225W`) alongside the SLACS filters so it stays one runner
-for every sample.
+for every sample. **F225W/F275W across every lens, and F814W/F438W/F275W specifically for
+J1110+2808, are not lensing-useful** (see bullets above) — treat only F606W (all 15 lenses)
+and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready.
 
 ## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
 
@@ -952,7 +1018,10 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
   F555W (both in raw flux scale and true SNR), so a shared scale washes one out.
 - `make_psf_mosaics.py` writes `{group}_psf.png`, peak-normalised per panel (kernels are
   unit-sum normalised by `trim_kernel_to_amplitude`, so raw peak reflects kernel *size* as
-  much as sharpness), each panel tagged `emp` (empirical ePSF) or `mod` (STDPSF /
+  much as sharpness), on a **log stretch over 1e-4..1** (`pooled_log_norm`, matching the
+  'log' wing panel in each lens's `psf.png` — the wings are what QC here is about; passed to
+  `make_mosaics.plot_mosaic` via its `norm_fn` hook, which still defaults to pooled asinh for
+  the signal/noise mosaics). Each panel tagged `emp` (empirical ePSF) or `mod` (STDPSF /
   focus-diverse / MAST PSF DB) from the `PSFMETH` keyword. Only `slacs_gold` has PSF
   products today; `slacs_other`/`gallery` mosaics for the `_psf` panel type will appear
   once `run_psf_all.sh` is run for those samples (no code change needed for `slacs_other`,

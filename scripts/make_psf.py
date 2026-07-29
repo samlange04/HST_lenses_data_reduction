@@ -669,14 +669,40 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
 
-    # Resolve which pass to detect stars in.
+    # Per-lens overrides (loaded before the pass resolution: an override can redirect
+    # which drizzle pass the empirical build reads).
+    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'psf_stars.json'))
+    overrides = overrides_all.get(a.sample, {}).get(a.lens, {}).get(a.filt, {})
+
+    # Output pass -- names the cutout (cutout_cr_* vs cutout_*) so the PSF matches the
+    # science stamp downstream reads. auto -> cr where a CR pass exists.
     if a.drizzle_pass == 'auto':
         has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
         drizzle_pass = 'cr' if has_cr else 'nocrrej'
     else:
         drizzle_pass = a.drizzle_pass
-    sci_file, wht_file = find_products(drizzled_dir, drizzle_pass)
-    print(f'{a.lens} {a.filt}  [{drizzle_pass} pass]')
+
+    # Star-detection pass -- the mosaic the *empirical* ePSF is actually built from.
+    # The LACosmic CR pass flags sharp field-star cores as cosmic rays and masks them,
+    # punching a hole in the ePSF core and dropping stars below the SNR/shape gates
+    # (stark on star-poor fields, e.g. J0008-0004: 3 usable stars + a core hole from the
+    # CR pass vs 11 clean stars from no-CR). So build the empirical ePSF from the
+    # least-CR-rejected mosaic available: prefer a no-CR ('*_nocrrej_*') pass when it is
+    # on disk (all ACS once drizzled with --nocrrej; WFC3/IR is nocrrej-named already),
+    # else the output pass (WFPC2 keeps its cr pass -- no no-CR exists). The point-source
+    # PSF shape is pass-independent, so a no-CR-built PSF stays correct for the CR science
+    # stamp, whose name still follows the output pass above. A per-lens "psf_star_pass"
+    # override forces a specific pass (e.g. "cr" to opt back out).
+    if 'psf_star_pass' in overrides:
+        star_pass = overrides['psf_star_pass']
+    else:
+        has_nocr = bool(glob.glob(os.path.join(drizzled_dir, '*_nocrrej_*_sci.fits')))
+        star_pass = 'nocrrej' if has_nocr else drizzle_pass
+    sci_file, wht_file = find_products(drizzled_dir, star_pass)
+    if star_pass == drizzle_pass:
+        print(f'{a.lens} {a.filt}  [{drizzle_pass} pass]')
+    else:
+        print(f'{a.lens} {a.filt}  [build from {star_pass} pass, name as {drizzle_pass}]')
     print(f'  sci: {os.path.basename(sci_file)}')
 
     with fits.open(sci_file) as hdul:
@@ -690,9 +716,7 @@ def main():
     scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
     print(f'  instrument: {inst_key}   pixel scale: {scale:.4f}"/pix')
 
-    # Per-lens overrides + resolved parameters.
-    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'psf_stars.json'))
-    overrides = overrides_all.get(a.sample, {}).get(a.lens, {}).get(a.filt, {})
+    # Resolved parameters.
     if a.method == 'auto' and 'method' in overrides:
         method = overrides['method']
     else:
@@ -866,6 +890,8 @@ def main():
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
     thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
+    if star_pass != drizzle_pass:
+        thdr['PSFSTARP'] = (star_pass, 'drizzle pass the empirical ePSF was built from')
     write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
 
     info_json.update(psf_json, a.sample, a.lens, a.filt, {
