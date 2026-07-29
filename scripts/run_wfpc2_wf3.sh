@@ -60,7 +60,8 @@ split_visits_for() {
 # into a lookup table -- one python start-up, not one per lens.
 ALIGN_TBL="$(conda run -n stenv python -c "
 import json
-for k, v in json.load(open('$ALIGN_JSON')).items():
+d = json.load(open('$ALIGN_JSON')).get('$SAMPLE', {})
+for k, v in d.items():
     print(k, v)")" || { echo "cannot read $ALIGN_JSON"; exit 1; }
 
 align_for() {

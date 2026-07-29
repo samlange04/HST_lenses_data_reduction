@@ -35,7 +35,7 @@ SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$S
 # In --all mode we iterate the mosaics directly (below) and let make_psf_inject decide.
 MODEL_RUN=""
 if [ "$MODE" = models ]; then
-  MODEL_RUN="$(conda run -n stenv python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; print(chr(10).join(l+'/'+k for l in d for k,v in (d[l] or {}).items() if v and str(v.get('method','')).startswith('model')))")" || exit 1
+  MODEL_RUN="$(conda run -n stenv python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and str(v.get('method','')).startswith('model')))")" || exit 1
 fi
 
 ok=0; fail=0; skip=0
