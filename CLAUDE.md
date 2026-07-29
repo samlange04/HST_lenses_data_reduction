@@ -457,9 +457,9 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
   radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
 
-Records `info/lens_psf.json` (`{lens:{filt:{method,n_stars,fwhm_pix,oversample,kernel_size,
-cutout_kernel_size,trim_threshold}}}`, `null` + exit 0 on no data). Run **after** the
-drizzles (a PSF needs a mosaic). → memory: psf_generation, psf_kernel_sizing
+Records `info/lens_psf.json` (`{sample:{lens:{filt:{method,n_stars,fwhm_pix,oversample,
+kernel_size,cutout_kernel_size,trim_threshold}}}}`, `null` + exit 0 on no data). Run
+**after** the drizzles (a PSF needs a mosaic). → memory: psf_generation, psf_kernel_sizing
 
 **Kernel size is an amplitude cut, not enclosed-energy.** The trimmed modelling kernel is cut
 where the azimuthally-averaged PSF drops below `trim_threshold`×peak — the extent over which
@@ -470,8 +470,9 @@ while the PSF is still ~1% of peak, vs ~31px for amplitude-1e-3. The cut is band
 construction (sharp ACS F814W → 19–27px; broad F160W → 29–41px; F606W → 31px).
 → memory: psf_kernel_sizing
 
-**Star selection is fully automatic; per-lens tweaks live in `info/psf_stars.json`** (absent
-lens/filt ⇒ automatic). Overrides: `include`/`exclude` coords or boxes, and any parameter
+**Star selection is fully automatic; per-lens tweaks live in `info/psf_stars.json`**
+(`{sample:{lens:{filt:{...}}}}`; absent sample/lens/filt ⇒ automatic). Overrides:
+`include`/`exclude` coords or boxes, and any parameter
 (`max_stars`, `threshold_scale`, `min_snr`, `oversample`, …). The same knobs exist as CLI
 flags. Precedence: instrument default < JSON < CLI. This replaces the notebook's hand-typed
 NaN rectangles and manual star deletion.
@@ -669,12 +670,24 @@ fine — no retune needed. Open items:
 > void** — the *reasoning* in those notes stands and is why reruns use the current scripts;
 > only the inventory is stale.
 
+> **Split by sample, 2026-07-29.** Every tracking JSON below (plus `lens_psf.json`,
+> `lens_psf_injected.json`, `wfpc2_alignment.json`, `psf_stars.json`) was flat `{lens:
+> {...}}`, mixing slacs_gold/slacs_other/gallery lenses in one namespace — harmless only
+> because no lens name has ever collided across samples. All are now nested `{sample:
+> {lens: {...}}}`, matching `lens_samples.json`'s own top-level-by-sample layout and the
+> `data/<sample>/<lens>/...` directory convention. Every read/write site now goes through
+> `scripts/info_json.py` (`load`/`update`), which consolidated what had been 4 near-
+> identical copies of the same read-modify-write helper across the drizzle scripts. The
+> migration was a pure reshape (verified by round-tripping every value back to its
+> pre-migration flat form); no data changed.
+
 Updated automatically by every run:
-- **`lens_products.json`** — `{lens: {key: [rootname, ...]}}` — frames that reached the
-  drizzle (not the whole download).
-- **`lens_instrument.json`** — `{lens: {key: "INSTRUME/DETECTOR"}}` — records `WFPC2/WF3`
-  for F606W (the chip), not MAST's `WFPC2/PC`.
-- **`lens_exptime.json`** — `{lens: {key: seconds}}` — from the CR-rejected drizzle header.
+- **`lens_products.json`** — `{sample: {lens: {key: [rootname, ...]}}}` — frames that
+  reached the drizzle (not the whole download).
+- **`lens_instrument.json`** — `{sample: {lens: {key: "INSTRUME/DETECTOR"}}}` — records
+  `WFPC2/WF3` for F606W (the chip), not MAST's `WFPC2/PC`.
+- **`lens_exptime.json`** — `{sample: {lens: {key: seconds}}}` — from the CR-rejected
+  drizzle header.
 
 No data for a filter → value `null`.
 
@@ -691,7 +704,8 @@ No data for a filter → value `null`.
   removes them outright). Exposure times were always correct (from the header).
 - Auditing obsid counts vs `NDRIZIM`: **ACS/WFC FLCs are 2-chip MEFs**, so `NDRIZIM =
   2×exposures` there and 1× for WFPC2/WFC3 — comparing directly reports 54 false mismatches.
-- Both levels stay sorted (lenses, and filters within each lens) across partial runs.
+- All three levels stay sorted (sample, lens, and filter/key within each lens) across
+  partial runs.
 
 ## Lens Samples
 

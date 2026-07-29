@@ -45,6 +45,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mmap_fits_write
 mmap_fits_write.install()
 import mast_target_names
+import info_json
 
 # WFC3/UVIS native plate scale, UVIS1 x-axis (WFC3 DHB 2024 s4.1.1: 0.0396"/px x,
 # 0.0393 y on chip 1; 0.0398 both on chip 2). Drizzle to the native scale -- like
@@ -167,19 +168,6 @@ json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
-def _update_info_json(path, lens, filt_key, value):
-    try:
-        with open(path) as _f:
-            _data = json.load(_f)
-    except FileNotFoundError:
-        _data = {}
-    _entry = _data.setdefault(lens, {})
-    _entry[filt_key] = value
-    # Keep filters ordered within each lens entry, as well as lenses across the file.
-    _data[lens] = dict(sorted(_entry.items()))
-    with open(path, 'w') as _f:
-        json.dump(dict(sorted(_data.items())), _f, indent=4)
-
 _num_cores = 1
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -239,9 +227,6 @@ if _is_subprocess:
     sys.exit(0)
 
 # ── Download FLC files from MAST (skip if already present) ────────────────────
-with open(json_path) as _f:
-    lens_products = json.load(_f)
-
 # Distinguishes "MAST has nothing for this lens+filter" (an ordinary outcome -- every
 # lens in a sample is tried on every run, most have no data in most bands) from "the
 # download broke" (a real failure). Conflating them is what would let a network error
@@ -302,8 +287,8 @@ else:
         print(f'  MAST query failed: {e}')
 
 if not glob.glob(os.path.join(data_path, '*flc.fits')):
-    _update_info_json(exptime_json_path,    lens, filt_key, None)
-    _update_info_json(instrument_json_path, lens, filt_key, None)
+    info_json.update(exptime_json_path,    sample, lens, filt_key, None)
+    info_json.update(instrument_json_path, sample, lens, filt_key, None)
     if _mast_empty:
         # Ordinary outcome, not a failure: exit 0 so a batch runner sweeping the whole
         # sample records "no data" and moves on instead of counting it as an error.
@@ -319,7 +304,7 @@ if not glob.glob(os.path.join(data_path, '*flc.fits')):
 with fits.open(sorted(glob.glob(os.path.join(data_path, '*flc.fits')))[0]) as _h:
     _instrume  = _h[0].header['INSTRUME'].strip()
     _detector  = _h[0].header.get('DETECTOR', 'UVIS').strip()
-_update_info_json(instrument_json_path, lens, filt_key, f'{_instrume}/{_detector}')
+info_json.update(instrument_json_path, sample, lens, filt_key, f'{_instrume}/{_detector}')
 
 # ── Provenance ────────────────────────────────────────────────────────────────
 # Record the frames that actually reach the drizzle, not everything the download left
@@ -334,8 +319,8 @@ _obs_ids = sorted(rootname for rootname, exp in _frames if exp > 0)
 _total_exptime = sum(exp for _, exp in _frames if exp > 0)
 
 if _total_exptime < BLOCK_EXPTIME:
-    _update_info_json(exptime_json_path,    lens, filt_key, None)
-    _update_info_json(instrument_json_path, lens, filt_key, None)
+    info_json.update(exptime_json_path,    sample, lens, filt_key, None)
+    info_json.update(instrument_json_path, sample, lens, filt_key, None)
     print(f'=== BLOCKED (exptime): {lens} {filt_key} total exptime {_total_exptime:.1f}s '
           f'< {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
     sys.exit(0)
@@ -343,10 +328,7 @@ if _total_exptime < WARN_EXPTIME:
     print(f'  EXPTIME WARNING: {lens} {filt_key} total exptime {_total_exptime:.1f}s '
           f'< {WARN_EXPTIME:.0f}s (proceeding)')
 
-lens_products.setdefault(lens, {})[filt_key] = _obs_ids
-lens_products[lens] = dict(sorted(lens_products[lens].items()))
-with open(json_path, 'w') as _f:
-    json.dump(dict(sorted(lens_products.items())), _f, indent=4)
+info_json.update(json_path, sample, lens, filt_key, _obs_ids)
 
 # Skip drizzle if final products already exist
 _skip_sentinel = 'wfc3_uvis_flc_cr_drc_sci.fits' if do_cr else 'wfc3_uvis_flc_nocrrej_drc_sci.fits'
@@ -581,7 +563,7 @@ if do_cr:
 if do_nocrrej:
     print(f'  No CR rejection: {fits.getheader("wfc3_uvis_flc_nocrrej_drc_sci.fits")["EXPTIME"]:.1f} s')
 exptime = fits.getheader(_primary_sci)['EXPTIME']
-_update_info_json(exptime_json_path, lens, filt_key, exptime)
+info_json.update(exptime_json_path, sample, lens, filt_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
 print('\n=== Copying final products to output directory ===')

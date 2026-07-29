@@ -69,6 +69,7 @@ import mast_target_names
 # prefix/suffix globbing. Importing make_cutouts is safe: its work is under __main__.
 from make_cutouts import find_products, _has_products
 import psf_models
+import info_json
 
 
 # ── Per-instrument defaults ─────────────────────────────────────────────────────
@@ -604,33 +605,15 @@ def plot_psf(kernel, epsf_data, star_stamps, scale_arcsec, fwhm_pix, output_path
     print(f'  wrote {output_path}')
 
 
-def lens_products_rootnames(lens, filt_key):
+def lens_products_rootnames(sample, lens, filt_key):
     """Exposure rootnames that reached the drizzle for (lens, filt), from lens_products.json.
 
     Used by the ACS focus-diverse ePSF model to retrieve a focus-matched ePSF per exposure.
     Returns [] if the file or entry is absent.
     """
-    try:
-        with open(os.path.join(ws_path, 'info', 'lens_products.json')) as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        return []
-    val = data.get(lens, {}).get(filt_key)
+    data = info_json.load(os.path.join(ws_path, 'info', 'lens_products.json'))
+    val = data.get(sample, {}).get(lens, {}).get(filt_key)
     return list(val) if val else []
-
-
-def update_info_json(path, lens, filt_key, value):
-    """Sorted, indented {lens: {filt: value}} tracking write (matches drizzle scripts)."""
-    try:
-        with open(path) as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {}
-    entry = data.setdefault(lens, {})
-    entry[filt_key] = value
-    data[lens] = dict(sorted(entry.items()))
-    with open(path, 'w') as f:
-        json.dump(dict(sorted(data.items())), f, indent=4)
 
 
 # ── Main ────────────────────────────────────────────────────────────────────────
@@ -681,7 +664,7 @@ def main():
     # No-data outcome: matches the drizzle/cutout scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
         print(f'=== NO DATA: {a.lens} {a.filt} (no drizzled products in {drizzled_dir})')
-        update_info_json(psf_json, a.lens, a.filt, None)
+        info_json.update(psf_json, a.sample, a.lens, a.filt, None)
         sys.exit(0)
 
     os.makedirs(output_dir, exist_ok=True)
@@ -708,12 +691,8 @@ def main():
     print(f'  instrument: {inst_key}   pixel scale: {scale:.4f}"/pix')
 
     # Per-lens overrides + resolved parameters.
-    try:
-        with open(os.path.join(ws_path, 'info', 'psf_stars.json')) as f:
-            overrides_all = json.load(f)
-    except FileNotFoundError:
-        overrides_all = {}
-    overrides = overrides_all.get(a.lens, {}).get(a.filt, {})
+    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'psf_stars.json'))
+    overrides = overrides_all.get(a.sample, {}).get(a.lens, {}).get(a.filt, {})
     if a.method == 'auto' and 'method' in overrides:
         method = overrides['method']
     else:
@@ -810,7 +789,7 @@ def main():
         # fallback-of-the-fallback if a retrieval fails. Other instruments use STDPSF.
         if inst_key == 'ACS/WFC':
             try:
-                rootnames = lens_products_rootnames(a.lens, a.filt)
+                rootnames = lens_products_rootnames(a.sample, a.lens, a.filt)
                 calibrated_dir = os.path.join(ws_path, 'data', 'calibrated', a.sample,
                                               a.lens, a.filt)
                 print(f'  method: MODEL (ACS focus-diverse ePSF)  [{tag}]')
@@ -889,7 +868,7 @@ def main():
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
     write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
 
-    update_info_json(psf_json, a.lens, a.filt, {
+    info_json.update(psf_json, a.sample, a.lens, a.filt, {
         'method': method_used,
         'n_stars': n_stars,
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,

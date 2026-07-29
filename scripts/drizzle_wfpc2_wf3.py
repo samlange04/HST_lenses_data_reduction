@@ -35,6 +35,7 @@ from stwcs.updatewcs import updatewcs
 # Resolve MAST target names (some lenses are archived under GAL-* not SDSS<LENS>).
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
+import info_json
 
 # Route large FITS output writes through mmap+memcpy (vm_fault path) instead of
 # fwrite/cluster_write copyin, to dodge the macOS U-state write-path lost-wakeup.
@@ -226,23 +227,7 @@ json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
-def _update_info_json(path, lens, filt_key, value):
-    try:
-        with open(path) as _f:
-            _data = json.load(_f)
-    except FileNotFoundError:
-        _data = {}
-    _entry = _data.setdefault(lens, {})
-    _entry[filt_key] = value
-    # Keep filters ordered within each lens entry, as well as lenses across the file.
-    _data[lens] = dict(sorted(_entry.items()))
-    with open(path, 'w') as _f:
-        json.dump(dict(sorted(_data.items())), _f, indent=4)
-
 # ── Download FLT files from MAST (skip if already present) ────────────────────
-with open(json_path) as _f:
-    lens_products = json.load(_f)
-
 # Distinguishes "MAST has nothing for this lens+filter" (an ordinary outcome -- every
 # lens in a sample is tried on every run, most have no data in most bands) from "the
 # download broke" (a real failure). Conflating them is what would let a network error
@@ -332,8 +317,8 @@ else:
         print(f'  MAST query failed: {e}')
 
 if not glob.glob(os.path.join(data_path, 'u*flt.fits')):
-    _update_info_json(exptime_json_path,    lens, product_key, None)
-    _update_info_json(instrument_json_path, lens, product_key, None)
+    info_json.update(exptime_json_path,    sample, lens, product_key, None)
+    info_json.update(instrument_json_path, sample, lens, product_key, None)
     if _mast_empty or _all_too_short:
         # Ordinary outcome, not a failure: exit 0 so a batch runner sweeping the whole
         # sample records "no data" and moves on instead of counting it as an error.
@@ -349,7 +334,7 @@ if not glob.glob(os.path.join(data_path, 'u*flt.fits')):
 # Save instrument from first FLT header
 with fits.open(sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))[0]) as _h:
     _instrume = _h[0].header['INSTRUME'].strip()
-_update_info_json(instrument_json_path, lens, product_key, f'{_instrume}/WF3')
+info_json.update(instrument_json_path, sample, lens, product_key, f'{_instrume}/WF3')
 
 # ── Choose output scale from the actual sub-pixel dither coverage ─────────────
 _inputs = sorted(glob.glob(os.path.join(data_path, 'u*flt.fits')))
@@ -361,8 +346,8 @@ if _a.pa is not None:
 
 _total_exptime = sum(fits.getheader(f)['EXPTIME'] for f in _inputs)
 if _total_exptime < BLOCK_EXPTIME:
-    _update_info_json(exptime_json_path,    lens, product_key, None)
-    _update_info_json(instrument_json_path, lens, product_key, None)
+    info_json.update(exptime_json_path,    sample, lens, product_key, None)
+    info_json.update(instrument_json_path, sample, lens, product_key, None)
     print(f'=== BLOCKED (exptime): {lens} {product_key} total exptime '
           f'{_total_exptime:.1f}s < {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
     sys.exit(0)
@@ -377,12 +362,9 @@ if _total_exptime < WARN_EXPTIME:
 # here rather than inside the download block so that a re-run on already-downloaded
 # data still refreshes it; a lens that exits below for want of dither phase writes
 # nothing, which is correct — no product exists for it.
-lens_products.setdefault(lens, {})[product_key] = sorted(
+info_json.update(json_path, sample, lens, product_key, sorted(
     os.path.basename(f).replace('_flt.fits', '') for f in _inputs
-)
-lens_products[lens] = dict(sorted(lens_products[lens].items()))
-with open(json_path, 'w') as _f:
-    json.dump(dict(sorted(lens_products.items())), _f, indent=4)
+))
 
 _nx, _ny = dither_phase_counts(_inputs)
 print(f'=== Dither sampling: {len(_inputs)} exposures, '
@@ -824,7 +806,7 @@ for label, fname in _passes:
     print(f'  {label}: {fits.getheader(fname)["EXPTIME"]:.1f} s')
 # Record from the CR pass (the science product); EXPTIME is identical between passes.
 exptime = fits.getheader('wfpc2_wf3_cr_drw_sci.fits')['EXPTIME']
-_update_info_json(exptime_json_path, lens, product_key, exptime)
+info_json.update(exptime_json_path, sample, lens, product_key, exptime)
 
 # ── Copy final sci/wht to output_path ────────────────────────────────────────
 # Stamp the noise model into the products. Nothing else distinguishes a calibrated

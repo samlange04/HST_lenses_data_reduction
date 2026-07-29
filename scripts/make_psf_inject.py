@@ -20,7 +20,7 @@ outputs and changes nothing downstream:
   data/psf/<sample>/<lens>/<filt>/psf_kernel_injected.fits   full image-scale kernel
   data/psf/<sample>/<lens>/<filt>/psf_injected.png           QA panel
   data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf_injected.fits   trimmed modelling kernel
-  info/lens_psf_injected.json                                {lens:{filt:{...}}}
+  info/lens_psf_injected.json                                {sample:{lens:{filt:{...}}}}
 
 How it works, and why it is faithful:
   * It reuses the already-prepared inputs the science drizzle consumed, which persist in
@@ -81,6 +81,7 @@ import psf_models
 # is under __main__). instrument_key / representative field sizes also come from there.
 import make_psf
 from make_cutouts import find_products, _has_products
+import info_json
 
 
 # ── Per-instrument drizzle configuration ─────────────────────────────────────────
@@ -433,7 +434,7 @@ def main():
     # No-data outcome: matches the other scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
         print(f'=== NO DATA: {a.lens} {a.filt} (no drizzled products in {drizzled_dir})')
-        make_psf.update_info_json(json_path, a.lens, a.filt, None)
+        info_json.update(json_path, a.sample, a.lens, a.filt, None)
         sys.exit(0)
 
     # Resolve the science pass (for the cutout prefix + recentring reference).
@@ -529,7 +530,7 @@ def main():
     make_psf.write_fits(trimmed, thdr,
                         os.path.join(cutouts_dir, f'{prefix}_psf_injected.fits'))
 
-    make_psf.update_info_json(json_path, a.lens, a.filt, {
+    info_json.update(json_path, a.sample, a.lens, a.filt, {
         'method': method,
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'kernel_size': int(kernel.shape[0]),
