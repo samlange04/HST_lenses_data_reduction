@@ -7,11 +7,15 @@ Reads the postage stamps already written by make_cutouts.py
 available lens out on a 5-wide grid, one mosaic per (filter group, data type). Nothing
 is re-drizzled or re-cut - this only reads existing cutout FITS files.
 
-Three filter groups (SLACS-specific: WFPC2 F606W and ACS F555W never share a lens, so
-they're combined into one grid with the filter named per-panel):
-    f814W          - ACS/WFC, 38 lenses
+Filter groups come from mosaic_groups.py, shared with make_psf_mosaics.py, so both
+scripts stay in sync. For slacs_gold/slacs_other (SLACS: WFPC2 F606W and ACS F555W
+never share a lens):
+    f814W          - ACS/WFC
     f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v1/v2) merged with ACS F555W
     f160W          - WFC3/IR only (NICMOS F160W products were deleted, see CLAUDE.md)
+gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f275W,
+f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
+per filter subdirectory found on disk.
 
 Each mosaic panel shows the full cutout as cut by make_cutouts.py (10" square by
 default). Colour/stretch is inferno + an asinh stretch (astropy.visualization), the
@@ -41,6 +45,7 @@ ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
+import mosaic_groups
 
 NCOLS = 5
 CMAP = 'inferno'
@@ -59,61 +64,35 @@ def find_cutout_pair(filt_dir):
     return None, None
 
 
-def build_group_f814w(cutouts_dir):
-    entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
-        lens = os.path.basename(lens_dir)
-        filt_dir = os.path.join(lens_dir, 'f814W')
-        sci, noise = find_cutout_pair(filt_dir)
-        if sci is None:
-            continue
-        entries.append((lens, lens, sci, noise, None))
-    return entries
-
-
 def short_filt(filt):
     """f606W[_v1/_v2] -> f6[_v1/_v2], f555W -> f5, for compact panel titles."""
     return filt.replace('f606W', 'f6').replace('f555W', 'f5')
 
 
-def build_group_f606w_f555w(cutouts_dir):
-    # Precedence per lens: combined f606W, else the deeper split-visit f606W_v2,
-    # else f606W_v1, else f555W - so every lens appears exactly once. `group` is the
-    # instrument (f6* is WFPC2, f5 is ACS) - the two sit on very different scales in
-    # every panel type (signal/noise: ~100x native flux-scale gap; SNR: WFPC2 F606W
-    # is itself far noisier than ACS F555W), so all three mosaics split the colourbar
-    # per instrument rather than share one.
-    precedence = ['f606W', 'f606W_v2', 'f606W_v1', 'f555W']
+def build_group(cutouts_dir, precedence):
+    """Entries for one mosaic group. `precedence` is a list of filter-dir names tried
+    in order per lens, so every lens contributes exactly one panel - needed for groups
+    that merge filters from mutually-exclusive instruments (SLACS' WFPC2 F606W / ACS
+    F555W, and the split-visit f606W_v1/v2 keys). `group` (the per-panel colourbar-
+    split key) is only set for multi-filter groups: the two sit on very different
+    scales in every panel type (signal/noise: ~100x native flux-scale gap; SNR: WFPC2
+    F606W is itself far noisier than ACS F555W), so those mosaics split the colourbar
+    per instrument rather than share one."""
     entries = []
     for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
         lens = os.path.basename(lens_dir)
         for filt in precedence:
             sci, noise = find_cutout_pair(os.path.join(lens_dir, filt))
-            if sci is not None:
+            if sci is None:
+                continue
+            if len(precedence) > 1:
                 short = short_filt(filt)
-                group = short.split('_')[0]
-                entries.append((lens, f'{lens} [{short}]', sci, noise, group))
-                break
+                label, group = f'{lens} [{short}]', short.split('_')[0]
+            else:
+                label, group = lens, None
+            entries.append((lens, label, sci, noise, group))
+            break
     return entries
-
-
-def build_group_f160w(cutouts_dir):
-    entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
-        lens = os.path.basename(lens_dir)
-        filt_dir = os.path.join(lens_dir, 'f160W')
-        sci, noise = find_cutout_pair(filt_dir)
-        if sci is None:
-            continue
-        entries.append((lens, lens, sci, noise, None))
-    return entries
-
-
-GROUPS = {
-    'f814W':       build_group_f814w,
-    'f606W_f555W': build_group_f606w_f555w,
-    'f160W':       build_group_f160w,
-}
 
 
 def load_signal_noise_snr(sci_path, noise_path):
@@ -275,17 +254,16 @@ def main():
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory under data/cutouts/ to mosaic. Defined in '
-                        'info/lens_samples.json (default '
-                        f'{mast_target_names.DEFAULT_SAMPLE}; slacs_other and gallery '
-                        'will work once their cutouts exist)')
+                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     a = p.parse_args()
 
     cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample)
     out_dir = os.path.join(ws_path, 'data', 'mosaics', a.sample)
     os.makedirs(out_dir, exist_ok=True)
 
-    for group_name, builder in GROUPS.items():
-        entries_raw = builder(cutouts_dir)
+    groups = mosaic_groups.groups_for_sample(a.sample, cutouts_dir)
+    for group_name, precedence in groups.items():
+        entries_raw = build_group(cutouts_dir, precedence)
         if not entries_raw:
             print(f"{group_name}: no cutouts found under {cutouts_dir}, skipping")
             continue
