@@ -80,15 +80,20 @@ Each runner takes an optional sample arg, defaulting to `slacs_gold`:
 bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
 bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
 bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
+bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F225W/F275W/F438W/F606W/F814W (gallery only)
 bash scripts/run_cutouts_all.sh              # stamps for whatever products exist
+bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
 bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
 ```
 
 All runners take the roster from `info/lens_samples.json` via `scripts/mast_target_names.py`
-— **except `run_cutouts_all.sh`, which globs `data/drizzled/`** (a stamp needs a mosaic
-that exists). They report `ok` / `no data` / `FAILED` separately, so the 16 `slacs_gold`
-lenses with no WFPC2 data aren't mistaken for errors. `run_cutouts_all.sh` globs `<filt>*`
-(not `<filt>`) so per-visit split-visit dirs are included.
+— **except `run_cutouts_all.sh` and `run_psf_all.sh`, which glob `data/drizzled/`** (a stamp
+or PSF needs a mosaic that exists). They report `ok` / `no data` / `FAILED` separately, so
+the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_cutouts_all.sh`
+globs `<filt>*` (not `<filt>`) so per-visit split-visit dirs are included, and covers every
+sample's filters (SLACS `f606W f814W f555W f160W` plus gallery's UV/blue bands `f438W f275W
+f225W`) in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
+WFC3/UVIS data, but (like the other runners) accepts any sample as its first arg.
 
 ### `run_wfpc2_wf3.sh` — the single WFPC2 driver (three traps it exists to avoid)
 
@@ -135,22 +140,26 @@ network call.
 
 ### Total-exposure-time gate
 
-All three drizzle scripts (`drizzle_acs_wfc.py`, `drizzle_wfc3_ir.py`,
-`drizzle_wfpc2_wf3.py`) sum `EXPTIME` over the frames that would actually reach the
-drizzle (post `EXPTIME=0`/`MIN_EXPTIME` filtering, post `--pa` visit selection for WFPC2)
-and gate on the total before doing the expensive drizzle work — added because
-`slacs_other` runs generally shorter total exposures than `slacs_gold`.
+All four drizzle scripts (`drizzle_acs_wfc.py`, `drizzle_wfc3_ir.py`,
+`drizzle_wfpc2_wf3.py`, `drizzle_wfc3_uvis.py`) sum `EXPTIME` over the frames that would
+actually reach the drizzle (post `EXPTIME=0`/`MIN_EXPTIME` filtering, post `--pa` visit
+selection for WFPC2) and gate on the total before doing the expensive drizzle work — added
+because `slacs_other` runs generally shorter total exposures than `slacs_gold`.
 
 - **`BLOCK_EXPTIME = 500s`** — no product is written. Same outcome/shape as no MAST
   data: tracking JSONs get `null`, the script prints `=== BLOCKED (exptime): ... ===`
   and exits 0, so a batch runner counts it separately from a failure (`run_acs_all.sh` /
-  `run_wfc3_all.sh` track it in a `blocked` counter; `run_wfpc2_wf3.sh` reports
-  `blocked (exptime)` and skips the align/cutout stages, same as `no data`).
+  `run_wfc3_all.sh` / `run_gallery_uvis_all.sh` track it in a `blocked` counter;
+  `run_wfpc2_wf3.sh` reports `blocked (exptime)` and skips the align/cutout stages, same
+  as `no data`).
 - **`WARN_EXPTIME = 1200s`** — the drizzle proceeds; the script prints
   `  EXPTIME WARNING: ...` and the batch runners report `OK (low exptime)`.
 
-Checked against `info/lens_exptime.json`: no current `slacs_gold` product falls under
-either threshold, so this is a no-op until `slacs_other` is reduced.
+No current `slacs_gold` or `gallery` product falls under either threshold. The gate has
+fired for real in `slacs_other`: its F814W visits are mostly Bolton-era legacy exposures,
+and **16 of the 27 `slacs_other` lenses are `BLOCK_EXPTIME`-gated at F814W** (3 succeed, 8
+have no ACS data at all) — the first sample where this isn't a no-op. F606W (24/27),
+F160W (6/27) and gallery's five UVIS bands cleared the gate everywhere they had data.
 
 ## Data flow and directory layout
 
@@ -159,7 +168,10 @@ data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled/<sample>/<lens>/<filter>/      ← final products (<prefix>_cr_*/_nocrrej_* sci+wht)
-  cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png
+  cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits
+  psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf_epsf.fits / psf.png)
+  mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
+  pre_drizzled/                           ← 46 MAST-delivered mosaics, kept for reference; not pipeline output
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
 ```
@@ -171,13 +183,17 @@ data/
 | `drizzle_wfpc2_wf3.py` | `u*flt.fits` | FLT / CALWFPC2 | `uref` | 0.0996″ → 0.05″ | `_drw_` |
 | `drizzle_acs_wfc.py`  | `*flc.fits`  | FLC / CALACS   | `jref` | 0.05″ | `_drc_` |
 | `drizzle_wfc3_ir.py`  | `*flt.fits`  | FLT / CALWF3   | `iref` | 0.1283″ → 0.06″ | `_drz_` |
+| `drizzle_wfc3_uvis.py` | `*flc.fits` | FLC / CALWF3   | `iref` | 0.0396″ (native) | `_drc_` |
 | `drizzle_nic2.py`     | `*cal.fits`  | CAL / CALNIC   | `nref` | 0.0756″ | `_drz_` |
 
-The output suffix is set by **input file type**, not output name: `_drc_` for FLC (ACS),
-`_drw_` for WFPC2 FLT, `_drz_` for everything else. The WFPC2 script extracts only the WF3
-chip (SCI/ERR/DQ ext 3) into `wf3_`-prefixed files first; the others are MEF files
-DrizzlePac handles natively. → memory: instrument_drizzle_ref, crds_bestrefs_always_run
+The output suffix is set by **input file type**, not output name: `_drc_` for FLC (ACS,
+WFC3/UVIS), `_drw_` for WFPC2 FLT, `_drz_` for everything else. The WFPC2 script extracts
+only the WF3 chip (SCI/ERR/DQ ext 3) into `wf3_`-prefixed files first; the others are MEF
+files DrizzlePac handles natively. → memory: instrument_drizzle_ref, crds_bestrefs_always_run
 (never skip `bestrefs` when the ref dir is non-empty).
+
+`drizzle_wfc3_uvis.py` is the BELLS GALLERY driver — see *BELLS GALLERY: WFC3/UVIS
+reduction* below for its defaults, alignment, and current coverage.
 
 ### WFPC2: the lens is on WF3, not the PC
 
@@ -221,6 +237,7 @@ scatter. → memory: wfpc2_tweakreg_misregisters
 |---|---|---|
 | ACS/WFC | `mast` | no `updatewcs`, no TweakReg |
 | WFC3/IR | `mast` | no `updatewcs`, no TweakReg |
+| WFC3/UVIS (gallery) | `mast` (no per-lens audit yet) | no `updatewcs`, no TweakReg |
 | WFPC2/WF3 | `mast` (per-lens audit) | `updatewcs(use_db=True)`, no TweakReg |
 
 **Why ACS/WFC3 must not re-solve.** MAST delivers them fitted to GSC 2.4.2 / GAIA eDR3
@@ -341,10 +358,11 @@ pixel values.
 
 Every band is pinned to the same output grid geometry so filters co-register pixel-for-pixel
 with no later reprojection: `final_rot=0.0` (North-up) and `final_ra`/`final_dec` at the
-lens catalogue position (from `info/slacs_coords.py`) go into every AstroDrizzle call. A
-lens missing from that table falls back to the native drizzle WCS with a warning. This
-aligns orientation + tangent point, not absolute astrometry (still the delivered WCS's job,
-and `align_wfpc2_to_acs.py`'s for F606W).
+lens catalogue position (from `info/slacs_coords.py` for SLACS, `info/gallery_coords.py` for
+`gallery`) go into every AstroDrizzle call. A lens missing from that table falls back to the
+native drizzle WCS with a warning. This aligns orientation + tangent point, not absolute
+astrometry (still the delivered WCS's job, and `align_wfpc2_to_acs.py`'s for F606W — gallery
+has no equivalent cross-band tie script, and doesn't need one; see *BELLS GALLERY* below).
 
 ## Cosmic-ray rejection: LACosmic, not `driz_cr` (ACS **and** WFPC2)
 
@@ -405,9 +423,11 @@ shrinks but doesn't remove it).
 **Modelling implication:** a per-pixel independent-Gaussian likelihood (diagonal covariance)
 does not bias the best-fit but mis-estimates *uncertainties/evidence*, worse in the
 oversampled F606W/F160W than in native-scale F814W. The residual correlation factor is
-band-dependent (~1.24 ACS, ~1.17 F160W, ~1.1 F606W), so ignoring it also mis-weights bands
-relative to each other in a joint fit. `make_cutouts.py --corr-factor` applies it (default
-1.0, off). Prefer native-scale F814W where a clean per-pixel noise model matters most.
+band-dependent (~1.24 ACS, ~1.17 F160W, ~1.1 F606W, ~1.5–1.6 WFC3/UVIS gallery — higher
+than native ACS despite also being native-scale, plausibly UVIS's larger geometric
+distortion; see *BELLS GALLERY* below), so ignoring it also mis-weights bands relative to
+each other in a joint fit. `make_cutouts.py --corr-factor` applies it (default 1.0, off).
+Prefer native-scale F814W where a clean per-pixel noise model matters most.
 
 ## Cutouts (`scripts/make_cutouts.py`)
 
@@ -432,7 +452,10 @@ noise FITS (from the weight map), and a 3-panel PNG.
 - **Shared centre (`--center-band`, default `f814W`).** All bands are cut about a single
   centre from the `--center-band` mosaic (highest S/N, GAIA-accurate) so stamps co-register
   across filters. `--center-self` restores per-band recentring; a band whose center-band
-  products are missing falls back to its own peak with a warning.
+  products are missing falls back to its own peak with a warning. **Never use
+  `--center-self` on gallery's UV bands** (F225W, F275W) — the early-type deflector is
+  UV-dark and a self-centred peak search locks onto the bright lensed arc instead; see
+  *BELLS GALLERY* below.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -639,7 +662,10 @@ carrying `pedestal_frac`; the model tier is rotated to North-up. Method breakdow
 (the hybrid gate dropped J0936/J0946 from the previous 6 empirical). No capped trims remain
 (all F160W 27–29px). The gate thresholds (`min_snr=30`, core ≥15× outskirt, flux floor 5%,
 `fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3) generalised
-fine — no retune needed. Open items:
+fine — no retune needed. **Not yet run for `slacs_other`** (reduced 2026-07-29, same three
+instruments so `run_psf_all.sh slacs_other` needs no code change) **or `gallery`** (needs
+WFC3/UVIS support in `make_psf.py`/`psf_models.py` first — see *BELLS GALLERY* below). Open
+items:
 - **No PSF uncertainty is propagated.** The kernel is a point estimate; an ePSF built from
   as few as 3–5 stars has no accompanying error/covariance for downstream lens modelling.
   Genuinely new work — not addressed by having more lenses.
@@ -722,21 +748,37 @@ conda run -n stenv python scripts/mast_target_names.py slacs_gold    # lens name
 | Sample | Lenses | What it is |
 |---|---|---|
 | **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
-| **`slacs_other`** | 93 | The rest of SLACS (Bolton et al. 2008 Table 4). Not yet reduced |
-| **`gallery`** | 16 | BELLS GALLERY (props 14189, 16734); WFC3/UVIS multi-band. Scripts not written |
+| **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
+| **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
 prop 11202). NICMOS F160W (24 lenses) is deprioritised and its data deleted. HST props:
 10886, 11202, 10494, 10798.
 
-Caveats on the other samples: `slacs_other`'s naming is settled — all 93 lenses resolve under
-plain `SDSS{lens}%`, no `GAL-*` overrides needed (verified; see *Non-standard MAST target
-names*), so a "no observations" result there is a real absence, not a naming gap. `gallery`
-has a different, also-verified naming quirk (full SDSS coordinate designation, not the short
-J-name — same section) and its lenses are **not in `info/slacs_coords.py`**, so they get no
-common output WCS (native-WCS fallback with a warning). Both still need work before
-reduction.
+`slacs_other` coverage (27 lenses, reduced 2026-07-29): **F606W** (WFPC2/WF3, 24/27),
+**F814W** (ACS/WFC, 3/27 — the rest are `BLOCK_EXPTIME`-gated or absent, see *Total-
+exposure-time gate*), **F160W** (WFC3/IR, 6/27), **F555W** (ACS/WFC, 0/27 — none of these
+lenses fall in props 10494/10798). Only 3 lenses (J0959+4416, J1153+4612, J1416+5136) have
+both F606W and F814W, so `align_wfpc2_to_acs.py` has only tied those three to absolute
+astrometry — the other 21 F606W products carry their delivered GSC240 absolute WCS
+(~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no per-lens `--align` audit for
+`slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses); every `slacs_other` WFPC2
+lens falls back to the documented default, `mast`. No `lens_psf.json` entries yet — the PSF
+pipeline (`run_psf_all.sh`) has not been run for this sample.
+
+`gallery` coverage (15 lenses, reduced 2026-07-29): **F606W** on all 15 (the primary band),
+**F814W**/**F438W** on 6, **F275W** on 5, **F225W** on 1 (J2342-0120). See *BELLS GALLERY:
+WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery lenses are **not in
+`info/slacs_coords.py`** — they use `info/gallery_coords.py` instead, read by
+`drizzle_wfc3_uvis.py` for the common output WCS; a lens absent from that table falls back
+to native drizzle WCS with a warning. No PSF products: `make_psf.py`/`psf_models.py` have no
+WFC3/UVIS support (only ACS/WFC, WFC3/IR, WFPC2/WF3 are keyed).
+
+Caveat carried over from before both samples were reduced: `slacs_other`'s naming is
+settled — all lenses resolve under plain `SDSS{lens}%`, no `GAL-*` overrides needed
+(verified; see *Non-standard MAST target names*), so a "no observations" result there is a
+real absence, not a naming gap.
 
 **Every lens is tried every run; only ones with data download.** No-data is an ordinary
 outcome (`null`, `=== NO DATA:` line, exit 0), counted separately from failures by the
@@ -763,18 +805,19 @@ resolve this via `mast_target_names.py`: a lens with a `mast_target` in `lens_sa
 queries the `GAL-*` name first, falls back to `SDSS{lens}%`. **Output/directory names stay
 in the J convention.** The live values are the `mast_target` entries in the JSON — edit
 those, not any table. **Verified fact, not just current state:** all 14 `GAL-*` overrides are
-in `slacs_gold`, and `slacs_other`'s 93 lenses have been surveyed and confirmed to need none —
-no SLACS lens outside `slacs_gold` should ever need a `mast_target` override for this reason.
-If one shows up in `slacs_other`, treat it as a bug/regression to investigate, not a new
-legitimate case.
+in `slacs_gold`, and `slacs_other` (surveyed at its original 93-lens definition, before the
+2026-07-29 restriction to the 27-lens Bolton E-S-A/L-S-A subset — a strict subset, so the
+survey still covers it) has been confirmed to need none — no SLACS lens outside `slacs_gold`
+should ever need a `mast_target` override for this reason. If one shows up in `slacs_other`,
+treat it as a bug/regression to investigate, not a new legitimate case.
 
 `gallery` (BELLS GALLERY) has a separate, also-verified naming mismatch: those targets sit on
 MAST under their **full SDSS coordinate designation** (e.g. `SDSSJ002927.38+254401.7`), not a
-short name at all — `GAL-*` doesn't apply here. Once gallery scripts exist, that full
-designation is the `mast_target` to query, but `info/`, `data/`, and every output path must
-stay keyed on the short J-name (`J0029+2544`), matching the SLACS convention. Not yet wired
-into `lens_samples.json` (gallery scripts aren't written), but the naming fact itself is
-settled, not speculative.
+short name at all — `GAL-*` doesn't apply here. `info/lens_samples.json`'s `gallery.lenses`
+entries carry that full designation as `mast_target` for every one of the 15 lenses (queried
+by `drizzle_wfc3_uvis.py` via `mast_target_names.py`, same mechanism as SLACS `GAL-*`), while
+`info/`, `data/`, and every output path stay keyed on the short J-name (`J0029+2544`),
+matching the SLACS convention.
 
 ## AstroDrizzle key parameters
 
@@ -786,14 +829,17 @@ settled, not speculative.
   `--nocrrej` for comparison. When both passes run they share one crop bbox (union of the two
   wht>0 boxes) so they register pixel-for-pixel.
 
-ACS and WFPC2 default to **CR-only** (`--nocrrej` adds the no-CR pass; ACS `--no-cr` skips
-CR). WFC3/IR F160W has no CR pass at all — `make_cutouts.py` falls back to the science pass
-for recentring (acceptable: FLTs are already up-the-ramp CR-rejected; re-run with `--cr` if
-a recentre looks wrong).
+ACS, WFPC2, and WFC3/UVIS default to **CR-only** (`--nocrrej` adds the no-CR pass; ACS/UVIS
+`--no-cr` skips CR). WFC3/IR F160W has no CR pass at all — `make_cutouts.py` falls back to
+the science pass for recentring (acceptable: FLTs are already up-the-ramp CR-rejected;
+re-run with `--cr` if a recentre looks wrong).
 
 **DQ bits treated as good** (do not unify these — they encode different detector facts):
 - WFPC2: `8,1024`
 - ACS/WFC: `256,64,16` (saturated, warm, stable hot)
+- WFC3/UVIS: `256,64,16` (same meanings as ACS/WFC; STScI's own UVIS examples use `80`
+  = 16+64 instead, dropping saturation from "good" — revisit if saturated cores prove a
+  problem, not yet needed on gallery)
 - WFC3/IR: `512` only — write it as `'512'`, **never `''`** (see the trap below)
 - NICMOS: `2,4,8`
 
@@ -825,6 +871,92 @@ ACS shows the same physics as diagonal **stripes**, not dots: it drizzles native
 stable-hot/warm pixels as good; what it *does* mask that replicates is bad columns, which
 `final_rot=0.0` rotates into 4 parallel diagonal stripes in the noise map. → memory:
 acs_bad_column_stripes
+
+## BELLS GALLERY: WFC3/UVIS reduction (`scripts/drizzle_wfc3_uvis.py`)
+
+The `gallery` sample (15 lenses, Shu et al. 2016 Table 1 class E-S-A) is BELLS GALLERY
+(props 14189, 16734), imaged in WFC3/UVIS across five filters: **F225W, F275W, F438W,
+F606W, F814W**. One filter-agnostic script (`--filt`), modeled closely on
+`drizzle_acs_wfc.py` — UVIS is a two-CCD optical detector like ACS/WFC, so it inherits the
+same alignment/CR reasoning, not yet independently re-audited on gallery data (a per-lens
+`--align` override table exists in the script but is empty so far; an explicit `--align`
+always wins).
+
+```bash
+conda run -n stenv python scripts/drizzle_wfc3_uvis.py --lens J1110+3649 --filt f606W
+bash scripts/run_gallery_uvis_all.sh                   # all 15 lenses, all 5 filters
+```
+
+`run_gallery_uvis_all.sh` iterates `f606W f814W f438W f275W f225W` in that order — F606W
+first (the primary band and cutout `--center-band` proxy target), F814W second and before
+the UV filters (see below), and does **not** `rm` the output dir first (unlike
+`run_acs_all.sh`), relying on the idempotent skip so a multi-GB campaign is resumable.
+
+- **Alignment default `mast`** — same reasoning as ACS/WFC3 (*WCS alignment* above):
+  TweakReg erases the dither. Delivered WCS fit type is **not uniform across gallery
+  observations** — bare IDCTAB (no absolute fit), GAIA eDR3, and GSC240 all occur, varying
+  per lens *and* per filter — but relative (frame-to-frame) alignment is good regardless of
+  which one a given exposure carries, verified by the registration-QC block passing on
+  every product drizzled so far. No cross-band tie like `align_wfpc2_to_acs.py` is needed:
+  a lens's bands share one field, so any absolute offset is common across them and they
+  co-register with each other. → memory: gallery_uvis_idctab_only_wcs
+- **Native pixel scale, `pixfrac=0.7`** (`FINAL_SCALE=0.0396`, chosen from a pixfrac scan
+  on J1110+3649 F606W trading correlated noise against weight-map uniformity) — the
+  opposite lever from the oversampled F606W (WFPC2)/F160W bands, which chose `pixfrac=1.0`
+  to *reduce* correlation; UVIS is already at native scale, where a smaller drop shrinks
+  the input footprint instead of opening coverage holes. Residual correlation is higher
+  than native ACS (~1.5–1.6× integrated vs ~1.24) — use `make_cutouts.py --corr-factor
+  ~1.6` for a diagonal-covariance likelihood. → memory: gallery_uvis_pixfrac
+- **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
+  (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
+  FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
+- **UV bands show almost no deflector.** F225W (and to a lesser extent F275W) deflectors
+  are early-type and UV-dark, while the lensed source stays bright (often star-forming) —
+  a self-centred cutout recentre locks onto the arc or blank sky, not the galaxy. Always
+  cut UV bands with the default `--center-band f814W` in `make_cutouts.py`, never
+  `--center-self`, and make sure F814W is drizzled first (`run_gallery_uvis_all.sh` already
+  orders filters this way). → memory: gallery_uvis_uv_deflector_faint
+- **No PSF support yet.** `make_psf.py`/`psf_models.py` key off `ACS/WFC`, `WFC3/IR`, and
+  `WFPC2` — WFC3/UVIS isn't wired in, so gallery has no `psf_kernel.fits` /
+  `cutout_[cr_]psf.fits` products and no `info/lens_psf.json` entries.
+
+Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 each,
+F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
+GALLERY actually has on MAST, not a pipeline gap. `run_cutouts_all.sh` was extended to glob
+the UV/blue bands (`f438W f275W f225W`) alongside the SLACS filters so it stays one runner
+for every sample.
+
+## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
+
+```bash
+conda run -n stenv python scripts/make_mosaics.py --sample slacs_gold
+conda run -n stenv python scripts/make_psf_mosaics.py --sample slacs_gold
+```
+
+Read-only QC: tile every lens's existing cutout (or trimmed PSF kernel) onto a 5-wide grid,
+one mosaic per (filter group, panel type), written to `data/mosaics/<sample>/`. Nothing is
+re-drizzled, re-cut, or rebuilt — pure visualization over what's already on disk in
+`data/cutouts/`.
+
+- **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
+  stay in sync. For `slacs_gold`/`slacs_other`: `f814W`, `f606W_f555W` (WFPC2 F606W —
+  including the split-visit `f606W_v1`/`f606W_v2` keys — merged with ACS F555W per lens,
+  since no SLACS lens has both), `f160W`. For `gallery`: one group per UVIS filter (no
+  cross-filter merging). A sample not listed there falls back to one group per filter
+  subdirectory found on disk, so a new sample/filter still produces mosaics with no code
+  change.
+- `make_mosaics.py` writes `{group}_signal.png` / `{group}_noise.png` / `{group}_snr.png`
+  (inferno + asinh stretch, the astropy convention for smoothly showing negative
+  background-noise pixels alongside bright cores). Multi-instrument groups
+  (`f606W_f555W`) split the colourbar per instrument — WFPC2 F606W is far noisier than ACS
+  F555W (both in raw flux scale and true SNR), so a shared scale washes one out.
+- `make_psf_mosaics.py` writes `{group}_psf.png`, peak-normalised per panel (kernels are
+  unit-sum normalised by `trim_kernel_to_amplitude`, so raw peak reflects kernel *size* as
+  much as sharpness), each panel tagged `emp` (empirical ePSF) or `mod` (STDPSF /
+  focus-diverse / MAST PSF DB) from the `PSFMETH` keyword. Only `slacs_gold` has PSF
+  products today; `slacs_other`/`gallery` mosaics for the `_psf` panel type will appear
+  once `run_psf_all.sh` is run for those samples (no code change needed for `slacs_other`,
+  same three instruments; `gallery` needs WFC3/UVIS PSF support first).
 
 ## NICMOS is deprioritised
 
