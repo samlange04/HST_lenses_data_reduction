@@ -12,6 +12,36 @@
             "j9op01laq"
         ]
     },
+    "J0029+2544": {
+        "f275W": [
+            "iep206hgq",
+            "iep206hiq",
+            "iep206hjq",
+            "iep206i8q",
+            "iep206iaq",
+            "iep207n7q",
+            "iep207noq",
+            "iep207nrq",
+            "iep207ojq",
+            "iep207omq"
+        ],
+        "f438W": [
+            "iep206icq",
+            "iep206ieq",
+            "iep206igq"
+        ],
+        "f606W": [
+            "icv201cyq",
+            "icv201czq",
+            "icv201d1q",
+            "icv201d3q"
+        ],
+        "f814W": [
+            "iep207ooq",
+            "iep207oqq",
+            "iep207osq"
+        ]
+    },
     "J0029-0055": {
         "f160W": [
             "ia1ls1noq",
@@ -46,6 +76,14 @@
             "j9op03qyq"
         ]
     },
+    "J0201+3228": {
+        "f606W": [
+            "icv204rhq",
+            "icv204riq",
+            "icv204rkq",
+            "icv204rmq"
+        ]
+    },
     "J0216-0813": {
         "f555W": [
             "j9c709xwq",
@@ -58,6 +96,14 @@
             "j9c709y5q",
             "j9c709y7q",
             "j9c709y9q"
+        ]
+    },
+    "J0237-0641": {
+        "f606W": [
+            "icv205siq",
+            "icv205sjq",
+            "icv205slq",
+            "icv205snq"
         ]
     },
     "J0252+0039": {
@@ -128,6 +174,64 @@
             "j9c703y9q"
         ]
     },
+    "J0742+3341": {
+        "f275W": [
+            "iep201dsq",
+            "iep201dtq",
+            "iep201duq",
+            "iep201dwq",
+            "iep201dxq",
+            "iep201dzq",
+            "iep201e0q",
+            "iep201e2q"
+        ],
+        "f438W": [
+            "iep201e4q",
+            "iep201e6q",
+            "iep201e8q"
+        ],
+        "f606W": [
+            "icv206d7q",
+            "icv206d9q",
+            "icv206deq",
+            "icv206dhq"
+        ],
+        "f814W": [
+            "iep201edq",
+            "iep201efq",
+            "iep201ehq"
+        ]
+    },
+    "J0755+3445": {
+        "f275W": [
+            "iep214imq",
+            "iep214inq",
+            "iep214j1q",
+            "iep214j5q",
+            "iep214j6q",
+            "iep214j8q",
+            "iep264blq",
+            "iep264bmq",
+            "iep264bnq",
+            "iep264bpq"
+        ],
+        "f438W": [
+            "iep214jaq",
+            "iep214jeq",
+            "iep214jiq"
+        ],
+        "f606W": [
+            "icv207poq",
+            "icv207ppq",
+            "icv207prq",
+            "icv207ptq"
+        ],
+        "f814W": [
+            "iep214jcq",
+            "iep214jgq",
+            "iep214jkq"
+        ]
+    },
     "J0822+2652": {
         "f160W": [
             "ia1l77o7q",
@@ -172,6 +276,14 @@
             "j9op09mbq"
         ]
     },
+    "J0856+2010": {
+        "f606W": [
+            "icv208meq",
+            "icv208mfq",
+            "icv208mhq",
+            "icv208mjq"
+        ]
+    },
     "J0903+4116": {
         "f160W": [
             "ia1l79weq",
@@ -205,6 +317,36 @@
             "j9c752xyq",
             "j9c752y0q",
             "j9c752y2q"
+        ]
+    },
+    "J0918+5104": {
+        "f275W": [
+            "iep208ulq",
+            "iep208vmq",
+            "iep208voq",
+            "iep208vqq",
+            "iep208vrq",
+            "iep209ssq",
+            "iep209stq",
+            "iep209suq",
+            "iep209swq",
+            "iep209sxq"
+        ],
+        "f438W": [
+            "iep208vtq",
+            "iep208vvq",
+            "iep208vxq"
+        ],
+        "f606W": [
+            "icv210nvq",
+            "icv210nwq",
+            "icv210nxq",
+            "icv210nzq"
+        ],
+        "f814W": [
+            "iep209szq",
+            "iep209t1q",
+            "iep209t3q"
         ]
     },
     "J0936+0913": {
@@ -355,6 +497,72 @@
             "j9opb0fgq"
         ]
     },
+    "J1110+2808": {
+        "f275W": [
+            "iep202fjq",
+            "iep202fkq",
+            "iep202flq",
+            "iep202fnq",
+            "iep202fpq",
+            "iep202fsq",
+            "iep203jjq",
+            "iep203jkq",
+            "iep203jlq",
+            "iep203jnq",
+            "iep203joq",
+            "iep203jqq"
+        ],
+        "f438W": [
+            "iep204fuq",
+            "iep204fvq",
+            "iep204fxq",
+            "iep204fzq"
+        ],
+        "f606W": [
+            "icv211erq",
+            "icv211esq",
+            "icv211euq",
+            "icv211ewq"
+        ],
+        "f814W": [
+            "iep204g1q",
+            "iep204g3q",
+            "iep204g5q",
+            "iep204g7q"
+        ]
+    },
+    "J1110+3649": {
+        "f606W": [
+            "ie5h08paq",
+            "ie5h08pcq",
+            "ie5h08peq",
+            "ie5h08pgq",
+            "ie5h08pis",
+            "ie5h08pkq",
+            "ie5h08pms",
+            "ie5h08poq",
+            "ie5h08pqq",
+            "ie5h08psq",
+            "ie5h08puq",
+            "ie5h08pwq"
+        ]
+    },
+    "J1116+0915": {
+        "f606W": [
+            "icv213y5q",
+            "icv213y6q",
+            "icv213y8q",
+            "icv213yaq"
+        ]
+    },
+    "J1141+2216": {
+        "f606W": [
+            "icv214cdq",
+            "icv214ceq",
+            "icv214cgq",
+            "icv214czq"
+        ]
+    },
     "J1142+1001": {
         "f606W": [
             "ua1l3801m",
@@ -384,6 +592,22 @@
             "j9qc06soq",
             "j9qc06swq",
             "j9qc06szq"
+        ]
+    },
+    "J1201+4743": {
+        "f606W": [
+            "ie5h09cyq",
+            "ie5h09czq",
+            "ie5h09d1q",
+            "ie5h09d3q",
+            "ie5h09d5q",
+            "ie5h09d7q",
+            "ie5h09d9q",
+            "ie5h09dbq",
+            "ie5h09ddq",
+            "ie5h09dgq",
+            "ie5h09diq",
+            "ie5h09dlq"
         ]
     },
     "J1205+4910": {
@@ -426,6 +650,14 @@
             "j9op29tnq",
             "j9op29tpq",
             "j9op29trq"
+        ]
+    },
+    "J1226+5457": {
+        "f606W": [
+            "icv216mkq",
+            "icv216mlq",
+            "icv216mmq",
+            "icv216msq"
         ]
     },
     "J1250+0523": {
@@ -560,6 +792,14 @@
             "j9c706rdq"
         ]
     },
+    "J2228+1205": {
+        "f606W": [
+            "icv219byq",
+            "icv219bzq",
+            "icv219c1q",
+            "icv219c4q"
+        ]
+    },
     "J2238-0754": {
         "f555W": [
             "j9c710noq",
@@ -614,6 +854,36 @@
             "j9op49rdq",
             "j9op49rfq",
             "j9op49rhq"
+        ]
+    },
+    "J2342-0120": {
+        "f225W": [
+            "iep212j1q",
+            "iep212j2q",
+            "iep212j3q",
+            "iep212j5q",
+            "iep212j6q",
+            "iep213m1q",
+            "iep213m2q",
+            "iep213m3q",
+            "iep213m5q",
+            "iep213m6q"
+        ],
+        "f438W": [
+            "iep212j8q",
+            "iep212jaq",
+            "iep212jcq"
+        ],
+        "f606W": [
+            "icv221qpq",
+            "icv221qqq",
+            "icv221qsq",
+            "icv221quq"
+        ],
+        "f814W": [
+            "iep213m8q",
+            "iep213maq",
+            "iep213mcq"
         ]
     }
 }
