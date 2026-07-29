@@ -39,7 +39,7 @@ SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$S
 # per-product test below is a shell `case` match -- no python/grep spawned inside the loop.
 EMP_SKIP=""
 if [ "$MODE" = models ]; then
-  EMP_SKIP="$(conda run -n stenv python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; print(chr(10).join(l+'/'+k for l in d for k,v in (d[l] or {}).items() if v and str(v.get('method','')).startswith('empirical')))")" || exit 1
+  EMP_SKIP="$(conda run -n stenv python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and str(v.get('method','')).startswith('empirical')))")" || exit 1
 fi
 
 # Globs are "$filt"* , not "$filt", so per-visit dirs (f606W_v1, f606W_v2) are included;
