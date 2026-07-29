@@ -18,7 +18,13 @@ SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${1:+"$1"} --prin
 # never regenerated -- no error, just two lenses quietly left on stale cutouts.
 # The cutout --filt is taken from the directory name for the same reason.
 ok=0; fail=0
-for filt in f606W f814W f555W f160W; do
+# SLACS bands (f606W f814W f555W f160W) plus the gallery WFC3/UVIS UV/blue bands
+# (f438W f275W f225W). A filter not present in the sample globs to nothing, so listing
+# all known bands here is harmless and keeps this one runner correct for every sample.
+# f814W is cut before the UV bands so its mosaic (the default --center-band) is on disk;
+# in practice make_cutouts reads the f814W *mosaic*, not its cutout, so order only needs
+# the F814W drizzle to exist -- which the drizzle phase guarantees for every UV lens.
+for filt in f606W f814W f555W f160W f438W f275W f225W; do
   for d in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
     [ -d "$d" ] || continue
     # Any final drizzle product (CR or no-CR) means the mosaic exists and is cuttable.
