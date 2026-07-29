@@ -3,16 +3,18 @@
 Tile every lens's PSF kernel into per-filter-group QC mosaics.
 
 Sibling to make_mosaics.py: same 5-wide grid, same filter groups (mosaic_groups.py,
-shared between the two scripts), same asinh-stretch display. Reads the trimmed,
-modelling-ready kernels already written by make_psf.py
+shared between the two scripts). Reads the trimmed, modelling-ready kernels already
+written by make_psf.py
 (data/cutouts/<sample>/<lens>/<filt>/cutout[_cr]_psf.fits) - nothing is rebuilt.
 
 Kernels are unit-sum normalised by construction (make_psf.trim_kernel_to_amplitude), so
 raw peak amplitude reflects kernel *size* (a broader/larger-footprint PSF has a lower
 peak for the same total flux) as much as PSF sharpness. Each panel is instead
-peak-normalised before display, so panels are comparable regardless of trim size; the
-pooled asinh stretch is then computed over those peak-normalised pixels, same as
-make_mosaics.py's pooled_asinh_norm. Each panel label is tagged 'emp' (empirical ePSF,
+peak-normalised before display, so panels are comparable regardless of trim size. The
+display uses a log stretch over 1e-4..1 (pooled_log_norm), matching the 'log' wing
+panel in each lens's psf.png rather than make_mosaics.py's pooled asinh - the PSF wings
+are what matters here, and they read better on a log stretch. Each panel label is
+tagged 'emp' (empirical ePSF,
 cut from the drizzled mosaic - the closest thing to ground truth) or 'mod' (STDPSF /
 focus-diverse / MAST PSF DB - a detector-frame model resampled to North-up), from the
 PSFMETH keyword make_psf.py stamps on every kernel.
@@ -36,6 +38,7 @@ import os
 
 import numpy as np
 from astropy.io import fits
+from astropy.visualization import ImageNormalize, LogStretch
 
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -44,6 +47,15 @@ import mosaic_groups
 from make_mosaics import short_filt, plot_mosaic
 
 ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+
+
+def pooled_log_norm(arrays):
+    """Log stretch over 1e-4..1, matching the 'log' wing panel in each lens's psf.png
+    (make_psf.plot_psf: LogStretch, vmin=peak*1e-4, vmax=peak). Every panel here is
+    already peak-normalised to 1 (build_group divides by its own peak), so a fixed
+    1e-4..1 log norm reproduces that per-kernel view across the whole mosaic. `arrays`
+    is unused - the range is fixed by the peak-normalisation, not pooled from pixels."""
+    return ImageNormalize(vmin=1e-4, vmax=1.0, stretch=LogStretch())
 
 
 def find_psf_path(filt_dir):
@@ -116,7 +128,8 @@ def main():
 
         plot_mosaic(entries, arrays, 'label',
                     os.path.join(out_dir, f'{group_name}_psf.png'),
-                    'PSF (peak-normalised)', split_by=split_by)
+                    'PSF (peak-normalised, log)', split_by=split_by,
+                    norm_fn=pooled_log_norm)
 
 
 if __name__ == '__main__':

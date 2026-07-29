@@ -156,21 +156,26 @@ def style_colorbar(cbar, norm, base_label, fontsize, rotate_ticks=False):
     cbar.set_label(label, fontsize=fontsize)
 
 
-def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None):
+def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None,
+                norm_fn=pooled_asinh_norm):
     """Render one mosaic. If split_by (a per-panel group key, e.g. instrument) is
     given, each group gets its own norm and its own horizontal colourbar, spread
     across the empty grid cells - needed when the groups sit on very different
-    native flux scales and a single shared norm would saturate one of them."""
+    native flux scales and a single shared norm would saturate one of them.
+
+    norm_fn(arrays) -> ImageNormalize builds each group's norm; defaults to the
+    pooled asinh stretch. make_psf_mosaics.py passes a log stretch instead, to match
+    the 'log' wing panel in each lens's psf.png."""
     n = len(arrays)
     nrows = math.ceil(n / NCOLS)
     ncells = nrows * NCOLS
 
     if split_by is None:
-        norm_of = {None: pooled_asinh_norm(arrays)}
+        norm_of = {None: norm_fn(arrays)}
         panel_group = [None] * n
     else:
         groups = list(dict.fromkeys(split_by))
-        norm_of = {g: pooled_asinh_norm([a for a, gg in zip(arrays, split_by) if gg == g])
+        norm_of = {g: norm_fn([a for a, gg in zip(arrays, split_by) if gg == g])
                    for g in groups}
         panel_group = split_by
 
