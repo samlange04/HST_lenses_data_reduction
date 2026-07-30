@@ -19,13 +19,21 @@ by automatic quality cuts plus a per-lens override file:
 
 Model route (fallback): when a field has too few usable stars (< --min-stars) or with
 --method model, evaluate an STScI STDPSF library grid at the deflector position via
-scripts/psf_models.py. Covers all four bands (ACS/WFC, WFC3/IR, WFPC2/WF3).
+scripts/psf_models.py. Covers ACS/WFC, WFC3/IR, WFPC2/WF3 and WFC3/UVIS (BELLS GALLERY).
 
-Outputs (data/psf/<sample>/<lens>/<filt>/), both grids so downstream can pick:
+Outputs (data/psf/<sample>/<lens>/<filt>/):
   * psf_kernel.fits  -- image-scale, odd, unit-sum: a drop-in al.Kernel2D at the band
-                        pixel scale (built by block_reduce of the oversampled ePSF).
-  * psf_epsf.fits    -- the oversampled ePSF grid (OVERSAMP in the header).
+                        pixel scale (built by block_reduce of the in-memory oversampled
+                        ePSF, which is not itself written to disk -- nothing reads it back).
   * psf.png          -- QA panel: selected-star montage, the kernel, and a radial profile.
+
+For a MODEL-tier build (method_used starts with 'model'), this auto-chains into
+make_psf_inject.run_injection(..., promote=True): the drizzle-broadened injected kernel
+becomes the canonical psf_kernel.fits / cutout_[cr_]psf.fits, and the analytic model this
+function just wrote is moved aside to psf_kernel_analytic.fits / cutout_[cr_]psf_analytic.fits
+(comparison only). See make_psf_inject.py's docstring. If injection fails (e.g. the
+data/drizzle_files/ inputs were cleared), it's a graceful degradation: a warning prints and
+the analytic model stays canonical.
 
 Records the build in info/lens_psf.json (method, n_stars, fwhm_pix, oversample,
 kernel_size); no data for a filter records null and exits 0, matching the other scripts.
@@ -63,11 +71,12 @@ from photutils.psf import EPSFBuilder, extract_stars
 ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from slacs_coords import slacs_coords
 import mast_target_names
-# Reuse the canonical product locator rather than re-implementing the instrument-varying
-# prefix/suffix globbing. Importing make_cutouts is safe: its work is under __main__.
-from make_cutouts import find_products, _has_products
+# Reuse the canonical product locator and the coordinate resolver rather than
+# re-implementing the instrument-varying prefix/suffix globbing or the per-sample coords
+# table lookup (SLACS in slacs_coords.py, BELLS GALLERY in gallery_coords.py). Importing
+# make_cutouts is safe: its work is under __main__.
+from make_cutouts import find_products, _has_products, catalogue_coord_for
 import psf_models
 import info_json
 
@@ -120,6 +129,17 @@ _INSTR = {
     # on a 51px stamp with only ~3 stars but converges on 35px (verified J0252+0039 F606W).
     'WFPC2':   dict(fwhm=2.5, psf_fwhm=2.0, oversample=2, star_size=35, max_stars=25,
                     min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7),
+    # WFC3/UVIS (BELLS GALLERY): a two-CCD optical detector like ACS/WFC, drizzled at the
+    # native 0.0396"/px. The measured drizzled stellar FWHM is ~2.4px (F606W), so psf_fwhm
+    # is 2.4 (the [0.75,1.4]x shape window then brackets the ~2.2-2.6px star locus with
+    # margin) and the DAO detection kernel 2.8. The wide UVIS field (~162") is star-rich, so
+    # the empirical build is the norm. flux_floor_frac is lowered to 0.02 (from the 0.05
+    # base): these fields routinely contain one very bright (near-saturated) star whose flux
+    # sets the 5%-floor high enough to discard a dozen genuinely good, high-S/N mid-range
+    # stars -- the "brightest star collapses the flux floor" trap. 0.02 keeps them.
+    'WFC3/UVIS': dict(fwhm=2.8, psf_fwhm=2.4, oversample=2, star_size=51, max_stars=25,
+                      min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7,
+                      flux_floor_frac=0.02),
 }
 
 
@@ -508,7 +528,8 @@ def representative_input_cd(inst_key, lens, filt, sample):
                 return cd
         return None
 
-    pat = {'WFC3/IR': '*flt.fits', 'ACS/WFC': '*flc.fits'}.get(inst_key)
+    pat = {'WFC3/IR': '*flt.fits', 'ACS/WFC': '*flc.fits',
+           'WFC3/UVIS': '*flc.fits'}.get(inst_key)
     if pat is None:
         return None
     cd_dir = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
@@ -728,9 +749,7 @@ def main():
     if kernel_size % 2 == 0:
         kernel_size += 1
 
-    if a.lens not in slacs_coords:
-        raise KeyError(f'{a.lens} not in slacs_coords (info/slacs_coords.py)')
-    ra, dec = slacs_coords[a.lens]
+    ra, dec = catalogue_coord_for(a.lens)   # SLACS or BELLS GALLERY, whichever holds it
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     # ── Background subtraction and star selection ──────────────────────────────
@@ -872,12 +891,6 @@ def main():
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
-    ehdr = fits.Header()
-    ehdr['OVERSAMP'] = (oversample, 'oversampling relative to the image pixel scale')
-    ehdr['PSFMETH'] = (method_used, 'empirical ePSF or STDPSF model')
-    ehdr['PSFPXSCL'] = (round(scale / oversample, 6), 'ePSF pixel scale (arcsec)')
-    write_fits(epsf_data, ehdr, os.path.join(output_dir, 'psf_epsf.fits'))
-
     plot_psf(kernel, epsf_data, star_stamps, scale, fwhm_pix,
              os.path.join(output_dir, 'psf.png'),
              title=f'{a.lens}  {a.filt}  [{method_used}]  ({n_stars} stars)')
@@ -905,6 +918,24 @@ def main():
         'pedestal_frac': round(pedestal_frac, 6),
     })
     print('  done')
+
+    # Model tier lacks drizzle broadening (see make_psf_inject.py docstring) -- auto-chain
+    # the injection + promotion so this single command already leaves the drizzle-broadened
+    # kernel as the canonical psf_kernel.fits / cutout_[cr_]psf.fits. Empirical builds are
+    # already the drizzled PSF (cut from the mosaic), so this is skipped for them. A failure
+    # here (e.g. data/drizzle_files/ was cleared) is a graceful degradation: the analytic
+    # model this function just wrote stays canonical.
+    if method_used.startswith('model'):
+        try:
+            import make_psf_inject
+            print(f'  model-tier build ({method_used}) -> running drizzle-broadened '
+                  f'injection + promoting to canonical ...')
+            make_psf_inject.run_injection(a.lens, a.filt, a.sample,
+                                          drizzle_pass=drizzle_pass,
+                                          trim_threshold=a.trim_threshold, promote=True)
+        except Exception as exc:
+            print(f'  WARNING: injection/promotion failed ({exc}); canonical PSF stays '
+                  f'the analytic model ({method_used})')
 
 
 if __name__ == '__main__':

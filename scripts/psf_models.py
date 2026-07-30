@@ -53,7 +53,7 @@ _ACS_FD_SUPERSAMPLE = 4
 # Native detector pixel scale (arcsec) each STDPSF grid is defined on. The delivered
 # kernel is resampled from this to the drizzled output scale, or the model comes out the
 # wrong size (e.g. WFC3/IR 0.1283" vs the 0.06" drizzled grid).
-_DET_SCALE = {'ACS/WFC': 0.05, 'WFC3/IR': 0.1283, 'WFPC2': 0.0996}
+_DET_SCALE = {'ACS/WFC': 0.05, 'WFC3/IR': 0.1283, 'WFPC2': 0.0996, 'WFC3/UVIS': 0.0396}
 
 # STDPSF subdir, WFPC2/ACS chip to select, and the filters actually published for each
 # instrument (verified against the STScI listing). Missing filters fall back to the
@@ -66,12 +66,22 @@ _LIB = {
                              'F153M', 'F160W']),
     'WFPC2':   dict(subdir='WFPC2', detector_id=3,   # WF3 -- the lens chip
                     filters=['F555W', 'F658N', 'F675W', 'F814W']),
+    # WFC3/UVIS is a two-CCD optical detector; its STDPSF grid stacks both chips, so a
+    # detector_id (1 or 2, like ACS/WFC) must be selected -- chip 1 by default, the same
+    # secondary-effect choice as ACS. Every gallery band (F225W/F275W/F438W/F606W/F814W)
+    # has an EXACT published grid, so no nearest-filter substitution ever fires here.
+    'WFC3/UVIS': dict(subdir='WFC3UV', detector_id=1,
+                      filters=['F225W', 'F275W', 'F336W', 'F390W', 'F410M', 'F438W',
+                               'F467M', 'F555W', 'F606W', 'F621M', 'F775W', 'F814W',
+                               'F850L']),
 }
 
 # Filter pivot wavelengths (nm), enough to pick a nearest neighbour.
 _PIVOT = {
-    'F435W': 431, 'F475W': 477, 'F555W': 539, 'F606W': 589, 'F625W': 632,
-    'F658N': 658, 'F675W': 673, 'F775W': 765, 'F814W': 802,
+    'F225W': 236, 'F275W': 271, 'F336W': 335, 'F390W': 392, 'F410M': 411,
+    'F435W': 431, 'F438W': 433, 'F467M': 468, 'F475W': 477, 'F555W': 539,
+    'F606W': 589, 'F621M': 622, 'F625W': 632,
+    'F658N': 658, 'F675W': 673, 'F775W': 765, 'F814W': 802, 'F850L': 917,
     'F098M': 986, 'F105W': 1055, 'F110W': 1153, 'F125W': 1248, 'F127M': 1274,
     'F140W': 1392, 'F153M': 1531, 'F160W': 1537,
 }
