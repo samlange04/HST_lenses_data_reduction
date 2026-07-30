@@ -59,8 +59,8 @@ scripts only delete them on an explicit force re-run). If they are gone, re-run 
 drizzle first. Records `null` + exits 0 on no data / no model tier, like the other scripts.
 
 Usage:
-    conda run -n stenv python scripts/make_psf_inject.py --lens J0252+0039 --filt f814W
-    conda run -n stenv python scripts/make_psf_inject.py --lens J0728+3835 --filt f606W_v2
+    uv run python scripts/make_psf_inject.py --lens J0252+0039 --filt f814W
+    uv run python scripts/make_psf_inject.py --lens J0728+3835 --filt f606W_v2
 """
 
 import argparse

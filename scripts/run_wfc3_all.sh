@@ -17,11 +17,11 @@
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
 
-SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
+SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 LENSES=()
 while IFS= read -r _l; do
   [ -n "$_l" ] && LENSES+=("$_l")
-done < <(conda run -n stenv python "$SD/mast_target_names.py" "$SAMPLE")
+done < <(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE")
 [ "${#LENSES[@]}" -gt 0 ] || { echo "No lenses in sample '$SAMPLE'" >&2; exit 1; }
 echo "=== WFC3/IR: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
@@ -30,7 +30,7 @@ for lens in "${LENSES[@]}"; do
   log="$LOG/${lens}_f160W_wfc3.log"
   rm -rf "$WS/data/drizzled/$SAMPLE/$lens/f160W" "$WS/data/drizzle_files/$SAMPLE/$lens/f160W"
   printf '%-12s f160W ' "$lens"
-  if conda run -n stenv python "$SD/drizzle_wfc3_ir.py" --lens "$lens" --filt f160W \
+  if uv run --project "$WS" python "$SD/drizzle_wfc3_ir.py" --lens "$lens" --filt f160W \
        --sample "$SAMPLE" --align mast > "$log" 2>&1; then
     # An exit-0 run that wrote nothing is either "MAST has no data" or "total exptime
     # below BLOCK_EXPTIME" -- both are ordinary outcomes, not a product and not a failure.

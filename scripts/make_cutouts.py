@@ -14,7 +14,7 @@ Writes cutout_sci.fits, cutout_noise.fits and a 3-panel cutout.png
 (signal / noise / signal-to-noise) for visual inspection.
 
 Usage:
-    conda run -n stenv python scripts/make_cutouts.py --lens J0008-0004 --filt f814W
+    uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W
 """
 
 import argparse

@@ -29,7 +29,7 @@ data/cutouts/gallery/*/<filt>/ once they exist (see mosaic_groups.SAMPLE_GROUPS 
 gallery's 5 filters, already listed there).
 
 Usage:
-    conda run -n stenv python scripts/make_psf_mosaics.py --sample slacs_gold
+    uv run python scripts/make_psf_mosaics.py --sample slacs_gold
 """
 
 import argparse

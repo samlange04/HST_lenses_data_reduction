@@ -17,8 +17,8 @@ the fit, so it is a clean check that F606W landed on the GAIA frame).
 Run AFTER both the ACS and WFPC2 drizzles exist, BEFORE make_cutouts. Idempotent:
 re-running re-measures the residual and applies ~0.
 
-    conda run -n stenv python scripts/align_wfpc2_to_acs.py --lens J0252+0039
-    conda run -n stenv python scripts/align_wfpc2_to_acs.py --all
+    uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039
+    uv run python scripts/align_wfpc2_to_acs.py --all
 """
 import argparse
 import glob
