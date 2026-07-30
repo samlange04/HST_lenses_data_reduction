@@ -1346,14 +1346,14 @@
         },
         "J1016+3859": {
             "f160W": {
-                "method": "empirical",
-                "n_stars": 4,
-                "fwhm_pix": 3.8101,
-                "oversample": 2,
+                "method": "inject_stdpsf",
+                "fwhm_pix": 3.719,
                 "kernel_size": 41,
                 "cutout_kernel_size": 29,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.002678
+                "pedestal_frac": 0.00024,
+                "wing_scatter": 0.000688,
+                "n_frames": 4
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1515,13 +1515,13 @@
             },
             "f814W": {
                 "method": "empirical",
-                "n_stars": 9,
-                "fwhm_pix": 2.4457,
+                "n_stars": 7,
+                "fwhm_pix": 2.4599,
                 "oversample": 2,
                 "kernel_size": 51,
-                "cutout_kernel_size": 23,
+                "cutout_kernel_size": 25,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000216
+                "pedestal_frac": 0.00017
             }
         },
         "J1436-0000": {

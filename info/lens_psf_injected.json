@@ -539,6 +539,16 @@
             }
         },
         "J1016+3859": {
+            "f160W": {
+                "method": "inject_stdpsf",
+                "fwhm_pix": 3.719,
+                "kernel_size": 41,
+                "cutout_kernel_size": 29,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.00024,
+                "wing_scatter": 0.000688,
+                "n_frames": 4
+            },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
                 "fwhm_pix": 4.7676,
