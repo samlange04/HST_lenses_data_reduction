@@ -34,16 +34,6 @@
                 "pedestal_frac": 0.001079,
                 "wing_scatter": 0.00074,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_acs_fdpsf",
-                "fwhm_pix": 2.2066,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 4
             }
         },
         "J0252+0039": {
@@ -254,16 +244,6 @@
                 "pedestal_frac": 0.000787,
                 "wing_scatter": 0.000732,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_acs_fdpsf",
-                "fwhm_pix": 2.2415,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 1e-06,
-                "n_frames": 4
             }
         },
         "J1029+0420": {
@@ -380,16 +360,6 @@
                 "pedestal_frac": 0.000934,
                 "wing_scatter": 0.000559,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_acs_fdpsf",
-                "fwhm_pix": 2.1967,
-                "kernel_size": 51,
-                "cutout_kernel_size": 17,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 4
             }
         },
         "J2341+0000": {
@@ -401,16 +371,6 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001549,
                 "wing_scatter": 0.001133,
-                "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_acs_fdpsf",
-                "fwhm_pix": 2.2633,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
                 "n_frames": 4
             }
         }
