@@ -131,8 +131,6 @@ unimplemented).
   repopulates NICMOS entries. Override `ALLOW_NICMOS=1`.
 - `run_all_lenses.sh` — retired WFPC2 driver; refuses to run (its retry pass moved into
   `run_wfpc2_wf3.sh`).
-- `rebuild_stenv_arm64.sh` — one-off, never used; the write hang was fixed in-process by
-  `mmap_fits_write.py`, not by a native-arm64 rebuild.
 
 The first two also **raise `NotImplementedError` on import** — a deliberate guard: it fails
 loudly with a non-zero status a batch runner can't mistake for a clean skip, before any
