@@ -2,7 +2,10 @@
 # Build a PSF for every drizzled product. make_psf.py defaults to --pass auto (detect
 # stars in the LACosmic CR mosaic where one exists, else the no-CR mosaic) and --method
 # auto (empirical ePSF, model fallback when a field is too star-poor or its empirical
-# wings are poor).
+# wings are poor). For a model-tier build, make_psf.py auto-chains make_psf_inject.py
+# (promote=True) so the canonical psf_kernel.fits / cutout_[cr_]psf.fits it leaves behind
+# is already the drizzle-broadened injected kernel, not the sharper analytic model (which
+# is kept alongside as *_analytic for comparison) -- see make_psf_inject.py's docstring.
 #
 # Usage: run_psf_all.sh [SAMPLE] [--all|--models-only]
 #   (default SAMPLE: mast_target_names.DEFAULT_SAMPLE;  default mode: --all)
@@ -45,8 +48,12 @@ fi
 # Globs are "$filt"* , not "$filt", so per-visit dirs (f606W_v1, f606W_v2) are included;
 # --filt is taken from the directory basename. Any *_sci.fits means the mosaic is buildable
 # (ACS/WFPC2 hold *_cr_*; F160W holds *nocrrej* -- make_psf --pass auto picks the right one).
+# f438W is gallery's blue UVIS science band; F225W/F275W are deliberately omitted -- they
+# are confirmed unusable for lens science sample-wide (arc undetected), so no PSF work is
+# done on them (see CLAUDE.md, gallery_uv_bands_unusable). The extra filters are no-ops for
+# samples that lack them (the glob matches nothing).
 ok=0; fail=0; skip=0
-for filt in f606W f814W f555W f160W; do
+for filt in f606W f814W f555W f160W f438W; do
   for d in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
     [ -d "$d" ] || continue
     ls "$d"/*_sci.fits >/dev/null 2>&1 || continue
