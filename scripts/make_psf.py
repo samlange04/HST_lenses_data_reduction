@@ -39,7 +39,7 @@ Records the build in info/lens_psf.json (method, n_stars, fwhm_pix, oversample,
 kernel_size); no data for a filter records null and exits 0, matching the other scripts.
 
 Usage:
-    conda run -n stenv python scripts/make_psf.py --lens J0252+0039 --filt f814W
+    uv run python scripts/make_psf.py --lens J0252+0039 --filt f814W
 """
 
 import argparse

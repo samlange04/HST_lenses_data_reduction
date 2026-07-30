@@ -14,13 +14,44 @@ what a pointer already settles; don't restate the tables here.
 
 ## Environment
 
-All scripts run inside the `stenv` conda environment (STScI pipeline stack):
+All scripts run inside a **uv-managed** virtual environment (`pyproject.toml` + `uv.lock`
++ `.python-version`, all tracked in git), which replaced the `stenv` conda environment
+(2026-07-30):
 
 ```bash
-conda run -n stenv python scripts/<script>.py --lens <LENS> --filt <FILTER>
+uv sync                                               # one-time, or after a .venv wipe;
+                                                       # downloads the pinned CPython itself
+uv run python scripts/<script>.py --lens <LENS> --filt <FILTER>
 ```
 
-Interactive: `conda activate stenv`.
+Interactive: `source .venv/bin/activate`.
+
+**Fully uv-managed, cross-platform reproducible — deliberately, 2026-07-30.** `.python-version`
+pins the exact stenv interpreter version (`3.12.13`); `pyproject.toml` sets
+`tool.uv.python-preference = "only-managed"` so `uv sync` always downloads that exact
+CPython build itself (via `python-build-standalone`) rather than reusing whatever system
+Python happens to be on `PATH` — no external installer, no conda, works identically on
+macOS (arm64 or x86_64) and Linux with the one command above. The only 12 packages
+actually imported by the pipeline (astropy, astroquery, drizzlepac, stwcs, photutils,
+matplotlib, numpy, scipy, acstools, astroscrappy, requests, crds) are pinned in
+`pyproject.toml` to their exact stenv versions; `uv.lock` resolves the rest of the tree
+fresh (not a byte-for-byte freeze of all ~250 stenv packages — the unused
+jupyter/dask/ginga/easyocr/torch bulk of the conda env was dropped as dead weight). All
+have Linux + macOS (arm64/x86_64) wheels on PyPI, verified at conversion time.
+
+**Superseded, 2026-07-30: an earlier version of this environment pinned x86_64
+specifically**, reasoning that every numeric result in this pipeline (PSF FWHMs, pixfrac
+choices, noise-model constants) was measured under stenv running x86_64 via Rosetta on
+this arm64 Mac. That required a manual python.org-installer bootstrap (uv's managed
+Python downloads don't ship macOS x86_64 builds for Python 3.12+) and was abandoned in
+favor of full cross-platform reproducibility once it was confirmed the codebase has no
+architecture-specific logic to begin with: the one platform-sensitive piece
+(`mmap_fits_write.py`, next section) gates purely on `sys.platform == 'darwin'`, not
+architecture, and git history (the deleted `scripts/stale_scripts/rebuild_stenv_arm64.sh`)
+shows the write-hang below was fixed in-process, not by ever actually testing arm64 — so
+there was never direct evidence the hang, or any measured result, was x86_64-specific.
+Native arm64/Linux execution is accordingly an accepted, not fully re-verified, change —
+spot-check a known product against a prior measurement if something looks numerically off.
 
 ## macOS write-hang workaround (required — keep this wiring)
 
@@ -53,10 +84,10 @@ HST image reduction for gravitational-lens samples (SLACS, BELLS). Per lens+filt
 `data/` path, so a wrong value silently writes a correct product into the wrong tree.
 
 ```bash
-conda run -n stenv python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W
-conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0008-0004 --filt f814W
-conda run -n stenv python scripts/drizzle_wfc3_ir.py  --lens J0008-0004 --filt f160W
-conda run -n stenv python scripts/drizzle_acs_wfc.py  --lens J0216-0813 --filt f555W
+uv run python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W
+uv run python scripts/drizzle_acs_wfc.py  --lens J0008-0004 --filt f814W
+uv run python scripts/drizzle_wfc3_ir.py  --lens J0008-0004 --filt f160W
+uv run python scripts/drizzle_acs_wfc.py  --lens J0216-0813 --filt f555W
 ```
 
 Scripts are **idempotent**: they skip MAST download if calibrated files exist, and skip
@@ -287,7 +318,7 @@ stamps `GSC240FX=True`. Idempotent; refuses any tie implying > `MAX_SHIFT = 1.5�
 F160W as an *independent* check where present. Verified J0252+0039: 0.66″ → 0.009″.
 
 ```bash
-conda run -n stenv python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
+uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
 ```
 
 **Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.**
@@ -430,7 +461,7 @@ Prefer native-scale F814W where a clean per-pixel noise model matters most.
 ## Cutouts (`scripts/make_cutouts.py`)
 
 ```bash
-conda run -n stenv python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
+uv run python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
 ```
 
 Cuts a square stamp (default 20″) from `data/drizzled/` into `data/cutouts/`: a sci FITS, a
@@ -459,7 +490,7 @@ noise FITS (from the weight map), and a 3-panel PNG.
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
 ```bash
-conda run -n stenv python scripts/make_psf.py --lens J0252+0039 --filt f814W
+uv run python scripts/make_psf.py --lens J0252+0039 --filt f814W
 bash scripts/run_psf_all.sh            # every drizzled product; globs data/drizzled/ like run_cutouts_all.sh
 bash scripts/run_psf_all.sh --models-only   # skip existing empirical builds; rebuild only the model tier
 ```
@@ -843,8 +874,8 @@ MAST quirks (`mast_target`, `force_copy`). Read it only through
 (`info/list_of_lenses.txt` was exactly that and was deleted 2026-07-26).
 
 ```bash
-conda run -n stenv python scripts/mast_target_names.py --list        # samples + sizes
-conda run -n stenv python scripts/mast_target_names.py slacs_gold    # lens names
+uv run python scripts/mast_target_names.py --list        # samples + sizes
+uv run python scripts/mast_target_names.py slacs_gold    # lens names
 ```
 
 | Sample | Lenses | What it is |
@@ -989,7 +1020,7 @@ same alignment/CR reasoning, not yet independently re-audited on gallery data (a
 always wins).
 
 ```bash
-conda run -n stenv python scripts/drizzle_wfc3_uvis.py --lens J1110+3649 --filt f606W
+uv run python scripts/drizzle_wfc3_uvis.py --lens J1110+3649 --filt f606W
 bash scripts/run_gallery_uvis_all.sh                   # all 15 lenses, all 5 filters
 ```
 
@@ -1059,8 +1090,8 @@ and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready.
 ## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
 
 ```bash
-conda run -n stenv python scripts/make_mosaics.py --sample slacs_gold
-conda run -n stenv python scripts/make_psf_mosaics.py --sample slacs_gold
+uv run python scripts/make_mosaics.py --sample slacs_gold
+uv run python scripts/make_psf_mosaics.py --sample slacs_gold
 ```
 
 Read-only QC: tile every lens's existing cutout (or trimmed PSF kernel) onto a 5-wide grid,

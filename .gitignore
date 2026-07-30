@@ -34,3 +34,8 @@ output/
 __pycache__/
 *.py[cod]
 .DS_Store
+
+# ── uv-managed environment ──────────────────────────────────────────────────
+# pyproject.toml/uv.lock/.python-version are tracked (they define the env, including
+# the exact CPython build); the venv itself is machine-local and rebuilt via `uv sync`.
+.venv/

@@ -40,7 +40,7 @@ for arg in "$@"; do
     *)             SAMPLE_ARG="$arg" ;;
   esac
 done
-SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$SAMPLE_ARG"} --print-sample)" || exit 1
+SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$SAMPLE_ARG"} --print-sample)" || exit 1
 
 # In --models-only mode, the RUN set is every product recorded as model-tier in
 # lens_psf.json -- 'model...' (not yet promoted) or 'inject...' (already promoted by a
@@ -48,7 +48,7 @@ SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$S
 # iterate the mosaics directly (below) and let make_psf_inject decide.
 MODEL_RUN=""
 if [ "$MODE" = models ]; then
-  MODEL_RUN="$(conda run -n stenv python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and (str(v.get('method','')).startswith('model') or str(v.get('method','')).startswith('inject'))))")" || exit 1
+  MODEL_RUN="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and (str(v.get('method','')).startswith('model') or str(v.get('method','')).startswith('inject'))))")" || exit 1
 fi
 
 ok=0; fail=0; skip=0
@@ -67,7 +67,7 @@ for filt in f606W f814W f555W f160W f438W; do
         *) skip=$((skip+1)); echo "skip non-model: $lens $key"; continue ;;
       esac
     fi
-    if conda run -n stenv python "$SD/make_psf_inject.py" --lens "$lens" --filt "$key" \
+    if uv run --project "$WS" python "$SD/make_psf_inject.py" --lens "$lens" --filt "$key" \
          --sample "$SAMPLE" > "$LOG/${lens}_${key}_psf_inject.log" 2>&1; then
       ok=$((ok+1)); echo "ok: $lens $key"
     else
