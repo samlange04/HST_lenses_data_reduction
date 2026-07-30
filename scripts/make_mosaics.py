@@ -24,7 +24,7 @@ smoothly (no NaN-masking artifacts) while still showing faint outskirts and brig
 cores together.
 
 Usage:
-    conda run -n stenv python scripts/make_mosaics.py --sample slacs_gold
+    uv run python scripts/make_mosaics.py --sample slacs_gold
 """
 
 import argparse

@@ -1,0 +1,27 @@
+[project]
+name = "hst-lenses-data-reduction"
+version = "0.1.0"
+description = "HST image reduction pipeline for gravitational-lens samples (SLACS, BELLS GALLERY)"
+requires-python = "==3.12.13"
+dependencies = [
+    "astropy==7.2.0",
+    "astroquery==0.4.11",
+    "drizzlepac==3.11.0",
+    "stwcs==1.7.7",
+    "photutils==2.3.0",
+    "matplotlib==3.10.9",
+    "numpy==2.4.3",
+    "scipy==1.17.1",
+    "acstools==3.8.0",
+    "astroscrappy==1.3.0",
+    "requests==2.33.1",
+    "crds==13.1.16",
+    "autolens>=2026.7.29.2",
+    "tqdm>=4.70.0",
+]
+
+[tool.uv]
+# Fully uv-managed interpreter (not a system/Homebrew/conda python): `uv sync` on any
+# machine downloads this exact CPython build itself, so the environment is reproducible
+# on macOS (arm64 or x86_64) and Linux with no external install step. See CLAUDE.md.
+python-preference = "only-managed"

@@ -10,7 +10,7 @@
 # on disk -- not the roster of lenses -- are the right thing to iterate.
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
-SAMPLE="$(conda run -n stenv python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
+SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 #
 # The globs are "$filt"* , not "$filt", so the per-visit product directories
 # (f606W_v1, f606W_v2 on J0822+2652 and J0728+3835) are included. With a bare
@@ -34,7 +34,7 @@ for filt in f606W f814W f555W f160W f438W f275W f225W; do
     ls "$d"/*_sci.fits >/dev/null 2>&1 || continue
     lens=$(basename "$(dirname "$d")")
     key=$(basename "$d")
-    if conda run -n stenv python "$SD/make_cutouts.py" --lens "$lens" --filt "$key" \
+    if uv run --project "$WS" python "$SD/make_cutouts.py" --lens "$lens" --filt "$key" \
          --sample "$SAMPLE" > "$LOG/${lens}_${key}_cut.log" 2>&1; then
       ok=$((ok+1))
     else

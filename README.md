@@ -11,12 +11,15 @@ mosaics + cutouts for gravitational-lens samples (SLACS, BELLS). One product per
 
 ## Setup
 
-All scripts run inside the `stenv` conda environment (the STScI pipeline stack):
+All scripts run inside a uv-managed virtual environment (`pyproject.toml` + `uv.lock` +
+`.python-version`, all tracked in git), pinned to the STScI packages' exact versions from
+the stenv conda env this replaced. `uv sync` downloads the pinned CPython itself — no
+conda, no external installer — so this works the same on macOS (arm64 or x86_64) and
+Linux:
 
 ```bash
-conda activate stenv
-# or, per-command:
-conda run -n stenv python scripts/<script>.py --lens <LENS> --filt <FILTER>
+uv sync                                        # one-time, or after a .venv wipe
+uv run python scripts/<script>.py --lens <LENS> --filt <FILTER>
 ```
 
 CRDS reference files download themselves on first use into `data/reference_files/`.
@@ -48,11 +51,11 @@ under `data/drizzled/` (and `data/drizzle_files/`).
 ### One lens
 
 ```bash
-conda run -n stenv python scripts/drizzle_acs_wfc.py   --lens J0008-0004 --filt f814W
-conda run -n stenv python scripts/drizzle_acs_wfc.py   --lens J0216-0813 --filt f555W
-conda run -n stenv python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W
-conda run -n stenv python scripts/drizzle_wfc3_ir.py   --lens J0008-0004 --filt f160W
-conda run -n stenv python scripts/make_cutouts.py      --lens J0029-0055 --filt f606W
+uv run python scripts/drizzle_acs_wfc.py   --lens J0008-0004 --filt f814W
+uv run python scripts/drizzle_acs_wfc.py   --lens J0216-0813 --filt f555W
+uv run python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W
+uv run python scripts/drizzle_wfc3_ir.py   --lens J0008-0004 --filt f160W
+uv run python scripts/make_cutouts.py      --lens J0029-0055 --filt f606W
 ```
 
 `--sample` defaults to **`slacs_gold`** everywhere. It sets the `<sample>` level of every
@@ -153,8 +156,8 @@ retired scripts that refuse to run without an override env var — leave them al
 `info/lens_samples.json` is the single source of truth. Query it via:
 
 ```bash
-conda run -n stenv python scripts/mast_target_names.py --list      # samples + sizes
-conda run -n stenv python scripts/mast_target_names.py slacs_gold  # lens names
+uv run python scripts/mast_target_names.py --list      # samples + sizes
+uv run python scripts/mast_target_names.py slacs_gold  # lens names
 ```
 
 | Sample | Lenses | Status |

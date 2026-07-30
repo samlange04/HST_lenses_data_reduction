@@ -28,11 +28,11 @@ WS="$(dirname "$SCRIPT_DIR")"
 LOGDIR="$WS/data/run_logs"; mkdir -p "$LOGDIR"
 ALIGN_JSON="$WS/info/wfpc2_alignment.json"
 
-SAMPLE="$(conda run -n stenv python "$SCRIPT_DIR/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
+SAMPLE="$(uv run --project "$WS" python "$SCRIPT_DIR/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 LENSES=()
 while IFS= read -r _l; do
   [ -n "$_l" ] && LENSES+=("$_l")
-done < <(conda run -n stenv python "$SCRIPT_DIR/mast_target_names.py" "$SAMPLE")
+done < <(uv run --project "$WS" python "$SCRIPT_DIR/mast_target_names.py" "$SAMPLE")
 [ "${#LENSES[@]}" -gt 0 ] || { echo "No lenses in sample '$SAMPLE'" >&2; exit 1; }
 echo "=== WFPC2/WF3: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
@@ -58,7 +58,7 @@ split_visits_for() {
 # "mast"; the file is still consulted per lens rather than hardcoded so that a future
 # lens whose audit picks "tweakreg" is honoured without editing this script. Read once
 # into a lookup table -- one python start-up, not one per lens.
-ALIGN_TBL="$(conda run -n stenv python -c "
+ALIGN_TBL="$(uv run --project "$WS" python -c "
 import json
 d = json.load(open('$ALIGN_JSON')).get('$SAMPLE', {})
 for k, v in d.items():
@@ -80,7 +80,7 @@ run_product() {
   local log="$LOGDIR/${lens}_${key}_wf3.log"
 
   printf '  %-10s align=%-8s ' "$key" "$align"
-  if ! conda run -n stenv python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
+  if ! uv run --project "$WS" python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
          --filt f606W --sample "$SAMPLE" --align "$align" $extra > "$log" 2>&1; then
     # A lens skipped for insufficient dither phase is an intended outcome, not a
     # failure -- the script exits non-zero without writing, so separate the two.
@@ -105,12 +105,12 @@ run_product() {
 
   # Absolute-astrometry tie to ACS F814W. Idempotent (re-measures the residual and
   # applies ~0), so it is safe on a product the drizzle skipped as already-existing.
-  if ! conda run -n stenv python "$SCRIPT_DIR/align_wfpc2_to_acs.py" --lens "$lens" \
+  if ! uv run --project "$WS" python "$SCRIPT_DIR/align_wfpc2_to_acs.py" --lens "$lens" \
          --f606-dir "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
     echo "ALIGN FAILED (see $log)"; return 1
   fi
 
-  if ! conda run -n stenv python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
+  if ! uv run --project "$WS" python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
          --filt "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
   fi
