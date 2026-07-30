@@ -47,13 +47,13 @@
         "J0237-0641": {
             "f606W": {
                 "method": "empirical",
-                "n_stars": 17,
-                "fwhm_pix": 2.5501,
+                "n_stars": 11,
+                "fwhm_pix": 2.5718,
                 "oversample": 2,
                 "kernel_size": 51,
-                "cutout_kernel_size": 27,
+                "cutout_kernel_size": 29,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000282
+                "pedestal_frac": 0.000593
             }
         },
         "J0742+3341": {
@@ -69,13 +69,13 @@
             },
             "f606W": {
                 "method": "empirical",
-                "n_stars": 16,
-                "fwhm_pix": 2.5991,
+                "n_stars": 11,
+                "fwhm_pix": 2.6288,
                 "oversample": 2,
                 "kernel_size": 51,
                 "cutout_kernel_size": 23,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000229
+                "pedestal_frac": 0.000118
             },
             "f814W": {
                 "method": "empirical",
@@ -155,13 +155,13 @@
             },
             "f814W": {
                 "method": "empirical",
-                "n_stars": 4,
-                "fwhm_pix": 2.3373,
+                "n_stars": 3,
+                "fwhm_pix": 2.309,
                 "oversample": 2,
                 "kernel_size": 51,
                 "cutout_kernel_size": 21,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000331
+                "pedestal_frac": 0.000249
             }
         },
         "J1110+2808": {
@@ -215,37 +215,37 @@
         "J1201+4743": {
             "f606W": {
                 "method": "empirical",
-                "n_stars": 10,
-                "fwhm_pix": 2.4112,
+                "n_stars": 9,
+                "fwhm_pix": 2.4243,
                 "oversample": 2,
                 "kernel_size": 51,
                 "cutout_kernel_size": 23,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000206
+                "pedestal_frac": 0.000129
             }
         },
         "J1226+5457": {
             "f606W": {
                 "method": "empirical",
-                "n_stars": 9,
-                "fwhm_pix": 2.3609,
+                "n_stars": 8,
+                "fwhm_pix": 2.3633,
                 "oversample": 2,
                 "kernel_size": 51,
                 "cutout_kernel_size": 21,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000142
+                "pedestal_frac": 0.000128
             }
         },
         "J2228+1205": {
             "f606W": {
                 "method": "empirical",
-                "n_stars": 10,
-                "fwhm_pix": 2.6368,
+                "n_stars": 6,
+                "fwhm_pix": 2.6544,
                 "oversample": 2,
                 "kernel_size": 51,
                 "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000354
+                "pedestal_frac": 0.000388
             }
         },
         "J2342-0120": {
