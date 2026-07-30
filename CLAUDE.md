@@ -169,7 +169,7 @@ data/
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled/<sample>/<lens>/<filter>/      ← final products (<prefix>_cr_*/_nocrrej_* sci+wht)
   cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits
-  psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf_epsf.fits / psf.png)
+  psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
   pre_drizzled/                           ← 46 MAST-delivered mosaics, kept for reference; not pipeline output
   run_logs/                               ← per-lens batch-runner logs
@@ -475,11 +475,20 @@ field is too star-poor — for WFPC2 F606W a **native ePSF from the MAST PSF dat
 an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
 - **`data/psf/<sample>/<lens>/<filt>/`** (archival characterisation): **`psf_kernel.fits`**
   — the **full** kernel (whole ePSF footprint binned to image scale, `star_size` px:
-  35/41/51), **`psf_epsf.fits`** (oversampled ePSF), **`psf.png`** (4-panel QA: star montage
-  · kernel linear · kernel **log** · radial profile).
+  35/41/51; block-reduced from the in-memory oversampled ePSF, which is not itself written to
+  disk — nothing reads it back), **`psf.png`** (4-panel QA: star montage · kernel linear ·
+  kernel **log** · radial profile).
 - **`data/cutouts/<sample>/<lens>/<filt>/`** (modelling-ready): **`cutout_[cr_]psf.fits`** —
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
   radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
+
+For a **model-tier** build, `make_psf.py` immediately auto-chains
+`make_psf_inject.run_injection(..., promote=True)` (see *Drizzle-broadened model PSF by
+injection* below) — so `psf_kernel.fits` / `cutout_[cr_]psf.fits` end up holding the
+**drizzle-broadened injected kernel**, the more correct product, not the sharper analytic
+model this section just described; that analytic build is kept alongside as
+`psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits` for comparison. An **empirical**
+build is already the true drizzled PSF (cut from the mosaic) and is never touched by this.
 
 Records `info/lens_psf.json` (`{sample:{lens:{filt:{method,n_stars,fwhm_pix,oversample,
 kernel_size,cutout_kernel_size,trim_threshold}}}}`, `null` + exit 0 on no data). Run
@@ -598,7 +607,7 @@ names: inject the model PSF as artificial stars into the individual exposures an
 them exactly as the science frames were**, so the drizzled star carries the broadening,
 North-up orientation, and exposure-average weighting for free — all produced by the real
 drizzle, not emulated. **Model tier only** (empirical builds are already the drizzled PSF, cut
-from the mosaic). It is a **parallel comparison product** — nothing downstream changes:
+from the mosaic).
 
 - **Reuses the persisted `data/drizzle_files/<sample>/<lens>/<filt>/` inputs** the science
   drizzle consumed (ACS `<root>_flc`, WFC3/IR `<root>_flt`, WFPC2 extracted `wf3_<root>_flt`
@@ -615,15 +624,57 @@ from the mosaic). It is a **parallel comparison product** — nothing downstream
   star is the broadened North-up PSF at the modelling scale; the kernel is cut/centred at
   image scale, then `subtract_pedestal`/`trim_kernel_to_amplitude` as usual.
 
-Outputs alongside make_psf, non-clobbering: `data/psf/<...>/psf_kernel_injected.fits` +
-`psf_injected.png`; `data/cutouts/<...>/cutout_[cr_]psf_injected.fits` (trimmed); records
-`info/lens_psf_injected.json` (`null`+exit 0 on no data). Runner:
-`bash scripts/run_psf_inject_all.sh` (model tier only; `--all` also runs empirical products
-for validation). **Validated** on F160W where an empirical truth exists on the same lens:
+**The injected kernel is CANONICAL for the model tier, not a side product** (decided
+2026-07-30, superseding the original "parallel comparison, nothing downstream changes"
+design). Validated on F160W where an empirical truth exists on the same lens:
 analytic-STDPSF 3.15px → **injected-STDPSF 3.5–3.9px ≈ empirical 3.8px** (drizzle broadening
 recovered; the residual is the real optical wing STDPSF underestimates, not a broadening
 error). ACS broadens little (native 0.05″, small resampling — FD 1.65→1.76px); F160W and
-WFPC2 broaden more (0.1283→0.06″, 0.0996→0.05″). → memory: psf_injection_drizzle_broadening
+WFPC2 broaden more (0.1283→0.06″, 0.0996→0.05″). Since the injected build is strictly closer
+to the true drizzled PSF, downstream modelling should read it, not the sharp analytic model.
+→ memory: psf_injection_drizzle_broadening
+
+`make_psf_inject.run_injection(lens, filt, sample, promote=None)` decides promotion by
+reading the CURRENT `info/lens_psf.json` method for that product: `promote=True` for a
+model-tier primary (`model...` not yet promoted, or `inject...` already promoted — either
+way this is the model tier and injection is what it needs), `promote=False` for an
+`empirical` primary. `make_psf.py` calls it with `promote=True` explicitly right after
+building a model-tier product, so:
+
+- **`data/psf/<...>/psf_kernel.fits` / `data/cutouts/<...>/cutout_[cr_]psf.fits`** — the
+  **canonical** files, now the drizzle-broadened injected kernel (`PSFINJ=True` in the
+  header) for every model-tier lens.
+- **`data/psf/<...>/psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits`** — the
+  pre-broadening analytic model (STDPSF / focus-diverse / MAST-DB) this promotion moved
+  aside, kept for comparison. `psf.png`/`psf_analytic.png` mirror the split.
+- `info/lens_psf.json`'s `method` for these products is now `inject_acs_fdpsf` /
+  `inject_stdpsf` / `inject_wfpc2_psfdb` — it describes what's actually IN
+  `cutout_[cr_]psf.fits`, same rule as every other product in this file.
+- `info/lens_psf_injected.json` still records every injection run's own metadata
+  (`fwhm_pix`, `wing_scatter`, `n_frames`, `null`+exit 0 on no data) independent of
+  promotion — an audit trail of what injection produced, kept even though its content now
+  usually matches `lens_psf.json` for that product.
+
+The **only** case that still gets the old parallel `*_injected`-suffixed names
+(`psf_kernel_injected.fits`, `psf_injected.png`, `cutout_[cr_]psf_injected.fits`, no
+promotion) is running injection on an **empirical** primary — `run_psf_inject_all.sh --all`,
+purely for the validation comparison above; nothing canonical changes there because the
+empirical build is already correct.
+
+Runners: `bash scripts/run_psf_all.sh` already leaves every model-tier lens promoted (the
+auto-chain runs inside `make_psf.py`); `bash scripts/run_psf_inject_all.sh` (model tier only
+by default, matching `model...` or `inject...` methods; `--all` also runs empirical products
+for validation) is for re-promoting after an injection-only code change, or building the rare
+lens whose injected product doesn't exist yet, without re-running the analytic model build.
+A failed injection (e.g. `data/drizzle_files/` was cleared) is a graceful degradation inside
+`make_psf.py`: a warning prints and the analytic model stays canonical, same failure mode as
+any other model-tier fallback in this pipeline.
+
+Promoted 2026-07-30 for all 34 model-tier products then on disk (33 by renaming the
+already-built injected files, no re-drizzle needed; 1 — J1032+5322 F160W, which had no
+injected build yet — by a fresh `make_psf.py` run). `psf_epsf.fits` was dropped from every
+lens (empirical and model, ~150 files) in the same pass — nothing ever read it back from
+disk; the archival characterisation now keeps only `psf_kernel.fits`.
 
 ### Pedestal subtraction (`subtract_pedestal`) — every kernel
 
@@ -645,6 +696,21 @@ Thresholds chosen to pass every clean ACS/F555W build (worst scatter ~2e-3) and 
 empirical builds (≤1.2e-3) while dropping the noisy ones (J0936 7.8e-3, J0946 6.6e-3). Keeps
 the drizzle-broadened empirical PSF (FWHM ~3.8px, which the detector-frame model lacks at
 3.15px) where the build is clean, and the reproducible model where it isn't.
+
+**The same 3e-3 gate was validated on WFC3/UVIS (gallery, 2026-07-30) and needs no UVIS-specific
+retune.** Across the 25 gallery products the passing empirical builds top out at scatter 2.26e-3
+(J0029 f814W), with a clean gap to the three F606W builds it dropped to the model (J1110+2808
+3.1e-3, J0237-0641 3.4e-3, J0918+5104 4.9e-3) — the 3e-3 threshold sits in that gap, so it is
+not cutting into the good UVIS population. Despite UVIS's higher correlated noise (~1.5–1.6×
+native ACS), its clean wings are no noisier than ACS/F555W at the gate. The two marginal drops
+(J0237-0641 3.4e-3, J1110+2808 3.1e-3) were the *default-selection* builds fighting a
+contaminant/faint-star problem, **not** a too-strict gate: a greedy leave-one-out found the
+culprits and both were **rescued to clean empirical builds via `info/psf_stars.json`** — J0237
+by excluding one extended source at (1411,3601) (→1.3e-3, 17 stars), J1110 by raising `min_snr`
+to 130 to drop its 5 faint SNR<100 stars (→1.3e-3, 5 stars; note removing its bright
+companion-star made it *worse* — the faint stars were the problem). Gallery is now 19 empirical
++ 6 injected-model (J0918+5104 stays model: 4.9e-3, genuinely noisy). → memory:
+uvis_scatter_gate_validated
 
 ### `run_psf_all.sh --models-only`
 

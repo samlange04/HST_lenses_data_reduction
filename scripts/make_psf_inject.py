@@ -13,14 +13,30 @@ exposures and drizzle them exactly as the science frames were drizzled; the driz
 then carries the resampling broadening for free, plus the correct North-up orientation and
 the exposure-average weighting -- all produced by the real drizzle rather than emulated.
 
-This is a *parallel* product for the model-PSF tier only (empirical builds already carry the
-broadening -- they are cut from the drizzled mosaic itself). It writes alongside make_psf's
-outputs and changes nothing downstream:
+For the model-PSF tier, this is now the CANONICAL downstream product -- empirical builds
+already carry the broadening (cut from the drizzled mosaic itself), but a model-tier build
+does not, and the injected kernel is strictly the more correct one when it is available. So
+when the product's primary build (per info/lens_psf.json) is on the model tier, this PROMOTES
+the injected kernel: the existing pre-broadening analytic-model files are moved aside to
+*_analytic (comparison only), and the injected build takes over the canonical names:
 
-  data/psf/<sample>/<lens>/<filt>/psf_kernel_injected.fits   full image-scale kernel
-  data/psf/<sample>/<lens>/<filt>/psf_injected.png           QA panel
-  data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf_injected.fits   trimmed modelling kernel
-  info/lens_psf_injected.json                                {sample:{lens:{filt:{...}}}}
+  data/psf/<sample>/<lens>/<filt>/psf_kernel.fits             canonical (now the injected build)
+  data/psf/<sample>/<lens>/<filt>/psf_kernel_analytic.fits    the superseded analytic model
+  data/psf/<sample>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
+  data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf.fits            canonical (injected)
+  data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf_analytic.fits   superseded analytic
+  info/lens_psf.json                                          method becomes inject_*
+  info/lens_psf_injected.json                                 {sample:{lens:{filt:{...}}}}
+
+make_psf.py auto-chains into this (run_injection(..., promote=True)) right after building a
+model-tier product, so a single `make_psf.py --lens X --filt Y` run already leaves the
+promoted, drizzle-broadened kernel as the canonical file -- this script rarely needs to be
+run by hand for that case. It IS still run standalone for: (1) the one lens missing its
+injected build, (2) re-promoting after an injection-code change without rebuilding the
+analytic model, and (3) `--all` mode, which also runs on EMPIRICAL primaries purely as a
+validation comparison (injected-model FWHM should approach the empirical truth) -- there,
+promotion does not apply and the parallel `*_injected`-suffixed names are used instead, as
+before.
 
 How it works, and why it is faithful:
   * It reuses the already-prepared inputs the science drizzle consumed, which persist in
@@ -73,14 +89,13 @@ import mmap_fits_write
 mmap_fits_write.install()
 from drizzlepac import astrodrizzle
 
-from slacs_coords import slacs_coords
 import mast_target_names
 import psf_models
 # Reuse make_psf's kernel post-processing + QA + JSON helpers verbatim so the injected
 # product is treated identically to the analytic one (importing make_psf is safe: its work
 # is under __main__). instrument_key / representative field sizes also come from there.
 import make_psf
-from make_cutouts import find_products, _has_products
+from make_cutouts import find_products, _has_products, catalogue_coord_for
 import info_json
 
 
@@ -103,6 +118,10 @@ _DRIZ = {
                     driz_sep_scale=0.0996, driz_sep_bits='8,1024',
                     final_scale=0.05, final_pixfrac=1.0, final_bits='8,1024',
                     wht_type='IVM', resetbits=0),
+    'WFC3/UVIS': dict(input='flc', suffix='drc', det_scale=0.0396,
+                      driz_sep_scale=0.0396, driz_sep_bits='256,64,16',
+                      final_scale=0.0396, final_pixfrac=0.7, final_bits='256,64,16',
+                      wht_type='ERR', resetbits=0),
 }
 
 _DET_STAMP = 51          # side (detector px) of the rendered model-PSF stamp injected per frame
@@ -406,43 +425,65 @@ def extract_kernel(out_sci, catalogue_coord, size):
     return kern, raw
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────────
-def main():
-    p = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--lens', default='J0252+0039')
-    p.add_argument('--filt', default='f814W')
-    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
-                   help=f'sample subdirectory (default {mast_target_names.DEFAULT_SAMPLE})')
-    p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
-                   default='auto', help="science pass to match for the trimmed cutout prefix "
-                                        "and star recentring (default auto: CR if present).")
-    p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
-                   help='amplitude fraction of peak at which the trimmed modelling kernel is '
-                        'cut (matches make_psf; an amplitude criterion, not enclosed-energy).')
-    p.add_argument('--keep-work', action='store_true',
-                   help='keep the injection working dir (data/drizzle_files/.../psf_inject/) '
-                        'for inspection instead of removing it.')
-    a = p.parse_args()
+# ── Promotion: make the injected (drizzle-broadened) kernel the canonical product ──
+def _is_model_tier(sample, lens, filt):
+    """True if the CURRENT primary build recorded in info/lens_psf.json for this product is
+    on the model tier -- either not yet promoted ('model...') or already promoted
+    ('inject...') by a previous run of this function. False for 'empirical' or no record."""
+    psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
+    rec = info_json.load(psf_json).get(sample, {}).get(lens, {}).get(filt)
+    method = str((rec or {}).get('method', ''))
+    return method.startswith('model') or method.startswith('inject')
 
-    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
-    src_dir = os.path.join(ws_path, 'data', 'drizzle_files', a.sample, a.lens, a.filt)
-    psf_dir = os.path.join(ws_path, 'data', 'psf', a.sample, a.lens, a.filt)
-    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample, a.lens, a.filt)
+
+def _promote(psf_dir, cutouts_dir, prefix):
+    """Move the current canonical model-tier files aside to *_analytic (once -- a file
+    already carrying PSFINJ=True is itself a previously-promoted injected build, not the
+    analytic model, so it is left alone rather than clobbering the real analytic backup)."""
+    canonical_kernel = os.path.join(psf_dir, 'psf_kernel.fits')
+    analytic_kernel = os.path.join(psf_dir, 'psf_kernel_analytic.fits')
+    if os.path.isfile(canonical_kernel):
+        already_injected = bool(fits.getheader(canonical_kernel).get('PSFINJ', False))
+        if not already_injected:
+            shutil.move(canonical_kernel, analytic_kernel)
+            png = os.path.join(psf_dir, 'psf.png')
+            if os.path.isfile(png):
+                shutil.move(png, os.path.join(psf_dir, 'psf_analytic.png'))
+            cut = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
+            if os.path.isfile(cut):
+                shutil.move(cut, os.path.join(cutouts_dir, f'{prefix}_psf_analytic.fits'))
+
+
+# ── Callable entry point (also used by make_psf.py to auto-chain model-tier builds) ─
+def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1e-3,
+                  keep_work=False, promote=None):
+    """Build the drizzle-broadened injected PSF for (sample, lens, filt) and, when the
+    product's primary build is on the model tier, PROMOTE it to the canonical
+    psf_kernel.fits / cutout_[cr_]psf.fits (the pre-broadening analytic model is moved
+    aside to *_analytic for comparison). Returns the record dict written to
+    info/lens_psf_injected.json, or None on a no-data outcome.
+
+    `promote`: None (default) auto-detects from info/lens_psf.json (True for a model-tier
+    primary, False -- i.e. a parallel, non-canonical '*_injected' product -- for an
+    empirical primary, matching the --all validation mode). Pass True/False to override,
+    e.g. make_psf.py knows definitively it just built a model-tier product."""
+    sample = sample or mast_target_names.DEFAULT_SAMPLE
+    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
+    src_dir = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
+    psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
+    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', sample, lens, filt)
     json_path = os.path.join(ws_path, 'info', 'lens_psf_injected.json')
 
     # No-data outcome: matches the other scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
-        print(f'=== NO DATA: {a.lens} {a.filt} (no drizzled products in {drizzled_dir})')
-        info_json.update(json_path, a.sample, a.lens, a.filt, None)
-        sys.exit(0)
+        print(f'=== NO DATA: {lens} {filt} (no drizzled products in {drizzled_dir})')
+        info_json.update(json_path, sample, lens, filt, None)
+        return None
 
     # Resolve the science pass (for the cutout prefix + recentring reference).
-    if a.drizzle_pass == 'auto':
+    if drizzle_pass == 'auto':
         has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
         drizzle_pass = 'cr' if has_cr else 'nocrrej'
-    else:
-        drizzle_pass = a.drizzle_pass
     sci_file, _wht = find_products(drizzled_dir, drizzle_pass)
     with fits.open(sci_file) as hdul:
         sci_hdr = hdul[0].header
@@ -451,11 +492,9 @@ def main():
     if inst_key not in _DRIZ:
         raise KeyError(f'no injection drizzle config for instrument {inst_key!r}')
     size = int(make_psf._INSTR[inst_key]['star_size'])
-    print(f'{a.lens} {a.filt}  [{inst_key}, {drizzle_pass} pass, {scale:.4f}"/px, kernel {size}px]')
+    print(f'{lens} {filt}  [{inst_key}, {drizzle_pass} pass, {scale:.4f}"/px, kernel {size}px]')
 
-    if a.lens not in slacs_coords:
-        raise KeyError(f'{a.lens} not in slacs_coords (info/slacs_coords.py)')
-    ra, dec = slacs_coords[a.lens]
+    ra, dec = catalogue_coord_for(lens)  # slacs_coords or gallery_coords
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     _set_ref_env()
@@ -470,7 +509,7 @@ def main():
         print(f'  {len(sci_paths)} frames')
 
         print('  building model-PSF renderers ...')
-        renderers, method = build_renderers(inst_key, a.filt, a.sample, a.lens,
+        renderers, method = build_renderers(inst_key, filt, sample, lens,
                                             sci_paths, src_dir, catalogue_coord)
         print(f'  model source: {method}')
 
@@ -493,57 +532,108 @@ def main():
     if abs(pedestal_frac) >= 1e-4:
         print(f'  pedestal removed: {pedestal_frac:.2e} of peak')
     ped_frac, scat_frac = make_psf.wing_stats(kernel)
-    trimmed, trim_size = make_psf.trim_kernel_to_amplitude(kernel, a.trim_threshold)
+    trimmed, trim_size = make_psf.trim_kernel_to_amplitude(kernel, trim_threshold)
     fwhm_pix = make_psf.measure_fwhm(kernel)
     if fwhm_pix is not None:
         print(f'  kernel FWHM: {fwhm_pix:.2f} px = {fwhm_pix * scale:.3f}"')
     print(f'  full kernel {kernel.shape[0]}px -> trimmed {trim_size}px '
-          f'(amplitude<{a.trim_threshold:g} of peak)')
+          f'(amplitude<{trim_threshold:g} of peak)')
 
-    # ── Write products ──────────────────────────────────────────────────────────
+    if promote is None:
+        promote = _is_model_tier(sample, lens, filt)
+
     os.makedirs(psf_dir, exist_ok=True)
+    os.makedirs(cutouts_dir, exist_ok=True)
+    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
+
     khdr = fits.Header()
     khdr['PSFMETH'] = (method, 'injection-drizzled model PSF (Anderson 2016)')
     khdr['PSFOVSMP'] = (1, 'injected kernel is at image scale (no oversampling)')
     khdr['PSFPXSCL'] = (round(scale, 5), 'kernel pixel scale (arcsec)')
     khdr['PSFFWHM'] = (round(fwhm_pix, 4) if fwhm_pix is not None else 0.0,
                        'fitted kernel FWHM (pixels)')
-    khdr['PSFLENS'] = (a.lens, 'lens')
-    khdr['PSFFILT'] = (a.filt, 'filter')
+    khdr['PSFLENS'] = (lens, 'lens')
+    khdr['PSFFILT'] = (filt, 'filter')
     khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in data/cutouts/)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     khdr['PSFINJ'] = (True, 'built by artificial-star injection + re-drizzle')
-    make_psf.write_fits(kernel, khdr, os.path.join(psf_dir, 'psf_kernel_injected.fits'))
+
+    if promote:
+        # Move the existing analytic-model files aside, then write the injected build
+        # under the CANONICAL names -- this is what downstream (and every other script)
+        # reads. No separate "_injected"-suffixed files: promotion means there is exactly
+        # one canonical kernel again, just now the drizzle-broadened one.
+        _promote(psf_dir, cutouts_dir, prefix)
+        kernel_path = os.path.join(psf_dir, 'psf_kernel.fits')
+        png_path = os.path.join(psf_dir, 'psf.png')
+        cutout_path = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
+        title = f'{lens}  {filt}  [{method}]'
+    else:
+        # Empirical primary (--all validation mode): keep this as a parallel, clearly-named
+        # comparison product; nothing canonical changes.
+        kernel_path = os.path.join(psf_dir, 'psf_kernel_injected.fits')
+        png_path = os.path.join(psf_dir, 'psf_injected.png')
+        cutout_path = os.path.join(cutouts_dir, f'{prefix}_psf_injected.fits')
+        title = f'{lens}  {filt}  [{method}]  (injected)'
+
+    make_psf.write_fits(kernel, khdr, kernel_path)
 
     # QA panel: reuse make_psf.plot_psf; the "star montage" shows the raw drizzled star.
     raw_norm = raw / raw.max() if raw.max() > 0 else raw
-    make_psf.plot_psf(kernel, None, [raw_norm], scale, fwhm_pix,
-                      os.path.join(psf_dir, 'psf_injected.png'),
-                      title=f'{a.lens}  {a.filt}  [{method}]  (injected)')
+    make_psf.plot_psf(kernel, None, [raw_norm], scale, fwhm_pix, png_path, title=title)
 
-    os.makedirs(cutouts_dir, exist_ok=True)
-    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
     thdr = khdr.copy()
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
-    thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
+    thdr['PSFTRIM'] = (trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
-    make_psf.write_fits(trimmed, thdr,
-                        os.path.join(cutouts_dir, f'{prefix}_psf_injected.fits'))
+    make_psf.write_fits(trimmed, thdr, cutout_path)
 
-    info_json.update(json_path, a.sample, a.lens, a.filt, {
+    record = {
         'method': method,
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'kernel_size': int(kernel.shape[0]),
         'cutout_kernel_size': int(trim_size),
-        'trim_threshold': a.trim_threshold,
+        'trim_threshold': trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
         'wing_scatter': round(scat_frac, 6),
         'n_frames': n_inj,
-    })
+    }
+    info_json.update(json_path, sample, lens, filt, record)
 
-    if not a.keep_work:
+    if promote:
+        # The canonical lens_psf.json entry must describe what's now actually in
+        # cutout_[cr_]psf.fits: the injected build, not the superseded analytic one.
+        psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
+        info_json.update(psf_json, sample, lens, filt, dict(record))
+        print(f'  promoted: {method} is now the canonical PSF '
+              f'(analytic model kept as *_analytic)')
+
+    if not keep_work:
         shutil.rmtree(work_dir, ignore_errors=True)
     print('  done')
+    return record
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────────
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--lens', default='J0252+0039')
+    p.add_argument('--filt', default='f814W')
+    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                   help=f'sample subdirectory (default {mast_target_names.DEFAULT_SAMPLE})')
+    p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
+                   default='auto', help="science pass to match for the trimmed cutout prefix "
+                                        "and star recentring (default auto: CR if present).")
+    p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
+                   help='amplitude fraction of peak at which the trimmed modelling kernel is '
+                        'cut (matches make_psf; an amplitude criterion, not enclosed-energy).')
+    p.add_argument('--keep-work', action='store_true',
+                   help='keep the injection working dir (data/drizzle_files/.../psf_inject/) '
+                        'for inspection instead of removing it.')
+    a = p.parse_args()
+    run_injection(a.lens, a.filt, a.sample, drizzle_pass=a.drizzle_pass,
+                 trim_threshold=a.trim_threshold, keep_work=a.keep_work)
 
 
 if __name__ == '__main__':
