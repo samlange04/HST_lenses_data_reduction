@@ -841,9 +841,12 @@ North-up. Vet after any no-CR rebuild: more stars can surface a close double / g
 (fixed J1451-0239 f814W double); high-count builds dilute a single bad star, low-count
 (≤~6, e.g. J0029 at 3) ones don't. The gate thresholds (`min_snr=30`, core ≥15× outskirt,
 flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3)
-generalised fine — no retune needed. **Not yet run for `slacs_other`** (reduced 2026-07-29, same three
-instruments so `run_psf_all.sh slacs_other` needs no code change) **or `gallery`** (needs
-WFC3/UVIS support in `make_psf.py`/`psf_models.py` first — see *BELLS GALLERY* below). Open
+generalised fine — no retune needed. **Run for `slacs_other` and `gallery` (2026-08-01),
+including the crowding cut / error-map / cutout-QC code below** — `run_psf_all.sh
+slacs_other`/`gallery --all` plus `run_cutouts_all.sh` for both: 33/33 + 25/25 PSF
+products ok (gallery excludes J1110+2808 F814W/F438W, see *BELLS GALLERY*), 33/33 cutouts
+each, 0 failures, no empirical/model method flips vs the pre-existing builds. Crowding cut
+caught one contaminant star each on gallery's J0201+3228 f606W and J0742+3341 f814W. Open
 items:
 - **PSF uncertainty — empirical, ACS focus-diverse, and WFPC2 MAST-DB tiers done; STDPSF
   still genuinely open (no natural ensemble).** The empirical ePSF ships a per-pixel **error
@@ -990,8 +993,10 @@ both F606W and F814W, so `align_wfpc2_to_acs.py` has only tied those three to ab
 astrometry — the other 21 F606W products carry their delivered GSC240 absolute WCS
 (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no per-lens `--align` audit for
 `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses); every `slacs_other` WFPC2
-lens falls back to the documented default, `mast`. No `lens_psf.json` entries yet — the PSF
-pipeline (`run_psf_all.sh`) has not been run for this sample.
+lens falls back to the documented default, `mast`. `run_psf_all.sh`/`make_psf.py` has been
+run for this sample (2026-08-01): 33/33 PSF products ok, `info/lens_psf.json` populated
+(24 `inject_wfpc2_psfdb` at F606W, 5 empirical + 4 `inject_stdpsf` across F814W/F160W) —
+see *PSF generation* above for the campaign details.
 
 `gallery` coverage (15 lenses, reduced 2026-07-29): **F606W** on all 15 (the primary band),
 **F814W**/**F438W** on 6, **F275W** on 5, **F225W** on 1 (J2342-0120). See *BELLS GALLERY:
@@ -1158,9 +1163,12 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
     locks onto noise or a field source, not the lens. Cut with `--center-band f814W`
     (default) so the stamp geometry is at least correct even though nothing but noise
     should be expected there.
-- **No PSF support yet.** `make_psf.py`/`psf_models.py` key off `ACS/WFC`, `WFC3/IR`, and
-  `WFPC2` — WFC3/UVIS isn't wired in, so gallery has no `psf_kernel.fits` /
-  `cutout_[cr_]psf.fits` products and no `info/lens_psf.json` entries.
+- **PSF support: WFC3/UVIS is wired in** (`make_psf.py`/`psf_models.py` key off `ACS/WFC`,
+  `WFC3/IR`, `WFPC2`, and `WFC3/UVIS`), and `run_psf_all.sh gallery` has been run (2026-08-01,
+  excluding J1110+2808's F814W/F438W per the next bullet): 25/25 products ok, 18 empirical +
+  7 `inject_stdpsf` (no exact-filter WFC3/UVIS STDPSF grid substitution issue — UVIS uses the
+  same ACS/WFC3 STDPSF machinery). See *PSF generation* above (F160W hybrid quality gate /
+  `uvis_scatter_gate_validated`) for the empirical/model split rationale.
 - **Per-lens caveat: J1110+2808 is usable only in F606W.** Its F814W/F438W frames run
   ~2× the exposure time of every other gallery lens with those bands (2360–2372s vs
   ~940–1425s elsewhere: 4 frames at 590–602s each vs 3 frames at ~350–475s), and F275W runs
@@ -1210,10 +1218,10 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
   'log' wing panel in each lens's `psf.png` — the wings are what QC here is about; passed to
   `make_mosaics.plot_mosaic` via its `norm_fn` hook, which still defaults to pooled asinh for
   the signal/noise mosaics). Each panel tagged `emp` (empirical ePSF) or `mod` (STDPSF /
-  focus-diverse / MAST PSF DB) from the `PSFMETH` keyword. Only `slacs_gold` has PSF
-  products today; `slacs_other`/`gallery` mosaics for the `_psf` panel type will appear
-  once `run_psf_all.sh` is run for those samples (no code change needed for `slacs_other`,
-  same three instruments; `gallery` needs WFC3/UVIS PSF support first).
+  focus-diverse / MAST PSF DB) from the `PSFMETH` keyword. All three samples have PSF
+  products and `_psf`-panel mosaics now; regenerate both mosaic scripts after any PSF
+  campaign (fast, read-only — a few seconds per sample) so the QC PNGs match the kernels
+  currently on disk.
 
 ## NICMOS is deprioritised
 
