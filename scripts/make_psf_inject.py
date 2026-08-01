@@ -438,13 +438,23 @@ def _is_model_tier(sample, lens, filt):
 
 def _promote(psf_dir, cutouts_dir, prefix):
     """Move the current canonical model-tier files aside to *_analytic (once -- a file
-    already carrying PSFINJ=True is itself a previously-promoted injected build, not the
-    analytic model, so it is left alone rather than clobbering the real analytic backup)."""
+    already carrying PSFINJ=True or PSFBROAD=True is itself a previously-promoted injected
+    or analytically-broadened build, not the sharp analytic model, so it is left alone
+    rather than clobbering the real analytic backup with a non-analytic file).
+
+    Also moves aside any analytic-tier PSF error map (psf_kernel_err.fits /
+    cutout_[cr_]psf_err.fits -- see make_psf.py's ACS focus-diverse / WFPC2 MAST-DB
+    ensembles) to *_analytic_err, rather than leaving it under the canonical name where it
+    would describe the just-superseded analytic kernel, not the injected one that replaces
+    it. The injected kernel has no uncertainty estimate of its own yet, so after promotion
+    there is deliberately no canonical psf_kernel_err.fits -- not a wrong one.
+    """
     canonical_kernel = os.path.join(psf_dir, 'psf_kernel.fits')
     analytic_kernel = os.path.join(psf_dir, 'psf_kernel_analytic.fits')
     if os.path.isfile(canonical_kernel):
-        already_injected = bool(fits.getheader(canonical_kernel).get('PSFINJ', False))
-        if not already_injected:
+        hdr = fits.getheader(canonical_kernel)
+        already_promoted = bool(hdr.get('PSFINJ', False)) or bool(hdr.get('PSFBROAD', False))
+        if not already_promoted:
             shutil.move(canonical_kernel, analytic_kernel)
             png = os.path.join(psf_dir, 'psf.png')
             if os.path.isfile(png):
@@ -452,6 +462,110 @@ def _promote(psf_dir, cutouts_dir, prefix):
             cut = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
             if os.path.isfile(cut):
                 shutil.move(cut, os.path.join(cutouts_dir, f'{prefix}_psf_analytic.fits'))
+            kernel_err = os.path.join(psf_dir, 'psf_kernel_err.fits')
+            if os.path.isfile(kernel_err):
+                shutil.move(kernel_err, os.path.join(psf_dir, 'psf_kernel_analytic_err.fits'))
+            cut_err = os.path.join(cutouts_dir, f'{prefix}_psf_err.fits')
+            if os.path.isfile(cut_err):
+                shutil.move(cut_err,
+                           os.path.join(cutouts_dir, f'{prefix}_psf_analytic_err.fits'))
+
+
+def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
+                                drizzle_pass, trim_threshold=1e-3):
+    """Cheap stand-in for a FAILED run_injection(): approximate AstroDrizzle's resampling
+    broadening analytically (psf_models.analytic_drop_broaden -- a pixfrac-wide box
+    convolution, sized from the science drizzle's own D001PIXF/D001ISCL/D001SCAL and the
+    number of contributing dithered frames) instead of the real re-drizzle injection. This
+    is make_psf.py's fallback when
+    make_psf_inject.run_injection() raises (e.g. data/drizzle_files/ was cleared): rather
+    than silently leaving the sharp, un-broadened analytic model canonical, promote the
+    analytically-broadened one -- an approximation, but strictly closer to the true
+    drizzled PSF than the un-broadened model, same logic as why the real injected kernel is
+    promoted when it succeeds. Idempotent like _promote(): a canonical file already carrying
+    PSFBROAD=True (from a previous call) is treated as already-promoted and re-broadened in
+    place from the untouched *_analytic backup, not re-derived from itself.
+
+    Distinguished from a real injected build by PSFINJ=False / PSFBROAD=True and a
+    'broadened_<method>' PSFMETH/info-json method, so nothing downstream mistakes it for
+    the rigorous re-drizzled kernel. Also prints a sanity-check FWHM comparison against the
+    un-broadened analytic model -- the real injected FWHM, on lenses where both exist, is
+    always the one to trust over this approximation.
+
+    Returns the record dict written to info/lens_psf.json (mirroring run_injection's
+    promoted-record shape, minus the injection-only fields), or raises if there is no
+    canonical kernel to broaden.
+    """
+    canonical_kernel = os.path.join(psf_dir, 'psf_kernel.fits')
+    if not os.path.isfile(canonical_kernel):
+        raise FileNotFoundError(f'{canonical_kernel} missing; nothing to broaden')
+    if fits.getheader(canonical_kernel).get('PSFINJ', False):
+        raise RuntimeError(f'{canonical_kernel} is already a real injected build; '
+                           'refusing to overwrite it with an analytic approximation')
+
+    pixfrac = float(sci_hdr['D001PIXF'])
+    native_scale = float(sci_hdr['D001ISCL'])
+    out_scale = float(sci_hdr['D001SCAL'])
+    # NDRIZIM is the drizzled IMAGE count, not exposure count: ACS/WFC and WFC3/UVIS FLCs
+    # are 2-chip MEFs (NDRIZIM = 2x exposures; see CLAUDE.md's tracking-JSON section), and
+    # both chips of one exposure share the same dither phase, so they must not be counted
+    # as two independent phase samples. WFC3/IR and WFPC2 (single chip) need no correction.
+    inst_key = make_psf.instrument_key(sci_hdr)
+    n_chips = 2 if inst_key in ('ACS/WFC', 'WFC3/UVIS') else 1
+    n_frames = max(1, int(sci_hdr.get('NDRIZIM', n_chips)) // n_chips)
+
+    _promote(psf_dir, cutouts_dir, prefix)   # moves the sharp analytic files aside (no-op
+                                              # if already broadened by a prior call)
+
+    analytic_kernel_path = os.path.join(psf_dir, 'psf_kernel_analytic.fits')
+    with fits.open(analytic_kernel_path) as hdul:
+        analytic_kernel = np.asarray(hdul[0].data, dtype=float)
+        analytic_hdr = hdul[0].header.copy()
+
+    broadened, box_width = psf_models.analytic_drop_broaden(
+        analytic_kernel, pixfrac, native_scale, out_scale, n_frames=n_frames)
+    broadened, pedestal_frac = make_psf.subtract_pedestal(broadened)
+    fwhm_before = make_psf.measure_fwhm(analytic_kernel)
+    fwhm_after = make_psf.measure_fwhm(broadened)
+    print(f'  analytic drizzle-broadening fallback: box {box_width:.2f} output-px '
+         f'(pixfrac={pixfrac:g}, native={native_scale:.4f}"/px, out={out_scale:.4f}"/px, '
+         f'{n_frames} frames)')
+    if fwhm_before is not None and fwhm_after is not None:
+        print(f'  sanity check: FWHM {fwhm_before:.2f} -> {fwhm_after:.2f} px '
+             f'(analytic model -> analytically broadened; trust a real injected FWHM '
+             f'over this where one exists)')
+
+    trimmed, trim_size = make_psf.trim_kernel_to_amplitude(broadened, trim_threshold)
+
+    khdr = analytic_hdr
+    khdr['PSFMETH'] = (f'broadened_{method}', 'analytic drop-box broadened model PSF')
+    khdr['PSFINJ'] = (False, 'NOT built by artificial-star injection + re-drizzle')
+    khdr['PSFBROAD'] = (True, 'cheap analytic pixfrac drop-box broadening (fallback)')
+    khdr['PSFBOXPX'] = (round(box_width, 4), 'drop-box width applied, output pixels')
+    khdr['PSFPED'] = (round(pedestal_frac, 6), 'pedestal removed after broadening (frac of peak)')
+    make_psf.write_fits(broadened, khdr, canonical_kernel)
+
+    raw_norm = analytic_kernel / analytic_kernel.max() if analytic_kernel.max() > 0 else analytic_kernel
+    make_psf.plot_psf(broadened, None, [raw_norm], out_scale, fwhm_after,
+                      os.path.join(psf_dir, 'psf.png'),
+                      title=f'{khdr.get("PSFLENS", "")}  {khdr.get("PSFFILT", "")}  '
+                            f'[broadened_{method}]  (analytic fallback)')
+
+    thdr = khdr.copy()
+    thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
+    thdr['PSFTRIM'] = (trim_threshold, 'azimuthal PSF < this x peak sets the radius')
+    thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
+    make_psf.write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
+
+    return {
+        'method': f'broadened_{method}',
+        'fwhm_pix': round(fwhm_after, 4) if fwhm_after is not None else None,
+        'kernel_size': int(broadened.shape[0]),
+        'cutout_kernel_size': int(trim_size),
+        'trim_threshold': trim_threshold,
+        'pedestal_frac': round(pedestal_frac, 6),
+        'box_width_px': round(box_width, 4),
+    }
 
 
 # ── Callable entry point (also used by make_psf.py to auto-chain model-tier builds) ─

@@ -102,7 +102,7 @@
                 "cutout_kernel_size": 29,
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001311,
-                "wing_scatter": 0.001341,
+                "wing_scatter": 0.001343,
                 "n_frames": 4
             }
         },
@@ -143,12 +143,12 @@
         "J0330-0020": {
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.6602,
+                "fwhm_pix": 4.6599,
                 "kernel_size": 35,
                 "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.001002,
-                "wing_scatter": 0.000861,
+                "pedestal_frac": 0.001,
+                "wing_scatter": 0.000848,
                 "n_frames": 4
             }
         },

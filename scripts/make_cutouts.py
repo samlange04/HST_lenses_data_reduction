@@ -33,7 +33,7 @@ from astropy.nddata.utils import NoOverlapError
 from astropy.wcs import WCS
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 from astropy.wcs.utils import proj_plane_pixel_scales
-from scipy.ndimage import median_filter
+from scipy.ndimage import convolve as ndi_convolve, median_filter
 import astropy.units as u
 
 ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
@@ -42,6 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
 from gallery_coords import gallery_coords
 import mast_target_names
+import info_json
 
 # Catalogue positions live in different tables by sample (SLACS lenses in
 # slacs_coords.py, BELLS GALLERY in gallery_coords.py). Both are keyed on the J-name and
@@ -126,6 +127,30 @@ def weight_to_sigma_scale(sci_hdr):
                      f'EXPTIME={dexp[0]:.3f}s')
 
 
+def fold_psf_error_into_noise(noise_map, sci_data, psf_err_kernel):
+    """Fold a per-pixel PSF error map into the pixel-noise map as an effective noise map.
+
+    PyAutoLens has no slot for a PSF error map -- it treats the PSF as a fixed unit-sum
+    Kernel2D -- so, exactly as --corr-factor folds drizzle covariance into the noise map, we
+    propagate PSF uncertainty by inflating the noise. The model image is m = s (x) K (source
+    scene s convolved with the kernel K); with independent per-kernel-pixel errors sigma_K the
+    induced variance is Var_psf(ij) = sum_kl s(i-k,j-l)^2 . sigma_K(k,l)^2. We use the observed
+    cutout as a conservative proxy for the pre-convolution scene s (it slightly overestimates
+    at the bright convolved core -- the same conservative spirit as --corr-factor), so
+    Var_psf = convolve(I^2, sigma_K^2). The effective sigma is sqrt(sigma_pix^2 + Var_psf).
+
+    This is a static, diagonal approximation: like --corr-factor, leave it off if the PSF
+    covariance is handled at the modelling stage. The zero-weight 1e8 sentinel is preserved.
+    """
+    var_pix = np.asarray(noise_map, dtype=np.float64) ** 2
+    var_psf = ndi_convolve(np.asarray(sci_data, dtype=np.float64) ** 2,
+                           np.asarray(psf_err_kernel, dtype=np.float64) ** 2,
+                           mode='constant', cval=0.0)
+    eff = np.sqrt(var_pix + var_psf)
+    eff[np.asarray(noise_map) >= 1.0e8] = 1.0e8      # keep excluded pixels excluded
+    return eff
+
+
 def noise_map_via_weight_map_from(weight_map, scale=1.0):
     """
     Setup the noise-map from a weight map, which is a form of noise-map that comes via HST
@@ -153,6 +178,52 @@ def noise_map_via_weight_map_from(weight_map, scale=1.0):
     noise_map = scale / weight_map ** 0.5
     noise_map[noise_map > 1.0e8] = 1.0e8
     return noise_map
+
+
+WEIGHT_UNIFORMITY_LIMIT = 0.2
+
+
+def weight_uniformity(wht):
+    """STScI rule-of-thumb diagnostic: RMS/median of the positive weight-map pixels over
+    a region. Values above ~0.2 mean the pixfrac is too small for the dither pattern
+    (coverage speckle/holes) -- run on the cutout region (not the full mosaic, which mixes
+    coverage tiers across the whole union footprint and would give a misleading verdict for
+    the science region actually being modelled). Returns None if the region has no positive
+    weight pixels (nothing to judge).
+    """
+    good = np.asarray(wht, dtype=np.float64)
+    good = good[np.isfinite(good) & (good > 0.0)]
+    if good.size == 0:
+        return None
+    return float(good.std() / np.median(good))
+
+
+def casertano_r(pixfrac, scale_ratio):
+    """Analytic correlated-noise correction factor R = 1/r (Casertano et al. 2000 /
+    DrizzlePac handbook), from the drop size `pixfrac` (p, native input pixels) and the
+    output-to-native pixel `scale_ratio` (s) alone.
+
+    This is a closed-form CROSS-CHECK against the empirically-measured correlation factors
+    in CLAUDE.md's *Drizzle correlated noise* section (~1.24 ACS F814W, ~1.17 F160W, ~1.5-1.6
+    gallery UVIS -- each from a blank-sky block-sum test on a handful of lenses, not derived
+    from pixfrac/scale). It is reported alongside --corr-factor for comparison, not used to
+    set it automatically: r is the *variance*-reduction factor of a single, idealised drizzle
+    drop and does not capture the geometric-distortion or dither-pattern effects the empirical
+    measurements do (e.g. it does not explain why UVIS runs higher than native-scale ACS
+    despite both being at native scale). Smaller p reduces correlation (R -> 1 in the
+    interlacing limit); p=1 at s=1 is shift-and-add (R=1.5). Returns None for an out-of-range
+    input rather than raising, since it's an informational cross-check, not a hard gate.
+    """
+    if not (0.0 < pixfrac <= 1.0) or scale_ratio <= 0.0:
+        return None
+    p, s = pixfrac, scale_ratio
+    if s < p:
+        # Finer output grid than the drop: correlation grows without bound as s -> 0
+        # (r -> 0, R -> inf); continuous with the s >= p branch at s = p (r = 2/3).
+        r = (s / p) * (1.0 - s / (3.0 * p))
+    else:
+        r = 1.0 - p / (3.0 * s)
+    return 1.0 / r
 
 
 def find_products(drizzled_dir, drizzle_pass='nocrrej'):
@@ -343,6 +414,13 @@ def main():
                         '(WFC3/IR F160W), measured by a blank-sky block-sum test. Set '
                         'this per band to correct that; leave at 1.0 if the covariance '
                         'is handled at the modelling stage instead.')
+    p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
+                   help='fold the empirical PSF error map (cutout_[cr_]psf_err.fits, built by '
+                        'make_psf.py) into the noise map as an effective noise map: '
+                        'sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)). Off by default '
+                        '(like --corr-factor); use it to propagate PSF uncertainty into a '
+                        'diagonal-covariance likelihood such as PyAutoLens, which has no '
+                        'native PSF-error input. No-op with a warning if no error map exists.')
     p.add_argument('--output', default=None,
                    help='output dir, default data/cutouts/<sample>/<lens>/<filt>')
     a = p.parse_args()
@@ -450,6 +528,57 @@ def main():
     noise_hdr['NOISEK'] = (units_k, 'ERR-units scale applied to 1/sqrt(WHT)')
     noise_hdr['NOISECOR'] = (a.corr_factor, 'drizzle correlated-noise inflation applied')
 
+    # Weight-map uniformity (STScI RMS/median rule) over the cutout region -- flags a
+    # pixfrac too small for the dither pattern (coverage speckle/holes) for this specific
+    # science stamp, not the whole mosaic. Informational: does not change any output.
+    wu = weight_uniformity(wht_cutout.data)
+    if wu is not None:
+        verdict = 'OK' if wu <= WEIGHT_UNIFORMITY_LIMIT else 'HIGH (coverage speckle/holes)'
+        print(f"  weight-map uniformity (cutout, RMS/median): {wu:.4f} "
+              f"(limit {WEIGHT_UNIFORMITY_LIMIT:g}) -> {verdict}")
+        noise_hdr['WHTUNIF'] = (round(wu, 6), 'weight-map RMS/median over the cutout')
+        noise_hdr['WHTUNIFL'] = (WEIGHT_UNIFORMITY_LIMIT, 'STScI uniformity limit (<=)')
+    else:
+        print("  weight-map uniformity: no positive pixels in the cutout weight map")
+
+    # Analytic Casertano R cross-check against --corr-factor, from the pixfrac/scale ratio
+    # AstroDrizzle itself stamped into the science header -- see casertano_r()'s docstring
+    # for why this is a cross-check, not a source of truth for --corr-factor.
+    pixfrac = sci_hdr.get('D001PIXF')
+    iscl, oscl = sci_hdr.get('D001ISCL'), sci_hdr.get('D001SCAL')
+    r_analytic = scale_ratio = None
+    if pixfrac is not None and iscl and oscl:
+        scale_ratio = float(oscl) / float(iscl)
+        r_analytic = casertano_r(float(pixfrac), scale_ratio)
+    if r_analytic is not None:
+        print(f"  Casertano R (analytic, pixfrac={float(pixfrac):g}, "
+              f"scale_ratio={scale_ratio:.3f}): {r_analytic:.3f}"
+              + (f"  [--corr-factor is {a.corr_factor:g}]" if a.corr_factor != 1.0 else
+                 "  (--corr-factor not set; empirical values are in CLAUDE.md)"))
+        noise_hdr['CASR'] = (round(r_analytic, 4), 'analytic Casertano correlated-noise R')
+    else:
+        print("  Casertano R: not available (D001PIXF/D001ISCL/D001SCAL missing from header)")
+
+    # Optionally propagate PSF uncertainty into an effective noise map (opt-in, like
+    # --corr-factor). PyAutoLens has no PSF-error input, so fold the PSF error map built by
+    # make_psf.py into the noise: sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)).
+    if a.psf_err:
+        psf_err_path = os.path.join(output_dir, f'{prefix}_psf_err.fits')
+        if os.path.exists(psf_err_path):
+            with fits.open(psf_err_path) as hdul:
+                psf_err_kernel = np.asarray(hdul[0].data, dtype=np.float64)
+                psf_err_frac = hdul[0].header.get('PSFEFRAC')
+            noise_data = fold_psf_error_into_noise(noise_data, sci_cutout.data,
+                                                   psf_err_kernel)
+            noise_hdr['PSFERRAP'] = (True, 'PSF error map folded into the noise map')
+            if psf_err_frac is not None:
+                noise_hdr['PSFEFRAC'] = (psf_err_frac, 'integrated PSF error fraction folded in')
+            print(f"  PSF error folded into noise map "
+                  f"({os.path.basename(psf_err_path)}, PSFEFRAC={psf_err_frac})")
+        else:
+            print(f"  WARNING: --psf-err set but {os.path.basename(psf_err_path)} not found; "
+                  f"noise map left as pixel-noise only (run make_psf.py first)")
+
     write_cutout(sci_cutout.data, sci_cutout.wcs, sci_hdr,
                  os.path.join(output_dir, f'{prefix}_sci.fits'))
     write_cutout(noise_data, wht_cutout.wcs, noise_hdr,
@@ -459,6 +588,25 @@ def main():
                  os.path.join(output_dir, f'{prefix}.png'),
                  title=f"{a.lens}  {a.filt}  [{drizzle_pass}]  ({a.size:g}\" cutout, "
                        f"recentred {offset:.2f}\" from catalogue)")
+
+    # Structured provenance: the decisions and diagnostics that shaped this cutout, not
+    # just the raw sci/noise arrays -- so a later audit doesn't have to re-derive them from
+    # the console log. Keyed like every other tracking JSON (info_json.update), one entry
+    # per (sample, lens, filt) product directory.
+    info_json.update(os.path.join(ws_path, 'info', 'lens_cutout_qc.json'), a.sample, a.lens,
+                     a.filt, {
+        'drizzle_pass': drizzle_pass,
+        'center_source': peak_src,
+        'offset_arcsec': round(offset, 4),
+        'noise_k': units_k,
+        'corr_factor': a.corr_factor,
+        'weight_uniformity': round(wu, 6) if wu is not None else None,
+        'weight_uniformity_limit': WEIGHT_UNIFORMITY_LIMIT,
+        'weight_uniformity_ok': (wu is not None and wu <= WEIGHT_UNIFORMITY_LIMIT),
+        'pixfrac': float(pixfrac) if pixfrac is not None else None,
+        'scale_ratio': round(scale_ratio, 6) if scale_ratio is not None else None,
+        'casertano_r_analytic': round(r_analytic, 4) if r_analytic is not None else None,
+    })
 
 
 if __name__ == '__main__':

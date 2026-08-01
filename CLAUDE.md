@@ -486,6 +486,23 @@ noise FITS (from the weight map), and a 3-panel PNG.
   onto noise or an unrelated field source, not the lens. These bands are in fact unusable
   for lens science sample-wide (confirmed, not just hard to centre) — see *BELLS GALLERY*
   below.
+- **QC diagnostics + provenance (`info/lens_cutout_qc.json`, 2026-07-31).** Every run
+  computes and prints two diagnostics (ported from a comparison against the sibling
+  `PyAutoReduce` framework), purely informational — neither changes any output:
+  - **Weight-map uniformity** (`weight_uniformity()`): the STScI RMS/median rule-of-thumb
+    on the **cutout's** own weight-map region (not the full mosaic, which mixes coverage
+    tiers across the whole union footprint). `<=0.2` is the accepted threshold; stamped as
+    `WHTUNIF`/`WHTUNIFL` in `cutout_[cr_]noise.fits`'s header.
+  - **Analytic Casertano R** (`casertano_r(pixfrac, scale_ratio)`): a closed-form
+    correlated-noise factor from `D001PIXF`/`D001ISCL`/`D001SCAL` alone (verified against
+    the textbook values: R=1.5 at p=1,s=1; 1.364 at p=0.8,s=1; 1.25 at p=0.6,s=1), reported
+    as a **cross-check** next to `--corr-factor`, not a source of truth for it — it doesn't
+    capture geometric distortion or real dither-pattern effects, so it can (and does, e.g.
+    ACS: analytic 1.5 vs the empirically-measured 1.24 in *Drizzle correlated noise* above)
+    disagree with the measured factor. Stamped as `CASR`.
+  - Both diagnostics, plus the recentring offset, drizzle pass, and centring source, are
+    recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` — structured provenance
+    for what shaped a given cutout, not just the sci/noise arrays themselves.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -510,6 +527,13 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
 - **`data/cutouts/<sample>/<lens>/<filt>/`** (modelling-ready): **`cutout_[cr_]psf.fits`** —
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
   radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
+
+For **empirical** builds, `make_psf.py` also writes a per-pixel **PSF error map** alongside
+each kernel — `psf_kernel_err.fits` (full) and `cutout_[cr_]psf_err.fits` (trimmed, same grid
+as the kernel) — from a bootstrap/jackknife over the star sample. See the *PSF uncertainty*
+open-item bullet below for the method, JSON scalars, and the `make_cutouts.py --psf-err`
+effective-noise folding that propagates it into a fit. Model-tier builds do not (yet) carry
+one.
 
 For a **model-tier** build, `make_psf.py` immediately auto-chains
 `make_psf_inject.run_injection(..., promote=True)` (see *Drizzle-broadened model PSF by
@@ -552,6 +576,15 @@ NaN rectangles and manual star deletion.
   too many pixels per star and comes out noisy. Raise per lens only where a field is star-rich.
 - **Flux floor.** EPSFBuilder normalises each star by its flux, so a faint star amplifies its
   background noise into the ePSF wings; drop stars fainter than 5% of the brightest kept.
+- **Crowding: DAOStarFinder's own `min_separation` is not enough** (`crowd_sep_frac`,
+  `make_psf.reject_crowded`, 2026-07-31). `min_separation` (~25px for ACS/WFPC2) only stops
+  DAOStarFinder double-detecting one blended peak; it's smaller than the `extract_stars()`
+  stamp width (`star_size`, 51px for ACS), so two accepted detections can still be close
+  enough for their stamps to overlap and mix a neighbour's flux into the ePSF wings. A
+  greedy-by-flux cut (brightest of any pair within `crowd_sep_frac x star_size`, default
+  `crowd_sep_frac=1.0` — stamps never overlap) runs after the flux floor. QA'd as
+  `n_crowded_rejected` (console + `info/lens_psf.json`); intended to reduce, not replace,
+  `info/psf_stars.json` manual exclusions on genuinely crowded fields.
 
 **ACS/WFC model = focus-diverse ePSF, not STDPSF.** When an ACS/WFC field is too star-poor
 for an empirical build (or `--method model`), `psf_models.acs_focus_diverse_psf` retrieves
@@ -695,9 +728,22 @@ auto-chain runs inside `make_psf.py`); `bash scripts/run_psf_inject_all.sh` (mod
 by default, matching `model...` or `inject...` methods; `--all` also runs empirical products
 for validation) is for re-promoting after an injection-only code change, or building the rare
 lens whose injected product doesn't exist yet, without re-running the analytic model build.
-A failed injection (e.g. `data/drizzle_files/` was cleared) is a graceful degradation inside
-`make_psf.py`: a warning prints and the analytic model stays canonical, same failure mode as
-any other model-tier fallback in this pipeline.
+A failed injection (e.g. `data/drizzle_files/` was cleared) degrades inside `make_psf.py` to
+the **cheap analytic drizzle-broadening fallback** (`make_psf_inject.analytic_broadened_fallback`
+/ `psf_models.analytic_drop_broaden`, 2026-07-31): rather than silently leaving the sharp,
+un-broadened analytic model canonical, it convolves that already-North-up analytic kernel
+with a box the drizzle drop projects onto the output grid — `pixfrac * native_scale /
+out_scale`, further scaled by `1/sqrt(n_frames)` since dithered exposures at different
+sub-pixel phases average down a single-frame box's blur (the same "well-dithered" limit
+`casertano_r` assumes; `n_frames` from the drizzle header's `NDRIZIM`, halved for 2-chip
+ACS/WFC3-UVIS MEFs) — and promotes *that* as canonical instead, same promotion logic as a
+real injected build (analytic model moved aside to `*_analytic`). Calibrated against
+J0008-0004 F606W, where a real injected build exists to check against: the naive n=1 box
+overshoots (4.35→4.67px vs the true re-drizzled 4.42px), the dither-corrected box (n=4)
+lands at 4.43px. Distinguished from a real injected build by `PSFINJ=False`/`PSFBROAD=True`
+and method `broadened_<...>` — never silently mistaken for the rigorous re-drizzled kernel,
+and only used at all when injection itself fails; if the fallback also fails, the analytic
+model stays canonical as before.
 
 Promoted 2026-07-30 for all 34 model-tier products then on disk (33 by renaming the
 already-built injected files, no re-drizzle needed; 1 — J1032+5322 F160W, which had no
@@ -799,9 +845,56 @@ generalised fine — no retune needed. **Not yet run for `slacs_other`** (reduce
 instruments so `run_psf_all.sh slacs_other` needs no code change) **or `gallery`** (needs
 WFC3/UVIS support in `make_psf.py`/`psf_models.py` first — see *BELLS GALLERY* below). Open
 items:
-- **No PSF uncertainty is propagated.** The kernel is a point estimate; an ePSF built from
-  as few as 3–5 stars has no accompanying error/covariance for downstream lens modelling.
-  Genuinely new work — not addressed by having more lenses.
+- **PSF uncertainty — empirical, ACS focus-diverse, and WFPC2 MAST-DB tiers done; STDPSF
+  still genuinely open (no natural ensemble).** The empirical ePSF ships a per-pixel **error
+  map** (`make_psf.py`, 2026-07-31): the star sample is resampled and the ePSF rebuilt —
+  bootstrap-with-replacement (`--n-boot`, default 100), or leave-one-out jackknife when
+  `< JACKKNIFE_MAX_STARS`=6 stars (bootstrap draws degenerate at tiny N) — and the per-pixel
+  std of the (unit-sum, co-registered) ensemble is the error map. Written as parallel
+  single-HDU files, *not* an ERR extension (keeps every `[0]`/`al.Kernel2D` reader intact):
+  `data/psf/.../psf_kernel_err.fits` (full) and `data/cutouts/.../cutout_[cr_]psf_err.fits`
+  (trimmed, cropped to the primary kernel's own trim window so it matches `cutout_[cr_]psf.fits`
+  pixel-for-pixel). `info/lens_psf.json` empirical entries gain `err_method`, `err_source`
+  (`stars`/`exposures`/`db_stars`), `n_boot_valid`, `psf_err_frac` (integrated `sqrt(Σ err²)`)
+  and `fwhm_pix_err`. **The scalar tracks star count as intended** — J0008 f814W (11 stars)
+  `psf_err_frac`≈0.013, J0029 f814W (3 stars)≈0.103, ~8× larger, so a star-poor build is now
+  quantifiably down-weightable. `--no-psf-err` (or `psf_stars.json` `"psf_err": false`) skips
+  it for any tier; the point-estimate kernel is untouched either way; `< 2` valid members
+  degrades gracefully (no map, null scalars).
+  - **Model tier (2026-07-31): ACS focus-diverse and WFPC2 MAST-DB now have error maps too,
+    each from its own natural ensemble, not a contrived one.** `psf_models.acs_focus_diverse_psf`
+    / `wfpc2_f606w_db_epsf` take `return_ensemble=False` (default, unchanged return — safe
+    for any caller that doesn't ask for it) and, when `True`, additionally return
+    `(ensemble, method)` in the *exact* convention `make_psf.psf_error_map`/`_fwhm_spread`
+    already expect (they're generic over any oversampled-kernel ensemble, not
+    empirical-specific — no duplicate statistics code). **ACS**: the per-exposure North-up
+    kernels already computed before averaging (one per contributing exposure) are reduced via
+    `psf_models._reduce_ensemble` — leave-one-exposure-out jackknife (almost always, since
+    SLACS ACS visits run 2–8 exposures, under the same `_JACKKNIFE_MAX_STARS`=6 threshold) or
+    bootstrap if ever ≥6. **WFPC2**: bootstrap-with-replacement (n=100) over the ~147 shared
+    archival DB stars — a genuinely new, one-time-built ensemble (`psf_models.
+    _wfpc2_f606w_db_ensemble`, cached as a 3D FITS cube, `data/reference_files/
+    wfpc2_f606w_psfdb/wf3_f606w_epsf_ensemble.fits`, ~12 min to build via ~100 EPSFBuilder
+    reruns at ~7s each), shared and re-resampled/rotated per lens exactly like the point
+    estimate. Verified: `J1213+6708 f814W` (ACS, 4 exposures, jackknife) `psf_err_frac`
+    3.83e-04; all 23 WFPC2 F606W lenses cluster tightly at 0.0555–0.0593 (expected — same
+    shared ensemble, only the per-lens North-up rotation differs).
+  - **These write to `psf_kernel_analytic_err.fits` / `cutout_[cr_]psf_analytic_err.fits`,
+    not the canonical `_err` names** — because a model-tier build immediately auto-chains the
+    injection promotion (see *Drizzle-broadened model PSF by injection* below), which replaces
+    the canonical kernel with the drizzle-broadened injected one. `make_psf_inject._promote`
+    now moves the analytic error files aside alongside the analytic kernel/PNG/cutout it
+    already moved, so a stale `_err` file never sits under the canonical name describing a
+    kernel it doesn't match. **There is deliberately no canonical error map for the injected
+    kernel** — the injection process has no propagated-uncertainty story of its own yet; that
+    is a real gap, not a wrong-but-present one. Rolled out sample-wide via `run_psf_all.sh
+    slacs_gold --models-only` (2026-07-31): 24/34 model-tier products got an error map (1
+    `inject_acs_fdpsf` + 23 `inject_wfpc2_psfdb`); the other 10 are STDPSF, correctly `null`.
+  - **STDPSF still carries no uncertainty** — a single static detector-frame grid with no
+    per-lens ensemble to resample (no per-exposure retrieval, no per-star archive). Unlike
+    the other two, this isn't a queued follow-up with an obvious method; it would need either
+    a focus-perturbation grid STScI doesn't publish per-filter, or some other proxy. → memory:
+    psf_uncertainty_empirical
 - **Model-PSF rotation uses cubic resampling** (`_resample_centered`, order 3, was order
   1/bilinear — bilinear softened the model kernel slightly, e.g. F606W DB FWHM 0.212″→0.221″).
   Code and the regenerated model-tier products (`model`, `model_acs_fdpsf`,

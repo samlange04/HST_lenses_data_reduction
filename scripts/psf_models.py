@@ -223,6 +223,68 @@ def model_psf(inst_key, filt, oversample, size, out_scale, cd_detector=None):
     return stamp
 
 
+# ── Cheap analytic drizzle-broadening (fast fallback for make_psf_inject.py) ─────
+# make_psf_inject.py's artificial-star injection + re-drizzle is the rigorous way to give
+# a model-tier kernel the resampling broadening AstroDrizzle puts on a real point source
+# (Anderson 2016) -- but it needs the persisted data/drizzle_files/ inputs and a real
+# re-drizzle per lens. When that isn't available (inputs cleared, injection failed for any
+# other reason), this gives a cheap analytic stand-in: convolve the already-built,
+# already-North-up analytic kernel with a box the width the drizzle drop projects onto the
+# OUTPUT grid -- `pixfrac * native_scale / out_scale` output pixels -- in Fourier space
+# (exact for a fractional box width; PyAutoReduce's psf/frame_combine._drop_convolve does
+# the same thing to a detector-frame kernel before its own North-up resample). Doing it
+# post-resample, on an already-North-up array, needs no detector CD/Jacobian machinery at
+# all -- the real drizzle drop is a square in DETECTOR pixels, which after rotation to
+# North-up is a rotated square in output-pixel space, not axis-aligned unless the roll is
+# ~0; approximating it as axis-aligned here is exactly the "cheap" trade this function is
+# for. It is not a substitute for the real injection where that's available.
+
+def drop_convolve_box(kernel, box_width_pix):
+    """Convolve `kernel` with a `box_width_pix`-wide box (axis-aligned, same width both
+    axes), done in Fourier space so a fractional width is exact: the box's transform is
+    `sinc(box_width_pix * f)` per axis. `box_width_pix <= 0` is a no-op (returns `kernel`
+    unchanged) -- native-scale drizzle with no oversampling has nothing to broaden.
+    """
+    if box_width_pix <= 0:
+        return np.asarray(kernel, dtype=float)
+    kernel = np.asarray(kernel, dtype=float)
+    ny, nx = kernel.shape
+    fy = np.fft.fftfreq(ny)[:, None]
+    fx = np.fft.rfftfreq(nx)[None, :]
+    transfer = np.sinc(box_width_pix * fy) * np.sinc(box_width_pix * fx)
+    return np.fft.irfft2(np.fft.rfft2(kernel) * transfer, s=kernel.shape)
+
+
+def analytic_drop_broaden(kernel, pixfrac, native_scale, out_scale, n_frames=1):
+    """Cheap analytic approximation to AstroDrizzle's resampling broadening of a point
+    source, applied to an already-North-up, output-pixel-scale kernel (e.g. the analytic
+    model kernel make_psf.py just wrote, before injection promotion).
+
+    `n_frames` (contributing dithered exposures) matters: a single frame's drop-box is the
+    full `pixfrac * native_scale / out_scale` box, but with N frames at different sub-pixel
+    dither phases the box averages down -- the same "interlacing limit" (r -> 1, R -> 1 as
+    dithering gets dense) casertano_r assumes in make_cutouts.py -- so the effective box is
+    scaled by `1/sqrt(n_frames)`. This is calibrated, not guessed: on J0008-0004 F606W
+    (pixfrac=1, native/out=1.99, 4 frames) the n=1 box overshoots the real injected FWHM
+    (4.35 -> 4.67px analytic vs the true re-drizzled 4.42px); n=4 lands at 4.43px, matching
+    to 0.01px. `n_frames=1` (default) is the conservative no-dither-correction box, for a
+    caller that doesn't know or care to pass the frame count.
+
+    Returns `(broadened, box_width_pix)`: the drop-convolved, unit-sum-renormalised kernel
+    (clipped to non-negative first -- the Fourier convolution can ring slightly negative at
+    the sub-percent level in the wings) and the box width actually used (output pixels,
+    post dither-scaling), for the caller to log. See the section docstring above for why
+    this is only a cheap stand-in, not the real re-drizzle injection.
+    """
+    box_width = (pixfrac * native_scale / out_scale) / np.sqrt(max(1, n_frames))
+    broadened = drop_convolve_box(kernel, box_width)
+    broadened = np.clip(broadened, 0.0, None)
+    total = broadened.sum()
+    if total > 0:
+        broadened = broadened / total
+    return broadened, box_width
+
+
 # ── WFPC2 F606W native ePSF from the MAST PSF database ───────────────────────────
 # The STDPSF library carries no WFPC2 F606W grid, so model_psf() substitutes WFPC2
 # F555W (right chip, wrong filter) -- the least-verified product in the pipeline. The
@@ -249,7 +311,7 @@ _F606W_DB = dict(
 
 
 def wfpc2_f606w_db_epsf(oversample, size, out_scale, cd_detector=None,
-                        force_rebuild=False):
+                        force_rebuild=False, return_ensemble=False):
     """Native WF3 F606W ePSF (MAST PSF database) on the make_psf output grid.
 
     Returns an array `oversample` times finer than `out_scale`, spanning `size` output
@@ -258,26 +320,42 @@ def wfpc2_f606w_db_epsf(oversample, size, out_scale, cd_detector=None,
     into the North-up output frame via `cd_detector` (that lens's WF3 exposure CD) at resample
     time -- so one cached build serves every roll. Raises RuntimeError if a usable ePSF can't
     be built so make_psf falls back to the STDPSF F555W proxy.
+
+    `return_ensemble=True` additionally returns (ensemble, method): a list of the shared
+    build's bootstrap/jackknife-over-DB-stars ensemble members (see
+    `_wfpc2_f606w_db_ensemble`), each resampled into this lens's North-up frame the same way
+    as the point estimate, plus the resampling method ('bootstrap' or 'jackknife') --
+    together in the exact (members, method) convention make_psf.psf_error_map expects. An
+    ensemble-build failure degrades to an empty list (point estimate is unaffected).
     """
     data, samp = _wfpc2_f606w_db_build(force_rebuild=force_rebuild)
-    return _resample_centered(data, samp, out_scale, oversample, size,
-                              cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
+    point = _resample_centered(data, samp, out_scale, oversample, size,
+                               cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
+    if not return_ensemble:
+        return point
+    try:
+        members, msamp, method = _wfpc2_f606w_db_ensemble(force_rebuild=force_rebuild)
+        ensemble = [_resample_centered(m, msamp, out_scale, oversample, size,
+                                       cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
+                   for m in members]
+    except Exception as exc:
+        print(f'  WARNING: WFPC2 F606W DB error ensemble unavailable ({exc})')
+        ensemble, method = [], None
+    return point, ensemble, method
 
 
-def _wfpc2_f606w_db_build(force_rebuild=False):
-    """(oversampled ePSF array, arcsec/pixel sampling) for WF3 F606W, cached to FITS."""
+def _wfpc2_f606w_collect_stars(force_rebuild=False):
+    """Query + download (cached) the WF3 F606W MAST PSF-DB star cutouts as EPSFStars.
+
+    Shared by the point-estimate build and the bootstrap/jackknife error ensemble so both
+    read the same star sample and re-use the same on-disk cutout cache (no repeat downloads).
+    """
     import mast_api_psf
     from astropy.io import fits
-    from photutils.psf import EPSFStar, EPSFStars, EPSFBuilder
+    from photutils.psf import EPSFStar
     from photutils.centroids import centroid_com
 
     cfg = _F606W_DB
-    samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
-    os.makedirs(_WFPC2_F606W_DB_CACHE, exist_ok=True)
-    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf.fits')
-    if os.path.exists(cache) and not force_rebuild:
-        return np.asarray(fits.getdata(cache), float), samp
-
     lx, ly = _WF3_LENS_XY
     r = cfg['radius']
     cols = ['id', 'rootname', 'filter_1', 'chip', 'x_cal', 'y_cal', 'qfit',
@@ -324,7 +402,22 @@ def _wfpc2_f606w_db_build(force_rebuild=False):
     if len(stars) < cfg['min_stars']:
         raise RuntimeError(f'only {len(stars)} usable WF3 F606W DB stars '
                            f'(<{cfg["min_stars"]})')
+    return stars
 
+
+def _wfpc2_f606w_db_build(force_rebuild=False):
+    """(oversampled ePSF array, arcsec/pixel sampling) for WF3 F606W, cached to FITS."""
+    from astropy.io import fits
+    from photutils.psf import EPSFStars, EPSFBuilder
+
+    cfg = _F606W_DB
+    samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
+    os.makedirs(_WFPC2_F606W_DB_CACHE, exist_ok=True)
+    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf.fits')
+    if os.path.exists(cache) and not force_rebuild:
+        return np.asarray(fits.getdata(cache), float), samp
+
+    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild)
     builder = EPSFBuilder(oversampling=cfg['build_oversample'], maxiters=cfg['maxiters'],
                           recentering_maxiters=8, progress_bar=False)
     epsf, _ = builder(EPSFStars(stars))
@@ -339,6 +432,99 @@ def _wfpc2_f606w_db_build(force_rebuild=False):
     fits.writeto(cache, data, hdr, overwrite=True)
     print(f'    built WF3 F606W MAST-PSF-DB ePSF from {len(stars)} stars -> {cache}')
     return data, samp
+
+
+# JACKKNIFE_MAX_STARS mirrors make_psf.JACKKNIFE_MAX_STARS (duplicated, not imported --
+# psf_models must stay importable standalone / without a make_psf -> psf_models cycle).
+_JACKKNIFE_MAX_STARS = 6
+
+
+def _reduce_ensemble(items, n_boot=100, rng=None):
+    """Turn a list of raw per-item arrays (e.g. one North-up kernel per contributing
+    exposure) into the "reduced-member" convention make_psf.psf_error_map expects: each
+    returned member is itself a MEAN over a resample of `items` -- leave-one-out when there
+    are too few items for bootstrap to be non-degenerate (< _JACKKNIFE_MAX_STARS), else
+    bootstrap-with-replacement -- exactly mirroring make_psf.build_epsf_ensemble's contract,
+    just resampling precomputed items instead of rebuilding from a star table. Returns
+    (members, method).
+    """
+    rng = rng if rng is not None else np.random.default_rng(0)
+    n = len(items)
+    if n < _JACKKNIFE_MAX_STARS:
+        method = 'jackknife'
+        index_sets = [[j for j in range(n) if j != i] for i in range(n)]
+    else:
+        method = 'bootstrap'
+        index_sets = [rng.integers(0, n, size=n).tolist() for _ in range(n_boot)]
+    members = []
+    for idx in index_sets:
+        if not idx:
+            continue
+        m = np.mean([items[j] for j in idx], axis=0)
+        if m.sum() > 0:
+            m = m / m.sum()
+        members.append(m)
+    return members, method
+
+
+def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None):
+    """Bootstrap (or jackknife if star-poor) ensemble of the detector-frame, oversampled
+    WF3 F606W DB ePSF, over the shared DB star sample -- cached to FITS (one 3D cube) like
+    the point estimate. Returns (list_of_arrays, arcsec/pixel sampling, method).
+
+    This is the WFPC2 F606W analogue of make_psf.build_epsf_ensemble (which resamples a
+    lens's own field stars): here the star sample is the ~150 shared archival DB stars, so
+    the ensemble -- and its cache -- is built ONCE and reused by every WFPC2 F606W lens,
+    each of which only re-resamples/rotates it into its own North-up frame at call time.
+    """
+    from astropy.io import fits
+    from photutils.psf import EPSFStars, EPSFBuilder
+
+    cfg = _F606W_DB
+    samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
+    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf_ensemble.fits')
+    if os.path.exists(cache) and not force_rebuild:
+        cube = np.asarray(fits.getdata(cache), float)
+        method = fits.getheader(cache).get('ENSMETH', 'bootstrap')
+        return [cube[i] for i in range(cube.shape[0])], samp, method
+
+    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild)
+    n = len(stars)
+    rng = rng if rng is not None else np.random.default_rng(0)
+    if n < _JACKKNIFE_MAX_STARS:
+        method = 'jackknife'
+        index_sets = [[j for j in range(n) if j != i] for i in range(n)]
+    else:
+        method = 'bootstrap'
+        index_sets = [rng.integers(0, n, size=n).tolist() for _ in range(n_boot)]
+
+    builder = EPSFBuilder(oversampling=cfg['build_oversample'], maxiters=cfg['maxiters'],
+                          recentering_maxiters=8, progress_bar=False)
+    members = []
+    for idx in index_sets:
+        if not idx:
+            continue
+        try:
+            epsf, _ = builder(EPSFStars([stars[j] for j in idx]))
+            d = np.nan_to_num(np.asarray(epsf.data, float))
+            if np.all(np.isfinite(d)) and d.sum() > 0:
+                members.append(d)
+        except Exception:
+            continue                       # a degenerate resample is dropped, not fatal
+    if len(members) < 2:
+        raise RuntimeError(f'only {len(members)} valid WF3 F606W DB ensemble member(s)')
+
+    cube = np.stack(members, axis=0)
+    hdr = fits.Header()
+    hdr['PSFSRC'] = ('MAST_PSF_DB_ENS', 'WF3 F606W PSF DB error ensemble')
+    hdr['ENSMETH'] = (method, 'bootstrap or jackknife over DB stars')
+    hdr['NMEMBER'] = (len(members), 'valid ensemble members')
+    hdr['NSTARS'] = (n, 'DB stars in the shared sample')
+    hdr['PIXSCALE'] = (round(samp, 5), 'ePSF arcsec/pixel')
+    fits.writeto(cache, cube, hdr, overwrite=True)
+    print(f'    built WF3 F606W DB error ensemble: {len(members)} members '
+          f'({method}) -> {cache}')
+    return members, samp, method
 
 
 # ── ACS/WFC focus-diverse ePSF (preferred ACS model over the static STDPSF) ──────
@@ -430,13 +616,21 @@ def _resample_centered(src, src_scale, out_scale, oversample, size,
 
 
 def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord,
-                          oversample, size, out_scale):
+                          oversample, size, out_scale, return_ensemble=False):
     """Focus-diverse ACS/WFC ePSF model stamp, averaged over the contributing exposures.
 
     `rootnames` are the exposures that reached the drizzle (from info/lens_products.json);
     `calibrated_dir` holds their FLCs (for the per-exposure detector position). Returns an
     oversampled stamp on the same grid as model_psf(). Raises RuntimeError if no exposure's
     focus-diverse ePSF could be retrieved, so make_psf falls back to the STDPSF model.
+
+    `return_ensemble=True` additionally returns (ensemble, method): leave-one-exposure-out
+    (or bootstrap, if there are ever >= _JACKKNIFE_MAX_STARS exposures) reduced members over
+    the per-exposure North-up kernels that went into the average -- the natural error
+    ensemble for this tier, since each exposure already carries its own HST focus/breathing
+    and that's the only thing this model averages over. `_reduce_ensemble` puts these in the
+    same (members, method) convention make_psf.psf_error_map expects, so no downstream
+    special-casing is needed vs. the empirical tier's own star-resample ensemble.
     """
     from acstools.focus_diverse_epsfs import psf_retriever, interp_epsf
     from astropy.io import fits
@@ -480,4 +674,10 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
     print(f'    focus-diverse ePSF from {len(northup)}/{len(rootnames)} exposures')
     if mean_epsf.sum() > 0:
         mean_epsf = mean_epsf / mean_epsf.sum()
-    return mean_epsf
+    if not return_ensemble:
+        return mean_epsf
+    if len(northup) < 2:
+        print(f'    only {len(northup)} exposure(s); no PSF error ensemble')
+        return mean_epsf, [], None
+    ensemble, method = _reduce_ensemble(northup)
+    return mean_epsf, ensemble, method
