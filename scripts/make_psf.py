@@ -32,8 +32,10 @@ make_psf_inject.run_injection(..., promote=True): the drizzle-broadened injected
 becomes the canonical psf_kernel.fits / cutout_[cr_]psf.fits, and the analytic model this
 function just wrote is moved aside to psf_kernel_analytic.fits / cutout_[cr_]psf_analytic.fits
 (comparison only). See make_psf_inject.py's docstring. If injection fails (e.g. the
-data/drizzle_files/ inputs were cleared), it's a graceful degradation: a warning prints and
-the analytic model stays canonical.
+data/drizzle_files/ inputs were cleared), it falls back to
+make_psf_inject.analytic_broadened_fallback() -- a cheap analytic drop-box broadening of the
+analytic kernel, promoted the same way -- and only if THAT also fails does the un-broadened
+analytic model stay canonical.
 
 Records the build in info/lens_psf.json (method, n_stars, fwhm_pix, oversample,
 kernel_size); no data for a filter records null and exits 0, matching the other scripts.
@@ -112,6 +114,13 @@ _BASE = dict(
     scatter_bad=3.0e-3,      # empirical wing scatter (std of the outer annulus / peak)
                              # above this -> poor build. Worst clean ACS ~2.0e-3; catches
                              # the noisy F160W builds (J0936 7.8e-3, J0946 6.6e-3).
+    crowd_sep_frac=1.0,      # candidate-pair rejection radius, as a fraction of star_size
+                             # (the extract_stars() stamp width). DAOStarFinder's own
+                             # min_separation (below, ~0.5x star_size) only keeps it from
+                             # double-detecting one blended peak; it does not know the
+                             # downstream stamp size, so two accepted detections can still
+                             # sit close enough for their star_size stamps to overlap and
+                             # contaminate each other's wings. 1.0 = stamps never overlap.
 )
 # `fwhm` is the DAOStarFinder detection kernel; `psf_fwhm` is the true stellar PSF FWHM
 # (pixels, at the drizzled scale) that the per-candidate shape cut selects around --
@@ -208,6 +217,24 @@ def build_mask(shape, wht_data, wcs, catalogue_coord, scale_arcsec, lens_mask_ra
     return mask
 
 
+def reject_crowded(rows, min_separation):
+    """Greedy-by-flux crowding cut: drop any candidate whose extract_stars() stamp would
+    overlap an already-kept (brighter) one's stamp.
+
+    `rows` must already be flux-sorted, brightest first (as select_stars sorts them), so
+    the brightest of any close pair is always the one kept -- a fainter neighbour is
+    dropped in favour of it rather than either being silently mixed into the ePSF. Distance
+    is Euclidean, `min_separation` is normally `star_size` (see crowd_sep_frac): a Euclidean
+    cut at the full stamp width is a conservative (not exact-square) non-overlap test, which
+    is the right side to err on for a "don't contaminate the wings" gate.
+    """
+    kept = []
+    for x, y, flux in rows:
+        if all((x - kx) ** 2 + (y - ky) ** 2 >= min_separation ** 2 for kx, ky, _ in kept):
+            kept.append((x, y, flux))
+    return kept
+
+
 def _in_any_box(x, y, boxes):
     for b in boxes:
         x0, x1, y0, y1 = b
@@ -277,7 +304,7 @@ def select_stars(data, mask, params, overrides, star_size):
         min_separation=params['min_sep'], exclude_border=True)
     sources = finder(data - median, mask=mask)
 
-    qa = {'n_detected': 0 if sources is None else len(sources)}
+    qa = {'n_detected': 0 if sources is None else len(sources), 'n_crowded_rejected': 0}
     if sources is None or len(sources) == 0:
         rows = []
     else:
@@ -322,6 +349,10 @@ def select_stars(data, mask, params, overrides, star_size):
         if rows:
             floor = params['flux_floor_frac'] * rows[0][2]
             rows = [r for r in rows if r[2] >= floor]
+        n_before_crowd = len(rows)
+        crowd_sep = params['crowd_sep_frac'] * star_size
+        rows = reject_crowded(rows, crowd_sep)
+        qa['n_crowded_rejected'] = n_before_crowd - len(rows)
         rows = rows[:int(params['max_stars'])]
 
     qa['n_auto'] = len(rows)
@@ -493,6 +524,94 @@ def subtract_pedestal(kernel):
     return out, (float(ped / peak) if peak > 0 else 0.0)
 
 
+# ── Empirical PSF uncertainty (bootstrap / jackknife over the star sample) ────────
+# The empirical ePSF is built from a handful of field stars (often 3-20, sometimes as few as
+# 3), which makes the kernel a point estimate with real, un-propagated uncertainty. We
+# estimate a per-pixel PSF error map by resampling the star sample and rebuilding the ePSF:
+# bootstrap-with-replacement where there are enough stars, leave-one-out jackknife where there
+# are too few for bootstrap to be non-degenerate. Empirical tier only -- the model/injected
+# tiers have their own (deferred) error budget. See the PSF uncertainty note in CLAUDE.md.
+JACKKNIFE_MAX_STARS = 6   # < this, bootstrap draws collapse onto 1-2 stars; use jackknife
+
+
+def _kernel_from_epsf(epsf_data, oversample, star_size):
+    """One ensemble member: oversampled ePSF -> the same full image-scale, pedestal-
+    subtracted, unit-sum kernel the primary build produces (oversampled_to_kernel +
+    subtract_pedestal), so members are directly comparable to psf_kernel.fits."""
+    kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
+    kernel, _ = subtract_pedestal(kernel)
+    return kernel
+
+
+def build_epsf_ensemble(data, stars_tbl, star_size, oversample, maxiters, n_boot, rng=None):
+    """Resample the star sample and rebuild the ePSF per draw for a PSF-uncertainty estimate.
+
+    len(stars_tbl) >= JACKKNIFE_MAX_STARS: bootstrap-with-replacement, `n_boot` draws.
+    Fewer: leave-one-out jackknife (n draws), since bootstrap draws degenerate at tiny N.
+    Each draw runs the exact primary build (build_epsf) and is validate_epsf-gated; a
+    diverged/failed draw is discarded. Returns (kernels, method, n_valid) where `kernels` is a
+    list of full image-scale unit-sum kernels (the same post-processing the primary gets).
+    """
+    rng = rng if rng is not None else np.random.default_rng(0)
+    n = len(stars_tbl)
+    if n < JACKKNIFE_MAX_STARS:
+        method = 'jackknife'
+        index_sets = [[j for j in range(n) if j != i] for i in range(n)]
+    else:
+        method = 'bootstrap'
+        index_sets = [rng.integers(0, n, size=n).tolist() for _ in range(n_boot)]
+
+    kernels = []
+    for idx in index_sets:
+        if not idx:
+            continue
+        try:
+            epsf, _, _ = build_epsf(data, stars_tbl[idx], star_size, oversample, maxiters)
+            cand = np.asarray(epsf.data, dtype=float)
+            if validate_epsf(cand, oversample):
+                kernels.append(_kernel_from_epsf(cand, oversample, star_size))
+        except Exception:
+            continue                       # a degenerate resample is dropped, not fatal
+    return kernels, method, len(kernels)
+
+
+def _fwhm_spread(kernels, method):
+    """Standard error of the per-member kernel FWHM, matching the ensemble estimator
+    (jackknife leave-one-out vs bootstrap replicate std). None if < 2 finite FWHMs."""
+    fw = np.array([f for f in (measure_fwhm(k) for k in kernels) if f is not None],
+                  dtype=float)
+    if len(fw) < 2:
+        return None
+    if method == 'jackknife':
+        return float(np.sqrt((len(fw) - 1) / len(fw) * np.sum((fw - fw.mean()) ** 2)))
+    return float(fw.std(ddof=1))
+
+
+def psf_error_map(kernels, method, trim_half):
+    """Per-pixel PSF uncertainty from an ensemble of unit-sum kernels.
+
+    Members are co-registered (each re-centred by oversampled_to_kernel) and unit-sum, so the
+    spread is already in the kernel's own amplitude units -- NOT renormalised. Bootstrap: the
+    standard error is the replicate std, sqrt(SS/(B-1)). Jackknife: the leave-one-out standard
+    error sqrt((n-1)/n . SS). Returns (err_full, err_trim, err_frac, fwhm_err): err_trim is
+    err_full cropped to the primary kernel's trim window (same `trim_half`, not a fresh
+    amplitude cut) so it matches cutout_[cr_]psf.fits pixel-for-pixel; err_frac =
+    sqrt(sum(err_full**2)) (integrated relative PSF uncertainty; the kernels sum to 1).
+    """
+    stack = np.stack(kernels, axis=0)
+    m = stack.shape[0]
+    ss = np.sum((stack - stack.mean(axis=0)) ** 2, axis=0)
+    if method == 'jackknife':
+        err_full = np.sqrt((m - 1) / m * ss)
+    else:
+        err_full = np.sqrt(ss / (m - 1))
+    ny, nx = err_full.shape
+    cy, cx = ny // 2, nx // 2
+    err_trim = err_full[cy - trim_half:cy + trim_half + 1, cx - trim_half:cx + trim_half + 1]
+    err_frac = float(np.sqrt(np.sum(err_full ** 2)))
+    return err_full, err_trim, err_frac, _fwhm_spread(kernels, method)
+
+
 def representative_input_cd(inst_key, lens, filt, sample):
     """2x2 CD (deg/detector-pixel) of a contributing exposure, in the detector frame a model
     ePSF lives in -- so a detector-frame model PSF can be rotated into the North-up drizzle
@@ -659,12 +778,26 @@ def main():
                    help="amplitude fraction of peak at which the trimmed modelling kernel "
                         "(data/cutouts/<...>_psf.fits) is cut. Default 1e-3 -- an "
                         "amplitude criterion, not enclosed-energy (which under-sizes).")
+    p.add_argument('--n-boot', dest='n_boot', type=int, default=None,
+                   help='bootstrap resamples for the empirical PSF error map (default 100; '
+                        'leave-one-out jackknife is used instead when < %d stars). Empirical '
+                        'tier only.' % JACKKNIFE_MAX_STARS)
+    p.add_argument('--no-psf-err', dest='no_psf_err', action='store_true', default=False,
+                   help='skip the PSF error map (psf_kernel_err.fits and '
+                        'cutout_[cr_]psf_err.fits) for any tier -- empirical (star '
+                        'resample), ACS focus-diverse (per-exposure), or WFPC2 MAST-DB '
+                        '(bootstrap over DB stars). STDPSF has none regardless. The '
+                        'point-estimate kernel is unchanged either way.')
     # Tunables: None here means 'unset' so instrument defaults / JSON overrides win; a
     # value on the command line takes precedence over both. See resolve_params().
     p.add_argument('--threshold-scale', dest='threshold_scale', type=float, default=None)
     p.add_argument('--fwhm', type=float, default=None)
     p.add_argument('--max-stars', dest='max_stars', type=int, default=None)
     p.add_argument('--min-sep', dest='min_sep', type=float, default=None)
+    p.add_argument('--crowd-sep-frac', dest='crowd_sep_frac', type=float, default=None,
+                   help='candidate-pair rejection radius as a fraction of star_size (the '
+                        'extract_stars() stamp width); default 1.0 so two kept stars never '
+                        'share stamp footprint')
     p.add_argument('--min-stars', dest='min_stars', type=int, default=None)
     p.add_argument('--lens-mask-radius', dest='lens_mask_radius', type=float, default=None,
                    help='arcsec circle around the deflector masked out of detection')
@@ -768,7 +901,8 @@ def main():
     stars_tbl, qa = select_stars(data, mask, params, overrides, star_size)
     n_stars = len(stars_tbl)
     print(f'  stars: {qa["n_detected"]} detected -> {qa["n_auto"]} auto-kept'
-          f' + {qa["n_included"]} forced = {n_stars}')
+          f' + {qa["n_included"]} forced = {n_stars}'
+          f' ({qa["n_crowded_rejected"]} dropped as crowded)')
 
     too_few = n_stars < params['min_stars']
     use_model = (method == 'model') or (method == 'auto' and too_few)
@@ -818,6 +952,11 @@ def main():
                   f'falling back to the STDPSF model')
             use_model = True
 
+    # Model-tier PSF error ensemble (ACS focus-diverse: per-exposure; WFPC2 DB: bootstrap
+    # over the shared archival stars). None for STDPSF, which has no natural per-lens
+    # ensemble. Populated below, consumed by the psf-err block after the kernel is built.
+    model_ensemble = model_err_method = err_source = None
+
     if method_used is None:
         tag = 'forced' if method == 'model' else \
               (f'{n_stars} stars < {params["min_stars"]}' if too_few else 'empirical failed')
@@ -836,10 +975,12 @@ def main():
                 calibrated_dir = os.path.join(ws_path, 'data', 'calibrated', a.sample,
                                               a.lens, a.filt)
                 print(f'  method: MODEL (ACS focus-diverse ePSF)  [{tag}]')
-                epsf_data = psf_models.acs_focus_diverse_psf(
+                epsf_data, model_ensemble, model_err_method = psf_models.acs_focus_diverse_psf(
                     a.lens, a.filt, rootnames, calibrated_dir, catalogue_coord,
-                    oversample=oversample, size=star_size, out_scale=scale)
+                    oversample=oversample, size=star_size, out_scale=scale,
+                    return_ensemble=True)
                 method_used = 'model_acs_fdpsf'
+                err_source = 'exposures'
             except Exception as exc:
                 print(f'  WARNING: focus-diverse ePSF unavailable ({exc}); '
                       f'falling back to STDPSF')
@@ -849,10 +990,11 @@ def main():
         elif inst_key == 'WFPC2' and a.filt.split('_')[0].upper() == 'F606W':
             try:
                 print(f'  method: MODEL (WFPC2 F606W MAST PSF DB)  [{tag}]')
-                epsf_data = psf_models.wfpc2_f606w_db_epsf(
+                epsf_data, model_ensemble, model_err_method = psf_models.wfpc2_f606w_db_epsf(
                     oversample=oversample, size=star_size, out_scale=scale,
-                    cd_detector=cd_det)
+                    cd_detector=cd_det, return_ensemble=True)
                 method_used = 'model_wfpc2_psfdb'
+                err_source = 'db_stars'
             except Exception as exc:
                 print(f'  WARNING: WFPC2 F606W PSF-DB unavailable ({exc}); '
                       f'falling back to STDPSF')
@@ -876,6 +1018,45 @@ def main():
         print(f'  kernel FWHM: {fwhm_pix:.2f} px = {fwhm_pix * scale:.3f}"')
     print(f'  full kernel {kernel.shape[0]}px -> trimmed {trim_size}px '
           f'(amplitude<{a.trim_threshold:g} of peak)')
+
+    # ── PSF uncertainty: per-pixel error map from a tier-appropriate ensemble ───────
+    # Empirical: resample the lens's own field stars and rebuild the ePSF (bootstrap, or
+    # jackknife when star-poor). Model tier (ACS focus-diverse / WFPC2 MAST-DB): reuse the
+    # ensemble psf_models already built (per-exposure or bootstrap-over-DB-stars, see
+    # psf_models._reduce_ensemble / _wfpc2_f606w_db_ensemble) via the SAME psf_error_map()
+    # statistics, just converted to kernels first. STDPSF has no natural per-lens ensemble
+    # and is skipped (err stays null) -- see the PSF uncertainty note in CLAUDE.md. The
+    # point-estimate kernel above is untouched either way; this only adds parallel
+    # *_err.fits products.
+    err_full = err_trim = err_frac = fwhm_err = err_method = n_boot_valid = None
+    do_psf_err = not a.no_psf_err and overrides.get('psf_err', True)
+    trim_half = (trim_size - 1) // 2
+    kernels = None
+    if do_psf_err and method_used == 'empirical' and n_stars >= 2:
+        n_boot = a.n_boot if a.n_boot is not None else int(overrides.get('n_boot', 100))
+        mode = 'jackknife' if n_stars < JACKKNIFE_MAX_STARS else f'bootstrap x{n_boot}'
+        print(f'  PSF uncertainty: resampling {n_stars} stars ({mode}) ...')
+        kernels, err_method, n_boot_valid = build_epsf_ensemble(
+            data, stars_tbl, star_size, oversample, params['maxiters'], n_boot)
+        err_source = 'stars'
+    elif (do_psf_err and method_used in ('model_acs_fdpsf', 'model_wfpc2_psfdb')
+          and model_ensemble):
+        print(f'  PSF uncertainty: {len(model_ensemble)} {err_source} ensemble members '
+              f'({model_err_method}) ...')
+        kernels = [_kernel_from_epsf(m, oversample, star_size) for m in model_ensemble]
+        err_method, n_boot_valid = model_err_method, len(kernels)
+
+    if kernels is not None:
+        if n_boot_valid >= 2:
+            err_full, err_trim, err_frac, fwhm_err = psf_error_map(
+                kernels, err_method, trim_half)
+            print(f'    {err_method}: {n_boot_valid} valid members, PSF error fraction '
+                  f'{err_frac:.2e}'
+                  + (f', FWHM err {fwhm_err:.3f}px' if fwhm_err is not None else ''))
+        else:
+            print(f'    WARNING: only {n_boot_valid} valid ensemble member(s); '
+                  f'no PSF error map written')
+            err_method = err_source = None
 
     # ── Write the full kernel + ePSF + QA plot to data/psf/ ─────────────────────
     khdr = fits.Header()
@@ -907,24 +1088,46 @@ def main():
         thdr['PSFSTARP'] = (star_pass, 'drizzle pass the empirical ePSF was built from')
     write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
 
+    # ── Write the PSF error maps (full to data/psf/, trimmed next to the cutout) ─
+    if err_full is not None:
+        for base, kind, arr, dest in (
+                (khdr, 'full_err', err_full, os.path.join(output_dir, 'psf_kernel_err.fits')),
+                (thdr, 'trimmed_err', err_trim,
+                 os.path.join(cutouts_dir, f'{prefix}_psf_err.fits'))):
+            ehdr = base.copy()
+            ehdr['PSFKIND'] = (kind, 'per-pixel PSF std (ensemble)')
+            ehdr['PSFERR'] = (err_method, 'bootstrap or jackknife ensemble method')
+            ehdr['PSFESRC'] = (err_source, 'ensemble source: stars/exposures/db_stars')
+            ehdr['PSFNVALD'] = (n_boot_valid, 'valid ensemble members')
+            ehdr['PSFEFRAC'] = (round(err_frac, 8), 'integrated PSF error fraction')
+            write_fits(arr, ehdr, dest)
+
     info_json.update(psf_json, a.sample, a.lens, a.filt, {
         'method': method_used,
         'n_stars': n_stars,
+        'n_crowded_rejected': qa['n_crowded_rejected'],
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'oversample': oversample,
         'kernel_size': int(kernel.shape[0]),
         'cutout_kernel_size': int(trim_size),
         'trim_threshold': a.trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
+        'fwhm_pix_err': round(fwhm_err, 4) if fwhm_err is not None else None,
+        'psf_err_frac': round(err_frac, 8) if err_frac is not None else None,
+        'err_method': err_method,
+        'err_source': err_source,
+        'n_boot_valid': n_boot_valid,
     })
     print('  done')
 
     # Model tier lacks drizzle broadening (see make_psf_inject.py docstring) -- auto-chain
     # the injection + promotion so this single command already leaves the drizzle-broadened
     # kernel as the canonical psf_kernel.fits / cutout_[cr_]psf.fits. Empirical builds are
-    # already the drizzled PSF (cut from the mosaic), so this is skipped for them. A failure
-    # here (e.g. data/drizzle_files/ was cleared) is a graceful degradation: the analytic
-    # model this function just wrote stays canonical.
+    # already the drizzled PSF (cut from the mosaic), so this is skipped for them. A failed
+    # injection (e.g. data/drizzle_files/ was cleared) degrades to the cheap analytic
+    # drop-box broadening fallback (psf_models.analytic_drop_broaden) rather than silently
+    # leaving the sharp, un-broadened analytic model canonical -- and only if that fallback
+    # itself fails does the analytic model stay canonical.
     if method_used.startswith('model'):
         try:
             import make_psf_inject
@@ -934,8 +1137,18 @@ def main():
                                           drizzle_pass=drizzle_pass,
                                           trim_threshold=a.trim_threshold, promote=True)
         except Exception as exc:
-            print(f'  WARNING: injection/promotion failed ({exc}); canonical PSF stays '
-                  f'the analytic model ({method_used})')
+            print(f'  WARNING: injection failed ({exc}); trying the cheap analytic '
+                  f'drizzle-broadening fallback instead ...')
+            try:
+                record = make_psf_inject.analytic_broadened_fallback(
+                    output_dir, cutouts_dir, prefix, sci_hdr, method_used, drizzle_pass,
+                    trim_threshold=a.trim_threshold)
+                info_json.update(psf_json, a.sample, a.lens, a.filt, dict(record))
+                print(f'  promoted: broadened_{method_used} is now the canonical PSF '
+                      f'(analytic model kept as *_analytic)')
+            except Exception as exc2:
+                print(f'  WARNING: analytic broadening fallback also failed ({exc2}); '
+                      f'canonical PSF stays the un-broadened analytic model ({method_used})')
 
 
 if __name__ == '__main__':
