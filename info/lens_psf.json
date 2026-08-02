@@ -145,7 +145,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 3
+                "n_frames": 3,
+                "psf_err_frac": 0.01878973,
+                "psf_err_frac_core": 0.01700801,
+                "psf_err_frac_wing": 0.00798633,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "empirical",
@@ -223,7 +229,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03695451,
+                "psf_err_frac_core": 0.03659302,
+                "psf_err_frac_wing": 0.00515623,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f814W": {
                 "method": "empirical",
@@ -287,7 +299,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03695451,
+                "psf_err_frac_core": 0.03659302,
+                "psf_err_frac_wing": 0.00515623,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         },
         "J1141+2216": {
@@ -299,7 +317,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03695451,
+                "psf_err_frac_core": 0.03659302,
+                "psf_err_frac_wing": 0.00515623,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         },
         "J1201+4743": {
@@ -365,7 +389,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 3
+                "n_frames": 3,
+                "psf_err_frac": 0.01878973,
+                "psf_err_frac_core": 0.01700801,
+                "psf_err_frac_wing": 0.00798633,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_stdpsf",
@@ -375,7 +405,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03695451,
+                "psf_err_frac_core": 0.03659302,
+                "psf_err_frac_wing": 0.00515623,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f814W": {
                 "method": "inject_stdpsf",
@@ -385,7 +421,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 3
+                "n_frames": 3,
+                "psf_err_frac": 0.02416216,
+                "psf_err_frac_core": 0.02316354,
+                "psf_err_frac_wing": 0.00687461,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         }
     },
@@ -399,7 +441,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000982,
                 "wing_scatter": 0.00057,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05616873,
+                "psf_err_frac_core": 0.04336365,
+                "psf_err_frac_wing": 0.03570042,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -441,7 +489,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001311,
                 "wing_scatter": 0.001343,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05618818,
+                "psf_err_frac_core": 0.04327262,
+                "psf_err_frac_wing": 0.0358412,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -467,7 +521,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001079,
                 "wing_scatter": 0.00074,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05549384,
+                "psf_err_frac_core": 0.04278201,
+                "psf_err_frac_wing": 0.03534496,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -523,7 +583,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000215,
                 "wing_scatter": 0.000598,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -533,7 +599,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000827,
                 "wing_scatter": 0.000591,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05771131,
+                "psf_err_frac_core": 0.04422538,
+                "psf_err_frac_wing": 0.03707709,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -559,7 +631,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001,
                 "wing_scatter": 0.000848,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.0572408,
+                "psf_err_frac_core": 0.04445736,
+                "psf_err_frac_wing": 0.03605624,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -599,7 +677,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000872,
                 "wing_scatter": 0.0006,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05795993,
+                "psf_err_frac_core": 0.04439527,
+                "psf_err_frac_wing": 0.03726142,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -655,7 +739,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000209,
                 "wing_scatter": 0.000598,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W_v1": {
                 "method": "inject_wfpc2_psfdb",
@@ -665,7 +755,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001265,
                 "wing_scatter": 0.000672,
-                "n_frames": 2
+                "n_frames": 2,
+                "psf_err_frac": 0.05808535,
+                "psf_err_frac_core": 0.04447847,
+                "psf_err_frac_wing": 0.03735737,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=1.408",
+                "err_lower_bound": true
             },
             "f606W_v2": {
                 "method": "inject_wfpc2_psfdb",
@@ -675,7 +771,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001402,
                 "wing_scatter": 0.001153,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05768976,
+                "psf_err_frac_core": 0.04446675,
+                "psf_err_frac_wing": 0.03675345,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -701,7 +803,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000214,
                 "wing_scatter": 0.000615,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -711,7 +819,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000751,
                 "wing_scatter": 0.000622,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05659951,
+                "psf_err_frac_core": 0.04349489,
+                "psf_err_frac_wing": 0.03621738,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -737,7 +851,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000223,
                 "wing_scatter": 0.000613,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -747,7 +867,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000925,
                 "wing_scatter": 0.000522,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05844498,
+                "psf_err_frac_core": 0.0446541,
+                "psf_err_frac_wing": 0.03770712,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -804,7 +930,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000173,
                 "wing_scatter": 0.00049,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -814,7 +946,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001008,
                 "wing_scatter": 0.000896,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05826227,
+                "psf_err_frac_core": 0.04452644,
+                "psf_err_frac_wing": 0.03757509,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -840,7 +978,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000208,
                 "wing_scatter": 0.000588,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -850,7 +994,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001076,
                 "wing_scatter": 0.000585,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05870703,
+                "psf_err_frac_core": 0.04505154,
+                "psf_err_frac_wing": 0.0376414,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -936,7 +1086,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000209,
                 "wing_scatter": 0.000572,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -946,7 +1102,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000877,
                 "wing_scatter": 0.000712,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05855622,
+                "psf_err_frac_core": 0.04495688,
+                "psf_err_frac_wing": 0.03751945,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -972,7 +1134,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000191,
                 "wing_scatter": 0.000557,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -982,7 +1150,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000787,
                 "wing_scatter": 0.000732,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05598649,
+                "psf_err_frac_core": 0.04265762,
+                "psf_err_frac_wing": 0.03626037,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1008,7 +1182,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00021,
                 "wing_scatter": 0.000589,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1018,7 +1198,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001772,
                 "wing_scatter": 0.001197,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05637155,
+                "psf_err_frac_core": 0.04340868,
+                "psf_err_frac_wing": 0.0359644,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1044,7 +1230,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000203,
                 "wing_scatter": 0.00056,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1054,7 +1246,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001095,
                 "wing_scatter": 0.000703,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05789759,
+                "psf_err_frac_core": 0.04496804,
+                "psf_err_frac_wing": 0.03646925,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1080,7 +1278,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001129,
                 "wing_scatter": 0.000697,
-                "n_frames": 6
+                "n_frames": 6,
+                "psf_err_frac": 0.0581518,
+                "psf_err_frac_core": 0.04488948,
+                "psf_err_frac_wing": 0.0369671,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.813",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1166,7 +1370,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000795,
                 "wing_scatter": 0.000824,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05811997,
+                "psf_err_frac_core": 0.04463623,
+                "psf_err_frac_wing": 0.03722282,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "inject_acs_fdpsf",
@@ -1176,7 +1386,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.000378,
+                "psf_err_frac_core": 0.00032376,
+                "psf_err_frac_wing": 0.0001951,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.500",
+                "err_lower_bound": true
             }
         },
         "J1218+0830": {
@@ -1188,7 +1404,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000968,
                 "wing_scatter": 0.000696,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05569479,
+                "psf_err_frac_core": 0.04270766,
+                "psf_err_frac_wing": 0.03574864,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1319,7 +1541,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001469,
                 "wing_scatter": 0.000822,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.0553897,
+                "psf_err_frac_core": 0.04256638,
+                "psf_err_frac_wing": 0.03544182,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1345,7 +1573,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000809,
                 "wing_scatter": 0.000514,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05498977,
+                "psf_err_frac_core": 0.04323965,
+                "psf_err_frac_wing": 0.03397363,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1401,7 +1635,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000934,
                 "wing_scatter": 0.000559,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05744001,
+                "psf_err_frac_core": 0.04414625,
+                "psf_err_frac_wing": 0.03674865,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1579,7 +1819,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001549,
                 "wing_scatter": 0.001133,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05805329,
+                "psf_err_frac_core": 0.04595883,
+                "psf_err_frac_wing": 0.03546788,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1607,7 +1853,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001496,
                 "wing_scatter": 0.000913,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05605454,
+                "psf_err_frac_core": 0.0444082,
+                "psf_err_frac_wing": 0.03420561,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J0044+0113": {
@@ -1619,7 +1871,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001341,
                 "wing_scatter": 0.000723,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05632242,
+                "psf_err_frac_core": 0.04347838,
+                "psf_err_frac_wing": 0.03580287,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J0935-0003": {
@@ -1631,7 +1889,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001062,
                 "wing_scatter": 0.000807,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05669745,
+                "psf_err_frac_core": 0.04334183,
+                "psf_err_frac_wing": 0.03655253,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J0955+0101": {
@@ -1643,7 +1907,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000764,
                 "wing_scatter": 0.000601,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.0585492,
+                "psf_err_frac_core": 0.04489623,
+                "psf_err_frac_wing": 0.03758107,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J0959+4416": {
@@ -1671,7 +1941,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000892,
                 "wing_scatter": 0.000607,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05738322,
+                "psf_err_frac_core": 0.04476067,
+                "psf_err_frac_wing": 0.03590704,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1699,7 +1975,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00024,
                 "wing_scatter": 0.000688,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1709,7 +1991,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001104,
                 "wing_scatter": 0.000768,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05814557,
+                "psf_err_frac_core": 0.04508575,
+                "psf_err_frac_wing": 0.0367176,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1100+5329": {
@@ -1721,7 +2009,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000793,
                 "wing_scatter": 0.000495,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05821553,
+                "psf_err_frac_core": 0.04452296,
+                "psf_err_frac_wing": 0.03750672,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1106+5228": {
@@ -1733,7 +2027,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00063,
                 "wing_scatter": 0.000527,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05639043,
+                "psf_err_frac_core": 0.04309376,
+                "psf_err_frac_wing": 0.03637043,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1112+0826": {
@@ -1745,7 +2045,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001602,
                 "wing_scatter": 0.001281,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05680307,
+                "psf_err_frac_core": 0.04397567,
+                "psf_err_frac_wing": 0.03595454,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1134+6027": {
@@ -1757,7 +2063,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000293,
                 "wing_scatter": 0.000797,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1767,7 +2079,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001923,
                 "wing_scatter": 0.001625,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05722188,
+                "psf_err_frac_core": 0.04386916,
+                "psf_err_frac_wing": 0.03674018,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1153+4612": {
@@ -1779,7 +2097,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00023,
                 "wing_scatter": 0.000622,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1789,7 +2113,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000997,
                 "wing_scatter": 0.000986,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05763971,
+                "psf_err_frac_core": 0.04490483,
+                "psf_err_frac_wing": 0.03613712,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1817,7 +2147,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001538,
                 "wing_scatter": 0.001412,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05669138,
+                "psf_err_frac_core": 0.04333861,
+                "psf_err_frac_wing": 0.03654692,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1251-0208": {
@@ -1829,7 +2165,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00023,
                 "wing_scatter": 0.000648,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.03581876,
+                "psf_err_frac_core": 0.03294093,
+                "psf_err_frac_wing": 0.01406694,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1839,7 +2181,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001489,
                 "wing_scatter": 0.001042,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05738074,
+                "psf_err_frac_core": 0.04475441,
+                "psf_err_frac_wing": 0.0359109,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1403+0006": {
@@ -1851,7 +2199,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001547,
                 "wing_scatter": 0.001046,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05521728,
+                "psf_err_frac_core": 0.04235416,
+                "psf_err_frac_wing": 0.03542701,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1416+5136": {
@@ -1863,7 +2217,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001136,
                 "wing_scatter": 0.000815,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05732381,
+                "psf_err_frac_core": 0.04418076,
+                "psf_err_frac_wing": 0.03652505,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             },
             "f814W": {
                 "method": "empirical",
@@ -1891,7 +2251,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000683,
                 "wing_scatter": 0.000543,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05299413,
+                "psf_err_frac_core": 0.040938,
+                "psf_err_frac_wing": 0.03365202,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1443+0304": {
@@ -1903,7 +2269,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001576,
                 "wing_scatter": 0.001627,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05910009,
+                "psf_err_frac_core": 0.04514468,
+                "psf_err_frac_wing": 0.03814156,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1531-0105": {
@@ -1915,7 +2287,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000979,
                 "wing_scatter": 0.000631,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.054692,
+                "psf_err_frac_core": 0.04215547,
+                "psf_err_frac_wing": 0.03484439,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1538+5817": {
@@ -1927,7 +2305,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001091,
                 "wing_scatter": 0.000727,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05569666,
+                "psf_err_frac_core": 0.04270923,
+                "psf_err_frac_wing": 0.03574967,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1621+3931": {
@@ -1939,7 +2323,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000951,
                 "wing_scatter": 0.000659,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05440177,
+                "psf_err_frac_core": 0.04194943,
+                "psf_err_frac_wing": 0.0346381,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J1636+4707": {
@@ -1967,7 +2357,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000776,
                 "wing_scatter": 0.000573,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05775184,
+                "psf_err_frac_core": 0.04455664,
+                "psf_err_frac_wing": 0.03674208,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J2141-0001": {
@@ -1979,7 +2375,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.001439,
                 "wing_scatter": 0.001346,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.0580208,
+                "psf_err_frac_core": 0.04454328,
+                "psf_err_frac_wing": 0.03717943,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J2302-0840": {
@@ -1991,7 +2393,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000815,
                 "wing_scatter": 0.000518,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05619249,
+                "psf_err_frac_core": 0.04343203,
+                "psf_err_frac_wing": 0.03565466,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         },
         "J2321-0939": {
@@ -2003,7 +2411,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.00107,
                 "wing_scatter": 0.000819,
-                "n_frames": 4
+                "n_frames": 4,
+                "psf_err_frac": 0.05496824,
+                "psf_err_frac_core": 0.04251533,
+                "psf_err_frac_wing": 0.03484185,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
             }
         }
     }
