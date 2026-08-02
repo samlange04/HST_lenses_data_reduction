@@ -848,8 +848,9 @@ products ok (gallery excludes J1110+2808 F814W/F438W, see *BELLS GALLERY*), 33/3
 each, 0 failures, no empirical/model method flips vs the pre-existing builds. Crowding cut
 caught one contaminant star each on gallery's J0201+3228 f606W and J0742+3341 f814W. Open
 items:
-- **PSF uncertainty — empirical, ACS focus-diverse, and WFPC2 MAST-DB tiers done; STDPSF
-  still genuinely open (no natural ensemble).** The empirical ePSF ships a per-pixel **error
+- **PSF uncertainty — every tier now ships an error map, but they do not all mean the same
+  thing** (ensemble scatter vs measured model-vs-truth; see the injected-kernel bullet
+  below and always check `err_lower_bound`). The empirical ePSF ships a per-pixel **error
   map** (`make_psf.py`, 2026-07-31): the star sample is resampled and the ePSF rebuilt —
   bootstrap-with-replacement (`--n-boot`, default 100), or leave-one-out jackknife when
   `< JACKKNIFE_MAX_STARS`=6 stars (bootstrap draws degenerate at tiny N) — and the per-pixel
@@ -888,16 +889,46 @@ items:
     the canonical kernel with the drizzle-broadened injected one. `make_psf_inject._promote`
     now moves the analytic error files aside alongside the analytic kernel/PNG/cutout it
     already moved, so a stale `_err` file never sits under the canonical name describing a
-    kernel it doesn't match. **There is deliberately no canonical error map for the injected
-    kernel** — the injection process has no propagated-uncertainty story of its own yet; that
-    is a real gap, not a wrong-but-present one. Rolled out sample-wide via `run_psf_all.sh
+    kernel it doesn't match. Rolled out sample-wide via `run_psf_all.sh
     slacs_gold --models-only` (2026-07-31): 24/34 model-tier products got an error map (1
     `inject_acs_fdpsf` + 23 `inject_wfpc2_psfdb`); the other 10 are STDPSF, correctly `null`.
-  - **STDPSF still carries no uncertainty** — a single static detector-frame grid with no
-    per-lens ensemble to resample (no per-exposure retrieval, no per-star archive). Unlike
-    the other two, this isn't a queued follow-up with an obvious method; it would need either
-    a focus-perturbation grid STScI doesn't publish per-filter, or some other proxy. → memory:
-    psf_uncertainty_empirical
+  - **The injected (canonical) kernel now has its own error map too** —
+    `scripts/make_psf_err_injected.py`, 2026-08-02, closing what this file previously called
+    a deliberate gap. All 69 injected products carry `psf_kernel_err.fits` +
+    `cutout_[cr_]psf_err.fits` describing the *canonical* kernel (same single-HDU,
+    non-renormalised convention as the empirical tier). **Two sources, never
+    interchangeable — the header `PSFERR`/`PSFEBND` and the JSON `err_method`/
+    `err_lower_bound` always say which:**
+    - **`ensemble_broadened` (48: 47 WFPC2 MAST-DB + 1 ACS focus-diverse) — a LOWER BOUND,
+      `PSFEBND=True`.** The analytic ensemble map convolved with the same drop box the
+      kernel got (`psf_models.drop_convolve_box`; the box preserves the sum, so no
+      renormalisation and the map stays in kernel amplitude units). Assumes the ensemble
+      perturbations are correlated on scales ≥ the box, so σ transforms like the signal
+      rather than in quadrature — true for smooth focus/star-sampling perturbations. It is
+      a lower bound because a bootstrap over N estimates the standard error of the *mean*
+      ePSF, which shrinks as 1/√N, while the model's error against a specific observation
+      is set by focus/breathing mismatch and does not shrink at all. **This is the only
+      thing measurable for WFPC2 F606W** — its fields are too star-poor for any empirical
+      build to exist to compare against. Measured 0.053–0.059.
+    - **`calibrated_vs_empirical` (21 STDPSF: 14 F160W + 7 gallery UVIS) — the measured
+      model-vs-truth error**, the quantity the ensemble route cannot see. Built from
+      `scripts/psf_model_error*.py` (*PSF model-error calibration*, below): radial *shape*
+      from the measured residual
+      profile, *magnitude* from the group's median quadrature-corrected residual. A flat map
+      would be badly wrong — the residual is ~95% core-dominated while the wings carry a
+      6–48% flux deficit, so `psf_err_frac_core`/`psf_err_frac_wing` are recorded alongside
+      the total. Necessarily a **group-level transfer by filter**, since a model-tier lens
+      has no empirical build of its own (that is why it fell back to the model): F160W
+      0.0358 (n=5, real injected comparisons), gallery F606W 0.0370 (n=11), F814W 0.0242
+      (n=4), F438W 0.0188 (n=3) — the gallery three from the analytic stand-in, so group
+      medians only. Empirical products are never touched (only `method` starting `inject`
+      is considered); verified 79 empirical maps unchanged. → memory:
+      stdpsf_model_error_measured
+  - **STDPSF has no *ensemble* uncertainty and never will** — a single static detector-frame
+    grid with no per-lens ensemble to resample (no per-exposure retrieval, no per-star
+    archive); it would need a focus-perturbation grid STScI doesn't publish per-filter. That
+    is why its error map is the calibrated-vs-empirical one above rather than a contrived
+    ensemble. → memory: psf_uncertainty_empirical, stdpsf_model_error_measured
 - **Model-PSF rotation uses cubic resampling** (`_resample_centered`, order 3, was order
   1/bilinear — bilinear softened the model kernel slightly, e.g. F606W DB FWHM 0.212″→0.221″).
   Code and the regenerated model-tier products (`model`, `model_acs_fdpsf`,
@@ -913,6 +944,45 @@ items:
   proxy), F160W already has the right-filter grid, so there's nothing to fix. Only focus-matched
   retrieval (à la ACS focus-diverse) could close the wing gap — not the DB. → memory:
   f160w_mast_db_injection_no_gain
+
+### PSF model-error calibration (`psf_model_error.py`, `psf_model_error_injected.py`)
+
+```bash
+uv run python scripts/psf_model_error.py                       # analytic stand-in, all tiers
+uv run python scripts/psf_model_error_injected.py --filt f160W # real injected builds
+uv run python scripts/make_psf_err_injected.py --dry-run       # consume it; writes nothing
+```
+
+Read-only QC that measures the **model tier against empirical drizzled truth** — the
+model-vs-accuracy number an ensemble bootstrap structurally cannot produce (it estimates the
+standard error of the *mean* ePSF, which shrinks as 1/√N; the error against a specific
+observation is set by focus/breathing mismatch and doesn't shrink at all). Targets every
+empirical build whose model tier would be STDPSF: F160W and all of `gallery`. Metric of
+record is `sqrt(Σ(mod−emp)²)` on aligned unit-sum kernels — the same construction as
+`psf_err_frac`, so the two are directly comparable. Measured 2026-08-02: **median 2.0× the
+bootstrap scatter on well-constrained truth (n_stars≥6), up to 7×**; F160W 0.036 vs bootstrap
+0.0086 (~4×). This is what `make_psf_err_injected.py` turns into the STDPSF tier's error map.
+
+**Three traps, all of which silently corrupt the measurement:**
+- **`make_psf.measure_fwhm` is unreliable on sharp, near-critically-sampled kernels** — its
+  2D-Gaussian fit returns a *larger* FWHM for a *higher*-peak kernel on the unbroadened
+  analytic model. Use `psf_model_error.fwhm_radial` (half-max crossing on the radial profile)
+  there. **Not a live pipeline bug**: the pipeline only ever fits the broader
+  drizzled/injected kernels, and every recorded `fwhm_pix` was checked and is sane.
+- **Residuals must be sub-pixel aligned first** — raw model-vs-empirical centroid offsets
+  reach ~1.9px and swamp the metric, turning a shape measurement into a centring one.
+- **The L2 residual is 94–97% core-dominated**, so it barely sees the wing deficit (model
+  enclosed wing flux runs 6–48% low). Report/propagate core and wing separately; one scalar
+  hides the part that matters most for extended arc flux.
+
+`psf_model_error.py` stands in for the injection promotion with
+`psf_models.analytic_drop_broaden`, which is **right in the median but unreliable per-lens**
+(individual F160W lenses moved up to 2.7× in both directions when checked against real
+injection, while the group median moved only 0.032→0.037) — so quote its **group medians
+only**. `psf_model_error_injected.py` does the honest per-lens comparison wherever a real
+`psf_kernel_injected.fits` exists. Building those is non-destructive on an empirical primary:
+`run_injection(promote=None)` auto-detects `promote=False` and writes only the parallel
+`*_injected` names (verified by mtime). → memory: stdpsf_model_error_measured
 
 ## Tracking JSONs in `info/`
 
