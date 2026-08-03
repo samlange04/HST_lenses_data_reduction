@@ -125,7 +125,7 @@ def _grid_from_M(cx, cy, M, n):
 
 
 def _base_filter(filt):
-    """Strip a split-visit suffix (f606W_v1 -> f606W) for filter-library lookups.
+    """Strip a split-visit suffix (f606W_v2 -> f606W) for filter-library lookups.
 
     Multi-visit lenses (J0728, J0822) are keyed per visit at the product-directory
     level, but the optics are identical across visits, so the model PSF is the base

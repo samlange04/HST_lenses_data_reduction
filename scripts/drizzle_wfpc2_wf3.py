@@ -113,8 +113,9 @@ _p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=Fals
                 help='also produce the no-CR comparison drizzle (off by default)')
 # Single-visit drizzling for multi-visit lenses. --pa restricts the drizzle to frames
 # within 1 deg of that PA_V3 (one guide-star solution -> clean MAST registration);
-# --out-suffix tags the output/work dir (e.g. f606W -> f606W_v1) so the two visits do
-# not overwrite each other. Used for J0728+3835 / J0822+2652, whose two visits have a
+# --out-suffix tags the output/work dir (e.g. f606W -> f606W_v2) so the two visits do
+# not overwrite each other -- empty (default) for the primary, longer-exptime visit,
+# same as any other filter. Used for J0728+3835 / J0822+2652, whose two visits have a
 # 14-15 deg roll split that TweakReg cannot co-register below ~0.3": drizzle each visit
 # separately and let the modelling (PyAutoLens DatasetModel.grid_offset) fit the offset.
 _p.add_argument('--pa',          type=float, default=None)
@@ -188,7 +189,7 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
-# take --out-suffix, so both visits share the one download but write to f606W_v1 / _v2.
+# take --out-suffix, so both visits share the one download but write to f606W / _v2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt + _a.out_suffix)
 work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt + _a.out_suffix)
@@ -217,10 +218,11 @@ except (KeyError, ImportError):
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt  # e.g. 'f606W' — the MAST filter name, used for querying
 # Tracking-JSON key. It mirrors the product directory, so a split-visit run
-# (--out-suffix _v1) is recorded under 'f606W_v1' and NOT under 'f606W'. Writing
-# these under the bare filter name is what left J0728+3835 claiming a combined
+# (--out-suffix _v2) is recorded under 'f606W_v2', not 'f606W' -- only the primary
+# (longer-exptime, empty-suffix) visit takes the bare filter key. Writing every visit
+# under the bare filter name is what once left J0728+3835 claiming a combined
 # 6600s/6-obsid f606W product that has never existed on disk (the real product is
-# f606W_v2, 4400s/4 frames — its 2-frame visit is dropped for want of dither phase).
+# now 'f606W', 4400s/4 frames — its 2-frame visit is dropped for want of dither phase).
 # That error was invisible precisely because the key was present and plausible.
 product_key          = filt + _a.out_suffix
 json_path            = os.path.join(ws_path, 'info', 'lens_products.json')

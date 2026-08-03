@@ -173,7 +173,7 @@
                 "wing_scatter": 0.000638,
                 "n_frames": 4
             },
-            "f606W_v2": {
+            "f606W": {
                 "method": "inject_wfpc2_psfdb",
                 "fwhm_pix": 4.3363,
                 "kernel_size": 35,
@@ -195,17 +195,7 @@
                 "wing_scatter": 0.000598,
                 "n_frames": 4
             },
-            "f606W_v1": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.5888,
-                "kernel_size": 35,
-                "cutout_kernel_size": 25,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001265,
-                "wing_scatter": 0.000672,
-                "n_frames": 2
-            },
-            "f606W_v2": {
+            "f606W": {
                 "method": "inject_wfpc2_psfdb",
                 "fwhm_pix": 4.2878,
                 "kernel_size": 35,
@@ -214,6 +204,16 @@
                 "pedestal_frac": 0.001402,
                 "wing_scatter": 0.001153,
                 "n_frames": 4
+            },
+            "f606W_v2": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.5888,
+                "kernel_size": 35,
+                "cutout_kernel_size": 25,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001265,
+                "wing_scatter": 0.000672,
+                "n_frames": 2
             }
         },
         "J0841+3824": {

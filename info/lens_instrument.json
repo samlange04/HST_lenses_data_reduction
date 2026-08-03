@@ -146,7 +146,7 @@
         "J0728+3835": {
             "f160W": "WFC3/IR",
             "f555W": null,
-            "f606W_v2": "WFPC2/WF3",
+            "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
         "J0737+3216": {
@@ -158,7 +158,7 @@
         "J0822+2652": {
             "f160W": "WFC3/IR",
             "f555W": null,
-            "f606W_v1": "WFPC2/WF3",
+            "f606W": "WFPC2/WF3",
             "f606W_v2": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },

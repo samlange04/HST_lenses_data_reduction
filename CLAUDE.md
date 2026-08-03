@@ -288,16 +288,19 @@ core into ~4 knots. The choice is stored in `info/wfpc2_alignment.json`.
 
 **Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have two
 visits at a ~14–16° roll (two guide-star solutions). They're drizzled as separate per-visit
-datasets (`--pa <PA_V3> --out-suffix _v1/_v2`, each single-guide-star → `mast`) into
-`f606W_v1`/`f606W_v2`. Outcome: **J0822+2652** = `f606W_v1` (2×1100s) + `f606W_v2`
-(4×1100s); **J0728+3835** = `f606W_v2` only (its 2-frame visit has 1 x-dither-phase, can't
-reach 0.05″, dropped); **J1142+1001 stays combined** (visits share roll, PA 119.00 vs
-118.87). `align_wfpc2_to_acs.py --f606-dir` and `make_cutouts.py --filt f606W_v1` handle
-the suffixed dirs.
+datasets (`--pa <PA_V3> --out-suffix ''/_v2`, each single-guide-star → `mast`); the
+**longer-exptime visit is the primary product, keyed bare `f606W`** (no suffix), any shorter
+visit `_v2` (`_v3`, ... if a lens ever has more). Outcome: **J0822+2652** = `f606W` (4×1100s)
++ `f606W_v2` (2×1100s); **J0728+3835** = `f606W` only (its other, 2-frame visit has 1
+x-dither-phase, can't reach 0.05″, dropped — never gets a product or suffix at all);
+**J1142+1001 stays combined** (visits share roll, PA 119.00 vs 118.87). Renamed 2026-08-03
+from the original `f606W_v1`/`f606W_v2` (arbitrary visit order, no bare `f606W` key) to this
+exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_cutouts.py --filt
+f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
 **J1142+1001 is the only combined-visit lens** — verified (2026-08-03) across every WFPC2
 F606W product on disk in both `slacs_gold` (38 lenses, incl. J0728+3835/J0822+2652's split
-`_v1`/`_v2` keys, each confirmed single-visit) and `slacs_other` (27 lenses, none multi-visit
+keys, each confirmed single-visit) and `slacs_other` (27 lenses, none multi-visit
 at all): grouping `info/lens_products.json` frame lists by 6-char rootname prefix, only
 J1142+1001's `f606W` product mixes two (`ua1l38` + `ua1lc8`, 6 frames total). The shared-roll
 combine criterion is a registration-consistency proxy (core-registration scatter on the
@@ -624,7 +627,7 @@ F606W star cutouts near the lens position (`x_cal/y_cal` within ±200px of ~435,
 F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` cutouts, gates them
 (inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
 and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
-`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `_v1/_v2`)
+`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_v2`)
 reuses it; records method `model_wfpc2_psfdb`. The cached ePSF is detector-frame; each lens
 **rotates it to North-up at resample time via that lens's WF3 exposure CD** (so one shared
 build serves every roll — see *Model PSFs are rotated to North-up*), and the pedestal
@@ -633,7 +636,7 @@ the lens's-own-field empirical build is preferred where stars exist — this is 
 **fallback, slotted ABOVE the STDPSF F555W proxy** (now fallback-of-the-fallback). **Traps:**
 the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext (1=PC…4=WF4) — **query chip 3 for
 WF3**, not chip 1 (PC has a different pixel scale *and* PSF); split-visit filter keys
-(`f606W_v1`) must be normalised to the base filter before any STDPSF/pivot lookup
+(`f606W_v2`) must be normalised to the base filter before any STDPSF/pivot lookup
 (`_base_filter`), or the model path KeyErrors. FWHM ~0.22″ (post-rotation). → memory:
 wfpc2_f606w_mast_psf_db
 
@@ -1031,12 +1034,15 @@ Updated automatically by every run:
 No data for a filter → value `null`.
 
 - **The key is the product directory, not the filter.** Usually they coincide (`f606W`), but
-  a split-visit lens is keyed per visit (`f606W_v1`/`f606W_v2`) with **no bare `f606W` key**.
-  The old "missing key = out of sync" check no longer holds for J0728+3835/J0822+2652 —
-  check keys against product directories instead. This fixed a live error: both split lenses
-  had recorded a plausible-but-nonexistent combined `f606W` (6 obsids, 6600 s), invisible
-  precisely because the key was present. Root cause: JSON writes keyed on the bare filter
-  while writing to a `--out-suffix` dir; now keyed on `product_key = filt + out_suffix`.
+  a split-visit lens is keyed per visit: `f606W` for its primary (longer-exptime) visit,
+  `f606W_v2` for a shorter one — so a bare `f606W` key does not by itself mean "the whole
+  filter, unsplit" for J0728+3835/J0822+2652 the way it does for every other WFPC2 lens.
+  Check keys against product directories, not against the filter name, when auditing these
+  two. This once caught a live error (pre-2026-08-03 naming): both split lenses had recorded
+  a plausible-but-nonexistent combined `f606W` (6 obsids, 6600 s) under the visit-order
+  `_v1`/`_v2` scheme, invisible precisely because a `f606W` key was present but meant
+  something else. Root cause was JSON writes keyed on the bare filter while writing to a
+  `--out-suffix` dir; keyed on `product_key = filt + out_suffix` since.
 - **Records drizzled frames, not the download.** WFPC2 `--pa` selects one visit; a lens that
   exits for want of dither phase writes nothing. ACS/WFC3 silently drop `EXPTIME=0` frames,
   so those are excluded from the record but not deleted (unlike WFPC2, where `MIN_EXPTIME`
@@ -1286,8 +1292,9 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
 
 - **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
   stay in sync. For `slacs_gold`/`slacs_other`: `f814W`, `f606W_f555W` (WFPC2 F606W —
-  including the split-visit `f606W_v1`/`f606W_v2` keys — merged with ACS F555W per lens,
-  since no SLACS lens has both), `f160W`. For `gallery`: one group per UVIS filter (no
+  including the split-visit `f606W_v2` key, tried only if the lens has no bare `f606W` —
+  merged with ACS F555W per lens, since no SLACS lens has both), `f160W`. For `gallery`: one
+  group per UVIS filter (no
   cross-filter merging). A sample not listed there falls back to one group per filter
   subdirectory found on disk, so a new sample/filter still produces mosaics with no code
   change.

@@ -374,7 +374,7 @@
                 "ia1l75pvq",
                 "ia1l75pxq"
             ],
-            "f606W_v2": [
+            "f606W": [
                 "ua1lt101m",
                 "ua1lt102m",
                 "ua1lt103m",
@@ -408,15 +408,15 @@
                 "ia1l77o9q",
                 "ia1l77ocq"
             ],
-            "f606W_v1": [
-                "ua1l2302m",
-                "ua1l2304m"
-            ],
-            "f606W_v2": [
+            "f606W": [
                 "ua1lt301m",
                 "ua1lt302m",
                 "ua1lt303m",
                 "ua1lt304m"
+            ],
+            "f606W_v2": [
+                "ua1l2302m",
+                "ua1l2304m"
             ],
             "f814W": [
                 "j9op08j9q",

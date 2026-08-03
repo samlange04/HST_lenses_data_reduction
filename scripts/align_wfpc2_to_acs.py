@@ -80,7 +80,7 @@ def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE):
 def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE):
     cat = SkyCoord(*slacs_coords[lens], unit=(u.hourangle, u.deg))
     ref = find_product(lens, 'f814W', 'acs_wfc_flc', sample)   # GAIA-accurate reference
-    f606 = find_product(lens, f606_dir, 'wfpc2_wf3', sample)   # f606_dir may be f606W_v1/_v2
+    f606 = find_product(lens, f606_dir, 'wfpc2_wf3', sample)   # f606_dir may be f606W_v2
     if ref is None:
         print(f'{lens}: no ACS F814W product to align against — skip')
         return
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     p.add_argument('--lens')
     p.add_argument('--all', action='store_true')
     p.add_argument('--f606-dir', default='f606W',
-                   help='F606W band subdirectory (e.g. f606W_v1/f606W_v2 for split visits)')
+                   help='F606W band subdirectory (e.g. f606W_v2 for a split lens\'s second visit)')
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory of data/drizzled/. Defined in '
                         f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
