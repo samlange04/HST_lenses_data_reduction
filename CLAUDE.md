@@ -861,9 +861,15 @@ products ok (gallery excludes J1110+2808 F814W/F438W, see *BELLS GALLERY*), 33/3
 each, 0 failures, no empirical/model method flips vs the pre-existing builds. Crowding cut
 caught one contaminant star each on gallery's J0201+3228 f606W and J0742+3341 f814W. Open
 items:
-- **PSF uncertainty — every tier now ships an error map, but they do not all mean the same
-  thing** (ensemble scatter vs measured model-vs-truth; see the injected-kernel bullet
-  below and always check `err_lower_bound`). The empirical ePSF ships a per-pixel **error
+- **PSF uncertainty — coverage is complete; interpretation is the remaining caveat. All 149
+  PSF products across all three samples carry an error map** (verified on disk and in
+  `info/lens_psf.json`, 2026-08-03: 149 `psf_kernel_err.fits` + 149 `cutout_[cr_]psf_err.fits`,
+  zero products with a `null` `err_method`) — **but the maps do not all mean the same thing**
+  (ensemble scatter vs measured model-vs-truth; see the injected-kernel bullet below and
+  always check `err_lower_bound` before pooling them in a fit). Breakdown: **79 empirical**
+  (62 `bootstrap` + 17 `jackknife`), **49 `ensemble_broadened`** (47 WFPC2 MAST-DB + 2 ACS
+  focus-diverse — a lower bound), **21 `calibrated_vs_empirical`** (STDPSF, the measured
+  model-vs-truth error). The empirical ePSF ships a per-pixel **error
   map** (`make_psf.py`, 2026-07-31): the star sample is resampled and the ePSF rebuilt —
   bootstrap-with-replacement (`--n-boot`, default 100), or leave-one-out jackknife when
   `< JACKKNIFE_MAX_STARS`=6 stars (bootstrap draws degenerate at tiny N) — and the per-pixel
@@ -907,12 +913,12 @@ items:
     `inject_acs_fdpsf` + 23 `inject_wfpc2_psfdb`); the other 10 are STDPSF, correctly `null`.
   - **The injected (canonical) kernel now has its own error map too** —
     `scripts/make_psf_err_injected.py`, 2026-08-02, closing what this file previously called
-    a deliberate gap. All 69 injected products carry `psf_kernel_err.fits` +
+    a deliberate gap. All 70 injected products carry `psf_kernel_err.fits` +
     `cutout_[cr_]psf_err.fits` describing the *canonical* kernel (same single-HDU,
     non-renormalised convention as the empirical tier). **Two sources, never
     interchangeable — the header `PSFERR`/`PSFEBND` and the JSON `err_method`/
     `err_lower_bound` always say which:**
-    - **`ensemble_broadened` (48: 47 WFPC2 MAST-DB + 1 ACS focus-diverse) — a LOWER BOUND,
+    - **`ensemble_broadened` (49: 47 WFPC2 MAST-DB + 2 ACS focus-diverse) — a LOWER BOUND,
       `PSFEBND=True`.** The analytic ensemble map convolved with the same drop box the
       kernel got (`psf_models.drop_convolve_box`; the box preserves the sum, so no
       renormalisation and the map stays in kernel amplitude units). Assumes the ensemble
@@ -922,7 +928,12 @@ items:
       ePSF, which shrinks as 1/√N, while the model's error against a specific observation
       is set by focus/breathing mismatch and does not shrink at all. **This is the only
       thing measurable for WFPC2 F606W** — its fields are too star-poor for any empirical
-      build to exist to compare against. Measured 0.053–0.059.
+      build to exist to compare against. Measured 0.053–0.059 for the 47 WFPC2 products;
+      the 2 ACS focus-diverse ones sit ~2 orders of magnitude lower (J1213+6708 3.83e-04,
+      J1016+3859 5.71e-04) because a jackknife over 4–8 exposures measures how stable the
+      exposure-average is, not how far the focus-diverse model sits from truth — a
+      **very** loose lower bound there, and one whose tier exists precisely because those
+      fields had too few stars for an empirical build to check against.
     - **`calibrated_vs_empirical` (21 STDPSF: 14 F160W + 7 gallery UVIS) — the measured
       model-vs-truth error**, the quantity the ensemble route cannot see. Built from
       `scripts/psf_model_error*.py` (*PSF model-error calibration*, below): radial *shape*
