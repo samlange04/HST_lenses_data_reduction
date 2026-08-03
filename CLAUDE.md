@@ -10,7 +10,7 @@ what a pointer already settles; don't restate the tables here.
 > decisions the code never implemented (argparse defaults, runners reading a JSON, a
 > pipeline stage). Before running any batch campaign or reporting what's outstanding,
 > verify against source — argparse defaults, what the runner actually passes, tracking
-> JSONs vs what's on disk. → memory: claude-md-documents-intent-not-state
+> JSONs vs what's on disk.
 
 ## Environment
 
@@ -62,7 +62,7 @@ an unkillable U-state (only a reboot clears it). `scripts/mmap_fits_write.py` mo
 dodging the hang; it is a no-op off macOS and byte-identical to stock astropy. Every
 drizzle script imports it and calls `install()` before AstroDrizzle. `DRIZZLE_MMAP_DEBUG=1`
 logs each mmap write. **`num_cores=1` in all scripts is a related, separate requirement** —
-parallel `fork` triggers the same U-state. → memory: env_rosetta_x86, feedback_num_cores
+parallel `fork` triggers the same U-state.
 
 ## What this repo does
 
@@ -151,8 +151,8 @@ The three traps generalise to anything driving this pipeline:
   *every* drizzle. Skipping it gives stamps that look perfect alone and are ~0.3–0.9″ off
   the other bands.
 
-→ memory: claude-md-documents-intent-not-state (all three were once documented but
-unimplemented).
+(All three were once documented in CLAUDE.md but unimplemented — a concrete instance of
+the "documents intent, not state" warning at the top of this file.)
 
 ### `scripts/stale_scripts/` — retained, but nothing invokes them
 
@@ -200,7 +200,7 @@ data/
   cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
-  pre_drizzled/                           ← 46 MAST-delivered mosaics, kept for reference; not pipeline output
+  pre_drizzled/                           ← 46 MAST-delivered mosaics (zipped as slacs.zip), kept for reference; not pipeline output
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
 ```
@@ -218,8 +218,8 @@ data/
 The output suffix is set by **input file type**, not output name: `_drc_` for FLC (ACS,
 WFC3/UVIS), `_drw_` for WFPC2 FLT, `_drz_` for everything else. The WFPC2 script extracts
 only the WF3 chip (SCI/ERR/DQ ext 3) into `wf3_`-prefixed files first; the others are MEF
-files DrizzlePac handles natively. → memory: instrument_drizzle_ref, crds_bestrefs_always_run
-(never skip `bestrefs` when the ref dir is non-empty).
+files DrizzlePac handles natively. Never skip the CRDS `bestrefs` sync when the ref dir is
+non-empty — references can update independently of what's already cached locally.
 
 `drizzle_wfc3_uvis.py` is the BELLS GALLERY driver — see *BELLS GALLERY: WFC3/UVIS
 reduction* below for its defaults, alignment, and current coverage.
@@ -230,7 +230,7 @@ For all 22 SLACS WFPC2 F606W lenses the lens galaxy falls on **WF3** (ext 3) at
 ~(435, 424). `DETECTOR = PC` in the primary header (hence the `WFPC2/PC` MAST label) names
 the *aperture*, not the chip; the full-field aperture centres the target on WF3. Only the
 per-extension `DETECTOR` identifies chips (1=PC…4=WF4). The superseded `drizzle_wfpc2_pc.py`
-extracted ext 1 → 22 blank-sky mosaics ~79″ off the lens. → memory: wfpc2_target_on_wf3
+extracted ext 1 → 22 blank-sky mosaics ~79″ off the lens.
 
 Two consequences for `drizzle_wfpc2_wf3.py`:
 - **Chip renumbering.** DrizzlePac indexes chips positionally `(SCI, 1..N)`, so the
@@ -245,8 +245,6 @@ Two consequences for `drizzle_wfpc2_wf3.py`:
 
 ### WFPC2 archive traps (each silently costs exposures)
 
-→ memory: wfpc2_copy_visits_and_c0m
-
 - **`-COPY` targets are genuine repeat visits**, not duplicates — they carry most of the
   usable exposure time. The script keeps both and filters on `MIN_EXPTIME = 10s` instead of
   a "prefer non-COPY" rule (which also covers the `EXPTIME=0` case).
@@ -260,7 +258,7 @@ Two consequences for `drizzle_wfpc2_wf3.py`:
 
 **Do not unify the scripts on this.** Each takes `--align {mast,tweakreg}`; the correct
 default is not the same for all. Verified by stacked FWHM and (for WFPC2) core-registration
-scatter. → memory: wfpc2_tweakreg_misregisters
+scatter.
 
 | Instrument | Default | What `mast` does |
 |---|---|---|
@@ -321,8 +319,7 @@ TweakReg's self-consistency even when the deflector is split.
 
 TweakReg `threshold` is in **image data units** and does not transfer between detectors
 (WFPC2/WF3 100, WFC3/IR 20, ACS default). This only takes effect under `--align tweakreg`,
-which no lens uses — dead code kept for comparison runs. → memory:
-tweakreg_threshold_per_instrument
+which no lens uses — dead code kept for comparison runs.
 
 ### `align_wfpc2_to_acs.py` — F606W absolute astrometry (after drizzle, before cutouts)
 
@@ -358,8 +355,6 @@ resampling — see *Drizzle correlated noise*.
 
 ### WFPC2 noise: two fixes, both required (`IVM`, and a real noise model)
 
-→ memory: wfpc2_err_weighting_not_supported
-
 1. **DrizzlePac ignores ERR for WFPC2.** `WFPC2InputImage` hardcodes `errExt = None`, so
    `--wht-type ERR` silently falls back to exposure-time weighting (measured core/sky ratio
    exactly 1.000, vs ~3.5 for ACS). Fix: `build_ivm_files()` builds a per-frame IVM and
@@ -379,7 +374,7 @@ be ~20% wrong at the core, so widen the lever across frames before trusting it.
 
 ### `1/sqrt(WHT)` is a σ map only if the input ERR is in counts
 
-→ memory: noise_map_err_units. DrizzlePac computes `weight = (EXPTIME/ERR)²`:
+DrizzlePac computes `weight = (EXPTIME/ERR)²`:
 - **ACS FLC** ERR in ELECTRONS → `EXPTIME/ERR = 1/σ_rate` → K=1, correct.
 - **WFC3/IR FLT** ERR in ELECTRONS/S → weights inflated by EXPTIME², noise map came out
   **EXPTIME (599.2 s) too small** (SNR ~60,000).
@@ -412,7 +407,7 @@ has no equivalent cross-band tie script, and doesn't need one; see *BELLS GALLER
 
 ## Cosmic-ray rejection: LACosmic, not `driz_cr` (ACS **and** WFPC2)
 
-→ memory: acs_cr_pass_eats_core. `--cr` masks CRs per frame with LACosmic (default
+`--cr` masks CRs per frame with LACosmic (default
 `--cr-method lacosmic`) then drizzles a plain weighted mean (`median=False, blot=False,
 driz_cr=False`); `--cr-method drizcr` restores the old route. WFPC2 uses the same LACosmic
 route (`--lacosmic-sigclip 4.5 --lacosmic-objlim 5.0`; gain/readnoise/saturate from the WF3
@@ -431,12 +426,12 @@ inherit the mask and become silently CR-rejected.
 
 **Do not add CR rejection to F160W.** At 0.1283″/px the IR PSF is ~1 px FWHM and looks like
 an outlier: LACosmic zeroes field stars, `driz_cr` costs ~10% of a star's peak, at every
-`objlim`. WFC3/IR FLTs are already up-the-ramp CR-rejected. → memory: wfc3ir_quadrupled_defects
+`objlim`. WFC3/IR FLTs are already up-the-ramp CR-rejected.
 
 ## Output pixel scales
 
 Chosen by measurement (weight-map uniformity + FWHM + noise-map correlation), not
-convention. → memory: drizzle_correlated_noise
+convention (see *Drizzle correlated noise* below).
 
 | Band | Instrument | Native | Output | pixfrac |
 |---|---|---|---|---|
@@ -448,7 +443,7 @@ convention. → memory: drizzle_correlated_noise
   each band at its native scale and fits sub-pixel inter-band offsets, so a common drizzle
   grid buys nothing; 0.05″ opens no empty pixels but worsens weight non-uniformity. **Kept
   at 0.06″ / pixfrac 1.0, settled by the user 2026-07-26 after a scale/pixfrac scan — do
-  not reopen without being asked.** → memory: wfc3ir_quadrupled_defects
+  not reopen without being asked.**
 - **F160W and F606W use pixfrac 1.0, not 0.8.** With ERR-based noise the goal is a uniform,
   low-correlation noise map for the likelihood, not the sharpest PSF (which PyAutoLens fits
   explicitly). pixfrac 1.0 drops adjacent-pixel noise correlation markedly at a small PSF
@@ -458,7 +453,7 @@ convention. → memory: drizzle_correlated_noise
 
 ## Drizzle correlated noise (matters for strong-lens modelling)
 
-→ memory: drizzle_correlated_noise. Drizzling onto a finer-than-native grid correlates
+Drizzling onto a finer-than-native grid correlates
 adjacent output pixels (each output pixel is a weighted sum of overlapping input pixels;
 neighbours share input pixels, so their noise is covariant) — intrinsic to drizzle
 resampling, stronger with oversampling. `final_wht_type=ERR` makes the **per-pixel
@@ -488,8 +483,7 @@ noise FITS (from the weight map), and a 3-panel PNG.
   exists, else no-CR. The prefix encodes it so the two coexist: **`cutout_cr_*` for CR,
   `cutout_*` for no-CR.** ACS F814W/F555W and WFPC2 F606W now default to a LACosmic CR pass
   → `auto` cuts `cutout_cr_*`, which is science-grade (LACosmic preserves the core). WFC3/IR
-  F160W has no CR pass, so `auto` falls back to `cutout_*` there. → memory:
-  cutout_centring_on_cr_pass
+  F160W has no CR pass, so `auto` falls back to `cutout_*` there.
 - **Recentring.** The stamp recentres on the galaxy, and the peak search prefers the CR
   mosaic — a brightest-pixel search on a CR-laden no-CR mosaic locks onto cosmic rays. Don't
   reach for `--median-size` for a bad recentre; check a `*_cr_*` mosaic is present.
@@ -562,7 +556,7 @@ build is already the true drizzled PSF (cut from the mosaic) and is never touche
 
 Records `info/lens_psf.json` (`{sample:{lens:{filt:{method,n_stars,fwhm_pix,oversample,
 kernel_size,cutout_kernel_size,trim_threshold}}}}`, `null` + exit 0 on no data). Run
-**after** the drizzles (a PSF needs a mosaic). → memory: psf_generation, psf_kernel_sizing
+**after** the drizzles (a PSF needs a mosaic). → memory: psf_kernel_sizing
 
 **Kernel size is an amplitude cut, not enclosed-energy.** The trimmed modelling kernel is cut
 where the azimuthally-averaged PSF drops below `trim_threshold`×peak — the extent over which
@@ -849,11 +843,13 @@ footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/psf_star
 across all of `slacs_gold`**; `info/lens_psf.json` holds all products, 0 failures. All ACS
 empirical PSFs were **rebuilt from the no-CR pass (2026-07-29)**: total ACS stars **344 →
 599 (+74%)**, with **4 model→empirical conversions** (J0157, J1023, J1525, J2341 f814W).
-Method breakdown: **F814W** 37 empirical + 1 `model_acs_fdpsf` (only J1213+6708, a star-poor
-field stuck at 2 stars); **F555W** 16 empirical; **F606W** `model_wfpc2_psfdb` (native
-MAST-DB, no more F555W proxy); **F160W** 3 empirical + 10 exact-filter STDPSF `model`
-(F160W has no CR pass, so unaffected by the no-CR change; the hybrid gate dropped the noisy
-empirical builds). Each product carries `pedestal_frac`; the model tier is rotated to
+Method breakdown (post the *Drizzle-broadened model PSF by injection* promotion below, so
+model-tier methods read `inject_*` not `model_*`): **F814W** 37 empirical + 1
+`inject_acs_fdpsf` (only J1213+6708, a star-poor field stuck at 2 stars); **F555W** 16
+empirical; **F606W** `inject_wfpc2_psfdb` (native MAST-DB, no more F555W proxy); **F160W** 3
+empirical + 10 exact-filter STDPSF `inject_stdpsf` (F160W has no CR pass, so unaffected by
+the no-CR change; the hybrid gate dropped the noisy empirical builds). Each product carries
+`pedestal_frac`; the model tier is rotated to
 North-up. Vet after any no-CR rebuild: more stars can surface a close double / galaxy
 (fixed J1451-0239 f814W double); high-count builds dilute a single bad star, low-count
 (≤~6, e.g. J0029 at 3) ones don't. The gate thresholds (`min_snr=30`, core ≥15× outskirt,
@@ -1044,9 +1040,10 @@ No data for a filter → value `null`.
   something else. Root cause was JSON writes keyed on the bare filter while writing to a
   `--out-suffix` dir; keyed on `product_key = filt + out_suffix` since.
 - **Records drizzled frames, not the download.** WFPC2 `--pa` selects one visit; a lens that
-  exits for want of dither phase writes nothing. ACS/WFC3 silently drop `EXPTIME=0` frames,
-  so those are excluded from the record but not deleted (unlike WFPC2, where `MIN_EXPTIME`
-  removes them outright). Exposure times were always correct (from the header).
+  exits for want of dither phase writes nothing. ACS/WFC3 silently drop sub-`MIN_EXPTIME`
+  frames (same 10s floor as WFPC2 since 2026-08-03 — see *Lens Samples* below), so those are
+  excluded from the record and from the drizzle work directory. Exposure times were always
+  correct (from the header).
 - Auditing obsid counts vs `NDRIZIM`: **ACS/WFC FLCs are 2-chip MEFs**, so `NDRIZIM =
   2×exposures` there and 1× for WFPC2/WFC3 — comparing directly reports 54 false mismatches.
 - All three levels stay sorted (sample, lens, and filter/key within each lens) across
@@ -1076,17 +1073,20 @@ prop 11202). NICMOS F160W (24 lenses) is deprioritised and its data deleted. HST
 10886, 11202, 10494, 10798.
 
 `slacs_other` coverage (27 lenses, reduced 2026-07-29): **F606W** (WFPC2/WF3, 24/27),
-**F814W** (ACS/WFC, 3/27 — the rest are `BLOCK_EXPTIME`-gated or absent, see *Total-
-exposure-time gate*), **F160W** (WFC3/IR, 6/27), **F555W** (ACS/WFC, 0/27 — none of these
-lenses fall in props 10494/10798). Only 3 lenses (J0959+4416, J1153+4612, J1416+5136) have
-both F606W and F814W, so `align_wfpc2_to_acs.py` has only tied those three to absolute
-astrometry — the other 21 F606W products carry their delivered GSC240 absolute WCS
-(~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no per-lens `--align` audit for
-`slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses); every `slacs_other` WFPC2
-lens falls back to the documented default, `mast`. `run_psf_all.sh`/`make_psf.py` has been
-run for this sample (2026-08-01): 33/33 PSF products ok, `info/lens_psf.json` populated
-(24 `inject_wfpc2_psfdb` at F606W, 5 empirical + 4 `inject_stdpsf` across F814W/F160W) —
-see *PSF generation* above for the campaign details.
+**F814W** (ACS/WFC, 4/27 — the rest are `BLOCK_EXPTIME`-gated or absent, see *Total-
+exposure-time gate*; `J1016+3859` recovered 2026-08-03 via `force_copy`, see above),
+**F160W** (WFC3/IR, 6/27), **F555W** (ACS/WFC, 0/27 — none of these lenses fall in props
+10494/10798). 4 lenses (J0959+4416, J1016+3859, J1153+4612, J1416+5136) have both F606W and
+F814W; `align_wfpc2_to_acs.py` has only tied 3 of them (`J1016+3859` not yet run — its
+force_copy recovery postdates the last alignment pass) — the other 21 F606W products carry
+their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no
+per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses);
+every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
+`run_psf_all.sh`/`make_psf.py` has been run for this sample (2026-08-01, before the
+J1016+3859 recovery — that lens's PSF was built separately in the same commit that added it):
+33/33 (now 34/34) PSF products ok, `info/lens_psf.json` populated (24 `inject_wfpc2_psfdb` at
+F606W, 5 empirical + 5 model/`inject_stdpsf`-family across F814W/F160W, incl. J1016+3859's
+star-poor `inject_acs_fdpsf`) — see *PSF generation* above for the campaign details.
 
 `gallery` coverage (15 lenses, reduced 2026-07-29): **F606W** on all 15 (the primary band),
 **F814W**/**F438W** on 6, **F275W** on 5, **F225W** on 1 (J2342-0120). See *BELLS GALLERY:
@@ -1117,11 +1117,20 @@ for naming variations).
 
 **COPY handling differs by instrument, deliberately — don't unify without re-checking the
 archive:**
-- **ACS** filters COPY out in favour of non-COPY, **except** lenses with `"force_copy":
-  true` (only `J1032+5322` F814W, whose non-COPY frames are `EXPTIME=0`). → memory:
-  j1032_exptime_zero
+- **ACS/WFC3-IR/WFC3-UVIS** filter COPY out in favour of non-COPY, **except** lenses with
+  `"force_copy": true` in `lens_samples.json`, needed whenever the preferred non-COPY visit
+  turns out to be entirely dead frames: `J1032+5322` F814W (non-COPY frames `EXPTIME=0`) and
+  `J1016+3859` F814W (non-COPY frames `EXPTIME=0`, recovered 2026-08-03 — see the
+  per-exposure floor note below). `drizzle_wfc3_ir.py` gained `force_copy` support in the
+  same pass, so a WFC3/IR lens hitting this can now use it too.
 - **WFPC2** keeps both (COPY sets are genuine repeat visits) and rejects junk on
   `MIN_EXPTIME`.
+- **Per-exposure exptime floor (2026-08-03).** The ACS/WFC3-IR/WFC3-UVIS per-frame filter
+  was `EXPTIME > 0`, which only catches an exact-zero frame — a dead/aborted exposure can
+  carry a small nonzero `EXPTIME` (0.5s seen on real archive data) that used to slip through
+  into the drizzle work directory at a small nonzero weight. Raised to `MIN_EXPTIME = 10s` in
+  all three scripts, matching WFPC2's existing constant; the copy-to-work-dir step now
+  excludes sub-floor frames directly, not just the provenance record.
 
 ### Non-standard MAST target names (`GAL-*`)
 
@@ -1170,8 +1179,6 @@ re-run with `--cr` if a recentre looks wrong).
 
 ### WFC3/IR: quadrupled defects and the `bits=''` trap
 
-→ memory: wfc3ir_quadrupled_defects, drizzle_bits_empty_string_trap
-
 - **`final_bits=''` / `driz_sep_bits=''` disables DQ masking entirely.**
   `interpret_bit_flags('')` → `None`, and AstroDrizzle then keeps *every* flagged pixel as
   good (the opposite of intent) and silently voids any CR flag in DQ 4096. **`0` means
@@ -1194,8 +1201,7 @@ re-run with `--cr` if a recentre looks wrong).
 ACS shows the same physics as diagonal **stripes**, not dots: it drizzles native 0.05″
 (one masked input px → one output px, vs 4.57 for F160W) and deliberately keeps
 stable-hot/warm pixels as good; what it *does* mask that replicates is bad columns, which
-`final_rot=0.0` rotates into 4 parallel diagonal stripes in the noise map. → memory:
-acs_bad_column_stripes
+`final_rot=0.0` rotates into 4 parallel diagonal stripes in the noise map.
 
 ## BELLS GALLERY: WFC3/UVIS reduction (`scripts/drizzle_wfc3_uvis.py`)
 
@@ -1320,5 +1326,4 @@ Do not generate or propose NICMOS (NIC2) products unless explicitly asked — th
 too small (~19″ vs ~139″ for WFC3/IR) and the pipeline may be unsound. Answer F160W coverage
 from WFC3/IR. All NICMOS data was deleted 2026-07-21 (472 MB); re-runnable via
 `scripts/stale_scripts/drizzle_nic2.py` (raises `NotImplementedError` on import unless
-`ALLOW_NICMOS=1`), which re-downloads from MAST. → memory: feedback_ignore_nicmos,
-nicmos_tweakreg_tuning
+`ALLOW_NICMOS=1`), which re-downloads from MAST.
