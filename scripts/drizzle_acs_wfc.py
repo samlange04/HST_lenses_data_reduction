@@ -76,11 +76,16 @@ _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizc
 # assume. An explicit --align on the command line still wins over this table.
 ALIGN_OVERRIDES = {('J1213+6708', 'f814W'): 'tweakreg'}
 _p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
-# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>0 only).
-# slacs_other runs generally shorter total exposures than slacs_gold; below
+# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>MIN_EXPTIME
+# only). slacs_other runs generally shorter total exposures than slacs_gold; below
 # BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
+# Per-exposure floor: a dead/aborted frame (guide-star acquisition failure, pointing
+# check shot) can carry a small nonzero EXPTIME (0.5s seen on real archive data) that
+# `> 0` does not catch. 10s matches WFPC2's own MIN_EXPTIME (drizzle_wfpc2_wf3.py) --
+# below it a frame is noise, not science.
+MIN_EXPTIME = 10.0
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
 # inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
 # CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
@@ -294,22 +299,24 @@ info_json.update(instrument_json_path, sample, lens, filt_key, f'{_instrume}/{_d
 
 # ── Provenance ────────────────────────────────────────────────────────────────
 # Record the frames that actually reach the drizzle, not everything the download
-# left in data/calibrated/. Two reasons this is not the same set:
+# left in data/calibrated/. Reasons this is not the same set:
 #   * AstroDrizzle silently drops EXPTIME=0 frames, so listing the download
 #     overstated the product on J0008-0004 f814W (4 recorded vs 3 drizzled),
 #     J0912+0029 f555W (8 vs 5) and f814W (8 vs 7), and J1213+6708 f814W (5 vs 4).
+#   * a dead/aborted exposure can carry a small nonzero EXPTIME (0.5s seen on real
+#     data) that AstroDrizzle does NOT drop on its own -- it drizzles it in at a
+#     (tiny but nonzero) weight. MIN_EXPTIME=10s catches these; the copy-to-work-dir
+#     step below excludes them from the drizzle input itself, not just this record.
 #   * this used to live inside the download block, so a re-run on already-present
 #     files never refreshed it at all.
-# EXPTIME=0 frames are only filtered out of the record here, not deleted -- unlike
-# WFPC2, where they are removed outright (MIN_EXPTIME) because they would otherwise
-# reach the drizzle. Keep in mind when auditing: ACS/WFC FLCs are 2-chip MEFs, so the
-# product's NDRIZIM is 2 x the number of exposures listed here.
+# Keep in mind when auditing: ACS/WFC FLCs are 2-chip MEFs, so the product's NDRIZIM
+# is 2 x the number of exposures listed here.
 _frames = [
     (os.path.basename(f).replace('_flc.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flc.fits'))
 ]
-_obs_ids = sorted(rootname for rootname, exp in _frames if exp > 0)
-_total_exptime = sum(exp for _, exp in _frames if exp > 0)
+_obs_ids = sorted(rootname for rootname, exp in _frames if exp > MIN_EXPTIME)
+_total_exptime = sum(exp for _, exp in _frames if exp > MIN_EXPTIME)
 
 if _total_exptime < BLOCK_EXPTIME:
     info_json.update(exptime_json_path,    sample, lens, filt_key, None)
@@ -376,7 +383,16 @@ os.environ['jref']            = os.path.join(
     ref_path, 'references', 'hst', 'acs') + os.sep
 
 # ── Copy FLC files to work directory and work there ───────────────────────────
+# Excludes frames at/below MIN_EXPTIME here, not just from the provenance record
+# above -- otherwise a dead exposure with e.g. EXPTIME=0.5 still lands in flc_files
+# and gets drizzled in (AstroDrizzle only auto-drops exact EXPTIME=0). Filters on
+# the header, not the _obs_ids set, so it also catches already-cached files from
+# before this check existed without requiring a re-download.
 for f in glob.glob(os.path.join(data_path, '*flc.fits')):
+    if fits.getheader(f)['EXPTIME'] <= MIN_EXPTIME:
+        print(f'  excluding {os.path.basename(f)} from drizzle input: '
+              f"EXPTIME={fits.getheader(f)['EXPTIME']}s <= {MIN_EXPTIME:.0f}s")
+        continue
     shutil.copy(f, work_path)
 
 os.chdir(work_path)

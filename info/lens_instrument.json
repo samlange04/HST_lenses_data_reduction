@@ -384,7 +384,7 @@
             "f160W": "WFC3/IR",
             "f555W": null,
             "f606W": "WFPC2/WF3",
-            "f814W": null
+            "f814W": "ACS/WFC"
         },
         "J1100+5329": {
             "f160W": null,

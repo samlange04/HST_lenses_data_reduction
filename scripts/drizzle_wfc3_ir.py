@@ -49,11 +49,16 @@ _p.add_argument('--align',       default='mast', choices=['mast', 'tweakreg'],
                 help="'mast' (default) trusts the GSC242/GAIAeDR3-fitted WCS in the "
                      "delivered files and runs neither updatewcs nor TweakReg; "
                      "'tweakreg' restores the old re-solve, which erases the dither.")
-# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>0 only).
-# slacs_other runs generally shorter total exposures than slacs_gold; below
+# Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>MIN_EXPTIME
+# only). slacs_other runs generally shorter total exposures than slacs_gold; below
 # BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
+# Per-exposure floor: a dead/aborted frame (guide-star acquisition failure, pointing
+# check shot) can carry a small nonzero EXPTIME (0.5s seen on real archive data) that
+# `> 0` does not catch. 10s matches WFPC2's own MIN_EXPTIME (drizzle_wfpc2_wf3.py) --
+# below it a frame is noise, not science.
+MIN_EXPTIME = 10.0
 _p.add_argument('--cr',          action='store_true', default=False)
 _p.add_argument('--_subprocess', action='store_true', default=False, help=argparse.SUPPRESS)
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
@@ -354,9 +359,13 @@ else:
             # Not an error: this lens simply has no WFC3/IR data in this filter.
             _mast_empty = True
             raise mast_target_names.NoMastData()
-        _non_copy = [t for t in obs_table['target_name'] if 'COPY' not in t.upper()]
-        if _non_copy:
-            obs_table = obs_table[np.array(['COPY' not in t.upper() for t in obs_table['target_name']])]
+        _copy_mask = np.array(['COPY' in t.upper() for t in obs_table['target_name']])
+        _non_copy  = [t for t in obs_table['target_name'] if 'COPY' not in t.upper()]
+        if mast_target_names.force_copy(lens) and _copy_mask.any():
+            obs_table = obs_table[_copy_mask]
+            print(f'  Forcing {len(obs_table)} COPY observations for {lens} (non-COPY unusable)')
+        elif _non_copy:
+            obs_table = obs_table[~_copy_mask]
             print(f'  Using {len(obs_table)} non-COPY observations')
         else:
             print(f'  No non-COPY observations found, using COPY data')
@@ -403,15 +412,18 @@ info_json.update(instrument_json_path, sample, lens, filt_key, f'{_instrume}/{_d
 # ── Provenance ────────────────────────────────────────────────────────────────
 # Record the frames that actually reach the drizzle, not everything the download left
 # in data/calibrated/, and refresh on every run -- this used to sit inside the download
-# block, so a re-run on already-present files never updated it. EXPTIME=0 frames are
-# excluded because AstroDrizzle drops them (that mismatch was real on four ACS
-# entries; no WFC3/IR lens currently has one, but the rule is the same).
+# block, so a re-run on already-present files never updated it. EXPTIME<=MIN_EXPTIME
+# frames are excluded: AstroDrizzle drops exact EXPTIME=0 on its own (that mismatch
+# was real on four ACS entries), but a dead frame can carry a small nonzero EXPTIME
+# (0.5s seen on real archive data) that it does not drop -- MIN_EXPTIME=10s catches
+# those too. The copy-to-work-dir step below excludes them from the drizzle input
+# itself, not just this record.
 _frames = [
     (os.path.basename(f).replace('_flt.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flt.fits'))
 ]
-_obs_ids = sorted(rootname for rootname, exp in _frames if exp > 0)
-_total_exptime = sum(exp for _, exp in _frames if exp > 0)
+_obs_ids = sorted(rootname for rootname, exp in _frames if exp > MIN_EXPTIME)
+_total_exptime = sum(exp for _, exp in _frames if exp > MIN_EXPTIME)
 
 if _total_exptime < BLOCK_EXPTIME:
     info_json.update(exptime_json_path,    sample, lens, filt_key, None)
@@ -469,7 +481,15 @@ os.environ['iref']            = os.path.join(
     ref_path, 'references', 'hst', 'wfc3') + os.sep
 
 # ── Copy FLT files to work directory and work there ───────────────────────────
+# Excludes frames at/below MIN_EXPTIME here, not just from the provenance record
+# above -- otherwise a dead exposure still lands in flc_files/flt_files and gets
+# drizzled in. Filters on the header, not the _obs_ids set, so it also catches
+# already-cached files from before this check existed without a re-download.
 for f in glob.glob(os.path.join(data_path, '*flt.fits')):
+    if fits.getheader(f)['EXPTIME'] <= MIN_EXPTIME:
+        print(f'  excluding {os.path.basename(f)} from drizzle input: '
+              f"EXPTIME={fits.getheader(f)['EXPTIME']}s <= {MIN_EXPTIME:.0f}s")
+        continue
     shutil.copy(f, work_path)
 
 os.chdir(work_path)

@@ -605,6 +605,19 @@
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
                 "casertano_r_analytic": 2.3919
+            },
+            "f814W": {
+                "drizzle_pass": "cr",
+                "center_source": "this band",
+                "offset_arcsec": 0.6901,
+                "noise_k": 1.0,
+                "corr_factor": 1.0,
+                "weight_uniformity": 0.188595,
+                "weight_uniformity_limit": 0.2,
+                "weight_uniformity_ok": true,
+                "pixfrac": 1.0,
+                "scale_ratio": 1.0,
+                "casertano_r_analytic": 1.5
             }
         },
         "J1100+5329": {
