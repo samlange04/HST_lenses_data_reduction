@@ -1,15 +1,17 @@
 """Shared per-sample (group_name -> filter-precedence-list) definitions for
 make_mosaics.py and make_psf_mosaics.py, so a lens contributes exactly one panel per
 group. SLACS' WFPC2 F606W and ACS F555W never coexist on one lens, so they merge into
-one group with the filter recorded per-panel (and the split-visit f606W_v1/v2 keys
-preferred behind the combined f606W); gallery's WFC3/UVIS filters never merge.
+one group with the filter recorded per-panel. `f606W` (a split lens's primary,
+longer-exptime visit for J0728+3835/J0822+2652, or the only visit for every other WFPC2
+lens) always wins over `f606W_v2` (a split lens's shorter second visit); gallery's
+WFC3/UVIS filters never merge.
 """
 import glob
 import os
 
 _SLACS_GROUPS = {
     'f814W':       ['f814W'],
-    'f606W_f555W': ['f606W', 'f606W_v2', 'f606W_v1', 'f555W'],
+    'f606W_f555W': ['f606W', 'f606W_v2', 'f555W'],
     'f160W':       ['f160W'],
 }
 _GALLERY_FILTERS = ['f225W', 'f275W', 'f438W', 'f606W', 'f814W']

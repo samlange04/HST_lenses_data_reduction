@@ -12,11 +12,12 @@ SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
 SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 #
-# The globs are "$filt"* , not "$filt", so the per-visit product directories
-# (f606W_v1, f606W_v2 on J0822+2652 and J0728+3835) are included. With a bare
-# "$filt" they matched nothing for those lenses and their stamps were silently
-# never regenerated -- no error, just two lenses quietly left on stale cutouts.
-# The cutout --filt is taken from the directory name for the same reason.
+# The globs are "$filt"* , not "$filt", so a split lens's secondary-visit product
+# directory (f606W_v2 on J0822+2652; its primary visit and J0728+3835's sole visit are
+# now bare f606W, matched by either form) is still included. With a bare "$filt" the
+# v2 dir matched nothing and its stamps were silently never regenerated -- no error,
+# just left on stale cutouts. The cutout --filt is taken from the directory name for
+# the same reason.
 ok=0; fail=0
 # SLACS bands (f606W f814W f555W f160W) plus the gallery WFC3/UVIS UV/blue bands
 # (f438W f275W f225W). A filter not present in the sample globs to nothing, so listing
