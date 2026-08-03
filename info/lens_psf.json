@@ -669,7 +669,7 @@
                 "err_method": "bootstrap",
                 "n_boot_valid": 100
             },
-            "f606W_v2": {
+            "f606W": {
                 "method": "inject_wfpc2_psfdb",
                 "fwhm_pix": 4.3363,
                 "kernel_size": 35,
@@ -747,23 +747,7 @@
                 "err_source": "empirical_calibration/injected",
                 "err_lower_bound": false
             },
-            "f606W_v1": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.5888,
-                "kernel_size": 35,
-                "cutout_kernel_size": 25,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001265,
-                "wing_scatter": 0.000672,
-                "n_frames": 2,
-                "psf_err_frac": 0.05808535,
-                "psf_err_frac_core": 0.04447847,
-                "psf_err_frac_wing": 0.03735737,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.408",
-                "err_lower_bound": true
-            },
-            "f606W_v2": {
+            "f606W": {
                 "method": "inject_wfpc2_psfdb",
                 "fwhm_pix": 4.2878,
                 "kernel_size": 35,
@@ -777,6 +761,22 @@
                 "psf_err_frac_wing": 0.03675345,
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
+            },
+            "f606W_v2": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.5888,
+                "kernel_size": 35,
+                "cutout_kernel_size": 25,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001265,
+                "wing_scatter": 0.000672,
+                "n_frames": 2,
+                "psf_err_frac": 0.05808535,
+                "psf_err_frac_core": 0.04447847,
+                "psf_err_frac_wing": 0.03735737,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=1.408",
                 "err_lower_bound": true
             },
             "f814W": {

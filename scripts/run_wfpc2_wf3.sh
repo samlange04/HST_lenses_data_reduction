@@ -41,15 +41,18 @@ echo "=== WFPC2/WF3: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 # two guide-star solutions. They are drizzled as SEPARATE per-visit datasets rather
 # than cross-registered, so each visit is single-guide-star and can use MAST alignment.
 # Each field is "PA_V3:out_suffix"; the drizzle keeps frames within 1 deg of that PA.
-#   J0822+2652 -> f606W_v1 (2x1100s) + f606W_v2 (4x1100s)
-#   J0728+3835 -> f606W_v2 only; its 2-frame visit has just 1 x-dither-phase and
-#                 cannot reach 0.05", so the drizzle script skips it by design.
+# The longer-exptime visit is the primary product (bare "f606W", no suffix); any
+# shorter visit is "_v2", "_v3", ... in descending exptime order.
+#   J0822+2652 -> f606W (4x1100s, PA 87.918716) + f606W_v2 (2x1100s, PA 101.8479)
+#   J0728+3835 -> f606W only (PA 91.374092); its other, 2-frame visit has just 1
+#                 x-dither-phase and cannot reach 0.05", so the drizzle script skips
+#                 it by design and it never gets a product/suffix at all.
 # J1142+1001 is deliberately NOT here: its two visits share a roll (PA 119.00 vs
 # 118.87), so there is no offset to separate and it stays combined.
 split_visits_for() {
   case "$1" in
-    J0728+3835) echo "91.374092:_v2" ;;
-    J0822+2652) echo "101.8479:_v1 87.918716:_v2" ;;
+    J0728+3835) echo "91.374092:" ;;
+    J0822+2652) echo "87.918716: 101.8479:_v2" ;;
     *)          echo "" ;;
   esac
 }
@@ -73,15 +76,19 @@ align_for() {
 }
 
 # drizzle -> align -> cutout for one product (one lens, one visit).
-# $1 lens, $2 align mode, $3 extra drizzle args, $4 output dir suffix
+# $1 lens, $2 align mode, $3 PA_V3 (may be empty: non-split lens), $4 output dir suffix
+# (may be empty: the primary visit of a split lens, or a non-split lens).
 run_product() {
-  local lens="$1" align="$2" extra="$3" suffix="$4"
+  local lens="$1" align="$2" pa="$3" suffix="$4"
   local key="f606W${suffix}"
   local log="$LOGDIR/${lens}_${key}_wf3.log"
+  local -a extra_args=()
+  [ -n "$pa" ] && extra_args+=(--pa "$pa")
+  [ -n "$suffix" ] && extra_args+=(--out-suffix "$suffix")
 
   printf '  %-10s align=%-8s ' "$key" "$align"
   if ! uv run --project "$WS" python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
-         --filt f606W --sample "$SAMPLE" --align "$align" $extra > "$log" 2>&1; then
+         --filt f606W --sample "$SAMPLE" --align "$align" "${extra_args[@]}" > "$log" 2>&1; then
     # A lens skipped for insufficient dither phase is an intended outcome, not a
     # failure -- the script exits non-zero without writing, so separate the two.
     if grep -q 'cannot drizzle to' "$log"; then
@@ -121,6 +128,12 @@ run_product() {
   fi
 }
 
+# Failures are recorded as "lens|pa|suffix" triples, not a bare "lens$suffix" string --
+# the primary visit of a split lens now carries an empty suffix indistinguishable from
+# a non-split lens, so decoding "_v" out of a concatenated name no longer works, and the
+# retry pass needs the PA back too (a bare key alone under-selects a split lens's frames).
+failed_key() { local i="$1"; local lens="${i%%|*}" rest="${i#*|}"; echo "${lens}${rest#*|}"; }
+
 FAILED=()
 for lens in "${LENSES[@]}"; do
   echo "=== $lens $(date +%H:%M:%S) ==="
@@ -129,11 +142,11 @@ for lens in "${LENSES[@]}"; do
   if [ -n "$visits" ]; then
     for visit in $visits; do
       pa="${visit%%:*}"; suffix="${visit##*:}"
-      run_product "$lens" "$align" "--pa $pa --out-suffix $suffix" "$suffix" \
-        || FAILED+=("$lens$suffix")
+      run_product "$lens" "$align" "$pa" "$suffix" \
+        || FAILED+=("${lens}|${pa}|${suffix}")
     done
   else
-    run_product "$lens" "$align" "" "" || FAILED+=("$lens")
+    run_product "$lens" "$align" "" "" || FAILED+=("${lens}||")
   fi
 done
 
@@ -144,24 +157,20 @@ done
 # existing products, the astrometric tie re-measures and applies ~0).
 if [ ${#FAILED[@]} -gt 0 ]; then
   echo ""
-  echo "=== Retrying ${#FAILED[@]} failed: ${FAILED[*]} ==="
+  DISPLAY=(); for item in "${FAILED[@]}"; do DISPLAY+=("$(failed_key "$item")"); done
+  echo "=== Retrying ${#FAILED[@]} failed: ${DISPLAY[*]} ==="
   RETRY=("${FAILED[@]}"); FAILED=()
   for item in "${RETRY[@]}"; do
-    lens="${item%%_v*}"
+    lens="${item%%|*}"; rest="${item#*|}"; pa="${rest%%|*}"; suffix="${rest#*|}"
     align="$(align_for "$lens")"
     echo "=== $lens $(date +%H:%M:%S) ==="
-    case "$item" in
-      *_v*) suffix="_v${item##*_v}"
-            pa="$(split_visits_for "$lens" | tr ' ' '\n' | awk -F: -v s="$suffix" '$2==s {print $1}')"
-            run_product "$lens" "$align" "--pa $pa --out-suffix $suffix" "$suffix" \
-              || FAILED+=("$item") ;;
-      *)    run_product "$lens" "$align" "" "" || FAILED+=("$item") ;;
-    esac
+    run_product "$lens" "$align" "$pa" "$suffix" || FAILED+=("$item")
   done
 fi
 
 echo "=== all done $(date +%H:%M:%S) ==="
 if [ ${#FAILED[@]} -gt 0 ]; then
-  echo "STILL FAILED after retry (${#FAILED[@]}): ${FAILED[*]}"
+  DISPLAY=(); for item in "${FAILED[@]}"; do DISPLAY+=("$(failed_key "$item")"); done
+  echo "STILL FAILED after retry (${#FAILED[@]}): ${DISPLAY[*]}"
   exit 1
 fi

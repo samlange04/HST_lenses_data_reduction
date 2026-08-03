@@ -11,7 +11,7 @@ Filter groups come from mosaic_groups.py, shared with make_psf_mosaics.py, so bo
 scripts stay in sync. For slacs_gold/slacs_other (SLACS: WFPC2 F606W and ACS F555W
 never share a lens):
     f814W          - ACS/WFC
-    f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v1/v2) merged with ACS F555W
+    f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v2) merged with ACS F555W
     f160W          - WFC3/IR only (NICMOS F160W products were deleted, see CLAUDE.md)
 gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f275W,
 f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
@@ -65,7 +65,7 @@ def find_cutout_pair(filt_dir):
 
 
 def short_filt(filt):
-    """f606W[_v1/_v2] -> f6[_v1/_v2], f555W -> f5, for compact panel titles."""
+    """f606W[_v2] -> f6[_v2], f555W -> f5, for compact panel titles."""
     return filt.replace('f606W', 'f6').replace('f555W', 'f5')
 
 
@@ -73,7 +73,7 @@ def build_group(cutouts_dir, precedence):
     """Entries for one mosaic group. `precedence` is a list of filter-dir names tried
     in order per lens, so every lens contributes exactly one panel - needed for groups
     that merge filters from mutually-exclusive instruments (SLACS' WFPC2 F606W / ACS
-    F555W, and the split-visit f606W_v1/v2 keys). `group` (the per-panel colourbar-
+    F555W, and the split-visit f606W/f606W_v2 keys). `group` (the per-panel colourbar-
     split key) is only set for multi-filter groups: the two sit on very different
     scales in every panel type (signal/noise: ~100x native flux-scale gap; SNR: WFPC2
     F606W is itself far noisier than ACS F555W), so those mosaics split the colourbar

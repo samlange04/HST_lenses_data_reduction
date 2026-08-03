@@ -141,8 +141,9 @@ The suffix is set by **input file type**, not output name (`_drc_` FLC, `_drw_` 
   mostly-single-visit frames into a multi-knot core.
 - **Absolute astrometry is off** (~0.5–0.9″); `align_wfpc2_to_acs.py` ties it to ACS F814W
   afterwards. This is why the align step is mandatory and non-optional.
-- **Two lenses are split per visit** (J0728+3835, J0822+2652) → `f606W_v1`/`f606W_v2` product
-  dirs, not a combined `f606W`. The runner handles this.
+- **Two lenses are split per visit** (J0728+3835, J0822+2652), not combined: the
+  longer-exptime visit is the primary product, `f606W`; a shorter second visit is
+  `f606W_v2`. The runner handles this.
 - Units: SCI is DN/s (`BUNIT='COUNTS/S'`), F814W is e/s — cross-band flux comparison must go
   through `PHOTFLAM`, never raw pixel values.
 
@@ -171,4 +172,5 @@ uv run python scripts/mast_target_names.py slacs_gold  # lens names
 Every run updates three files in `info/`, keyed `{lens: {product_key: value}}`:
 `lens_products.json` (drizzled frame rootnames), `lens_instrument.json` (`INSTRUME/DETECTOR`),
 `lens_exptime.json` (seconds). No data → `null`. The key is the **product directory**, so
-split-visit lenses are keyed `f606W_v1`/`f606W_v2` with no bare `f606W`.
+a split-visit lens's primary visit is keyed `f606W` like any other lens, and a shorter
+second visit `f606W_v2`.

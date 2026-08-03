@@ -45,7 +45,8 @@ if [ "$MODE" = models ]; then
   EMP_SKIP="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and str(v.get('method','')).startswith('empirical')))")" || exit 1
 fi
 
-# Globs are "$filt"* , not "$filt", so per-visit dirs (f606W_v1, f606W_v2) are included;
+# Globs are "$filt"* , not "$filt", so a split lens's secondary-visit dir (f606W_v2) is
+# included alongside its primary/bare f606W;
 # --filt is taken from the directory basename. Any *_sci.fits means the mosaic is buildable
 # (ACS/WFPC2 hold *_cr_*; F160W holds *nocrrej* -- make_psf --pass auto picks the right one).
 # f438W is gallery's blue UVIS science band; F225W/F275W are deliberately omitted -- they
