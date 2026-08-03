@@ -1998,6 +1998,16 @@
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
+            },
+            "f814W": {
+                "method": "inject_acs_fdpsf",
+                "fwhm_pix": 2.2779,
+                "kernel_size": 51,
+                "cutout_kernel_size": 19,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.0,
+                "wing_scatter": 1e-06,
+                "n_frames": 2
             }
         },
         "J1100+5329": {

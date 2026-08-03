@@ -295,6 +295,20 @@ reach 0.05″, dropped); **J1142+1001 stays combined** (visits share roll, PA 11
 118.87). `align_wfpc2_to_acs.py --f606-dir` and `make_cutouts.py --filt f606W_v1` handle
 the suffixed dirs.
 
+**J1142+1001 is the only combined-visit lens** — verified (2026-08-03) across every WFPC2
+F606W product on disk in both `slacs_gold` (38 lenses, incl. J0728+3835/J0822+2652's split
+`_v1`/`_v2` keys, each confirmed single-visit) and `slacs_other` (27 lenses, none multi-visit
+at all): grouping `info/lens_products.json` frame lists by 6-char rootname prefix, only
+J1142+1001's `f606W` product mixes two (`ua1l38` + `ua1lc8`, 6 frames total). The shared-roll
+combine criterion is a registration-consistency proxy (core-registration scatter on the
+common drizzled grid), not a PSF/noise-homogeneity check — those are handled separately
+(per-frame IVM noise weighting auto-downweights a noisier visit; the PSF is measured *after*
+combination from the actual stack, not assumed). Spot-checked for degradation: J1142+1001's
+injected-kernel FWHM (4.527px), pedestal_frac (0.00113), and wing_scatter (0.00070) all sit
+within the normal spread of the 19 other (single-visit) WFPC2 F606W lenses (FWHM median
+4.450, mean 4.514±0.33px) — no measurable smearing penalty from the combine. Not a
+standing/automated check, just this one-off verification.
+
 **Diagnosing this class of bug:** compare the *spread* of per-frame WCS error, not its
 magnitude — a common offset is a harmless absolute-astrometry shift; frame-to-frame scatter
 is what smears a stack. Cleanest metric: per-frame core-registration scatter on the
