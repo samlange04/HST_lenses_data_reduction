@@ -2007,7 +2007,13 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.0,
                 "wing_scatter": 1e-06,
-                "n_frames": 2
+                "n_frames": 2,
+                "psf_err_frac": 0.00057079,
+                "psf_err_frac_core": 0.00053546,
+                "psf_err_frac_wing": 0.00019767,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.707",
+                "err_lower_bound": true
             }
         },
         "J1100+5329": {
