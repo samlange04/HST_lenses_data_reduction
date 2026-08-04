@@ -52,6 +52,13 @@ CMAP = 'inferno'
 NOISE_SENTINEL = 1.0e8
 TITLE_FONTSIZE = 14
 CBAR_FONTSIZE = 20
+# Vertical room per colourbar, in INCHES, when the grid has no empty cell to put one
+# in. Matches one panel cell (2.2 in), the minimum room the empty-cell path gets, so
+# both routes render the bar + rotated ticks + axis label at the same proportions.
+CBAR_BAND_INCHES = 2.2
+# Horizontal room one rotated tick label needs, in inches - sets how many ticks a bar
+# of a given width can carry (see plot_mosaic).
+CBAR_INCHES_PER_TICK = 1.0
 
 
 def find_cutout_pair(filt_dir):
@@ -129,14 +136,66 @@ def pooled_asinh_norm(arrays, pct=99.0):
 INSTRUMENT_NAMES = {'f6': 'WFPC2 F606W', 'f5': 'ACS F555W'}
 
 
-def style_colorbar(cbar, norm, base_label, fontsize, rotate_ticks=False):
+def spaced_ticks(norm, bar_w_in, nbins):
+    """Round tick values that don't collide on a bar `bar_w_in` inches wide.
+
+    MaxNLocator picks values evenly in DATA space, but the bar is drawn in DISPLAY
+    space, so under a nonlinear stretch (the log norm make_psf_mosaics.py passes)
+    they bunch up at the compressed end and the labels overlap. Candidates are
+    therefore mapped through the norm and greedily thinned to a minimum on-bar
+    separation."""
+    ticks = matplotlib.ticker.MaxNLocator(nbins=nbins).tick_values(norm.vmin, norm.vmax)
+    min_gap = CBAR_INCHES_PER_TICK / max(bar_w_in, 1e-6)
+
+    kept, last = [], -np.inf
+    for t in ticks:
+        if not norm.vmin <= t <= norm.vmax:
+            continue
+        pos = float(norm(t))
+        if pos - last >= min_gap:
+            kept.append(t)
+            last = pos
+    return kept
+
+
+def fit_label_width(fig, text, max_w_in, min_fontsize=7):
+    """Shrink `text` until it is at most `max_w_in` inches wide.
+
+    The axis label is centred on its (possibly narrow) colourbar, so a long one -
+    e.g. 'noise (counts/s)  (WFPC2 F606W)  (x10^-2)' over a bar squeezed into a
+    single grid cell - overruns the edge of the figure and gets clipped. A double
+    space in the label is a deliberate break point: wrapping there is tried first,
+    so the text shrinks only as far as it has to."""
+    renderer = fig.canvas.get_renderer()
+
+    def width_in():
+        return text.get_window_extent(renderer=renderer).width / fig.dpi
+
+    if width_in() > max_w_in and '  ' in text.get_text():
+        text.set_text(text.get_text().replace('  ', '\n', 1))
+
+    for _ in range(12):
+        w = width_in()
+        size = text.get_fontsize()
+        if w <= max_w_in or size <= min_fontsize:
+            break
+        text.set_fontsize(max(min_fontsize, size * max_w_in / w * 0.98))
+
+
+def style_colorbar(cbar, norm, base_label, fontsize, bar_w_in, max_label_w_in,
+                   rotate_ticks=False):
     """Tick labels at <=1 decimal place, with a shared '(x10^n)' multiplier in the
     label when the values need it - avoids the long decimal tick labels (e.g.
     0.0075/0.0100/0.0125) that overlap each other at this figure size.
 
     rotate_ticks angles the tick labels 60 degrees - used only for single-colourbar
     plots (one instrument per mosaic), where there's a full band of vertical room
-    for the slanted labels; the stacked per-instrument bars don't have that room."""
+    for the slanted labels; the stacked per-instrument bars don't have that room.
+
+    bar_w_in / max_label_w_in are the bar's width and the room its centred label has
+    before it runs off the figure, both in inches - everything that can overflow is
+    sized against real space rather than a figure fraction, which is what let ticks
+    and labels get clipped on the narrower mosaics."""
     magnitude = max(abs(norm.vmin), abs(norm.vmax))
     exponent = 0 if not np.isfinite(magnitude) or magnitude == 0 \
         else int(np.floor(np.log10(magnitude)))
@@ -145,7 +204,8 @@ def style_colorbar(cbar, norm, base_label, fontsize, rotate_ticks=False):
         exponent = 0
     scale = 10.0 ** exponent
 
-    cbar.ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(nbins=4))
+    nbins = int(np.clip(bar_w_in / CBAR_INCHES_PER_TICK, 2, 4))
+    cbar.set_ticks(spaced_ticks(norm, bar_w_in, nbins))
     cbar.ax.xaxis.set_major_formatter(
         matplotlib.ticker.FuncFormatter(lambda v, pos, s=scale: f'{v / s:.1f}'))
 
@@ -154,14 +214,16 @@ def style_colorbar(cbar, norm, base_label, fontsize, rotate_ticks=False):
     if rotate_ticks:
         plt.setp(cbar.ax.get_xticklabels(), rotation=60, ha='right', rotation_mode='anchor')
     cbar.set_label(label, fontsize=fontsize)
+    fit_label_width(cbar.ax.figure, cbar.ax.xaxis.label, max_label_w_in)
 
 
 def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None,
                 norm_fn=pooled_asinh_norm):
     """Render one mosaic. If split_by (a per-panel group key, e.g. instrument) is
-    given, each group gets its own norm and its own horizontal colourbar, spread
-    across the empty grid cells - needed when the groups sit on very different
-    native flux scales and a single shared norm would saturate one of them.
+    given, each group gets its own norm and its own horizontal colourbar, stacked in
+    the empty grid cells (or in a band added below the grid when it divides evenly) -
+    needed when the groups sit on very different native flux scales and a single
+    shared norm would saturate one of them.
 
     norm_fn(arrays) -> ImageNormalize builds each group's norm; defaults to the
     pooled asinh stretch. make_psf_mosaics.py passes a log stretch instead, to match
@@ -208,46 +270,70 @@ def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None
 
     # Put the colourbar(s) in the empty panel cells (grid cells with no lens) rather
     # than stealing a slice of figure margin. All colourbars are horizontal and span
-    # the FULL combined width of every empty cell (not just one cell each) - falls
-    # back to an external axis only if the grid divides evenly and no empty cell
-    # exists at all.
+    # the FULL combined width of every empty cell (not just one cell each). If the
+    # grid divides evenly and there is no empty cell at all, the figure is instead
+    # grown by a fixed band of inches below the grid (see below).
     empty_idx = list(range(n, ncells))
     for idx in empty_idx:
         axes.flat[idx].axis('off')
 
-    if not empty_idx:
-        fig.subplots_adjust(bottom=0.12)
-        cax = fig.add_axes([0.25, 0.03, 0.5, 0.03])
-        group0 = panel_group[0]
-        cbar = fig.colorbar(im_of[group0], cax=cax, orientation='horizontal', label=panel_label)
-        style_colorbar(cbar, norm_of[group0], panel_label, CBAR_FONTSIZE,
-                       rotate_ticks=(split_by is None))
-    else:
+    groups_here = [None] if split_by is None else list(norm_of.keys())
+    n_groups = len(groups_here)
+
+    if empty_idx:
         boxes = [axes.flat[idx].get_position() for idx in empty_idx]
         x0 = min(b.x0 for b in boxes)
         x1 = max(b.x1 for b in boxes)
         y0 = min(b.y0 for b in boxes)
         y1 = max(b.y1 for b in boxes)
-        width, height = x1 - x0, y1 - y0
-        pad = 0.06 * width
+    else:
+        # The grid divides evenly, so there is no spare cell to put the bar(s) in:
+        # grow the figure downward by a fixed band of real INCHES per colourbar and
+        # place them there. This must be in inches, not a figure fraction - a
+        # fraction-sized band (the old bottom=0.12 / add_axes([.., 0.03, .., 0.03]))
+        # shrinks with the mosaic, and on the short grids that actually hit this
+        # branch (gallery's 1- and 3-row groups) it clipped the rotated tick labels,
+        # the axis label, and part of the bar itself off the bottom of the figure.
+        fig_w, fig_h = fig.get_size_inches()
+        band_in = CBAR_BAND_INCHES * n_groups
+        fig.set_size_inches(fig_w, fig_h + band_in)
+        # subplots_adjust is in figure fractions, so redo it against the new height:
+        # keep the panel grid at its original absolute size at the top, leaving the
+        # new band clear underneath.
+        shrink = fig_h / (fig_h + band_in)
+        band_frac = band_in / (fig_h + band_in)
+        fig.subplots_adjust(left=0.005, right=0.995,
+                            top=1 - 0.005 * shrink, bottom=band_frac + 0.005 * shrink,
+                            wspace=0.02, hspace=0.02)
+        x0, x1 = 0.20, 0.80
+        y0, y1 = 0.0, band_frac
 
-        groups_here = [None] if split_by is None else list(norm_of.keys())
-        n_groups = len(groups_here)
-        band_h = height / n_groups
-        fontsize = CBAR_FONTSIZE if n_groups == 1 else CBAR_FONTSIZE * 0.6
-        for gi, group in enumerate(groups_here):
-            # Bar sits near the top of its band; the rest of the band (~70%) is left
-            # free for its tick labels + axis label so stacked bands don't collide.
-            band_top = y1 - gi * band_h
-            bar_h = 0.20 * band_h
-            bar_top = band_top - 0.06 * band_h
-            bar_bottom = bar_top - bar_h
-            cax = fig.add_axes([x0 + pad, bar_bottom, width - 2 * pad, bar_h])
-            base_label = panel_label if group is None else \
-                f'{panel_label}  ({INSTRUMENT_NAMES.get(group, group)})'
-            cbar = fig.colorbar(im_of[group], cax=cax, orientation='horizontal')
-            style_colorbar(cbar, norm_of[group], base_label, fontsize,
-                           rotate_ticks=(n_groups == 1))
+    width, height = x1 - x0, y1 - y0
+    pad = 0.06 * width
+    band_h = height / n_groups
+    fontsize = CBAR_FONTSIZE if n_groups == 1 else CBAR_FONTSIZE * 0.6
+    # Tick count and label size follow the bar's real width: a bar confined to a
+    # single empty grid cell (~1.9 in) fits ~2 intervals, and forcing the default 4
+    # there overlapped the rotated labels into each other. The label is centred on
+    # the bar, so the room it has before running off the figure is set by whichever
+    # side is tighter.
+    fig_w_in = fig.get_size_inches()[0]
+    bar_w_in = (width - 2 * pad) * fig_w_in
+    centre = x0 + width / 2
+    max_label_w_in = 2 * min(centre, 1 - centre) * fig_w_in * 0.96
+    for gi, group in enumerate(groups_here):
+        # Bar sits near the top of its band; the rest of the band (~70%) is left
+        # free for its tick labels + axis label so stacked bands don't collide.
+        band_top = y1 - gi * band_h
+        bar_h = 0.20 * band_h
+        bar_top = band_top - 0.06 * band_h
+        bar_bottom = bar_top - bar_h
+        cax = fig.add_axes([x0 + pad, bar_bottom, width - 2 * pad, bar_h])
+        base_label = panel_label if group is None else \
+            f'{panel_label}  ({INSTRUMENT_NAMES.get(group, group)})'
+        cbar = fig.colorbar(im_of[group], cax=cax, orientation='horizontal')
+        style_colorbar(cbar, norm_of[group], base_label, fontsize,
+                       bar_w_in, max_label_w_in, rotate_ticks=(n_groups == 1))
 
     fig.savefig(out_path, dpi=150)
     plt.close(fig)
