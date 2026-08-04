@@ -56,9 +56,14 @@ CBAR_FONTSIZE = 20
 # in. Matches one panel cell (2.2 in), the minimum room the empty-cell path gets, so
 # both routes render the bar + rotated ticks + axis label at the same proportions.
 CBAR_BAND_INCHES = 2.2
-# Horizontal room one rotated tick label needs, in inches - sets how many ticks a bar
-# of a given width can carry (see plot_mosaic).
+# Horizontal room one tick label wants, in inches, at CBAR_FONTSIZE - sets how many
+# ticks a bar of a given width carries comfortably (see spaced_ticks).
 CBAR_INCHES_PER_TICK = 1.0
+# Every colourbar carries at least this many ticks: two (a bare end-to-end range) reads
+# as a legend rather than a scale. A bar too narrow to space that many at full size gets
+# proportionally smaller tick labels instead - see spaced_ticks/style_colorbar.
+MIN_CBAR_TICKS = 3
+CBAR_TICK_MIN_FONTSIZE = 8
 
 
 def find_cutout_pair(filt_dir):
@@ -136,26 +141,62 @@ def pooled_asinh_norm(arrays, pct=99.0):
 INSTRUMENT_NAMES = {'f6': 'WFPC2 F606W', 'f5': 'ACS F555W'}
 
 
-def spaced_ticks(norm, bar_w_in, nbins):
-    """Round tick values that don't collide on a bar `bar_w_in` inches wide.
+def tick_candidates(norm, scale, nbins):
+    """Round tick values inside the norm's range, at most `nbins` intervals across it.
 
-    MaxNLocator picks values evenly in DATA space, but the bar is drawn in DISPLAY
-    space, so under a nonlinear stretch (the log norm make_psf_mosaics.py passes)
-    they bunch up at the compressed end and the labels overlap. Candidates are
-    therefore mapped through the norm and greedily thinned to a minimum on-bar
-    separation."""
-    ticks = matplotlib.ticker.MaxNLocator(nbins=nbins).tick_values(norm.vmin, norm.vmax)
-    min_gap = CBAR_INCHES_PER_TICK / max(bar_w_in, 1e-6)
+    `steps` is restricted to 1/2/5/10 and anything not a whole multiple of 0.1 scaled
+    units is dropped, because style_colorbar's formatter prints one decimal of v/scale
+    - a 0.25-scaled-unit tick would be labelled '0.2' and simply read as the wrong
+    number. That matters here only because the denser candidate sets below exist to be
+    thinned; the survivors still have to be honest values."""
+    ticks = matplotlib.ticker.MaxNLocator(nbins=nbins, steps=[1, 2, 5, 10]).tick_values(
+        norm.vmin, norm.vmax)
+    return [t for t in ticks
+            if norm.vmin <= t <= norm.vmax
+            and abs(t / scale - round(t / scale, 1)) <= 1e-6]
 
+
+def thin_to_gap(ticks, norm, min_gap):
+    """Greedily drop ticks that land within `min_gap` (a fraction of the bar's length)
+    of the last one kept."""
     kept, last = [], -np.inf
     for t in ticks:
-        if not norm.vmin <= t <= norm.vmax:
-            continue
         pos = float(norm(t))
         if pos - last >= min_gap:
             kept.append(t)
             last = pos
     return kept
+
+
+def spaced_ticks(norm, scale, bar_w_in, min_ticks=MIN_CBAR_TICKS):
+    """Ticks for a bar `bar_w_in` inches wide, at least `min_ticks` of them.
+
+    Returns (ticks, squeeze), where squeeze <= 1 is how much tighter than comfortable
+    the spacing had to get to reach min_ticks - the caller scales the tick font by it
+    so the labels still don't touch.
+
+    MaxNLocator picks values evenly in DATA space, but the bar is drawn in DISPLAY
+    space, so under a nonlinear stretch (the log norm make_psf_mosaics.py passes) its
+    values bunch up at the compressed end. Candidates are therefore mapped through the
+    norm and thinned on their on-bar separation. Reaching min_ticks is tried first by
+    offering DENSER candidates at the full comfortable spacing (a log bar has room for
+    more ticks, just not at the round values a linear locator proposes), and only then
+    by tightening the spacing - so a bar gives up label size only when its width really
+    can't fit min_ticks any other way. Within one spacing the densest candidate set
+    wins: the tightening loop is there to reach a floor on tick count, not impose one."""
+    target = CBAR_INCHES_PER_TICK / max(bar_w_in, 1e-6)
+    base_nbins = int(np.clip(bar_w_in / CBAR_INCHES_PER_TICK, 2, 4))
+
+    best, best_squeeze = [], 1.0
+    for squeeze in (1.0, 1 / 1.5, 0.5, 1 / 3, 0.25):
+        densest = max(
+            (thin_to_gap(tick_candidates(norm, scale, nbins), norm, target * squeeze)
+             for nbins in (base_nbins, 6, 10, 16, 25)), key=len)
+        if len(densest) >= min_ticks:
+            return densest, squeeze
+        if len(densest) > len(best):
+            best, best_squeeze = densest, squeeze
+    return best, best_squeeze
 
 
 def fit_label_width(fig, text, max_w_in, min_fontsize=7):
@@ -204,13 +245,14 @@ def style_colorbar(cbar, norm, base_label, fontsize, bar_w_in, max_label_w_in,
         exponent = 0
     scale = 10.0 ** exponent
 
-    nbins = int(np.clip(bar_w_in / CBAR_INCHES_PER_TICK, 2, 4))
-    cbar.set_ticks(spaced_ticks(norm, bar_w_in, nbins))
+    ticks, squeeze = spaced_ticks(norm, scale, bar_w_in)
+    cbar.set_ticks(ticks)
     cbar.ax.xaxis.set_major_formatter(
         matplotlib.ticker.FuncFormatter(lambda v, pos, s=scale: f'{v / s:.1f}'))
 
     label = base_label if exponent == 0 else f'{base_label}  (×10$^{{{exponent}}}$)'
-    cbar.ax.tick_params(labelsize=fontsize)
+    cbar.ax.tick_params(
+        labelsize=max(CBAR_TICK_MIN_FONTSIZE, fontsize * squeeze))
     if rotate_ticks:
         plt.setp(cbar.ax.get_xticklabels(), rotation=60, ha='right', rotation_mode='anchor')
     cbar.set_label(label, fontsize=fontsize)
