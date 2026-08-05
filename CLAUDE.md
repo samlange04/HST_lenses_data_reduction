@@ -23,6 +23,11 @@ what a pointer already settles; don't restate the tables here.
 > testing), *not* `data/`. Nothing here changes the standard pipeline until one of the
 > options is deliberately productionized. This branch also removed `data/cutouts_12arcsec/`
 > (still present on `main`); work with the default 20″ cutouts here.
+> **Merge caveat:** the `bolton_test_outputs/` tracking and the `data/cutouts_12arcsec/`
+> deletion are branch-local. Merging `bolton_interpolation` into `main` would carry both —
+> adding the tracked test outputs to `main` and deleting the 12″ tree there. Before any such
+> merge, drop/skip the removal commit (`2bc6b20`) if the 12″ tree should stay on `main`, and
+> decide whether `bolton_test_outputs/` belongs on `main` or should be dropped/ignored.
 
 ## Environment
 
