@@ -13,8 +13,13 @@ zero-weight pixels mapped to a large value so they are excluded from any fit.
 Writes cutout_sci.fits, cutout_noise.fits and a 3-panel cutout.png
 (signal / noise / signal-to-noise) for visual inspection.
 
+Stamps are 20" square by default. A different --size writes to a parallel tree
+(data/cutouts_<size>arcsec/) so the standard-size products are never overwritten; see
+cutout_paths.py.
+
 Usage:
     uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W
+    uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W --size 12
 """
 
 import argparse
@@ -43,6 +48,7 @@ from slacs_coords import slacs_coords
 from gallery_coords import gallery_coords
 import mast_target_names
 import info_json
+import cutout_paths
 
 # Catalogue positions live in different tables by sample (SLACS lenses in
 # slacs_coords.py, BELLS GALLERY in gallery_coords.py). Both are keyed on the J-name and
@@ -376,8 +382,12 @@ def main():
                    help='sample subdirectory of data/drizzled/ and data/cutouts/. '
                         'Defined in info/lens_samples.json '
                         f'(default {mast_target_names.DEFAULT_SAMPLE})')
-    p.add_argument('--size',   type=float, default=20.0,
-                   help='cutout size in arcsec (square), default 20.0')
+    p.add_argument('--size',   type=float, default=cutout_paths.DEFAULT_SIZE,
+                   help=f'cutout size in arcsec (square), default '
+                        f'{cutout_paths.DEFAULT_SIZE:g}. A non-default size writes to a '
+                        f'PARALLEL tree (data/cutouts_<size>arcsec/, its own '
+                        f'info/lens_cutout_qc_<size>arcsec.json) so the standard-size '
+                        f'products are never overwritten -- see cutout_paths.py')
     p.add_argument('--box',    type=int, default=100,
                    help='central box size in pixels searched for the brightest pixel')
     p.add_argument('--median-size', type=int, default=5,
@@ -422,11 +432,13 @@ def main():
                         'diagonal-covariance likelihood such as PyAutoLens, which has no '
                         'native PSF-error input. No-op with a warning if no error map exists.')
     p.add_argument('--output', default=None,
-                   help='output dir, default data/cutouts/<sample>/<lens>/<filt>')
+                   help='output dir, default '
+                        'data/cutouts[_<size>arcsec]/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
-    output_dir = a.output or os.path.join(ws_path, 'data', 'cutouts', a.sample, a.lens, a.filt)
+    output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size),
+                                          a.sample, a.lens, a.filt)
     os.makedirs(output_dir, exist_ok=True)
 
     # Resolve which pass to cut from. --cr is a deprecated alias for --pass cr.
@@ -579,6 +591,13 @@ def main():
             print(f"  WARNING: --psf-err set but {os.path.basename(psf_err_path)} not found; "
                   f"noise map left as pixel-noise only (run make_psf.py first)")
 
+    # Stamp the requested size on both products: the filenames carry no size, so without
+    # this a stamp from a size-variant tree is indistinguishable from a standard one once
+    # it has been copied out of its directory.
+    sci_hdr = sci_hdr.copy()
+    for hdr in (sci_hdr, noise_hdr):
+        hdr['CUTSIZE'] = (a.size, 'requested cutout size (arcsec, square)')
+
     write_cutout(sci_cutout.data, sci_cutout.wcs, sci_hdr,
                  os.path.join(output_dir, f'{prefix}_sci.fits'))
     write_cutout(noise_data, wht_cutout.wcs, noise_hdr,
@@ -593,8 +612,9 @@ def main():
     # just the raw sci/noise arrays -- so a later audit doesn't have to re-derive them from
     # the console log. Keyed like every other tracking JSON (info_json.update), one entry
     # per (sample, lens, filt) product directory.
-    info_json.update(os.path.join(ws_path, 'info', 'lens_cutout_qc.json'), a.sample, a.lens,
+    info_json.update(cutout_paths.qc_json_path(ws_path, a.size), a.sample, a.lens,
                      a.filt, {
+        'size_arcsec': a.size,
         'drizzle_pass': drizzle_pass,
         'center_source': peak_src,
         'offset_arcsec': round(offset, 4),
