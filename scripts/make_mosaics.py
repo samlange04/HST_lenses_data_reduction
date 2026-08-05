@@ -17,14 +17,19 @@ gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f
 f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
 per filter subdirectory found on disk.
 
-Each mosaic panel shows the full cutout as cut by make_cutouts.py (10" square by
+Each mosaic panel shows the full cutout as cut by make_cutouts.py (20" square by
 default). Colour/stretch is inferno + an asinh stretch (astropy.visualization), the
 standard astronomy image convention: it handles the negative background-noise pixels
 smoothly (no NaN-masking artifacts) while still showing faint outskirts and bright
 cores together.
 
+--size mosaics a size-variant cutout tree (data/cutouts_<size>arcsec/) into its own
+data/mosaics_<size>arcsec/ instead, mirroring make_cutouts.py so the two sizes' QC PNGs
+never overwrite each other -- see cutout_paths.py.
+
 Usage:
     uv run python scripts/make_mosaics.py --sample slacs_gold
+    uv run python scripts/make_mosaics.py --sample slacs_gold --size 12
 """
 
 import argparse
@@ -46,6 +51,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import mosaic_groups
+import cutout_paths
 
 NCOLS = 5
 CMAP = 'inferno'
@@ -388,11 +394,16 @@ def main():
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory under data/cutouts/ to mosaic. Defined in '
                         f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
+                   help='cutout size in arcsec to mosaic, matching make_cutouts.py --size '
+                        f'(default {cutout_paths.DEFAULT_SIZE:g}). A non-default size reads '
+                        'data/cutouts_<size>arcsec/ and writes data/mosaics_<size>arcsec/')
     a = p.parse_args()
 
-    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample)
-    out_dir = os.path.join(ws_path, 'data', 'mosaics', a.sample)
+    cutouts_dir = os.path.join(cutout_paths.cutouts_root(ws_path, a.size), a.sample)
+    out_dir = os.path.join(cutout_paths.mosaics_root(ws_path, a.size), a.sample)
     os.makedirs(out_dir, exist_ok=True)
+    print(f"cutouts: {cutouts_dir}\nmosaics: {out_dir}")
 
     groups = mosaic_groups.groups_for_sample(a.sample, cutouts_dir)
     for group_name, precedence in groups.items():

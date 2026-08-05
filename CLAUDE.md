@@ -113,6 +113,7 @@ bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
 bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
 bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F225W/F275W/F438W/F606W/F814W (gallery only)
 bash scripts/run_cutouts_all.sh              # stamps for whatever products exist
+bash scripts/run_cutouts_all.sh slacs_gold 12  # same, at a 12" stamp size (parallel tree)
 bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
 bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
 ```
@@ -198,8 +199,10 @@ data/
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled/<sample>/<lens>/<filter>/      ← final products (<prefix>_cr_*/_nocrrej_* sci+wht)
   cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits
+  cutouts_<S>arcsec/<sample>/...          ← the same stamps cut at a non-default --size (see Cutouts)
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
+  mosaics_<S>arcsec/<sample>/             ← QC mosaics of the <S>" stamps
   pre_drizzled/                           ← 46 MAST-delivered mosaics (zipped as slacs.zip), kept for reference; not pipeline output
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
@@ -336,6 +339,21 @@ uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
 ```
 
 **Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.**
+
+**`--target`/`--ref`: the mis-fit band is not always F606W.** The reasoning above assumes
+ACS/WFC3-IR always arrive on a GAIA-grade solution — that is a property of the *delivered
+WCS*, not of the instrument, and it fails. **J1016+3859 (`slacs_other`) came down with a bare
+`IDC_4bb1536oj-GSC240` fit on its ACS F814W** (the `force_copy` COPY visit), putting F814W
+**0.60″ off its own F160W and 0.69″ off the SDSS catalogue**, while F606W (0.175″) and F160W
+(0.198″, `-HSC30`) both agreed with the catalogue. Because `make_cutouts.py` centres every
+band on `--center-band f814W`, one band's bad WCS dragged *all three* stamps ~0.6–0.9″ off the
+deflector — the reference-band trap. `align_lens` therefore takes `--target` (band whose CRVAL
+moves, default F606W) and `--ref` (the frame, default F814W); products record `ASTROREF`
+alongside `GSC240FX`. Fixed 2026-08-04 by tying F814W→F160W then F606W→F814W, after which all
+three bands co-register to 0.0000″ and sit 0.198″ from the SDSS position; stamps re-cut at
+both sizes. **Check `WCSNAME` before assuming which band is the truth** — a `-GSC240` suffix
+on ACS or WFC3/IR (rather than `-FIT_REL_GSC242`/`-GAIAeDR3`) means that band is the ~0.5″
+one, whatever the instrument. The defaults are unchanged and stay correct for every other lens.
 
 ## Weight maps and noise: `final_wht_type` and `cutout_noise.fits`
 
@@ -479,6 +497,25 @@ uv run python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
 Cuts a square stamp (default 20″) from `data/drizzled/` into `data/cutouts/`: a sci FITS, a
 noise FITS (from the weight map), and a 3-panel PNG.
 
+- **Stamp size is a parallel product tree, not an overwrite (`--size`, `scripts/cutout_paths.py`).**
+  The cutout filenames carry no size, so a re-cut at a different size would be an invisible
+  clobber. `--size` therefore *derives* the output tree: 20″ keeps `data/cutouts/` +
+  `data/mosaics/` + `info/lens_cutout_qc.json`; any other size S writes
+  `data/cutouts_<S>arcsec/`, `data/mosaics_<S>arcsec/` and `info/lens_cutout_qc_<S>arcsec.json`.
+  Both scripts take it (`make_cutouts.py --size`, `make_mosaics.py --size`) and
+  `run_cutouts_all.sh [SAMPLE] [SIZE]` passes it through; every stamp carries `CUTSIZE` in its
+  header. **A 12″ set exists for all three samples alongside the 20″ one** (2026-08-04; 90 +
+  34 + 33 products, 0 failures). PSF kernels are *not* duplicated per size — the kernel is
+  trimmed by amplitude, so it's a property of the band, and a size-variant stamp pairs with
+  the same `cutout_[cr_]psf.fits` from the default tree. **The 20″ tree is tracked in git**;
+  other size variants and their QC JSONs are gitignored (regenerable in one runner call, and
+  the 12″ set alone is ~316 MB, mostly PNGs whose size follows the figure, not the stamp).
+  **`data/cutouts_12arcsec/` (and `info/lens_cutout_qc_12arcsec.json`) is the one exception**
+  (2026-08-04): `scripts/make_masks.py` writes its hand-drawn GUI masks there, and unlike
+  every other file in the tree those aren't regenerable by any script, so losing them means
+  redoing manual work — see *Masks* below. `data/mosaics_12arcsec/` stays gitignored; nothing
+  non-regenerable lives there.
+
 - **Pass + prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks the CR pass when one
   exists, else no-CR. The prefix encodes it so the two coexist: **`cutout_cr_*` for CR,
   `cutout_*` for no-CR.** ACS F814W/F555W and WFPC2 F606W now default to a LACosmic CR pass
@@ -514,6 +551,30 @@ noise FITS (from the weight map), and a 3-panel PNG.
   - Both diagnostics, plus the recentring offset, drizzle pass, and centring source, are
     recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` — structured provenance
     for what shaped a given cutout, not just the sci/noise arrays themselves.
+
+## Masks (`scripts/make_masks.py`)
+
+```bash
+uv run python scripts/make_masks.py --sample slacs_gold
+uv run python scripts/make_masks.py --lens J0008-0004 --filt f814W
+```
+
+Interactive, manual tool — not part of the automated per-lens pipeline above. Cycles
+through a sample's cutouts and, for each one, opens PyAutoLens's `Scribbler` GUI (a Tk
+window; scribble the region to keep, `Esc` to finish) over the cutout's science image, the
+same tool as `autolens_workspace:scripts/imaging/data_preparation/gui/mask.py`. Writes
+`cutout_[cr_]mask.fits` next to that cutout's sci/noise/psf products, and records
+provenance (pass, pixel scale, brush width) per (sample, lens, filt) in
+`info/lens_masks.json`. Already-masked cutouts are skipped (`--force` to redraw), so a long
+GUI session across a whole sample is resumable.
+
+**Defaults to the 12″ tree (`--size 12`, i.e. `data/cutouts_12arcsec/`), not the pipeline's
+usual 20″ default.** That is also why `data/cutouts_12arcsec/` is the one size-variant tree
+tracked in git (see *Cutouts* above and `.gitignore`) — everything else in it is
+regenerable from the drizzled mosaics, but a hand-drawn mask is not, so it needs the same
+durability as a tracked product. Pass `--size 20` to mask the 20″ tree instead (untracked
+change of tree, no separate flag needed to opt into git tracking — only the 12″ tree gets
+that).
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -1088,9 +1149,9 @@ prop 11202). NICMOS F160W (24 lenses) is deprioritised and its data deleted. HST
 exposure-time gate*; `J1016+3859` recovered 2026-08-03 via `force_copy`, see above),
 **F160W** (WFC3/IR, 6/27), **F555W** (ACS/WFC, 0/27 — none of these lenses fall in props
 10494/10798). 4 lenses (J0959+4416, J1016+3859, J1153+4612, J1416+5136) have both F606W and
-F814W; `align_wfpc2_to_acs.py` has only tied 3 of them (`J1016+3859` not yet run — its
-force_copy recovery postdates the last alignment pass) — the other 21 F606W products carry
-their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no
+F814W; `align_wfpc2_to_acs.py` has tied all 4 (`J1016+3859` on 2026-08-04, and it also needed
+its *F814W* tied to F160W first — see the `--target`/`--ref` note in *align_wfpc2_to_acs.py*)
+— the other 21 F606W products carry their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no
 per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses);
 every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
 `run_psf_all.sh`/`make_psf.py` has been run for this sample (2026-08-01, before the
@@ -1299,6 +1360,7 @@ and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready.
 
 ```bash
 uv run python scripts/make_mosaics.py --sample slacs_gold
+uv run python scripts/make_mosaics.py --sample slacs_gold --size 12   # the 12" stamp tree
 uv run python scripts/make_psf_mosaics.py --sample slacs_gold
 ```
 
