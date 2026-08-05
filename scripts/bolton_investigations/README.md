@@ -99,6 +99,50 @@ sharpness, residual, photometry and radial profiles. Output: `bolton_vs_drizzle.
 
 ---
 
+## Output plots (in `bolton_test_outputs/`)
+
+All panels use `inferno` + asinh for science, a percentile-clipped linear scale for noise,
+and a diverging `RdBu_r` for difference maps. All are J1023+4230 F814W, 0.05″/px, ~20″.
+
+**`bolton_J1023_compare.png`** (from `bolton_reduce.py`) — 2×2:
+- top-left: our drizzle science; top-right: our drizzle **noise** — the two diagonal stripes
+  through the deflector core;
+- bottom-left: Bolton bilinear science (visibly slightly softer); bottom-right: Bolton
+  bilinear **noise** — no stripe, but note it is *count-derived* so it traces flux (blobby,
+  bright on the galaxy), a different kind of map from a weight-based one.
+- *Look for:* stripe present top-right, absent bottom-right.
+
+**`hybrid_J1023_compare.png`** (from `stripe_heal.py`) — 1×3:
+- left: drizzle noise (stripe through core); middle: the **detected** stripe overlaid in
+  magenta on the noise; right: the **healed** noise (stripe interpolated away; or, with
+  `--mask-up`, inflated instead).
+- *Look for:* both bad-column stripes gone on the right, while the unrelated satellite/CR
+  trail in the lower-right corner is deliberately left untouched.
+
+**`redrizzle_bcfill_compare.png`** (from `redrizzle_bcfill.py`) — 2×3:
+- top row (standard drizzle): science · noise (stripe) · **noise difference** (standard −
+  filled), which is *exactly* the two stripes and nothing else;
+- bottom row (bad-columns filled pre-drizzle): science · noise (**uniform, no stripe**) ·
+  **science difference** (standard − filled) ≈ 0, a faint speckle only along the filled columns.
+- *Look for:* the top-right panel isolating the effect to the stripes; the bottom-middle
+  uniform weight map.
+
+**`bolton_vs_drizzle.png`** (from `compare_bolton_vs_drizzle.py`) — 2×3, after registration +
+flux match:
+- top row: drizzle science (circle marks the star used for the FWHM fit) · Bolton bilinear
+  (registered/flux-matched) · **difference** (drizzle − bilinear), a faint positive blob at
+  the core (drizzle concentrates slightly more flux there);
+- bottom row: deflector **radial profile** (drizzle vs bilinear, overlapping) · **star PSF**
+  central-row cut (drizzle peaks sharper) · a text box of the metrics (FWHM, flux ratio,
+  residual, background-RMS ratio).
+- *Look for:* the ~6 % broader bilinear PSF as the only real difference; profiles overlap.
+
+**FITS products** (not plots): `*_sci.fits` / `*_noise.fits` are the science and noise arrays
+behind the panels; `hybrid_J1023_stripe.fits` is the detected stripe mask (1 = healed);
+`redrizzle_{baseline,filled}_*` are the 20″ crops of the two re-drizzles.
+
+---
+
 ## Answers to the follow-up questions
 
 ### Q: "Is there a way to apply the interpolation to columns that go through the lens but have the image primarily produced by drizzle?"
