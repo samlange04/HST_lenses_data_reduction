@@ -12,6 +12,18 @@ what a pointer already settles; don't restate the tables here.
 > verify against source — argparse defaults, what the runner actually passes, tracking
 > JSONs vs what's on disk.
 
+> **Branch note (`bolton_interpolation` only): Bolton-interpolation investigation.**
+> `scripts/bolton_investigations/` holds standalone, exploratory scripts (with a `README.md`)
+> for the ACS dead-column noise-stripe question — a Bolton-2008 bilinear reduction, a
+> post-hoc stripe heal/mask, and an input-level bad-column fill + re-drizzle. **These are
+> NOT wired into the pipeline, and NO cutouts or downstream products have been regenerated
+> with any of them** — they run only on the single demonstrator lens J1023+4230 F814W and
+> nothing they produce feeds the science trees under `data/`. Their outputs currently land
+> in the tracked `bolton_test_outputs/` folder (this branch only, for visibility while
+> testing), *not* `data/`. Nothing here changes the standard pipeline until one of the
+> options is deliberately productionized. This branch also removed `data/cutouts_12arcsec/`
+> (still present on `main`); work with the default 20″ cutouts here.
+
 ## Environment
 
 All scripts run inside a **uv-managed** virtual environment (`pyproject.toml` + `uv.lock`

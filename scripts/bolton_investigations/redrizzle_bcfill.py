@@ -26,7 +26,7 @@ Usage (the no-arg form orchestrates all stages, each drizzle in its own process)
   python redrizzle_bcfill.py drizzle baseline|filled   # (internal) one drizzle pass
   python redrizzle_bcfill.py compare                    # rebuild the figure only
 
-Outputs (output/bolton_investigations/):
+Outputs (bolton_test_outputs/ — tracked on this branch while testing):
   redrizzle_baseline_{sci,noise}.fits  - standard drizzle (stripe present)
   redrizzle_filled_{sci,noise}.fits    - bad-columns filled pre-drizzle (no stripe)
   redrizzle_bcfill_compare.png         - 2x3 comparison
@@ -43,9 +43,9 @@ from astropy.io import fits
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CAL = f"{REPO}/data/calibrated/slacs_gold/J1023+4230/f814W"
-OUT = f"{REPO}/output/bolton_investigations"
+OUT = f"{REPO}/bolton_test_outputs"                    # tracked (final products)
 os.makedirs(OUT, exist_ok=True)
-WORK = f"{OUT}/redrizzle_work"
+WORK = f"{REPO}/output/redrizzle_work"                 # git-ignored scratch (bulky drc mosaics)
 BADBITS = 4 | 128                      # ACS bad detector pixel (4) + bad column (128)
 REGION = 200                           # half-size of the comparison crop (px); 200 -> 20"
 

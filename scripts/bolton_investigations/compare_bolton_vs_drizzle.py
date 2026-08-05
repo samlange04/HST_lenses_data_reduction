@@ -8,7 +8,7 @@ them. We solve for shift + flux-scale + background offset by least-squares on th
 then report the residual and the PSF sharpness (the expected real difference: bilinear
 resampling is softer than drizzle).
 
-Outputs (output/bolton_investigations/):
+Outputs (bolton_test_outputs/ — tracked on this branch while testing):
   bolton_vs_drizzle.png   - images, difference, radial profiles, star-PSF cuts
   (prints the metrics table)
 """
@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUT = f"{REPO}/output/bolton_investigations"
+OUT = f"{REPO}/bolton_test_outputs"
 os.makedirs(OUT, exist_ok=True)
 
 drz = fits.getdata(f"{REPO}/data/cutouts/slacs_gold/J1023+4230/f814W/cutout_cr_sci.fits").astype(float)
