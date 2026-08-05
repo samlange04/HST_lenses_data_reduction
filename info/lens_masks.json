@@ -1,0 +1,18 @@
+{
+    "gallery": {
+        "J0029+2544": {
+            "f275W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.05
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.05
+            }
+        }
+    }
+}

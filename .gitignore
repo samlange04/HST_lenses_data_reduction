@@ -7,9 +7,23 @@
 # data/cutouts is the deliberate exception: the final science stamps are small
 # (~75 MB) and worth versioning across pipeline changes. data/mosaics is the same
 # deal: small QC grids generated from the cutouts by scripts/make_mosaics.py.
+# The *_<size>arcsec/ size variants (scripts/cutout_paths.py) are otherwise NOT
+# versioned: they are regenerable from the same drizzled mosaics by one runner call
+# (run_cutouts_all.sh <sample> <size>). data/cutouts_12arcsec/ is tracked anyway
+# (~316 MB) because it now also carries scripts/make_masks.py's hand-drawn GUI masks
+# (cutout_[cr_]mask.fits), which are NOT regenerable by any script -- losing them
+# means redoing manual mask work, unlike every other file in this tree. Any other
+# size variant stays gitignored under this same reasoning until it too holds
+# non-regenerable products.
 data/*
 !data/cutouts/
+!data/cutouts_12arcsec/
 !data/mosaics/
+# ...and neither is the per-size QC provenance for an untracked size, which would
+# otherwise be a tracked file describing products nobody else has on disk. The 12"
+# QC file is tracked for the same reason as the tree above.
+info/lens_cutout_qc_*arcsec.json
+!info/lens_cutout_qc_12arcsec.json
 
 # ── Large external material ────────────────────────────────────────────────────
 # info/data_handbooks is intentionally NOT ignored: the instrument handbooks are the

@@ -581,9 +581,10 @@
         },
         "J1016+3859": {
             "f160W": {
+                "size_arcsec": 20.0,
                 "drizzle_pass": "nocrrej",
-                "center_source": "this band",
-                "offset_arcsec": 0.2189,
+                "center_source": "f814W",
+                "offset_arcsec": 0.1939,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
                 "weight_uniformity": 0.182435,
@@ -594,12 +595,13 @@
                 "casertano_r_analytic": 2.5324
             },
             "f606W": {
+                "size_arcsec": 20.0,
                 "drizzle_pass": "cr",
-                "center_source": "this band",
-                "offset_arcsec": 0.2026,
+                "center_source": "f814W",
+                "offset_arcsec": 0.1939,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.163988,
+                "weight_uniformity": 0.16399,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
@@ -607,9 +609,10 @@
                 "casertano_r_analytic": 2.3919
             },
             "f814W": {
+                "size_arcsec": 20.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.6901,
+                "offset_arcsec": 0.1939,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
                 "weight_uniformity": 0.188595,
