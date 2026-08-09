@@ -431,10 +431,20 @@ driz_cr=False`); `--cr-method drizcr` restores the old route. WFPC2 uses the sam
 route (`--lacosmic-sigclip 4.5 --lacosmic-objlim 5.0`; gain/readnoise/saturate from the WF3
 header). Mask written to DQ bit 4096 with `resetbits=0`.
 
-`driz_cr` compares each frame to a blotted median; on a steep PSF core that reference is
-systematically low, so real core pixels read as CRs — it destroyed ~37% of the deflector
-core flux, and loosening thresholds made it *worse* (the reference is the fault, not the
-cut). LACosmic preserves the core (peak 1.000, 1″ 0.979).
+`driz_cr` compares each frame to a blotted median; on a steep, undersampled PSF core that
+reference can read low, so real core pixels get flagged as CRs and dropped. **But this
+erosion is conditional on dither quality, not intrinsic to driz_cr** (re-measured 2026-08-10,
+→ memory: drizcr_erosion_is_alignment_conditional). On J0330-0020 under the delivered MAST
+alignment (real ~7.5×4.6 px dither preserved) driz_cr keeps the 1″ core to **0.998** of the
+no-CR pass — *flat at 0.998* across `driz_cr_snr` 3.5→12, `driz_cr_scale` 1.2/0.7→3.0/2.0,
+and combine minmed *and* median. The erosion only appears when the stack is degenerate: force
+the dither to zero (the pre-`--align mast` TweakReg default) and the same call drops the core
+to **0.563**. The old "~37% loss / 0.628 minmed" figure was that artifact — J0330 was the test
+lens for the dither-smearing fix and the driz_cr finding in the *same* commit (9846603), so it
+was measured before the alignment fix. **LACosmic stays the default** because it is robust
+*regardless* of dither quality (per-frame, object-protected, no stacked reference to bias), so
+poorly-dithered / single-visit small-dither lenses — where driz_cr genuinely would erode — get
+a clean core too; on well-dithered J0330 the two agree at ~0.998.
 
 **`resetbits=0` is mandatory on the LACosmic pass** — it defaults to 4096 and would clear
 the DRIZ_CR bit the mask lives in, silently producing an un-masked drizzle that still looks
