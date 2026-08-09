@@ -469,17 +469,30 @@ else:
 
 # ── CR masking: LACosmic, per frame ───────────────────────────────────────────
 # AstroDrizzle's driz_cr detects cosmic rays by comparing each frame against a blotted
-# median of the stack. On a steep PSF core that reference is systematically low, so the
-# core's residual reads as a cosmic ray: measured on J0330-0020 it flagged 113-206 real
-# pixels inside the 1" core of EVERY frame and destroyed 37% of the deflector flux
-# (combine_type='median' only recovered it to 85%). Loosening driz_cr_snr/scale made it
-# worse, because the fault is the biased reference, not the threshold.
+# median of the stack. On a steep, undersampled PSF core that reference reads low, so the
+# core residual can be flagged as a cosmic ray and dropped from the final drizzle. But that
+# failure is CONDITIONAL ON DITHER QUALITY, not intrinsic to driz_cr -- re-measured on
+# J0330-0020, 2026-08-10 (see memory: drizcr_erosion_is_alignment_conditional):
+#   - With the delivered MAST alignment (real ~7.5x4.6 px ACS-WFC-DITHER-BOX dither
+#     preserved), driz_cr keeps the 1" core to 0.998 of the no-CR pass -- FLAT at 0.998
+#     across driz_cr_snr 3.5->12, driz_cr_scale 1.2/0.7->3.0/2.0, and combine minmed AND
+#     median. Peak pixel, 0.2" sum and core weight are byte-identical to no-CR.
+#   - Erosion only appears when the stack is degenerate: force the dither to zero (the
+#     pre-`--align mast` TweakReg default, which measured the dither as an error and
+#     removed it) and the same driz_cr call drops the core to 0.563 (23% below the no-CR
+#     pass on those same dither-erased frames). The earlier "37% loss / 0.628 minmed"
+#     figure was this artifact -- J0330 was the test lens for the dither-smearing fix and
+#     the driz_cr finding in the SAME commit (9846603), so the number was measured before
+#     the alignment fix landed.
 #
-# LACosmic works one frame at a time with an explicit object-protection term (objlim),
-# so there is no stacked reference to bias. With CRs already in DQ the final drizzle is
-# a plain weighted mean -- median/blot/driz_cr all off -- and nothing can clip the core.
-# Measured on J0330-0020: core flux 0.988 of the no-CR pass (vs 0.628 for minmed), and
-# 7 surviving detections in the 10" science stamp (vs 112 with no CR rejection).
+# LACosmic is kept as the default anyway because it is robust REGARDLESS of dither quality:
+# it works one frame at a time with an explicit object-protection term (objlim), so there
+# is no stacked reference to bias, and poorly-dithered / single-visit small-dither lenses
+# (where driz_cr genuinely would erode) get the same clean core as well-dithered ones. With
+# CRs already in DQ the final drizzle is a plain weighted mean -- median/blot/driz_cr all
+# off -- and nothing can clip the core. On J0330-0020 (well-dithered, so not the hard case)
+# LACosmic and driz_cr agree at ~0.998; LACosmic leaves 7 surviving detections in the 10"
+# science stamp vs 112 with no CR rejection.
 CR_BIT = 4096          # DRIZ_CR; excluded by final_bits='256,64,16'
 _ACS_RDNOISE, _ACS_SATLEVEL = 4.5, 84700.0   # FLC is already in electrons, so gain=1
 
