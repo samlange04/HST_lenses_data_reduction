@@ -1,17 +1,19 @@
 """Stamp-size-keyed output paths, shared by make_cutouts.py and make_mosaics.py.
 
-The science stamps are 20" square (make_cutouts.py --size default). A second set cut at
-a different size must not overwrite them, so every path that depends on the stamp size
-is derived here rather than in each script:
+The science stamps are 12" square (make_cutouts.py --size default) -- switched from 20"
+2026-08-11, since the 12" tree is the one carrying scripts/make_masks.py's hand-drawn,
+non-regenerable masks and is what downstream modelling reads. A second set cut at a
+different size must not overwrite it, so every path that depends on the stamp size is
+derived here rather than in each script:
 
-    20" (the default)   data/cutouts/<sample>/...        data/mosaics/<sample>/
+    12" (the default)   data/cutouts/<sample>/...        data/mosaics/<sample>/
                         info/lens_cutout_qc.json
     any other size S    data/cutouts_<S>arcsec/<sample>/ data/mosaics_<S>arcsec/<sample>/
                         info/lens_cutout_qc_<S>arcsec.json
 
 Keying the tree on --size itself, rather than on an independent --output flag the caller
-has to remember to set, is deliberate: `make_cutouts.py --size 12` on its own then cannot
-silently clobber the 20" product set. That is exactly the class of quietly-wrong-product
+has to remember to set, is deliberate: `make_cutouts.py --size 20` on its own then cannot
+silently clobber the 12" product set. That is exactly the class of quietly-wrong-product
 failure CLAUDE.md warns about, and the cutout FITS names (cutout_[cr_]{sci,noise}.fits)
 carry no size in them, so a clobbered stamp is indistinguishable from a correct one on
 inspection. An explicit --output still wins, for one-off work.
@@ -19,13 +21,15 @@ inspection. An explicit --output still wins, for one-off work.
 The PSF products in data/cutouts/ (cutout_[cr_]psf*.fits) are NOT size-keyed and are not
 duplicated into a size tree: the kernel is trimmed by amplitude (CLAUDE.md, *PSF
 generation*), so it is a property of the band, not of the stamp it will be convolved
-with. A size-variant stamp pairs with the same kernel from the default tree.
+with. A size-variant stamp pairs with the same kernel from the default tree. (make_psf.py
+and friends hardcode data/cutouts/data/mosaics rather than going through this module, so
+they always target whichever tree is currently unsuffixed.)
 """
 import os
 
 # The pipeline's standard stamp size, in arcsec. Products at this size keep the
 # unsuffixed paths every other script and every downstream reader already expects.
-DEFAULT_SIZE = 20.0
+DEFAULT_SIZE = 12.0
 
 
 def size_tag(size):

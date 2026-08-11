@@ -4,7 +4,7 @@
 # falls back to no-CR for F160W, which has no CR pass.
 #
 # Usage: run_cutouts_all.sh [SAMPLE] [SIZE_ARCSEC]
-#          (defaults: mast_target_names.DEFAULT_SAMPLE, 20)
+#          (defaults: mast_target_names.DEFAULT_SAMPLE, 12)
 #
 # SIZE_ARCSEC is passed straight to make_cutouts.py --size. A non-default size writes to
 # the parallel data/cutouts_<size>arcsec/ tree (see scripts/cutout_paths.py), so running
@@ -17,9 +17,9 @@
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
 SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
-SIZE="${2:-20}"
+SIZE="${2:-12}"
 # Log-name tag, empty at the default size so existing log paths are unchanged.
-TAG=""; [ "$SIZE" = "20" ] || TAG="_${SIZE}arcsec"
+TAG=""; [ "$SIZE" = "12" ] || TAG="_${SIZE}arcsec"
 #
 # The globs are "$filt"* , not "$filt", so a split lens's secondary-visit product
 # directory (f606W_v2 on J0822+2652; its primary visit and J0728+3835's sole visit are
