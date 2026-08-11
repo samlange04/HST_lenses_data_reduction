@@ -13,13 +13,13 @@ zero-weight pixels mapped to a large value so they are excluded from any fit.
 Writes cutout_sci.fits, cutout_noise.fits and a 3-panel cutout.png
 (signal / noise / signal-to-noise) for visual inspection.
 
-Stamps are 20" square by default. A different --size writes to a parallel tree
+Stamps are 12" square by default. A different --size writes to a parallel tree
 (data/cutouts_<size>arcsec/) so the standard-size products are never overwritten; see
 cutout_paths.py.
 
 Usage:
     uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W
-    uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W --size 12
+    uv run python scripts/make_cutouts.py --lens J0008-0004 --filt f814W --size 20
 """
 
 import argparse
