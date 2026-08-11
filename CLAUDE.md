@@ -112,8 +112,8 @@ bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
 bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
 bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
 bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F225W/F275W/F438W/F606W/F814W (gallery only)
-bash scripts/run_cutouts_all.sh              # stamps for whatever products exist
-bash scripts/run_cutouts_all.sh slacs_gold 12  # same, at a 12" stamp size (parallel tree)
+bash scripts/run_cutouts_all.sh              # stamps for whatever products exist (12", default)
+bash scripts/run_cutouts_all.sh slacs_gold 20  # same, at a 20" stamp size (parallel tree)
 bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
 bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
 ```
@@ -504,27 +504,31 @@ Prefer native-scale F814W where a clean per-pixel noise model matters most.
 uv run python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
 ```
 
-Cuts a square stamp (default 20″) from `data/drizzled/` into `data/cutouts/`: a sci FITS, a
+Cuts a square stamp (default 12″) from `data/drizzled/` into `data/cutouts/`: a sci FITS, a
 noise FITS (from the weight map), and a 3-panel PNG.
 
 - **Stamp size is a parallel product tree, not an overwrite (`--size`, `scripts/cutout_paths.py`).**
   The cutout filenames carry no size, so a re-cut at a different size would be an invisible
-  clobber. `--size` therefore *derives* the output tree: 20″ keeps `data/cutouts/` +
+  clobber. `--size` therefore *derives* the output tree: 12″ keeps `data/cutouts/` +
   `data/mosaics/` + `info/lens_cutout_qc.json`; any other size S writes
   `data/cutouts_<S>arcsec/`, `data/mosaics_<S>arcsec/` and `info/lens_cutout_qc_<S>arcsec.json`.
   Both scripts take it (`make_cutouts.py --size`, `make_mosaics.py --size`) and
   `run_cutouts_all.sh [SAMPLE] [SIZE]` passes it through; every stamp carries `CUTSIZE` in its
-  header. **A 12″ set exists for all three samples alongside the 20″ one** (2026-08-04; 90 +
+  header. **A 20″ set exists for all three samples alongside the 12″ one** (2026-08-04; 90 +
   34 + 33 products, 0 failures). PSF kernels are *not* duplicated per size — the kernel is
   trimmed by amplitude, so it's a property of the band, and a size-variant stamp pairs with
-  the same `cutout_[cr_]psf.fits` from the default tree. **The 20″ tree is tracked in git**;
-  other size variants and their QC JSONs are gitignored (regenerable in one runner call, and
-  the 12″ set alone is ~316 MB, mostly PNGs whose size follows the figure, not the stamp).
-  **`data/cutouts_12arcsec/` (and `info/lens_cutout_qc_12arcsec.json`) is the one exception**
-  (2026-08-04): `scripts/make_masks.py` writes its hand-drawn GUI masks there, and unlike
-  every other file in the tree those aren't regenerable by any script, so losing them means
-  redoing manual work — see *Masks* below. `data/mosaics_12arcsec/` stays gitignored; nothing
-  non-regenerable lives there.
+  the same `cutout_[cr_]psf.fits` from the default tree. **`data/cutouts/` (12″) is the tree
+  tracked in git**, made the pipeline default 2026-08-11 (swapped in place from the old 20″
+  default, incl. the 422 `cutout_[cr_]psf*.fits`/mosaic-panel files `make_psf.py` and
+  `make_psf_mosaics.py` hardcode into `data/cutouts/`/`data/mosaics/` rather than going
+  through `cutout_paths.py`) because it's what `scripts/make_masks.py` targets and what
+  downstream modelling reads. Other size variants (now including `data/cutouts_20arcsec/`)
+  and their QC JSONs are gitignored (regenerable in one runner call, and the tree is ~316 MB,
+  mostly PNGs whose size follows the figure, not the stamp) — **unless a tree carries
+  non-regenerable content**, which is why `data/cutouts/` is the exception: `make_masks.py`
+  writes its hand-drawn GUI masks there, and unlike every other file in the tree those aren't
+  regenerable by any script, so losing them means redoing manual work — see *Masks* below.
+  `data/mosaics_20arcsec/` stays gitignored; nothing non-regenerable lives there.
 
 - **Pass + prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks the CR pass when one
   exists, else no-CR. The prefix encodes it so the two coexist: **`cutout_cr_*` for CR,
@@ -578,13 +582,11 @@ provenance (pass, pixel scale, brush width) per (sample, lens, filt) in
 `info/lens_masks.json`. Already-masked cutouts are skipped (`--force` to redraw), so a long
 GUI session across a whole sample is resumable.
 
-**Defaults to the 12″ tree (`--size 12`, i.e. `data/cutouts_12arcsec/`), not the pipeline's
-usual 20″ default.** That is also why `data/cutouts_12arcsec/` is the one size-variant tree
-tracked in git (see *Cutouts* above and `.gitignore`) — everything else in it is
-regenerable from the drizzled mosaics, but a hand-drawn mask is not, so it needs the same
-durability as a tracked product. Pass `--size 20` to mask the 20″ tree instead (untracked
-change of tree, no separate flag needed to opt into git tracking — only the 12″ tree gets
-that).
+**Defaults to `cutout_paths.DEFAULT_SIZE` (12″, `data/cutouts/`) — the pipeline's standard
+tree**, and the reason it's the one size-variant tree kept tracked in git (see *Cutouts*
+above and `.gitignore`): everything else in it is regenerable from the drizzled mosaics, but
+a hand-drawn mask is not, so it needs the same durability as a tracked product. Pass `--size
+20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -1370,7 +1372,7 @@ and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready.
 
 ```bash
 uv run python scripts/make_mosaics.py --sample slacs_gold
-uv run python scripts/make_mosaics.py --sample slacs_gold --size 12   # the 12" stamp tree
+uv run python scripts/make_mosaics.py --sample slacs_gold --size 20   # the 20" stamp tree
 uv run python scripts/make_psf_mosaics.py --sample slacs_gold
 ```
 

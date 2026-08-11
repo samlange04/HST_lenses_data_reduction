@@ -17,7 +17,7 @@ gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f
 f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
 per filter subdirectory found on disk.
 
-Each mosaic panel shows the full cutout as cut by make_cutouts.py (20" square by
+Each mosaic panel shows the full cutout as cut by make_cutouts.py (12" square by
 default). Colour/stretch is inferno + an asinh stretch (astropy.visualization), the
 standard astronomy image convention: it handles the negative background-noise pixels
 smoothly (no NaN-masking artifacts) while still showing faint outskirts and bright
@@ -29,7 +29,7 @@ never overwrite each other -- see cutout_paths.py.
 
 Usage:
     uv run python scripts/make_mosaics.py --sample slacs_gold
-    uv run python scripts/make_mosaics.py --sample slacs_gold --size 12
+    uv run python scripts/make_mosaics.py --sample slacs_gold --size 20
 """
 
 import argparse

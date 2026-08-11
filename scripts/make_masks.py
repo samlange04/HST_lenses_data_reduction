@@ -8,10 +8,10 @@ autolens_workspace:scripts/imaging/data_preparation/gui/mask.py -- so you can sc
 region to keep, then writes the result as cutout_[cr_]mask.fits alongside that cutout's
 sci/noise/psf products.
 
-Defaults to the 12" cutout tree (data/cutouts_12arcsec/, --size 12) rather than the
-pipeline's usual 20" default: it's the only size-variant tree tracked in git (see
-.gitignore) precisely because it now carries these hand-drawn masks, which no script can
-regenerate. Pass --size 20 to mask the 20" tree instead.
+Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths.DEFAULT_SIZE)
+-- the tree these hand-drawn masks are meant for and the only size-variant tree tracked in
+git (see .gitignore) precisely because it carries them, which no script can regenerate.
+Pass --size 20 to mask the (untracked, regenerable) 20" tree instead.
 
 This is a manual, one-image-at-a-time tool (not a batch driver): each cutout blocks on its
 own Tk window until you press Esc. Already-masked cutouts are skipped so a run can be
@@ -144,11 +144,11 @@ def main():
                    help="which cutout pass to mask, matching make_cutouts.py's --pass: "
                         "'auto' (default) prefers cutout_cr_*, falling back to cutout_* "
                         "where no CR pass exists (F160W)")
-    p.add_argument('--size', type=float, default=12.0,
-                   help='cutout tree to draw masks for (default 12", i.e. '
-                        'data/cutouts_12arcsec/ -- the tree this tool is meant for and '
+    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
+                   help=f'cutout tree to draw masks for (default {cutout_paths.DEFAULT_SIZE:g}", '
+                        'i.e. data/cutouts/ -- the tree this tool is meant for and '
                         'the only size-variant tree tracked in git, see .gitignore; pass '
-                        f'--size {cutout_paths.DEFAULT_SIZE:g} for the default 20" tree)')
+                        '--size 20 for the untracked, regenerable 20" tree)')
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw a mask that already exists (default: skip it)')
     p.add_argument('--brush-width', type=float, default=0.05,
