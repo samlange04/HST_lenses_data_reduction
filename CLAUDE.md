@@ -12,24 +12,16 @@ what a pointer already settles; don't restate the tables here.
 > verify against source — argparse defaults, what the runner actually passes, tracking
 > JSONs vs what's on disk.
 
-> **Bolton-interpolation investigation (merged into `main`, commit `156de2c`).**
-> `scripts/bolton_investigations/` holds standalone, exploratory scripts (with a `README.md`)
-> for the ACS dead-column noise-stripe question — a Bolton-2008 bilinear reduction, a
-> post-hoc stripe heal/mask, and an input-level bad-column fill + re-drizzle. **These are
-> NOT wired into the pipeline, and NO cutouts or downstream products have been regenerated
-> with any of them** — they run only on the single demonstrator lens J1023+4230 F814W and
-> nothing they produce feeds the science trees under `data/`. Their outputs land in the
-> tracked `bolton_test_outputs/` folder (now on `main`, via the merge), *not* `data/`.
-> Nothing here changes the standard pipeline until one of the options is deliberately
-> productionized (README's *If we productionize one of these* names the two candidates:
-> option 3 as a `drizzle_acs_wfc.py` flag, option 2 in `make_cutouts.py`). The
-> `bolton_interpolation` branch previously removed `data/cutouts_12arcsec/` (commit
-> `2bc6b20`) to work with the then-pipeline-default 20″ cutouts; that removal was undone
-> 2026-08-11 when the 12″ tree became the pipeline default (see *Cutouts*/*Masks* below) —
-> `2bc6b20` is superseded, not reachable from history as a live state.
-> **Resolved:** the old merge caveat (that merging would add the tracked `bolton_test_outputs/`
-> to `main`) has now happened — those files ARE tracked on `main`. Still open: decide whether
-> they belong there long-term or should be dropped/gitignored now the investigation is done.
+> **Bolton-interpolation investigation → bcfill productionized.**
+> `scripts/bolton_investigations/` (with a `README.md`) holds the standalone, exploratory
+> scripts for the ACS dead-column noise-stripe question — a Bolton-2008 bilinear reduction,
+> a post-hoc stripe heal/mask, and an input-level bad-column fill + re-drizzle. The
+> investigation settled on **option 3 (input-level bad-column fill), which is now
+> productionized as `--bcfill`** — see *Bad-column fill (`--bcfill`)* below. The other three
+> scripts (bilinear reduction, stripe_heal, and the two `redrizzle_bcfill*` prototypes) stay
+> standalone validation-only tools that run on single demonstrator lenses and write to the
+> tracked `bolton_test_outputs/` folder, *not* `data/`. `bolton_test_outputs/` is still
+> tracked on `main`; whether to keep it long-term now the investigation is done is open.
 
 ## Environment
 
@@ -516,6 +508,49 @@ than native ACS despite also being native-scale, plausibly UVIS's larger geometr
 distortion; see *BELLS GALLERY* below), so ignoring it also mis-weights bands relative to
 each other in a joint fit. `make_cutouts.py --corr-factor` applies it (default 1.0, off).
 Prefer native-scale F814W where a clean per-pixel noise model matters most.
+
+## Bad-column fill (`--bcfill`) — the dead-column noise stripe
+
+ACS and WFPC2 dead columns are DQ-flagged and dropped by AstroDrizzle, so on dithered frames
+the affected output pixels get contributions from fewer exposures — a weight deficit that
+shows as a **diagonal noise stripe** in `1/sqrt(WHT)` (diagonal because `final_rot=0` rotates
+the detector-vertical columns by the exposure roll). The stripe is *correct* noise (those
+pixels really do have fewer independent frames; measured amplitude ~1.1–1.4×, the √(N/N-eff)
+coverage penalty — → memory: `legacy-slacs-bolton-bilinear-no-stripes`). `--bcfill` is an
+**opt-in** reduction that removes it at the source: per input frame, linearly interpolate the
+flagged columns across in SCI (and ERR/IVM) and clear the DQ bits *before* drizzling, so the
+weight map comes out uniform by construction. Productionized 2026-08-13 from the
+`scripts/bolton_investigations/redrizzle_bcfill*` prototypes (the investigation's chosen
+option 3).
+
+- **`drizzle_acs_wfc.py --bcfill`**: fills ACS bits **4|128** (bad detector pixel + bad
+  column) in SCI+ERR. **`drizzle_wfpc2_wf3.py --bcfill`**: fills WF3 bits **2|256**
+  (WFPC2 c1m calibration/mask defect + 256) in SCI, **interior-only** (spares the vignetted
+  chip border), *before* `build_ivm_files` so the IVM noise model is rebuilt consistently on
+  the filled columns. Per-visit like every WFPC2 product. Both stamp `BCFILL=True` in the
+  product header.
+- **Parallel tracked trees, keyed via `cutout_paths.py`'s `variant` axis** (orthogonal to
+  `--size`): `data/drizzled_bcfill/`, work dir `data/drizzle_files_bcfill/`, then
+  `make_cutouts.py --bcfill` → `data/cutouts_bcfill/` (+ `info/lens_cutout_qc_bcfill.json`)
+  and `make_mosaics.py --bcfill` → `data/mosaics_bcfill/`. `cutouts_bcfill`/`mosaics_bcfill`
+  are **tracked** (small alternate science product, like `data/cutouts/`); `drizzled_bcfill`
+  stays gitignored (big mosaics). The standard reduction is never touched.
+- **NOT for WFC3/IR F160W** — an IR array has **no bad columns** (verified on J0822: 0
+  columns >50% dropped vs 57 for WF3); its noise-map dots are quadrupled hot-pixel replicas,
+  a different, already-correct artifact CLAUDE.md warns against altering. `--bcfill` exists
+  only on the ACS and WFPC2 drizzle scripts.
+- **Caveat (document it downstream):** the filled pixels carry no independent information, so
+  the noise is **optimistic by ~√(3/4)≈13%** on those columns — a cosmetic/uniformity choice,
+  not the science default. To keep an honest noise map with a clean *image*, inflate those
+  pixels by the per-pixel √(WHT_filled/WHT_baseline) correction (≈ recovers the standard
+  drizzle stripe) rather than masking to a huge value.
+- Validated: ACS J1023+4230 (6.3% of the cutout is stripe, ratio ≤1.23) and WFPC2
+  J0252+0039/J0822+2652 (4.7% of cutout, ratio median 1.12 / max 1.41; fill count
+  detector-fixed at ~2020 px/frame, single- and split-visit identical). Standalone
+  comparison figures in `bolton_test_outputs/redrizzle[_wfpc2]_*bcfill_compare.png`.
+
+Runners are **not** `--bcfill`-aware yet — run the drizzle/cutout/mosaic scripts per lens (or
+add a passthrough) if productionizing a whole-sample bcfill campaign.
 
 ## Cutouts (`scripts/make_cutouts.py`)
 

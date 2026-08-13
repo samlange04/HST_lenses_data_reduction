@@ -431,13 +431,21 @@ def main():
                         '(like --corr-factor); use it to propagate PSF uncertainty into a '
                         'diagonal-covariance likelihood such as PyAutoLens, which has no '
                         'native PSF-error input. No-op with a warning if no error map exists.')
+    p.add_argument('--bcfill', action='store_true', default=False,
+                   help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
+                        'produced by drizzle_acs_wfc.py --bcfill) into the parallel, tracked '
+                        'data/cutouts_bcfill/ tree; its own info/lens_cutout_qc_bcfill.json. '
+                        'Removes the ACS dead-column noise stripe -- see CLAUDE.md / '
+                        'scripts/bolton_investigations. ACS bands only.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
-                        'data/cutouts[_<size>arcsec]/<sample>/<lens>/<filt>')
+                        'data/cutouts[_<variant>][_<size>arcsec]/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
-    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
-    output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size),
+    variant = 'bcfill' if a.bcfill else ''
+    drizzled_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
+                                a.sample, a.lens, a.filt)
+    output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size, variant),
                                           a.sample, a.lens, a.filt)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -480,7 +488,8 @@ def main():
     #
     # Peak-finding uses the CR-rejected pass when present (no cosmic rays to lock onto),
     # else the no-CR pass; see find_peak_coord.
-    center_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.center_band)
+    center_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
+                              a.sample, a.lens, a.center_band)
     if a.center_self or a.filt == a.center_band or not _has_products(center_dir):
         peak_dir, peak_src = drizzled_dir, 'this band'
         if not a.center_self and a.filt != a.center_band:
@@ -612,7 +621,7 @@ def main():
     # just the raw sci/noise arrays -- so a later audit doesn't have to re-derive them from
     # the console log. Keyed like every other tracking JSON (info_json.update), one entry
     # per (sample, lens, filt) product directory.
-    info_json.update(cutout_paths.qc_json_path(ws_path, a.size), a.sample, a.lens,
+    info_json.update(cutout_paths.qc_json_path(ws_path, a.size, variant), a.sample, a.lens,
                      a.filt, {
         'size_arcsec': a.size,
         'drizzle_pass': drizzle_pass,

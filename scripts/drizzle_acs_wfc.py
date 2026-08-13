@@ -38,6 +38,7 @@ import mmap_fits_write
 mmap_fits_write.install()
 import mast_target_names
 import info_json
+import cutout_paths
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 _p = argparse.ArgumentParser()
@@ -93,6 +94,22 @@ MIN_EXPTIME = 10.0
 # missing source shot noise), so 1/sqrt(EXP-WHT) is not a physical noise map. See
 # DrizzlePac Handbook pp.103,139 and Bayer et al. 2023 (sigma=sqrt(N/W+sigma_sky^2)).
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
+# Bad-column fill (Bolton-style). When set, each FLC's DQ-flagged dead columns (ACS bad
+# column bit 128 + bad detector pixel bit 4) are linearly interpolated across in SCI *and*
+# ERR and un-flagged BEFORE drizzling, so those output pixels get full weight from every
+# frame and the weight map comes out uniform -- removing the diagonal noise stripe that a
+# standard drizzle correctly shows there (fewer contributing frames -> higher 1/sqrt(WHT)).
+# The products land in a PARALLEL tree (data/drizzled_bcfill/, its own drizzle_files_bcfill/
+# work dir) so the standard drizzle is never overwritten. ACS-only by construction (the
+# stripe is an ACS dead-column artifact). See scripts/bolton_investigations/redrizzle_bcfill.py
+# (the standalone prototype this ports) and CLAUDE.md. The filled pixels carry no independent
+# information, so the resulting noise is optimistic by ~sqrt(3/4)~13% on those columns -- an
+# opt-in cosmetic/uniformity choice, not the science default.
+_p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
+                help='interpolate ACS dead columns (DQ 4|128) in SCI+ERR and un-flag them '
+                     'before drizzling, writing to the parallel data/drizzled_bcfill/ tree; '
+                     'removes the dead-column noise stripe (see CLAUDE.md / '
+                     'scripts/bolton_investigations)')
 _p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
 _p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
 # driz_cr tuning, only used by --cr-method drizcr. The AstroDrizzle defaults below
@@ -122,12 +139,20 @@ if not do_cr and not do_nocrrej:
     _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+# The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
+# cutout and mosaic scripts all agree on the suffix. The calibrated FLCs are shared (bcfill
+# edits copies in the work dir, never data/calibrated/), but the drizzled output and the
+# working dir are variant-suffixed so bcfill and the standard reduction never collide --
+# in particular the work dir must stay separate, or a bcfill run's filled FLCs would be
+# what a later PSF-injection re-drizzle of the *standard* product reads back.
+_variant    = 'bcfill' if _a.bcfill else ''
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
+output_path = os.path.join(cutout_paths.drizzled_root(ws_path, _variant), sample, lens, filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
 # output FITS is written) onto a different volume/backing store — used to isolate the
 # APFS-write U-state hang (e.g. point it at a RAM disk). Falls back to the in-repo path.
-_work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(ws_path, 'data', 'drizzle_files')
+_work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(
+    ws_path, 'data', f'drizzle_files{cutout_paths.variant_tag(_variant)}')
 work_path   = os.path.join(_work_root, sample, lens, filt)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
@@ -183,6 +208,42 @@ def make_log_norm(data, wht):
     vmin = max(np.percentile(covered, 10), 1e-4)
     vmax = np.percentile(covered, 99.9)
     return ImageNormalize(vmin=vmin, vmax=vmax, stretch=LogStretch())
+
+# ── Bad-column fill (--bcfill) ─────────────────────────────────────────────────
+# ACS dead columns are DQ bit 128 (bad column, ~19 near-full columns on chip 1) + bit 4
+# (bad detector pixel, 2 columns). Neither is in this repo's ACS "good" set {16,64,256}, so
+# AstroDrizzle drops them; on dithered frames the affected output pixels then get fewer
+# contributing exposures -> a weight deficit that shows as a diagonal stripe in 1/sqrt(WHT)
+# (diagonal because final_rot=0 rotates the detector-vertical columns by the exposure roll).
+# fill_bad_columns removes the CAUSE, per frame per chip: linearly interpolate SCI *and* ERR
+# ACROSS each flagged column from the good pixels either side in the same row, then clear the
+# DQ bits so drizzle weights those pixels like any other. Ported verbatim from the standalone
+# scripts/bolton_investigations/redrizzle_bcfill.py (the prototype that validated this on
+# J1023+4230). ACS FLC extension layout is [1]=SCI/[2]=ERR/[3]=DQ for chip 1, [4/5/6] chip 2.
+_BCFILL_BADBITS = 4 | 128
+
+
+def fill_bad_columns(files):
+    """In-place per FLC: interpolate SCI+ERR across DQ 4|128 columns and clear those bits."""
+    total = 0
+    for fname in files:
+        with fits.open(fname, mode='update') as h:
+            for sci_e, err_e, dq_e in [(1, 2, 3), (4, 5, 6)]:      # both WFC chips
+                sci, err, dq = h[sci_e].data, h[err_e].data, h[dq_e].data
+                bad = (dq & _BCFILL_BADBITS) > 0
+                for row in np.where(bad.any(axis=1))[0]:
+                    b = bad[row]
+                    xg = np.where(~b)[0]
+                    xb = np.where(b)[0]
+                    if len(xg) < 2:                                # row too gappy to interp
+                        continue
+                    sci[row, xb] = np.interp(xb, xg, sci[row, xg])
+                    err[row, xb] = np.interp(xb, xg, err[row, xg])
+                h[dq_e].data = dq & ~_BCFILL_BADBITS                # un-flag -> full weight
+                total += int(bad.sum())
+            h.flush()
+    print(f'  bcfill: interpolated + un-flagged {total} bad-column px across '
+          f'{len(files)} frame(s)')
 
 # ── Subprocess mode: run only the no-CR drizzle pass with pre-aligned files ───
 # Launched by the main process after the CR pass to get a clean memory slate.
@@ -398,6 +459,14 @@ for f in glob.glob(os.path.join(data_path, '*flc.fits')):
 os.chdir(work_path)
 print(f'Working directory: {work_path}')
 
+# ── Bad-column fill (--bcfill), before anything reads SCI/ERR/DQ ───────────────
+# Runs here so bestrefs/updatewcs/LACosmic and both drizzle passes all see the filled,
+# un-flagged frames. LACosmic keys its object mask off DQ 4|8|128|512, so clearing 4|128
+# here correctly stops it treating the (now-filled) columns as protected/defective.
+if _a.bcfill:
+    print('\n=== bcfill: filling ACS bad columns (DQ 4|128) pre-drizzle ===')
+    fill_bad_columns(sorted(glob.glob('*flc.fits')))
+
 # ── Download reference files ──────────────────────────────────────────────────
 # Always run bestrefs against the actual input files: it is idempotent (CRDS only
 # fetches refs that are missing from the local cache) and this is cheap when they are
@@ -574,7 +643,10 @@ if do_cr:
         _result = subprocess.run(
             [sys.executable, os.path.abspath(__file__),
              '--lens', lens, '--filt', filt, '--sample', sample,
-             '--wht-type', _a.wht_type, '--_subprocess'],
+             '--wht-type', _a.wht_type, '--_subprocess']
+            # bcfill only affects which work dir the subprocess reads (the FLCs there are
+            # already filled); pass the flag so it resolves data/drizzle_files_bcfill/.
+            + (['--bcfill'] if _a.bcfill else []),
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
         )
         sys.stdout.write(_result.stdout)
@@ -630,6 +702,14 @@ if do_nocrrej:
 for fname in _copy:
     shutil.copy(fname, output_path)
     print(f'  {fname}')
+
+# Record the bad-column fill in the product header so a stamp cut from data/drizzled_bcfill/
+# is self-identifying, not distinguishable only by which tree it came out of.
+if _a.bcfill:
+    for fname in _copy:
+        with fits.open(os.path.join(output_path, fname), mode='update') as _h:
+            _h[0].header['BCFILL'] = (True, 'ACS bad columns (DQ 4|128) interpolated pre-drizzle')
+            _h.flush()
 
 # ── Plots ──────────────────────────────────────────────────────────────────────
 print('\n=== Saving plots ===')

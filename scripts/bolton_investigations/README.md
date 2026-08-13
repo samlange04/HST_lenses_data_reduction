@@ -208,14 +208,23 @@ whole reason the legacy images look fine for modelling but you'd still prefer dr
 
 ---
 
-## If we productionize one of these
+## Productionized (2026-08-13): option 3 → `--bcfill`
 
-The two natural candidates to wire into the pipeline (the point of the `bolton_interpolation`
-branch):
-- **Option 3** as an opt-in flag on `drizzle_acs_wfc.py` (fill bad columns pre-drizzle) — the
-  more correct, detection-free route.
-- **Option 2** as an option in `make_cutouts.py` (post-hoc heal or `--mask-up`) — cheaper, no
-  re-drizzle, and the `--mask-up` mode is the conservative modelling choice.
+**Option 3 (input-level bad-column fill + re-drizzle) is now wired into the pipeline** as an
+opt-in `--bcfill` flag on **both** `drizzle_acs_wfc.py` (ACS bits 4|128) and
+`drizzle_wfpc2_wf3.py` (WF3 bits 2|256, interior-only, IVM rebuilt on the filled columns).
+It writes to parallel tracked trees (`data/drizzled_bcfill/` → `make_cutouts.py --bcfill` →
+`data/cutouts_bcfill/` → `make_mosaics.py --bcfill` → `data/mosaics_bcfill/`), keyed via
+`cutout_paths.py`'s `variant` axis. See CLAUDE.md *Bad-column fill (`--bcfill`)* for the full
+contract. NOT for WFC3/IR F160W — an IR array has no bad columns (its noise-map dots are
+hot-pixel replicas, a different artifact).
 
-Both should carry the ~13 % optimism caveat above in their docs, and any "heal-down" default
-should be justified against just masking those pixels instead.
+`redrizzle_bcfill.py` (ACS) and **`redrizzle_bcfill_wfpc2.py`** (WFPC2, `BCFILL_LENS=<lens>`)
+remain as the standalone validation prototypes behind the productionized flag — they build
+the attributable baseline-vs-filled comparison figures the pipeline flag itself does not.
+
+Not taken: **option 2** (`stripe_heal.py`, post-hoc heal / `--mask-up`) was the cheaper
+alternative but relies on stripe detection; `--bcfill` removes the cause instead. All of
+these carry the ~13 % optimism caveat above; the conservative alternative to a clean-noise
+fill is still to *inflate* those pixels (by the √(WHT_filled/WHT_baseline) correction, or
+`stripe_heal.py --mask-up`) rather than heal them down.

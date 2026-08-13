@@ -52,6 +52,7 @@ sys.path.insert(0, os.path.join(WS, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from slacs_coords import slacs_coords
 import mast_target_names
+import cutout_paths
 
 MAX_SHIFT = 1.5   # arcsec; a larger apparent offset means the tie failed -> skip
 
@@ -101,9 +102,10 @@ def stable_centroid(path, cat, box=2.5, niter=8, tol=0.003):
     return pos
 
 
-def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE):
-    """The CR-pass sci product for a band (falls back to no-CR)."""
-    d = os.path.join(WS, 'data', 'drizzled', sample, lens, filt)
+def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE, variant=''):
+    """The CR-pass sci product for a band (falls back to no-CR). `variant` selects the
+    drizzled tree (e.g. 'bcfill' -> data/drizzled_bcfill/)."""
+    d = os.path.join(cutout_paths.drizzled_root(WS, variant), sample, lens, filt)
     for tag in ('cr', 'nocrrej'):
         hit = glob.glob(os.path.join(d, f'{prefix}_{tag}_*_sci.fits'))
         if hit:
@@ -112,18 +114,22 @@ def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE):
 
 
 def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
-               target=None, ref_filt='f814W', check_filt='f160W'):
+               target=None, ref_filt='f814W', check_filt='f160W', variant=''):
     """Shift `target`'s CRVAL so its deflector centroid coincides with `ref_filt`'s.
 
     `target` defaults to `f606_dir` (the F606W band directory), keeping the original
     F606W->F814W behaviour. `check_filt` is measured but never fitted, so it stays an
     independent check that the target landed on the right frame; it is skipped when it
-    is one of the two bands in the tie.
+    is one of the two bands in the tie. `variant` selects the drizzled tree, so a
+    --bcfill F606W product is tied within data/drizzled_bcfill/ (against that tree's own
+    F814W, which shares the standard F814W's GAIA WCS since bcfill does not move the
+    centroid). Note check_filt F160W has no bcfill tree, so its check is simply skipped
+    there -- find_product returns None -- which is correct, not an error.
     """
     target = target or f606_dir
     cat = SkyCoord(*slacs_coords[lens], unit=(u.hourangle, u.deg))
-    ref = find_product(lens, ref_filt, band_prefix(ref_filt), sample)
-    tgt = find_product(lens, target, band_prefix(target), sample)
+    ref = find_product(lens, ref_filt, band_prefix(ref_filt), sample, variant)
+    tgt = find_product(lens, target, band_prefix(target), sample, variant)
     if ref is None:
         print(f'{lens}: no {ref_filt} product to align against — skip')
         return
@@ -142,7 +148,7 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     dra = cref.ra.deg - ctgt.ra.deg
     ddec = cref.dec.deg - ctgt.dec.deg
     # apply to every product of the target band (both passes, sci + wht)
-    d = os.path.join(WS, 'data', 'drizzled', sample, lens, target)
+    d = os.path.join(cutout_paths.drizzled_root(WS, variant), sample, lens, target)
     n = 0
     for fn in glob.glob(os.path.join(d, f'{band_prefix(target)}_*.fits')):
         with fits.open(fn, mode='update') as h:
@@ -155,7 +161,7 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     # verify against a band that took no part in the fit
     chk = ''
     if check_filt not in (target, ref_filt):
-        fchk = find_product(lens, check_filt, band_prefix(check_filt), sample)
+        fchk = find_product(lens, check_filt, band_prefix(check_filt), sample, variant)
         if fchk:
             cchk = stable_centroid(fchk, cat)
             cnew = stable_centroid(tgt, cat)
@@ -181,18 +187,24 @@ if __name__ == '__main__':
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory of data/drizzled/. Defined in '
                         f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+    p.add_argument('--bcfill', action='store_true', default=False,
+                   help='tie the bad-column-filled F606W product in data/drizzled_bcfill/ '
+                        '(against that tree\'s own F814W), matching drizzle_wfpc2_wf3.py '
+                        '--bcfill; requires the bcfill F814W product to exist')
     a = p.parse_args()
+    variant = 'bcfill' if a.bcfill else ''
     if a.all:
         # Glob the products rather than the sample list: only a lens that actually has a
         # drizzled F606W product can be tied, and split-visit lenses have no bare f606W.
         lenses = sorted(
             os.path.basename(os.path.dirname(d))
-            for d in glob.glob(os.path.join(WS, 'data', 'drizzled', a.sample, '*', 'f606W'))
+            for d in glob.glob(os.path.join(cutout_paths.drizzled_root(WS, variant),
+                                            a.sample, '*', 'f606W'))
         )
         for lens in lenses:
-            align_lens(lens, sample=a.sample, ref_filt=a.ref_filt)
+            align_lens(lens, sample=a.sample, ref_filt=a.ref_filt, variant=variant)
     elif a.lens:
         align_lens(a.lens, f606_dir=a.f606_dir, sample=a.sample,
-                   target=a.target, ref_filt=a.ref_filt)
+                   target=a.target, ref_filt=a.ref_filt, variant=variant)
     else:
         p.error('give --lens LENS or --all')
