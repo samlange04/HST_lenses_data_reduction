@@ -30,7 +30,8 @@ Applied to J1023+4230 F814W (bad column through the deflector core).
 Outputs (bolton_test_outputs/ — tracked on this branch while testing):
   hybrid_J1023_noise.fits    - drizzle noise map, stripe healed in the lens region
   hybrid_J1023_stripe.fits   - the detected stripe mask (1 = healed)
-  hybrid_J1023_compare.png   - before / mask / after
+  hybrid_J1023_compare.png   - 3x3 (rows: drizzle / healed / difference;
+                               cols: signal / noise / S/N; stripe detection overlaid on noise)
 """
 import argparse
 import glob
@@ -41,6 +42,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
 from scipy.ndimage import median_filter, binary_dilation, binary_opening, rotate
+from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -140,23 +142,76 @@ hdr["STRIPEHL"] = (not args.mask_up, "dead-column stripe healed in lens region")
 fits.writeto(f"{OUT}/hybrid_J1023_noise.fits", healed.astype(np.float32), hdr, overwrite=True)
 fits.writeto(f"{OUT}/hybrid_J1023_stripe.fits", stripe.astype(np.uint8), hdr, overwrite=True)
 
-# ── figure ───────────────────────────────────────────────────────────────────────
-def nn(a):
-    lo, hi = np.nanpercentile(noise, [2, 98])
+# ── figure: signal / noise / S/N for drizzle (before) vs healed (after) + differences ──
+def sig_norm(a):
+    return ImageNormalize(a, interval=PercentileInterval(99.3), stretch=AsinhStretch())
+
+
+def noise_lim(a):
+    lo, hi = np.nanpercentile(noise, [2, 98])          # shared scale from the drizzle noise
     return dict(vmin=lo, vmax=hi, cmap="inferno", origin="lower")
 
-fig, ax = plt.subplots(1, 3, figsize=(16.5, 5.6))
-ax[0].imshow(noise, **nn(noise)); ax[0].set_title("Drizzle noise (stripe through core)")
+
+def snr_norm(a):
+    return ImageNormalize(a, interval=PercentileInterval(99.0), stretch=AsinhStretch())
+
+
+def snr_map(s, n):
+    with np.errstate(divide="ignore", invalid="ignore"):
+        r = s / n
+    r[~np.isfinite(r)] = 0.0
+    return r
+
+
+def diff_lim(d):
+    v = d[np.isfinite(d)]
+    v = v[np.abs(v) > 0]                                # diffs here are sparse (stripe only)
+    m = float(np.nanpercentile(np.abs(v), 99)) if v.size else 1e-12
+    return dict(vmin=-(m or 1e-12), vmax=(m or 1e-12), cmap="RdBu_r", origin="lower")
+
+
+snr_before = snr_map(sci, noise)
+if args.mask_up:                                       # blank the down-weighted pixels
+    noise_disp = np.where(stripe, np.nan, healed)
+    snr_after = np.where(stripe, np.nan, snr_map(sci, healed))
+    d_noise = np.where(stripe, np.nanpercentile(noise, 99) * 5, 0.0)   # sentinel-capped
+else:
+    noise_disp = healed
+    snr_after = snr_map(sci, healed)
+    d_noise = noise - healed                           # removed excess (positive on stripe)
+d_snr = snr_after - snr_before                         # S/N change from the heal
+sn, nl, rn = sig_norm(sci), noise_lim(noise), snr_norm(snr_before)
+
+fig, ax = plt.subplots(3, 3, figsize=(13.5, 13.5))
+# row 0 — drizzle (before), stripe detection overlaid on the noise panel
+ax[0, 0].imshow(sci, cmap="inferno", origin="lower", norm=sn)
+ax[0, 0].set_title("Drizzle: signal (kept, untouched)")
+ax[0, 1].imshow(noise, **nl)
 ov = np.ma.masked_where(~stripe, stripe)
-ax[1].imshow(noise, **nn(noise))
-ax[1].imshow(ov, origin="lower", cmap="cool", vmin=0, vmax=1, alpha=0.9)
-ax[1].set_title("Detected stripe (interpolate these)")
-disp = healed if not args.mask_up else np.where(stripe, np.nan, healed)
-ax[2].imshow(disp, **nn(disp)); ax[2].set_title(tag)
-for a in ax:
+ax[0, 1].imshow(ov, origin="lower", cmap="cool", vmin=0, vmax=1, alpha=0.9)
+ax[0, 1].set_title("Drizzle: noise + detected stripe (magenta)")
+ax[0, 2].imshow(snr_before, cmap="inferno", origin="lower", norm=rn)
+ax[0, 2].set_title("Drizzle: S/N")
+# row 1 — after the heal (science identical)
+ax[1, 0].imshow(sci, cmap="inferno", origin="lower", norm=sn)
+ax[1, 0].set_title("Healed: signal (identical)")
+ax[1, 1].imshow(noise_disp, **nl)
+ax[1, 1].set_title(tag)
+ax[1, 2].imshow(snr_after, cmap="inferno", origin="lower", norm=rn)
+ax[1, 2].set_title("Healed: S/N")
+# row 2 — differences (before − after)
+im = ax[2, 0].imshow(sci - sci, **diff_lim(sci - sci))
+ax[2, 0].set_title("Δ signal = 0 (image untouched)")
+im = ax[2, 1].imshow(d_noise, **diff_lim(d_noise))
+ax[2, 1].set_title("Δ noise (drizzle − healed) = the stripe")
+fig.colorbar(im, ax=ax[2, 1], fraction=0.046, pad=0.04)
+im = ax[2, 2].imshow(d_snr, **diff_lim(d_snr))
+ax[2, 2].set_title("Δ S/N (healed − drizzle)")
+fig.colorbar(im, ax=ax[2, 2], fraction=0.046, pad=0.04)
+for a in ax.ravel():
     a.set_xticks([]); a.set_yticks([])
-fig.suptitle("J1023+4230 F814W  —  drizzle image kept, stripe interpolated in the lens region",
-             fontsize=13)
+fig.suptitle("J1023+4230 F814W  —  drizzle image kept, stripe interpolated in the lens region "
+             "(rows: drizzle / healed / difference; cols: signal / noise / S/N)", fontsize=12)
 fig.tight_layout(rect=(0, 0, 1, 0.97))
 fig.savefig(f"{OUT}/hybrid_J1023_compare.png", dpi=130)
 print("wrote hybrid_J1023_noise.fits / _stripe.fits / _compare.png")

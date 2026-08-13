@@ -25,7 +25,8 @@ so the drizzle stripe is maximally visible for the side-by-side.
 Outputs (all under bolton_test_outputs/ — tracked on this branch while testing):
   bolton_J1023_sci.fits    - Bolton-style science image (e/s)
   bolton_J1023_noise.fits  - Bolton-style noise map (e/s)
-  bolton_J1023_compare.png - 4-panel comparison vs this repo's drizzle products
+  bolton_J1023_compare.png - 3x3 comparison vs this repo's drizzle products
+                             (rows: drizzle / Bolton / difference; cols: signal / noise / S/N)
 """
 import glob
 import os
@@ -163,24 +164,62 @@ def sci_norm(a):
     return ImageNormalize(a, interval=PercentileInterval(99.3), stretch=AsinhStretch())
 
 
-def noise_norm(a):
+def noise_lim(a):
     lo, hi = np.nanpercentile(a, [2, 98])
-    return dict(vmin=lo, vmax=hi)
+    return dict(vmin=lo, vmax=hi, cmap="inferno", origin="lower")
 
 
-fig, ax = plt.subplots(2, 2, figsize=(11, 11))
-ax[0, 0].imshow(drz_sci, origin="lower", cmap="inferno", norm=sci_norm(drz_sci))
-ax[0, 0].set_title("This repo: AstroDrizzle science (F814W)")
-ax[0, 1].imshow(drz_noise, origin="lower", cmap="inferno", **noise_norm(drz_noise))
-ax[0, 1].set_title("This repo: drizzle NOISE  — dead-column stripe visible")
-ax[1, 0].imshow(bol_sci, origin="lower", cmap="inferno", norm=sci_norm(bol_sci))
-ax[1, 0].set_title("Bolton bilinear science (this script)")
-ax[1, 1].imshow(bol_noise, origin="lower", cmap="inferno", **noise_norm(bol_noise))
-ax[1, 1].set_title("Bolton bilinear NOISE — no stripe (count-derived, no weight map)")
+def snr_norm(a):
+    return ImageNormalize(a, interval=PercentileInterval(99.0), stretch=AsinhStretch())
+
+
+def snr_map(s, n):
+    with np.errstate(divide="ignore", invalid="ignore"):
+        r = s / n
+    r[~np.isfinite(r)] = 0.0
+    return r
+
+
+def diff_lim(d):
+    v = d[np.isfinite(d)]
+    m = float(np.nanpercentile(np.abs(v), 99)) if v.size else 1e-12
+    return dict(vmin=-(m or 1e-12), vmax=(m or 1e-12), cmap="RdBu_r", origin="lower")
+
+
+drz_snr = snr_map(drz_sci, drz_noise)
+bol_snr = snr_map(bol_sci, bol_noise)
+# shared column norms (taken from the drizzle row) so the A/B panels compare directly
+sn, rn = sci_norm(drz_sci), snr_norm(drz_snr)
+nl = noise_lim(drz_noise)
+d_sci, d_noise, d_snr = drz_sci - bol_sci, drz_noise - bol_noise, drz_snr - bol_snr
+side = drz_sci.shape[0] * 0.05
+
+fig, ax = plt.subplots(3, 3, figsize=(13.5, 13.5))
+# row 0 — this repo's AstroDrizzle
+ax[0, 0].imshow(drz_sci, cmap="inferno", origin="lower", norm=sn)
+ax[0, 0].set_title("Drizzle: signal (F814W)")
+ax[0, 1].imshow(drz_noise, **nl)
+ax[0, 1].set_title("Drizzle: noise — dead-column stripe")
+ax[0, 2].imshow(drz_snr, cmap="inferno", origin="lower", norm=rn)
+ax[0, 2].set_title("Drizzle: S/N")
+# row 1 — Bolton bilinear
+ax[1, 0].imshow(bol_sci, cmap="inferno", origin="lower", norm=sn)
+ax[1, 0].set_title("Bolton bilinear: signal (softer PSF)")
+ax[1, 1].imshow(bol_noise, **nl)
+ax[1, 1].set_title("Bolton bilinear: noise — no stripe (count-derived)")
+ax[1, 2].imshow(bol_snr, cmap="inferno", origin="lower", norm=rn)
+ax[1, 2].set_title("Bolton bilinear: S/N")
+# row 2 — difference (drizzle − Bolton)
+for col, (d, lab) in enumerate([(d_sci, "signal"), (d_noise, "noise"), (d_snr, "S/N")]):
+    im = ax[2, col].imshow(d, **diff_lim(d))
+    ax[2, col].set_title(f"Δ {lab} (drizzle − Bolton)")
+    fig.colorbar(im, ax=ax[2, col], fraction=0.046, pad=0.04)
 for a in ax.ravel():
     a.set_xticks([]); a.set_yticks([])
 fig.suptitle(f"{LENS} F814W — drizzle vs Bolton-2008 bilinear reduction "
-             f"(central 20\", 0.05\"/px)", fontsize=13)
+             f"(central {side:.0f}\", 0.05\"/px; difference row on rough common-centre "
+             f"registration — see compare_bolton_vs_drizzle.py for the sub-pixel fit)",
+             fontsize=12)
 fig.tight_layout(rect=(0, 0, 1, 0.98))
 fig.savefig(f"{OUT_DIR}/bolton_{LENS[:5]}_compare.png", dpi=130)
 print(f"wrote bolton_{LENS[:5]}_compare.png")

@@ -29,7 +29,8 @@ Usage (the no-arg form orchestrates all stages, each drizzle in its own process)
 Outputs (bolton_test_outputs/ — tracked on this branch while testing):
   redrizzle_baseline_{sci,noise}.fits  - standard drizzle (stripe present)
   redrizzle_filled_{sci,noise}.fits    - bad-columns filled pre-drizzle (no stripe)
-  redrizzle_bcfill_compare.png         - 2x3 comparison
+  redrizzle_bcfill_compare.png         - 3x3 comparison (rows: standard / filled / difference;
+                                         cols: signal / noise / S/N)
 """
 import glob
 import os
@@ -156,35 +157,60 @@ def compare():
         lo, hi = np.nanpercentile(b_noise, [2, 98])
         return dict(vmin=lo, vmax=hi, cmap="inferno", origin="lower")
 
-    dnoise = b_noise - f_noise
-    dsci = b_sci - f_sci
-    dl = np.nanpercentile(np.abs(dnoise), 99)
-    fig, ax = plt.subplots(2, 3, figsize=(16.5, 11))
-    ax[0, 0].imshow(b_sci, norm=snorm(b_sci), cmap="inferno", origin="lower")
-    ax[0, 0].set_title("Standard drizzle: science")
+    def rnorm(a):
+        return ImageNormalize(a, interval=PercentileInterval(99.0), stretch=AsinhStretch())
+
+    def snr_map(s, n):
+        with np.errstate(divide="ignore", invalid="ignore"):
+            r = s / n
+        r[~np.isfinite(r)] = 0.0
+        return r
+
+    def dlim(d):
+        v = d[np.isfinite(d)]
+        m = float(np.nanpercentile(np.abs(v), 99)) if v.size else 1e-12
+        return dict(vmin=-(m or 1e-12), vmax=(m or 1e-12), cmap="RdBu_r", origin="lower")
+
+    b_snr, f_snr = snr_map(b_sci, b_noise), snr_map(f_sci, f_noise)
+    sn, rn = snorm(b_sci), rnorm(b_snr)                 # shared A/B norms from the baseline
+    d_sci, d_noise, d_snr = b_sci - f_sci, b_noise - f_noise, b_snr - f_snr
+
+    fig, ax = plt.subplots(3, 3, figsize=(13.5, 13.5))
+    # row 0 — standard drizzle
+    ax[0, 0].imshow(b_sci, norm=sn, cmap="inferno", origin="lower")
+    ax[0, 0].set_title("Standard drizzle: signal")
     ax[0, 1].imshow(b_noise, **nlim(b_noise))
-    ax[0, 1].set_title("Standard drizzle: NOISE — stripe through core")
-    ax[0, 2].imshow(dnoise, vmin=-dl, vmax=dl, cmap="RdBu_r", origin="lower")
-    ax[0, 2].set_title("noise difference (standard − filled) = the removed stripe")
-    ax[1, 0].imshow(f_sci, norm=snorm(f_sci), cmap="inferno", origin="lower")
-    ax[1, 0].set_title("Bad-cols filled pre-drizzle: science")
+    ax[0, 1].set_title("Standard: noise — stripe through core")
+    ax[0, 2].imshow(b_snr, norm=rn, cmap="inferno", origin="lower")
+    ax[0, 2].set_title("Standard: S/N")
+    # row 1 — bad-columns filled pre-drizzle
+    ax[1, 0].imshow(f_sci, norm=sn, cmap="inferno", origin="lower")
+    ax[1, 0].set_title("Bad-cols filled: signal")
     ax[1, 1].imshow(f_noise, **nlim(f_noise))
-    ax[1, 1].set_title("Filled + re-drizzled: NOISE — uniform weight, no stripe")
-    dsl = np.nanpercentile(np.abs(dsci), 99) or 1e-6
-    ax[1, 2].imshow(dsci, vmin=-dsl, vmax=dsl, cmap="RdBu_r", origin="lower")
-    ax[1, 2].set_title("science difference (standard − filled) ≈ 0")
+    ax[1, 1].set_title("Filled: noise — uniform weight, no stripe")
+    ax[1, 2].imshow(f_snr, norm=rn, cmap="inferno", origin="lower")
+    ax[1, 2].set_title("Filled: S/N")
+    # row 2 — difference (standard − filled)
+    for col, (d, lab) in enumerate([(d_sci, "signal"), (d_noise, "noise"), (d_snr, "S/N")]):
+        im = ax[2, col].imshow(d, **dlim(d))
+        ax[2, col].set_title(f"Δ {lab} (standard − filled)"
+                             + (" = removed stripe" if lab == "noise" else
+                                " ≈ 0" if lab == "signal" else ""))
+        fig.colorbar(im, ax=ax[2, col], fraction=0.046, pad=0.04)
     for a in ax.ravel():
         a.set_xticks([]); a.set_yticks([])
     fig.suptitle("J1023+4230 F814W — input-level bad-column fill + re-drizzle "
-                 "(identical AstroDrizzle settings; only the fill differs)", fontsize=13)
+                 "(identical AstroDrizzle settings; only the fill differs; "
+                 "rows: standard / filled / difference, cols: signal / noise / S/N)",
+                 fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.98))
     fig.savefig(f"{OUT}/redrizzle_bcfill_compare.png", dpi=130)
     # report + tidy the bulky FLC copies (keep the drc products)
     m = np.isfinite(b_noise) & np.isfinite(f_noise)
     print(f"median noise  standard {np.nanmedian(b_noise[m]):.5f}  ->  filled "
           f"{np.nanmedian(f_noise[m]):.5f} e/s")
-    print(f"science max |diff| = {np.nanmax(np.abs(dsci)):.3g} e/s  "
-          f"(median |diff| {np.nanmedian(np.abs(dsci)):.3g})")
+    print(f"science max |diff| = {np.nanmax(np.abs(d_sci)):.3g} e/s  "
+          f"(median |diff| {np.nanmedian(np.abs(d_sci)):.3g})")
     for kind in ("baseline", "filled"):
         for f in glob.glob(f"{WORK}/{kind}/*flc.fits"):
             os.remove(f)
