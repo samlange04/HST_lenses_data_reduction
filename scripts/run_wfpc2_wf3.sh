@@ -10,7 +10,12 @@
 # discards any previous tie, because align_wfpc2_to_acs.py edits CRVAL1/2 in the
 # drizzled product -- so the tie must be re-applied after every drizzle, not once.
 #
-# Usage: run_wfpc2_wf3.sh [SAMPLE]      (default: mast_target_names.DEFAULT_SAMPLE)
+# Usage: run_wfpc2_wf3.sh [SAMPLE] [--bcfill]   (default: mast_target_names.DEFAULT_SAMPLE)
+#
+# --bcfill runs the bad-column-filled reduction through all three stages: drizzle into the
+# parallel data/drizzled_bcfill/ tree, tie F606W within that tree (against its OWN F814W --
+# so run_acs_all.sh --bcfill must have produced the bcfill F814W products FIRST), and cut
+# into data/cutouts_bcfill/. See CLAUDE.md *Bad-column fill*. Logs are _bcfill-tagged.
 #
 # EVERY lens in the sample is tried, not a hand-maintained subset. Only 22 of the 38
 # slacs_gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and
@@ -27,6 +32,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$(dirname "$SCRIPT_DIR")"
 LOGDIR="$WS/data/run_logs"; mkdir -p "$LOGDIR"
 ALIGN_JSON="$WS/info/wfpc2_alignment.json"
+
+# Pull the optional --bcfill flag out of the args, leaving SAMPLE as $1. bcfill threads
+# through all three stages (drizzle/align/cutout) and _bcfill-tags the logs.
+BCFILL=""; ARGS=()
+for _arg in "$@"; do
+  if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"; else ARGS+=("$_arg"); fi
+done
+set -- ${ARGS[@]+"${ARGS[@]}"}
+TAG="${BCFILL:+_bcfill}"
 
 SAMPLE="$(uv run --project "$WS" python "$SCRIPT_DIR/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 LENSES=()
@@ -81,10 +95,11 @@ align_for() {
 run_product() {
   local lens="$1" align="$2" pa="$3" suffix="$4"
   local key="f606W${suffix}"
-  local log="$LOGDIR/${lens}_${key}_wf3.log"
+  local log="$LOGDIR/${lens}_${key}${TAG}_wf3.log"
   local -a extra_args=()
   [ -n "$pa" ] && extra_args+=(--pa "$pa")
   [ -n "$suffix" ] && extra_args+=(--out-suffix "$suffix")
+  [ -n "$BCFILL" ] && extra_args+=(--bcfill)
 
   printf '  %-10s align=%-8s ' "$key" "$align"
   if ! uv run --project "$WS" python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
@@ -113,12 +128,12 @@ run_product() {
   # Absolute-astrometry tie to ACS F814W. Idempotent (re-measures the residual and
   # applies ~0), so it is safe on a product the drizzle skipped as already-existing.
   if ! uv run --project "$WS" python "$SCRIPT_DIR/align_wfpc2_to_acs.py" --lens "$lens" \
-         --f606-dir "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
+         --f606-dir "$key" --sample "$SAMPLE" $BCFILL >> "$log" 2>&1; then
     echo "ALIGN FAILED (see $log)"; return 1
   fi
 
   if ! uv run --project "$WS" python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
-         --filt "$key" --sample "$SAMPLE" >> "$log" 2>&1; then
+         --filt "$key" --sample "$SAMPLE" $BCFILL >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
   fi
   if grep -q '^  EXPTIME WARNING:' "$log"; then

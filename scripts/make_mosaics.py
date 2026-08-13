@@ -398,10 +398,14 @@ def main():
                    help='cutout size in arcsec to mosaic, matching make_cutouts.py --size '
                         f'(default {cutout_paths.DEFAULT_SIZE:g}). A non-default size reads '
                         'data/cutouts_<size>arcsec/ and writes data/mosaics_<size>arcsec/')
+    p.add_argument('--bcfill', action='store_true', default=False,
+                   help='mosaic the bad-column-filled cutout tree (data/cutouts_bcfill/) into '
+                        'data/mosaics_bcfill/, matching make_cutouts.py --bcfill')
     a = p.parse_args()
 
-    cutouts_dir = os.path.join(cutout_paths.cutouts_root(ws_path, a.size), a.sample)
-    out_dir = os.path.join(cutout_paths.mosaics_root(ws_path, a.size), a.sample)
+    variant = 'bcfill' if a.bcfill else ''
+    cutouts_dir = os.path.join(cutout_paths.cutouts_root(ws_path, a.size, variant), a.sample)
+    out_dir = os.path.join(cutout_paths.mosaics_root(ws_path, a.size, variant), a.sample)
     os.makedirs(out_dir, exist_ok=True)
     print(f"cutouts: {cutouts_dir}\nmosaics: {out_dir}")
 

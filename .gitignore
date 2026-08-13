@@ -17,6 +17,14 @@
 data/*
 !data/cutouts/
 !data/mosaics/
+# The bad-column-filled reduction (drizzle_acs_wfc.py --bcfill) is a small, tracked
+# alternate science product, same rationale as data/cutouts/ above. Only its default-size
+# cutouts + QC mosaics are versioned; data/drizzled_bcfill/ (the big mosaics) and
+# data/drizzle_files_bcfill/ (scratch) stay ignored by the data/* rule, like their
+# standard-reduction counterparts. A non-default-size bcfill tree (cutouts_bcfill_<S>arcsec)
+# is NOT matched here, so it stays untracked like any other size variant.
+!data/cutouts_bcfill/
+!data/mosaics_bcfill/
 # ...and neither is the per-size QC provenance for an untracked size, which would
 # otherwise be a tracked file describing products nobody else has on disk. The default
 # (12") info/lens_cutout_qc.json is tracked as an ordinary info/ file, untouched by this

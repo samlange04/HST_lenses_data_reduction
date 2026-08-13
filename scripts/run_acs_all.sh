@@ -3,7 +3,11 @@
 # updatewcs/TweakReg) and --cr (LACosmic CR masking). Both are the script defaults;
 # passed explicitly for the record.
 #
-# Usage: run_acs_all.sh [SAMPLE]        (default: mast_target_names.DEFAULT_SAMPLE)
+# Usage: run_acs_all.sh [SAMPLE] [--bcfill]   (default: mast_target_names.DEFAULT_SAMPLE)
+#
+# --bcfill drizzles the bad-column-filled reduction into the PARALLEL data/drizzled_bcfill/
+# tree (see CLAUDE.md *Bad-column fill*); the standard tree is untouched. Logs are tagged
+# _bcfill so they don't clobber the standard run's.
 #
 # The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/. That matters: globbing the download directory only
@@ -16,22 +20,33 @@
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
 
+# Pull the optional --bcfill flag out of the args, leaving SAMPLE as $1. bcfill routes to
+# the parallel data/drizzled_bcfill/ + data/drizzle_files_bcfill/ trees (matching
+# drizzle_acs_wfc.py --bcfill), with _bcfill-tagged logs.
+BCFILL=""; ARGS=()
+for _arg in "$@"; do
+  if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"; else ARGS+=("$_arg"); fi
+done
+set -- ${ARGS[@]+"${ARGS[@]}"}
+DZ="drizzled"; DF="drizzle_files"; TAG=""
+[ -n "$BCFILL" ] && { DZ="drizzled_bcfill"; DF="drizzle_files_bcfill"; TAG="_bcfill"; }
+
 SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${1:+"$1"} --print-sample)" || exit 1
 LENSES=()
 while IFS= read -r _l; do
   [ -n "$_l" ] && LENSES+=("$_l")
 done < <(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE")
 [ "${#LENSES[@]}" -gt 0 ] || { echo "No lenses in sample '$SAMPLE'" >&2; exit 1; }
-echo "=== ACS: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
+echo "=== ACS: ${#LENSES[@]} lenses in sample '$SAMPLE'${BCFILL:+ (bcfill)} ==="
 
 ok=0; nodata=0; blocked=0; fail=0; FAILED=()
 for filt in f814W f555W; do
   for lens in "${LENSES[@]}"; do
-    log="$LOG/${lens}_${filt}_acs.log"
-    rm -rf "$WS/data/drizzled/$SAMPLE/$lens/$filt" "$WS/data/drizzle_files/$SAMPLE/$lens/$filt"
+    log="$LOG/${lens}_${filt}${TAG}_acs.log"
+    rm -rf "$WS/data/$DZ/$SAMPLE/$lens/$filt" "$WS/data/$DF/$SAMPLE/$lens/$filt"
     printf '%-12s %-6s ' "$lens" "$filt"
     if uv run --project "$WS" python "$SD/drizzle_acs_wfc.py" --lens "$lens" --filt "$filt" \
-         --sample "$SAMPLE" --cr --align mast --cr-method lacosmic > "$log" 2>&1; then
+         --sample "$SAMPLE" --cr --align mast --cr-method lacosmic $BCFILL > "$log" 2>&1; then
       # An exit-0 run that wrote nothing is either "MAST has no data" or "total exptime
       # below BLOCK_EXPTIME" -- both are ordinary outcomes, not a product and not a failure.
       if grep -q '^=== NO DATA:' "$log"; then

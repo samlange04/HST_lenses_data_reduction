@@ -36,6 +36,7 @@ from stwcs.updatewcs import updatewcs
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import info_json
+import cutout_paths
 
 # Route large FITS output writes through mmap+memcpy (vm_fault path) instead of
 # fwrite/cluster_write copyin, to dodge the macOS U-state write-path lost-wakeup.
@@ -120,6 +121,27 @@ _p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=Fals
 # separately and let the modelling (PyAutoLens DatasetModel.grid_offset) fit the offset.
 _p.add_argument('--pa',          type=float, default=None)
 _p.add_argument('--out-suffix',  default='')
+# Bad-column fill (Bolton-style), the WFPC2 sibling of drizzle_acs_wfc.py --bcfill. WF3
+# carries genuine full-height dead columns flagged by WFPC2 c1m DQ bits 2 (calibration/mask
+# defect) + 256; neither is in the "good" set {8,1024}, so AstroDrizzle drops them and the
+# affected output pixels get fewer of the dithered frames -> a weight deficit that shows as
+# thick diagonal stripes in 1/sqrt(WHT) (diagonal because final_rot=0 rotates the
+# detector-vertical columns by the exposure roll). When set, each extracted WF3 frame's
+# flagged columns are linearly interpolated across in SCI (INTERIOR ONLY, so the vignetted
+# chip border -- also bit-2-flagged -- is left untouched) and those bits cleared BEFORE the
+# IVM is built, so build_ivm_files() naturally produces a consistent noise model on the
+# filled columns and the weight map comes out uniform. Products land in a PARALLEL tree
+# (data/drizzled_bcfill/, work dir data/drizzle_files_bcfill/) so the standard drizzle is
+# never overwritten. Per-visit like every WFPC2 product (a split-visit lens fills each visit
+# separately). The filled pixels carry no independent information, so the noise is optimistic
+# by ~sqrt(3/4)~13% on those columns -- an opt-in cosmetic/uniformity choice, not the science
+# default. Validated standalone on J0822+2652 / J0252+0039 (scripts/bolton_investigations/
+# redrizzle_bcfill_wfpc2.py); see CLAUDE.md.
+_p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
+                help='interpolate WF3 dead columns (DQ 2|256) in SCI and un-flag them before '
+                     'building the IVM + drizzling, writing to the parallel '
+                     'data/drizzled_bcfill/ tree; removes the dead-column noise stripe (see '
+                     'CLAUDE.md / scripts/bolton_investigations)')
 _a = _p.parse_args()
 
 lens       = _a.lens
@@ -188,11 +210,19 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     return norm(fx), norm(fy)
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+# The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
+# cutout and mosaic scripts all agree on the suffix (same mechanism as drizzle_acs_wfc.py).
+# The calibrated FLTs are shared (bcfill edits the extracted WF3 copies in the work dir,
+# never data/calibrated/), but the drizzled output and work dir are variant-suffixed so
+# bcfill and the standard reduction never collide.
+_variant    = 'bcfill' if _a.bcfill else ''
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
 # take --out-suffix, so both visits share the one download but write to f606W / _v2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt + _a.out_suffix)
-work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt + _a.out_suffix)
+output_path = os.path.join(cutout_paths.drizzled_root(ws_path, _variant),
+                           sample, lens, filt + _a.out_suffix)
+work_path   = os.path.join(ws_path, 'data', f'drizzle_files{cutout_paths.variant_tag(_variant)}',
+                           sample, lens, filt + _a.out_suffix)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────
@@ -552,6 +582,47 @@ def extract_wf3_chip(flt_files):
 
 flt_wf3_files = extract_wf3_chip(sorted(glob.glob('u*flt.fits')))
 
+# ── Bad-column fill (--bcfill), on the extracted WF3 chips before the IVM build ──
+# See the --bcfill help. Fill DQ 2|256 columns in SCI (interior only, sparing the vignetted
+# border) and clear those bits, so the pixels get full weight from every frame. Runs BEFORE
+# build_ivm_files so the IVM is measured from the filled SCI (a consistent noise model on the
+# filled columns) and BEFORE LACosmic, which keys off DQ bit 8 only and is unaffected. Ported
+# from scripts/bolton_investigations/redrizzle_bcfill_wfpc2.py.
+_BCFILL_BADCOL = 2 | 256          # WFPC2 c1m: calibration/mask defect (2) + bit 256
+
+
+def fill_wf3_bad_columns(wf3_files):
+    """In-place per extracted WF3 frame: interpolate SCI across DQ 2|256 columns (interior
+    only) and clear those bits on the filled pixels. IVM is (re)built afterwards."""
+    total = 0
+    for fname in wf3_files:
+        with fits.open(fname, mode='update') as h:
+            sci, dq = h['SCI', 1].data, h['DQ', 1].data
+            bad = (dq & _BCFILL_BADCOL) > 0
+            for row in np.where(bad.any(axis=1))[0]:
+                b = bad[row]
+                xg = np.where(~b)[0]
+                xb = np.where(b)[0]
+                if len(xg) < 2:
+                    continue
+                interior = (xb > xg.min()) & (xb < xg.max())   # spare the vignetted border
+                xbi = xb[interior]
+                if xbi.size == 0:
+                    continue
+                sci[row, xbi] = np.interp(xbi, xg, sci[row, xg])
+                dq[row, xbi] &= ~_BCFILL_BADCOL                 # un-flag -> full weight
+                total += int(xbi.size)
+            h['SCI', 1].data = sci
+            h['DQ', 1].data = dq
+            h.flush()
+    print(f'  bcfill: interpolated + un-flagged {total} interior bad-column px across '
+          f'{len(wf3_files)} WF3 frame(s)')
+
+
+if _a.bcfill:
+    print('\n=== bcfill: filling WF3 bad columns (DQ 2|256) pre-IVM/pre-drizzle ===')
+    fill_wf3_bad_columns(flt_wf3_files)
+
 # ── Build per-frame IVM files from the real ERR array ──────────────────────────
 # See the --wht-type help above: DrizzlePac's WFPC2 driver hardcodes errExt=None
 # and never reads ERR for WFPC2, no matter what's in the file. IVM = 1/ERR^2 is
@@ -832,6 +903,10 @@ for fname in _copy_files:
         # Only the SCI files: the WHT map is correctly 'UNITLESS'.
         if fname.endswith('_sci.fits'):
             _h[0].header['BUNIT'] = ('COUNTS/S', 'DN per second (drizzle final_units=cps)')
+        # Self-identify the bad-column-filled reduction, so a stamp cut from
+        # data/drizzled_bcfill/ is distinguishable by header, not only by which tree.
+        if _a.bcfill:
+            _h[0].header['BCFILL'] = (True, 'WF3 dead columns (DQ 2|256) interpolated pre-drizzle')
     shutil.copy(fname, output_path)
     print(f'  {fname}')
 
