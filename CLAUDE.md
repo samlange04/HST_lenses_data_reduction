@@ -549,8 +549,43 @@ option 3).
   detector-fixed at ~2020 px/frame, single- and split-visit identical). Standalone
   comparison figures in `bolton_test_outputs/redrizzle[_wfpc2]_*bcfill_compare.png`.
 
-Runners are **not** `--bcfill`-aware yet — run the drizzle/cutout/mosaic scripts per lens (or
-add a passthrough) if productionizing a whole-sample bcfill campaign.
+**`run_acs_all.sh` and `run_wfpc2_wf3.sh` are `--bcfill`-aware** — pass `--bcfill` as a
+second arg (after the optional sample) and it threads through every stage into the parallel
+`*_bcfill` trees, with `_bcfill`-tagged logs. `run_acs_all.sh --bcfill` *drizzles* f814W+f555W
+(no cutout step — it never cuts); `run_wfpc2_wf3.sh --bcfill` runs the full drizzle → tie →
+cutout for F606W (the tie is against the bcfill tree's OWN f814W, so the ACS bcfill drizzle
+must run first). A whole-sample campaign is thus: `run_acs_all.sh <sample> --bcfill` →
+`run_wfpc2_wf3.sh <sample> --bcfill` → `make_cutouts.py --bcfill` per ACS product (the cutout
+step the ACS runner skips) → `make_mosaics.py --sample <sample> --bcfill`. The other runners
+(`run_wfc3_all.sh`, `run_gallery_uvis_all.sh`, `run_cutouts_all.sh`, `run_psf_all.sh`) are
+**not** `--bcfill`-aware — bcfill is ACS+WFPC2 only, so there's nothing for them to pass.
+
+Ran this full recipe across `slacs_gold` 2026-08-13, 0 failures: **f814W** (38), **f555W** (16),
+**f606W** (22, incl. split-visit J0822+2652 `f606W`+`f606W_v2`) drizzled to
+`data/drizzled_bcfill/`, cut to `data/cutouts_bcfill/` (all `BCFILL=True`; F606W also tied,
+`GSC240FX=True`), mosaicked to `data/mosaics_bcfill/`. The 16 non-WFPC2 lenses report `no data`
+at F606W and the 22 WFPC2 lenses `no data` at F555W, as expected from the coverage table.
+
+Also ran across `slacs_other` 2026-08-13, 0 failures: **f814W** (4 — the only ones past the
+`BLOCK_EXPTIME` gate; 15 blocked, rest absent), **f606W** (24) — no f555W data and f160W is
+WFC3/IR (no bcfill). Cutouts/mosaics land in the same tracked trees, keyed by the `slacs_other`
+subdirectory. **`gallery` has no bcfill** — it's entirely WFC3/UVIS and `drizzle_wfc3_uvis.py`
+has no `--bcfill`, so there is nothing to run (skipped, user-confirmed 2026-08-13); porting the
+fill to UVIS would be new dev + validation, not a campaign.
+
+**Cross-tree astrometry trap the bcfill F606W tie can't self-heal (J1016+3859, slacs_other).**
+`run_wfpc2_wf3.sh --bcfill` ties F606W to the bcfill tree's OWN F814W, but that F814W is a raw
+re-drizzle carrying the delivered WCS — so if a lens's delivered ACS WCS is itself off (the
+`acs_wcs_not_always_gaia` case: J1016+3859's F814W came down `-GSC240`, ~0.6–0.9″ off), the
+bcfill F606W gets tied to a wrong frame and recentres ~0.7″/14px off, while the *standard* tree
+was fixed by an F814W→F160W tie that never propagated to bcfill (there is no bcfill F160W —
+IR has no bad columns). Fix is a one-off cross-tree tie the script can't express (its `--ref`
+stays within one variant): tie **bcfill F814W → standard-tree F160W** manually (compute the
+centroid shift with `align_wfpc2_to_acs`'s `stable_centroid`/`find_product`, apply dRA/dDec to
+the bcfill F814W CRVAL, stamp `ASTROREF='f160W'`), then re-run `align_wfpc2_to_acs.py --bcfill`
+(F606W→F814W) and re-cut both bands. Done 2026-08-13: both recentre to 0.194″/3.9px, matching
+the standard tree's ~0.198″ residual. Watch for this on any bcfill lens whose standard F814W
+has a non-default `ASTROREF`.
 
 ## Cutouts (`scripts/make_cutouts.py`)
 
