@@ -104,28 +104,44 @@ sharpness, residual, photometry and radial profiles. Output: `bolton_vs_drizzle.
 All panels use `inferno` + asinh for science, a percentile-clipped linear scale for noise,
 and a diverging `RdBu_r` for difference maps. All are J1023+4230 F814W, 0.05″/px, ~20″.
 
-**`bolton_J1023_compare.png`** (from `bolton_reduce.py`) — 2×2:
-- top-left: our drizzle science; top-right: our drizzle **noise** — the two diagonal stripes
-  through the deflector core;
-- bottom-left: Bolton bilinear science (visibly slightly softer); bottom-right: Bolton
-  bilinear **noise** — no stripe, but note it is *count-derived* so it traces flux (blobby,
-  bright on the galaxy), a different kind of map from a weight-based one.
-- *Look for:* stripe present top-right, absent bottom-right.
+All three comparison figures now share one **3×3** template: **rows** = the two products
+being compared + their **difference**; **columns** = **signal · noise · S/N**. So each figure
+carries signal, noise, signal-to-noise, and a difference map for all three, and the bottom
+(difference) row isolates exactly what the method changed. Difference panels use a diverging
+`RdBu_r` with a symmetric percentile-clipped scale and a colourbar; the signal/noise/S/N
+columns share one normalization down each column (taken from the top/reference row) so the
+two products compare directly.
 
-**`hybrid_J1023_compare.png`** (from `stripe_heal.py`) — 1×3:
-- left: drizzle noise (stripe through core); middle: the **detected** stripe overlaid in
-  magenta on the noise; right: the **healed** noise (stripe interpolated away; or, with
-  `--mask-up`, inflated instead).
-- *Look for:* both bad-column stripes gone on the right, while the unrelated satellite/CR
-  trail in the lower-right corner is deliberately left untouched.
+**`bolton_J1023_compare.png`** (from `bolton_reduce.py`):
+- row 0 (our drizzle): signal · **noise** (two diagonal stripes through the core) · S/N;
+- row 1 (Bolton bilinear): signal (visibly softer PSF) · **noise** — no stripe, but note it
+  is *count-derived* so it traces flux (blobby, bright on the galaxy), a different kind of map
+  from a weight-based one · S/N;
+- row 2 (**difference**, drizzle − Bolton): Δsignal · Δnoise (the stripe reappears, since only
+  drizzle has it) · ΔS/N.
+- *Look for:* stripe present in row-0 noise, absent in row-1 noise, isolated in row-2 Δnoise.
+- *Caveat:* the difference row is on a rough common-centre registration (both grids are
+  centred on the lens); for the sub-pixel-registered science comparison use
+  `compare_bolton_vs_drizzle.py` / `bolton_vs_drizzle.png`.
 
-**`redrizzle_bcfill_compare.png`** (from `redrizzle_bcfill.py`) — 2×3:
-- top row (standard drizzle): science · noise (stripe) · **noise difference** (standard −
-  filled), which is *exactly* the two stripes and nothing else;
-- bottom row (bad-columns filled pre-drizzle): science · noise (**uniform, no stripe**) ·
-  **science difference** (standard − filled) ≈ 0, a faint speckle only along the filled columns.
-- *Look for:* the top-right panel isolating the effect to the stripes; the bottom-middle
-  uniform weight map.
+**`hybrid_J1023_compare.png`** (from `stripe_heal.py`):
+- row 0 (drizzle, before): signal (kept, untouched) · **noise with the detected stripe
+  overlaid in magenta** · S/N;
+- row 1 (healed, after): signal (identical) · **healed** noise (stripe interpolated away; or,
+  with `--mask-up`, the stripe pixels blanked/inflated) · healed S/N;
+- row 2 (**difference**): Δsignal = 0 (the science is untouched — a blank panel makes the
+  point) · Δnoise (drizzle − healed = the removed stripe) · ΔS/N (the S/N gained by healing).
+- *Look for:* both bad-column stripes gone in row 1, while the unrelated satellite/CR trail is
+  left untouched; the science-difference panel confirming the image never moved.
+
+**`redrizzle_bcfill_compare.png`** (from `redrizzle_bcfill.py`):
+- row 0 (standard drizzle): signal · **noise** (stripe) · S/N;
+- row 1 (bad-columns filled pre-drizzle): signal · **noise** (**uniform, no stripe**) · S/N;
+- row 2 (**difference**, standard − filled): Δsignal ≈ 0 (faint speckle only along the filled
+  columns) · Δnoise = *exactly* the two stripes and nothing else · ΔS/N (recovered on the
+  stripe pixels).
+- *Look for:* the Δnoise panel isolating the effect to the stripes; the row-1-middle uniform
+  weight map.
 
 **`bolton_vs_drizzle.png`** (from `compare_bolton_vs_drizzle.py`) — 2×3, after registration +
 flux match:
