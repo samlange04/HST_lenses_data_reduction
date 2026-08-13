@@ -12,6 +12,25 @@ what a pointer already settles; don't restate the tables here.
 > verify against source — argparse defaults, what the runner actually passes, tracking
 > JSONs vs what's on disk.
 
+> **Branch note (`bolton_interpolation` only): Bolton-interpolation investigation.**
+> `scripts/bolton_investigations/` holds standalone, exploratory scripts (with a `README.md`)
+> for the ACS dead-column noise-stripe question — a Bolton-2008 bilinear reduction, a
+> post-hoc stripe heal/mask, and an input-level bad-column fill + re-drizzle. **These are
+> NOT wired into the pipeline, and NO cutouts or downstream products have been regenerated
+> with any of them** — they run only on the single demonstrator lens J1023+4230 F814W and
+> nothing they produce feeds the science trees under `data/`. Their outputs currently land
+> in the tracked `bolton_test_outputs/` folder (this branch only, for visibility while
+> testing), *not* `data/`. Nothing here changes the standard pipeline until one of the
+> options is deliberately productionized. This branch previously removed
+> `data/cutouts_12arcsec/` (commit `2bc6b20`) to work with the then-pipeline-default 20″
+> cutouts; that removal was undone 2026-08-11 when the 12″ tree became the pipeline default
+> on both `main` and this branch (see *Cutouts*/*Masks* below) — `2bc6b20` is superseded, not
+> reachable from history as a live state.
+> **Merge caveat:** `bolton_test_outputs/` tracking is still branch-local. Merging
+> `bolton_interpolation` into `main` would add the tracked test outputs to `main` — decide
+> whether they belong there or should be dropped/ignored. The cutout-tree caveat above no
+> longer applies (both branches now agree on the 12″ default).
+
 ## Environment
 
 All scripts run inside a **uv-managed** virtual environment (`pyproject.toml` + `uv.lock`
