@@ -13,6 +13,20 @@ Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths
 git (see .gitignore) precisely because it carries them, which no script can regenerate.
 Pass --size 20 to mask the (untracked, regenerable) 20" tree instead.
 
+bcfill variant (--variant, default 'auto'). The bad-column-filled re-drizzle
+(data/cutouts_bcfill/, also tracked) shares crop geometry with the standard tree EXACTLY
+-- identical NAXIS/CRPIX/CRVAL -- so a mask drawn on one is pixel-valid on the other, and
+bcfill differs only by having its dead-column noise stripes filled (a cleaner image to
+scribble on). It covers ACS (f814W/f555W) + WFPC2 (f606W) only -- there is no bcfill for
+f160W (WFC3/IR has no bad columns) or the gallery sample. So the default is:
+    --variant auto  (default): per (lens, filt), a single mask is drawn on and written to
+        the bcfill cutout if it exists, else the standard cutout. Because the geometry is
+        shared, that one mask serves whichever reduction is modelled -- it is NOT duplicated
+        across trees. A (lens, filt) is SKIPPED if a mask already exists in EITHER tree
+        (bcfill or standard); with --force it is redrawn, again into the priority tree.
+    --variant bcfill: bcfill tree only (skip lenses/filters with no bcfill cutout).
+    --variant standard: standard tree only (the historic behaviour, data/cutouts/).
+
 This is a manual, one-image-at-a-time tool (not a batch driver): each cutout blocks on its
 own Tk window until you press Esc. Already-masked cutouts are skipped so a run can be
 resumed across lenses; --force redraws.
@@ -71,41 +85,69 @@ def find_prefix(cutout_dir, drizzle_pass='auto'):
     return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
-def discover_targets(cutouts_root_dir, sample, lens=None, filt=None):
-    """Yield (lens, filt, cutout_dir) for every lens/filt under the sample that has at
-    least one cutout sci file on disk, sorted for a reproducible run order.
+def discover_targets(trees, sample, lens=None, filt=None):
+    """Yield (lens, filt, display_dir, write_dirs) per lens/filt that has a cutout in any
+    of `trees`, sorted for a reproducible run order.
+
+    `trees` is an ordered list of (variant, cutouts_root_dir) in display-preference order
+    (bcfill before standard for --variant auto). For each (lens, filt) present in any tree:
+      - write_dirs   = every tree's cutout_dir that has a matching sci file (both trees
+                       share crop geometry exactly, so one mask is valid for all of them),
+                       tagged with its variant;
+      - display_dir  = the first such tree in preference order (the image scribbled on).
     """
-    pattern = os.path.join(cutouts_root_dir, sample, lens or '*', filt or '*')
-    for cutout_dir in sorted(glob.glob(pattern)):
-        if find_prefix(cutout_dir, 'auto') is None:
-            continue
-        this_filt = os.path.basename(cutout_dir)
-        this_lens = os.path.basename(os.path.dirname(cutout_dir))
-        yield this_lens, this_filt, cutout_dir
+    seen = {}
+    for variant, root in trees:
+        pattern = os.path.join(root, sample, lens or '*', filt or '*')
+        for cutout_dir in sorted(glob.glob(pattern)):
+            if find_prefix(cutout_dir, 'auto') is None:
+                continue
+            this_filt = os.path.basename(cutout_dir)
+            this_lens = os.path.basename(os.path.dirname(cutout_dir))
+            seen.setdefault((this_lens, this_filt), []).append((variant, cutout_dir))
+    for (this_lens, this_filt) in sorted(seen):
+        write_dirs = seen[(this_lens, this_filt)]        # already in preference order
+        display_variant, display_dir = write_dirs[0]
+        yield this_lens, this_filt, display_dir, write_dirs
 
 
-def make_mask_for(cutout_dir, lens, filt, sample, drizzle_pass, force, brush_width):
-    """Run the Scribbler GUI on one cutout's science image and write its mask FITS.
+def make_mask_for(display_dir, write_dirs, lens, filt, sample, drizzle_pass, force,
+                  brush_width):
+    """Run the Scribbler GUI once and write ONE mask FITS, into the priority tree only
+    (`write_dirs[0]` -- bcfill where its cutout exists, else standard).
 
-    Returns True if a mask was (re)written, False if skipped.
+    The trees share crop geometry exactly, so a single mask serves whichever reduction is
+    modelled; it is not duplicated across trees. Skips (draws nothing) if a mask already
+    exists in ANY of `write_dirs`, unless --force. Returns True if a mask was written.
     """
-    prefix = find_prefix(cutout_dir, drizzle_pass)
-    if prefix is None:
+    display_prefix = find_prefix(display_dir, drizzle_pass)
+    if display_prefix is None:
         print(f"{lens} {filt}: no cutout sci file for --pass {drizzle_pass}, skipping")
         return False
 
-    sci_path = os.path.join(cutout_dir, f'{prefix}_sci.fits')
-    mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
-    if os.path.exists(mask_path) and not force:
-        print(f"{lens} {filt}: {os.path.basename(mask_path)} already exists, "
+    # Existing masks anywhere across the trees -> skip (one mask suffices for both).
+    existing = []
+    for variant, cutout_dir in write_dirs:
+        prefix = find_prefix(cutout_dir, drizzle_pass)
+        if prefix is None:
+            continue
+        if os.path.exists(os.path.join(cutout_dir, f'{prefix}_mask.fits')):
+            existing.append(variant or 'standard')
+    if existing and not force:
+        print(f"{lens} {filt}: mask already exists in [{', '.join(existing)}], "
               f"skipping (--force to redraw)")
         return False
 
+    # Draw on, and write to, the priority tree only.
+    write_variant = write_dirs[0][0] or 'standard'
+    mask_path = os.path.join(display_dir, f'{display_prefix}_mask.fits')
+    sci_path = os.path.join(display_dir, f'{display_prefix}_sci.fits')
     with fits.open(sci_path) as hdul:
         sci_hdr = hdul[0].header
     pixel_scales = pixel_scale_from_header(sci_hdr)
 
-    print(f"\n{lens} {filt}  [{prefix} pass]  pixel_scale={pixel_scales:.4f}\"/pix")
+    print(f"\n{lens} {filt}  [{display_prefix} pass, {write_variant}]  "
+          f"pixel_scale={pixel_scales:.4f}\"/pix")
     print(f"  {sci_path}")
     print("  Scribbler GUI: scribble the region to KEEP in the fit, press Esc when done.")
 
@@ -121,10 +163,11 @@ def make_mask_for(cutout_dir, lens, filt, sample, drizzle_pass, force, brush_wid
     print(f"  wrote {mask_path}")
 
     info_json.update(MASKS_JSON, sample, lens, filt, {
-        'prefix': prefix,
-        'drizzle_pass': 'cr' if prefix == 'cutout_cr' else 'nocrrej',
+        'prefix': display_prefix,
+        'drizzle_pass': 'cr' if display_prefix == 'cutout_cr' else 'nocrrej',
         'pixel_scale_arcsec': round(pixel_scales, 6),
         'brush_width': brush_width,
+        'variant': write_variant,
     })
     return True
 
@@ -149,23 +192,38 @@ def main():
                         'i.e. data/cutouts/ -- the tree this tool is meant for and '
                         'the only size-variant tree tracked in git, see .gitignore; pass '
                         '--size 20 for the untracked, regenerable 20" tree)')
+    p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
+                   help="which reduction's cutouts to mask: 'auto' (default) draws one mask "
+                        "on the bcfill sci where it exists (cleaner image, shared geometry) "
+                        "else the standard sci, skipping if a mask exists in EITHER tree; "
+                        "'bcfill' uses only data/cutouts_bcfill/; 'standard' uses only "
+                        "data/cutouts/")
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw a mask that already exists (default: skip it)')
     p.add_argument('--brush-width', type=float, default=0.05,
                    help='Scribbler brush width, passed straight to al.Scribbler (default 0.05)')
     a = p.parse_args()
 
-    cutouts_root_dir = cutout_paths.cutouts_root(ws_path, a.size)
-    targets = list(discover_targets(cutouts_root_dir, a.sample, a.lens, a.filt))
+    # Ordered by display preference: bcfill first (cleaner image), standard second.
+    if a.variant == 'bcfill':
+        variants = ['bcfill']
+    elif a.variant == 'standard':
+        variants = ['']
+    else:  # auto
+        variants = ['bcfill', '']
+    trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
+
+    targets = list(discover_targets(trees, a.sample, a.lens, a.filt))
     if not targets:
-        raise SystemExit(f"no cutouts found under {cutouts_root_dir}/{a.sample} matching "
+        roots = ', '.join(r for _, r in trees)
+        raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
                          f"lens={a.lens!r} filt={a.filt!r}")
 
     print(f"{len(targets)} lens/filter cutout(s) to process")
     made = skipped = 0
-    for lens, filt, cutout_dir in targets:
-        if make_mask_for(cutout_dir, lens, filt, a.sample, a.drizzle_pass, a.force,
-                         a.brush_width):
+    for lens, filt, display_dir, write_dirs in targets:
+        if make_mask_for(display_dir, write_dirs, lens, filt, a.sample, a.drizzle_pass,
+                         a.force, a.brush_width):
             made += 1
         else:
             skipped += 1

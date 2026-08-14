@@ -641,11 +641,22 @@ provenance (pass, pixel scale, brush width) per (sample, lens, filt) in
 `info/lens_masks.json`. Already-masked cutouts are skipped (`--force` to redraw), so a long
 GUI session across a whole sample is resumable.
 
-**Defaults to `cutout_paths.DEFAULT_SIZE` (12″, `data/cutouts/`) — the pipeline's standard
-tree**, and the reason it's the one size-variant tree kept tracked in git (see *Cutouts*
-above and `.gitignore`): everything else in it is regenerable from the drizzled mosaics, but
-a hand-drawn mask is not, so it needs the same durability as a tracked product. Pass `--size
-20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
+**Defaults to `cutout_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
+tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked in git (see
+*Cutouts* above and `.gitignore`): everything else in it is regenerable from the drizzled
+mosaics, but a hand-drawn mask is not, so it needs the same durability as a tracked product.
+Pass `--size 20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
+
+**`--variant` picks the reduction to mask (default `auto`, bcfill-preferred).** bcfill and
+standard cutouts share crop geometry **exactly** (identical NAXIS/CRPIX/CRVAL — a mask drawn
+on one is pixel-valid on the other), bcfill just having its dead-column stripes filled (a
+cleaner image to scribble on). So `--variant auto` (default) draws **one** mask per (lens,
+filt) on the bcfill cutout where it exists (ACS f814W/f555W + WFPC2 f606W), else the standard
+cutout (f160W, gallery, any un-bcfilled lens), and writes it into that **one** priority tree —
+never duplicated across trees, since one mask serves whichever reduction is modelled. A (lens,
+filt) is **skipped if a mask exists in *either* tree**; `--force` redraws into the priority
+(bcfill) tree. `--variant bcfill`/`standard` restrict to one tree. `info/lens_masks.json`
+records the `variant` the mask landed in.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
