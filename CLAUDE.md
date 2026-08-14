@@ -13,15 +13,12 @@ what a pointer already settles; don't restate the tables here.
 > JSONs vs what's on disk.
 
 > **Bolton-interpolation investigation → bcfill productionized.**
-> `scripts/bolton_investigations/` (with a `README.md`) holds the standalone, exploratory
-> scripts for the ACS dead-column noise-stripe question — a Bolton-2008 bilinear reduction,
-> a post-hoc stripe heal/mask, and an input-level bad-column fill + re-drizzle. The
-> investigation settled on **option 3 (input-level bad-column fill), which is now
-> productionized as `--bcfill`** — see *Bad-column fill (`--bcfill`)* below. The other three
-> scripts (bilinear reduction, stripe_heal, and the two `redrizzle_bcfill*` prototypes) stay
-> standalone validation-only tools that run on single demonstrator lenses and write to the
-> tracked `bolton_test_outputs/` folder, *not* `data/`. `bolton_test_outputs/` is still
-> tracked on `main`; whether to keep it long-term now the investigation is done is open.
+> `scripts/bolton_investigations/` (+ `README.md`) holds the standalone exploratory scripts for
+> the ACS dead-column noise-stripe question (Bolton-2008 bilinear reduction, post-hoc stripe
+> heal/mask, input-level bad-column fill + re-drizzle). The investigation settled on **option 3
+> (input-level bad-column fill), now productionized as `--bcfill`** — see *Bad-column fill*
+> below. The other scripts stay standalone validation-only tools writing to the tracked
+> `bolton_test_outputs/`, *not* `data/`; whether to keep that folder long-term is open.
 
 ## Environment
 
@@ -50,19 +47,13 @@ fresh (not a byte-for-byte freeze of all ~250 stenv packages — the unused
 jupyter/dask/ginga/easyocr/torch bulk of the conda env was dropped as dead weight). All
 have Linux + macOS (arm64/x86_64) wheels on PyPI, verified at conversion time.
 
-**Superseded, 2026-07-30: an earlier version of this environment pinned x86_64
-specifically**, reasoning that every numeric result in this pipeline (PSF FWHMs, pixfrac
-choices, noise-model constants) was measured under stenv running x86_64 via Rosetta on
-this arm64 Mac. That required a manual python.org-installer bootstrap (uv's managed
-Python downloads don't ship macOS x86_64 builds for Python 3.12+) and was abandoned in
-favor of full cross-platform reproducibility once it was confirmed the codebase has no
-architecture-specific logic to begin with: the one platform-sensitive piece
-(`mmap_fits_write.py`, next section) gates purely on `sys.platform == 'darwin'`, not
-architecture, and git history (the deleted `scripts/stale_scripts/rebuild_stenv_arm64.sh`)
-shows the write-hang below was fixed in-process, not by ever actually testing arm64 — so
-there was never direct evidence the hang, or any measured result, was x86_64-specific.
-Native arm64/Linux execution is accordingly an accepted, not fully re-verified, change —
-spot-check a known product against a prior measurement if something looks numerically off.
+**Superseded x86_64 pin (2026-07-30):** an earlier version pinned x86_64 (all numeric
+results were originally measured under stenv/Rosetta), needing a manual python.org
+bootstrap. Abandoned for cross-platform reproducibility once confirmed the codebase has no
+architecture-specific logic — the one platform-sensitive piece (`mmap_fits_write.py`) gates
+on `sys.platform == 'darwin'`, not architecture. Native arm64/Linux is an accepted, not
+fully re-verified, change — spot-check a known product against a prior measurement if
+something looks numerically off.
 
 ## macOS write-hang workaround (required — keep this wiring)
 
@@ -311,18 +302,14 @@ exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_cutouts.p
 f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
 **J1142+1001 is the only combined-visit lens** — verified (2026-08-03) across every WFPC2
-F606W product on disk in both `slacs_gold` (38 lenses, incl. J0728+3835/J0822+2652's split
-keys, each confirmed single-visit) and `slacs_other` (27 lenses, none multi-visit
-at all): grouping `info/lens_products.json` frame lists by 6-char rootname prefix, only
-J1142+1001's `f606W` product mixes two (`ua1l38` + `ua1lc8`, 6 frames total). The shared-roll
-combine criterion is a registration-consistency proxy (core-registration scatter on the
-common drizzled grid), not a PSF/noise-homogeneity check — those are handled separately
-(per-frame IVM noise weighting auto-downweights a noisier visit; the PSF is measured *after*
-combination from the actual stack, not assumed). Spot-checked for degradation: J1142+1001's
-injected-kernel FWHM (4.527px), pedestal_frac (0.00113), and wing_scatter (0.00070) all sit
-within the normal spread of the 19 other (single-visit) WFPC2 F606W lenses (FWHM median
-4.450, mean 4.514±0.33px) — no measurable smearing penalty from the combine. Not a
-standing/automated check, just this one-off verification.
+F606W product in `slacs_gold` (38) and `slacs_other` (27): grouping `info/lens_products.json`
+frame lists by 6-char rootname prefix, only J1142+1001's `f606W` mixes two visits (`ua1l38` +
+`ua1lc8`, 6 frames); the split keys J0728+3835/J0822+2652 are each single-visit. The
+shared-roll combine criterion is a registration-consistency proxy (core-registration scatter),
+not a PSF/noise-homogeneity check — those are handled separately (per-frame IVM downweights a
+noisier visit; the PSF is measured *after* combination from the actual stack). A one-off
+spot-check put J1142's injected-kernel FWHM/pedestal/scatter within the single-visit spread —
+no smearing penalty.
 
 **Diagnosing this class of bug:** compare the *spread* of per-frame WCS error, not its
 magnitude — a common offset is a harmless absolute-astrometry shift; frame-to-frame scatter
@@ -351,20 +338,17 @@ uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
 
 **Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.**
 
-**`--target`/`--ref`: the mis-fit band is not always F606W.** The reasoning above assumes
-ACS/WFC3-IR always arrive on a GAIA-grade solution — that is a property of the *delivered
-WCS*, not of the instrument, and it fails. **J1016+3859 (`slacs_other`) came down with a bare
-`IDC_4bb1536oj-GSC240` fit on its ACS F814W** (the `force_copy` COPY visit), putting F814W
-**0.60″ off its own F160W and 0.69″ off the SDSS catalogue**, while F606W (0.175″) and F160W
-(0.198″, `-HSC30`) both agreed with the catalogue. Because `make_cutouts.py` centres every
-band on `--center-band f814W`, one band's bad WCS dragged *all three* stamps ~0.6–0.9″ off the
-deflector — the reference-band trap. `align_lens` therefore takes `--target` (band whose CRVAL
-moves, default F606W) and `--ref` (the frame, default F814W); products record `ASTROREF`
-alongside `GSC240FX`. Fixed 2026-08-04 by tying F814W→F160W then F606W→F814W, after which all
-three bands co-register to 0.0000″ and sit 0.198″ from the SDSS position; stamps re-cut at
-both sizes. **Check `WCSNAME` before assuming which band is the truth** — a `-GSC240` suffix
-on ACS or WFC3/IR (rather than `-FIT_REL_GSC242`/`-GAIAeDR3`) means that band is the ~0.5″
-one, whatever the instrument. The defaults are unchanged and stay correct for every other lens.
+**`--target`/`--ref`: the mis-fit band is not always F606W.** A GAIA-grade solution is a
+property of the *delivered WCS*, not the instrument, and can fail on ACS/WFC3-IR too.
+J1016+3859 (`slacs_other`) came down with a bare `-GSC240` fit on its ACS F814W (the
+`force_copy` COPY visit), 0.60″ off its own F160W; since `make_cutouts.py` centres every band
+on `--center-band f814W`, that dragged all three stamps ~0.6–0.9″ off the deflector (the
+reference-band trap). So `align_lens` takes `--target` (band whose CRVAL moves, default F606W)
+and `--ref` (the frame, default F814W); products record `ASTROREF` alongside `GSC240FX`. Fixed
+2026-08-04 by tying F814W→F160W then F606W→F814W (→ memory: acs_wcs_not_always_gaia). **Check
+`WCSNAME` before assuming which band is truth** — a `-GSC240` suffix on ACS/WFC3-IR (vs
+`-FIT_REL_GSC242`/`-GAIAeDR3`) means that band is the ~0.5″ one, whatever the instrument.
+Defaults are unchanged and stay correct for every other lens.
 
 ## Weight maps and noise: `final_wht_type` and `cutout_noise.fits`
 
@@ -443,19 +427,14 @@ route (`--lacosmic-sigclip 4.5 --lacosmic-objlim 5.0`; gain/readnoise/saturate f
 header). Mask written to DQ bit 4096 with `resetbits=0`.
 
 `driz_cr` compares each frame to a blotted median; on a steep, undersampled PSF core that
-reference can read low, so real core pixels get flagged as CRs and dropped. **But this
-erosion is conditional on dither quality, not intrinsic to driz_cr** (re-measured 2026-08-10,
-→ memory: drizcr_erosion_is_alignment_conditional). On J0330-0020 under the delivered MAST
-alignment (real ~7.5×4.6 px dither preserved) driz_cr keeps the 1″ core to **0.998** of the
-no-CR pass — *flat at 0.998* across `driz_cr_snr` 3.5→12, `driz_cr_scale` 1.2/0.7→3.0/2.0,
-and combine minmed *and* median. The erosion only appears when the stack is degenerate: force
-the dither to zero (the pre-`--align mast` TweakReg default) and the same call drops the core
-to **0.563**. The old "~37% loss / 0.628 minmed" figure was that artifact — J0330 was the test
-lens for the dither-smearing fix and the driz_cr finding in the *same* commit (9846603), so it
-was measured before the alignment fix. **LACosmic stays the default** because it is robust
-*regardless* of dither quality (per-frame, object-protected, no stacked reference to bias), so
-poorly-dithered / single-visit small-dither lenses — where driz_cr genuinely would erode — get
-a clean core too; on well-dithered J0330 the two agree at ~0.998.
+reference can read low, flagging real core pixels as CRs. **But this erosion is conditional on
+dither quality, not intrinsic to driz_cr** (re-measured 2026-08-10, → memory:
+drizcr_erosion_is_alignment_conditional): on well-dithered J0330-0020 under MAST alignment
+driz_cr keeps the 1″ core to 0.998 of the no-CR pass, flat across `driz_cr_snr`/`scale`/combine
+settings; the erosion (core→0.563, the old "~37% loss") only appears when the dither is forced
+to zero (the pre-`--align mast` TweakReg default). **LACosmic stays the default** because it is
+robust *regardless* of dither quality (per-frame, object-protected, no stacked reference), so
+poorly-dithered/single-visit lenses get a clean core too.
 
 **`resetbits=0` is mandatory on the LACosmic pass** — it defaults to 4096 and would clear
 the DRIZ_CR bit the mask lives in, silently producing an un-masked drizzle that still looks
@@ -560,32 +539,23 @@ step the ACS runner skips) → `make_mosaics.py --sample <sample> --bcfill`. The
 (`run_wfc3_all.sh`, `run_gallery_uvis_all.sh`, `run_cutouts_all.sh`, `run_psf_all.sh`) are
 **not** `--bcfill`-aware — bcfill is ACS+WFPC2 only, so there's nothing for them to pass.
 
-Ran this full recipe across `slacs_gold` 2026-08-13, 0 failures: **f814W** (38), **f555W** (16),
-**f606W** (22, incl. split-visit J0822+2652 `f606W`+`f606W_v2`) drizzled to
-`data/drizzled_bcfill/`, cut to `data/cutouts_bcfill/` (all `BCFILL=True`; F606W also tied,
-`GSC240FX=True`), mosaicked to `data/mosaics_bcfill/`. The 16 non-WFPC2 lenses report `no data`
-at F606W and the 22 WFPC2 lenses `no data` at F555W, as expected from the coverage table.
-
-Also ran across `slacs_other` 2026-08-13, 0 failures: **f814W** (4 — the only ones past the
-`BLOCK_EXPTIME` gate; 15 blocked, rest absent), **f606W** (24) — no f555W data and f160W is
-WFC3/IR (no bcfill). Cutouts/mosaics land in the same tracked trees, keyed by the `slacs_other`
-subdirectory. **`gallery` has no bcfill** — it's entirely WFC3/UVIS and `drizzle_wfc3_uvis.py`
-has no `--bcfill`, so there is nothing to run (skipped, user-confirmed 2026-08-13); porting the
-fill to UVIS would be new dev + validation, not a campaign.
+**Campaign state (2026-08-13, 0 failures):** ran the full recipe across `slacs_gold` (f814W
+38, f555W 16, f606W 22 incl. split J0822+2652) and `slacs_other` (f814W 4 — the only ones past
+`BLOCK_EXPTIME`; f606W 24), into the `*_bcfill` trees (`BCFILL=True`; F606W tied,
+`GSC240FX=True`). **`gallery` has no bcfill** — entirely WFC3/UVIS, and `drizzle_wfc3_uvis.py`
+has no `--bcfill` (porting the fill to UVIS would be new dev + validation, not a campaign).
 
 **Cross-tree astrometry trap the bcfill F606W tie can't self-heal (J1016+3859, slacs_other).**
-`run_wfpc2_wf3.sh --bcfill` ties F606W to the bcfill tree's OWN F814W, but that F814W is a raw
-re-drizzle carrying the delivered WCS — so if a lens's delivered ACS WCS is itself off (the
-`acs_wcs_not_always_gaia` case: J1016+3859's F814W came down `-GSC240`, ~0.6–0.9″ off), the
-bcfill F606W gets tied to a wrong frame and recentres ~0.7″/14px off, while the *standard* tree
-was fixed by an F814W→F160W tie that never propagated to bcfill (there is no bcfill F160W —
-IR has no bad columns). Fix is a one-off cross-tree tie the script can't express (its `--ref`
-stays within one variant): tie **bcfill F814W → standard-tree F160W** manually (compute the
-centroid shift with `align_wfpc2_to_acs`'s `stable_centroid`/`find_product`, apply dRA/dDec to
-the bcfill F814W CRVAL, stamp `ASTROREF='f160W'`), then re-run `align_wfpc2_to_acs.py --bcfill`
-(F606W→F814W) and re-cut both bands. Done 2026-08-13: both recentre to 0.194″/3.9px, matching
-the standard tree's ~0.198″ residual. Watch for this on any bcfill lens whose standard F814W
-has a non-default `ASTROREF`.
+`run_wfpc2_wf3.sh --bcfill` ties F606W to the bcfill tree's OWN F814W (a raw re-drizzle with
+the delivered WCS), so if that ACS WCS is itself off (`acs_wcs_not_always_gaia`: J1016+3859's
+F814W came down `-GSC240`, ~0.6–0.9″ off), bcfill F606W ties to a wrong frame and recentres
+~0.7″/14px off — while the standard tree's F814W→F160W fix never propagated (there's no bcfill
+F160W; IR has no bad columns). Fix (the script's `--ref` can't cross variants): tie **bcfill
+F814W → standard-tree F160W** manually (centroid shift via `align_wfpc2_to_acs`'s
+`stable_centroid`/`find_product`, apply dRA/dDec to bcfill F814W CRVAL, stamp
+`ASTROREF='f160W'`), then re-run `align_wfpc2_to_acs.py --bcfill` and re-cut both bands. Done
+2026-08-13 (0.194″/3.9px). Watch for this on any bcfill lens whose standard F814W has a
+non-default `ASTROREF`.
 
 ## Cutouts (`scripts/make_cutouts.py`)
 
@@ -918,11 +888,9 @@ and method `broadened_<...>` — never silently mistaken for the rigorous re-dri
 and only used at all when injection itself fails; if the fallback also fails, the analytic
 model stays canonical as before.
 
-Promoted 2026-07-30 for all 34 model-tier products then on disk (33 by renaming the
-already-built injected files, no re-drizzle needed; 1 — J1032+5322 F160W, which had no
-injected build yet — by a fresh `make_psf.py` run). `psf_epsf.fits` was dropped from every
-lens (empirical and model, ~150 files) in the same pass — nothing ever read it back from
-disk; the archival characterisation now keeps only `psf_kernel.fits`.
+Promoted 2026-07-30 for all 34 model-tier products then on disk. `psf_epsf.fits` was dropped
+from every lens (~150 files) in the same pass — nothing ever read it back from disk; the
+archival characterisation now keeps only `psf_kernel.fits`.
 
 ### Pedestal subtraction (`subtract_pedestal`) — every kernel
 
@@ -945,20 +913,15 @@ empirical builds (≤1.2e-3) while dropping the noisy ones (J0936 7.8e-3, J0946 
 the drizzle-broadened empirical PSF (FWHM ~3.8px, which the detector-frame model lacks at
 3.15px) where the build is clean, and the reproducible model where it isn't.
 
-**The same 3e-3 gate was validated on WFC3/UVIS (gallery, 2026-07-30) and needs no UVIS-specific
-retune.** Across the 25 gallery products the passing empirical builds top out at scatter 2.26e-3
-(J0029 f814W), with a clean gap to the three F606W builds it dropped to the model (J1110+2808
-3.1e-3, J0237-0641 3.4e-3, J0918+5104 4.9e-3) — the 3e-3 threshold sits in that gap, so it is
-not cutting into the good UVIS population. Despite UVIS's higher correlated noise (~1.5–1.6×
-native ACS), its clean wings are no noisier than ACS/F555W at the gate. The two marginal drops
-(J0237-0641 3.4e-3, J1110+2808 3.1e-3) were the *default-selection* builds fighting a
-contaminant/faint-star problem, **not** a too-strict gate: a greedy leave-one-out found the
-culprits and both were **rescued to clean empirical builds via `info/psf_stars.json`** — J0237
-by excluding one extended source at (1411,3601) (→1.3e-3, 17 stars), J1110 by raising `min_snr`
-to 130 to drop its 5 faint SNR<100 stars (→1.3e-3, 5 stars; note removing its bright
-companion-star made it *worse* — the faint stars were the problem). Gallery is now 19 empirical
-+ 6 injected-model (J0918+5104 stays model: 4.9e-3, genuinely noisy). → memory:
-uvis_scatter_gate_validated
+**The same 3e-3 gate was validated on WFC3/UVIS (gallery, 2026-07-30) and needs no
+UVIS-specific retune.** Across 25 gallery products, passing empirical builds top out at 2.26e-3,
+with a clean gap to the three F606W builds dropped to the model (J1110+2808 3.1e-3, J0237-0641
+3.4e-3, J0918+5104 4.9e-3) — the threshold sits in that gap. Despite UVIS's higher correlated
+noise (~1.5–1.6× native ACS), its clean wings are no noisier than ACS/F555W at the gate. Two
+marginal drops (J0237-0641, J1110+2808) were contaminant/faint-star problems, not a too-strict
+gate: both were rescued to clean empirical builds via `info/psf_stars.json` (leave-one-out
+method → memory: uvis_scatter_gate_validated). Gallery is now 19 empirical + 6 injected-model
+(J0918+5104 stays model: 4.9e-3, genuinely noisy).
 
 ### `run_psf_all.sh --models-only`
 
@@ -1001,34 +964,27 @@ footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/psf_star
 (was empty) now carries per-lens star exclusions/overrides — box order is
 `[xmin,xmax,ymin,ymax]`; → memory: psf_stars_exclusion_traps.
 
-**Current state and open limitations.** `run_psf_all.sh`/`make_psf.py` **has been run
-across all of `slacs_gold`**; `info/lens_psf.json` holds all products, 0 failures. All ACS
-empirical PSFs were **rebuilt from the no-CR pass (2026-07-29)**: total ACS stars **344 →
-599 (+74%)**, with **4 model→empirical conversions** (J0157, J1023, J1525, J2341 f814W).
-Method breakdown (post the *Drizzle-broadened model PSF by injection* promotion below, so
-model-tier methods read `inject_*` not `model_*`): **F814W** 37 empirical + 1
-`inject_acs_fdpsf` (only J1213+6708, a star-poor field stuck at 2 stars); **F555W** 16
-empirical; **F606W** `inject_wfpc2_psfdb` (native MAST-DB, no more F555W proxy); **F160W** 3
-empirical + 10 exact-filter STDPSF `inject_stdpsf` (F160W has no CR pass, so unaffected by
-the no-CR change; the hybrid gate dropped the noisy empirical builds). Each product carries
-`pedestal_frac`; the model tier is rotated to
-North-up. Vet after any no-CR rebuild: more stars can surface a close double / galaxy
-(fixed J1451-0239 f814W double); high-count builds dilute a single bad star, low-count
-(≤~6, e.g. J0029 at 3) ones don't. The gate thresholds (`min_snr=30`, core ≥15× outskirt,
-flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC2, `pedestal_bad`/`scatter_bad`=3e-3)
-generalised fine — no retune needed. **Run for `slacs_other` and `gallery` (2026-08-01),
-including the crowding cut / error-map / cutout-QC code below** — `run_psf_all.sh
-slacs_other`/`gallery --all` plus `run_cutouts_all.sh` for both: 33/33 + 25/25 PSF
-products ok (gallery excludes J1110+2808 F814W/F438W, see *BELLS GALLERY*), 33/33 cutouts
-each, 0 failures, no empirical/model method flips vs the pre-existing builds. Crowding cut
-caught one contaminant star each on gallery's J0201+3228 f606W and J0742+3341 f814W. Open
-items:
+**Current state and open limitations.** `run_psf_all.sh`/`make_psf.py` has run across all
+three samples; `info/lens_psf.json` holds all products, 0 failures. ACS empirical PSFs were
+rebuilt from the no-CR pass (2026-07-29): ACS stars 344→599 (+74%), 4 model→empirical
+conversions (J0157, J1023, J1525, J2341 f814W). `slacs_gold` method breakdown (model-tier
+methods read `inject_*` post-promotion): **F814W** 37 empirical + 1 `inject_acs_fdpsf`
+(J1213+6708, star-poor at 2 stars); **F555W** 16 empirical; **F606W** `inject_wfpc2_psfdb`
+(native MAST-DB); **F160W** 3 empirical + 10 exact-filter `inject_stdpsf` (F160W has no CR
+pass; the hybrid gate dropped the noisy empirical builds). Each product carries
+`pedestal_frac`; the model tier is rotated to North-up. Vet after any no-CR rebuild: more
+stars can surface a close double / galaxy (fixed J1451-0239 f814W); high-count builds dilute a
+single bad star, low-count (≤~6, e.g. J0029 at 3) ones don't. Gate thresholds (`min_snr=30`,
+core ≥15× outskirt, flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC2,
+`pedestal_bad`/`scatter_bad`=3e-3) generalised fine — no retune needed. `slacs_other`/`gallery`
+also run (2026-08-01, incl. crowding cut / error-map / cutout-QC; gallery excludes J1110+2808
+F814W/F438W): no empirical/model method flips. Open items:
 - **PSF uncertainty — coverage is complete; interpretation is the remaining caveat. All 149
-  PSF products across all three samples carry an error map** (verified on disk and in
-  `info/lens_psf.json`, 2026-08-03: 149 `psf_kernel_err.fits` + 149 `cutout_[cr_]psf_err.fits`,
-  zero products with a `null` `err_method`) — **but the maps do not all mean the same thing**
-  (ensemble scatter vs measured model-vs-truth; see the injected-kernel bullet below and
-  always check `err_lower_bound` before pooling them in a fit). Breakdown: **79 empirical**
+  PSF products across all three samples carry an error map** (`psf_kernel_err.fits` +
+  `cutout_[cr_]psf_err.fits`, no `null` `err_method`; verified 2026-08-03) — **but the maps do
+  not all mean the same thing** (ensemble scatter vs measured model-vs-truth; see the
+  injected-kernel bullet below and always check `err_lower_bound` before pooling them in a
+  fit). Breakdown: **79 empirical**
   (62 `bootstrap` + 17 `jackknife`), **49 `ensemble_broadened`** (47 WFPC2 MAST-DB + 2 ACS
   focus-diverse — a lower bound), **21 `calibrated_vs_empirical`** (STDPSF, the measured
   model-vs-truth error). The empirical ePSF ships a per-pixel **error
@@ -1255,19 +1211,19 @@ its *F814W* tied to F160W first — see the `--target`/`--ref` note in *align_wf
 — the other 21 F606W products carry their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no
 per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses);
 every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
-`run_psf_all.sh`/`make_psf.py` has been run for this sample (2026-08-01, before the
-J1016+3859 recovery — that lens's PSF was built separately in the same commit that added it):
-33/33 (now 34/34) PSF products ok, `info/lens_psf.json` populated (24 `inject_wfpc2_psfdb` at
-F606W, 5 empirical + 5 model/`inject_stdpsf`-family across F814W/F160W, incl. J1016+3859's
-star-poor `inject_acs_fdpsf`) — see *PSF generation* above for the campaign details.
+`run_psf_all.sh` has run for this sample (2026-08-01): 34/34 PSF products,
+`info/lens_psf.json` populated (24 `inject_wfpc2_psfdb` at F606W; empirical +
+`inject_stdpsf`-family across F814W/F160W, incl. J1016+3859's star-poor `inject_acs_fdpsf`) —
+see *PSF generation* above.
 
 `gallery` coverage (15 lenses, reduced 2026-07-29): **F606W** on all 15 (the primary band),
 **F814W**/**F438W** on 6, **F275W** on 5, **F225W** on 1 (J2342-0120). See *BELLS GALLERY:
 WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery lenses are **not in
 `info/slacs_coords.py`** — they use `info/gallery_coords.py` instead, read by
 `drizzle_wfc3_uvis.py` for the common output WCS; a lens absent from that table falls back
-to native drizzle WCS with a warning. No PSF products: `make_psf.py`/`psf_models.py` have no
-WFC3/UVIS support (only ACS/WFC, WFC3/IR, WFPC2/WF3 are keyed). **F225W/F275W are confirmed
+to native drizzle WCS with a warning. PSF products exist (WFC3/UVIS is keyed in
+`make_psf.py`/`psf_models.py`; `run_psf_all.sh gallery` run 2026-08-01, 25/25 — see *PSF
+generation*). **F225W/F275W are confirmed
 unusable for lens science across the whole sample** (arc undetected, not just the deflector
 — see *BELLS GALLERY* below); **J1110+2808 is usable only in F606W** (its F814W/F438W show
 no arc despite ~2× the exposure of every other gallery lens, F275W is pure noise). No further
@@ -1415,18 +1371,12 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
 - **F225W/F275W are unusable for lens science, sample-wide — confirmed, not just a faint
-  deflector.** The original assumption was that the early-type deflector is UV-dark while
-  the lensed arc stays bright, so only recentring needed care. A 2026-07-29 same-stretch
-  S/N check across three lenses showed the **arc is undetected too**: J1110+2808 F275W
-  (15768s — the deepest UV exposure in the sample) is pure noise at the lens position;
-  J0742+3341 F275W detects an unrelated bright edge-on foreground spiral at S/N~6 elsewhere
-  in the frame, but the deflector+ring itself sits at S/N~2.5 (vs ~14 in F606W) — i.e. at
-  noise; J2342-0120 F225W detects an off-centre field source but nothing at the lens
-  centroid. **Do not spend further effort on F225W/F275W** — no PSF work (moot anyway, see
-  below), no further recentring/alignment tuning. The drizzled products stay on disk as a
-  correctly-reduced record of what MAST delivered, not as science-ready cutouts. → memory:
-  gallery_uv_bands_unusable (supersedes the "arc stays bright" framing in
-  gallery_uvis_uv_deflector_faint)
+  deflector.** A 2026-07-29 same-stretch S/N check found the *arc* undetected too, not only the
+  UV-dark deflector: J1110+2808 F275W (15768s, the deepest UV exposure) is pure noise at the
+  lens; J0742+3341's deflector+ring sits at S/N~2.5 (vs ~14 in F606W); J2342-0120 F225W shows
+  nothing at the lens centroid. **Do not spend further effort on F225W/F275W** — no PSF work,
+  no recentring/alignment tuning. Products stay on disk as a correctly-reduced record, not
+  science-ready cutouts. → memory: gallery_uv_bands_unusable
   - The centring mechanism that motivated the original caveat is still real if these are
     ever re-cut: **never use `--center-self`** on F225W/F275W — a self-centred peak search
     locks onto noise or a field source, not the lens. Cut with `--center-band f814W`
@@ -1438,16 +1388,12 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   7 `inject_stdpsf` (no exact-filter WFC3/UVIS STDPSF grid substitution issue — UVIS uses the
   same ACS/WFC3 STDPSF machinery). See *PSF generation* above (F160W hybrid quality gate /
   `uvis_scatter_gate_validated`) for the empirical/model split rationale.
-- **Per-lens caveat: J1110+2808 is usable only in F606W.** Its F814W/F438W frames run
-  ~2× the exposure time of every other gallery lens with those bands (2360–2372s vs
-  ~940–1425s elsewhere: 4 frames at 590–602s each vs 3 frames at ~350–475s), and F275W runs
-  15768s (also the sample's deepest). Despite that depth, a same-stretch S/N comparison
-  (2026-07-29) found the near-deflector knots clearly visible in F606W are simply absent in
-  F814W (deflector-dominated, no knots) and F438W (barely even the deflector detected); its
-  F275W is pure noise at the lens position, consistent with the F225W/F275W finding above.
-  **Do not build PSFs or spend further reduction effort on this lens's F814W/F438W/F275W
-  products** — they're correctly reduced, just not lensing-useful; only its F606W product
-  is. → memory: j1110_2808_f606w_only
+- **Per-lens caveat: J1110+2808 is usable only in F606W.** Its F814W/F438W run ~2× the
+  exposure of every other gallery lens (and F275W 15768s, the deepest), yet a same-stretch S/N
+  comparison (2026-07-29) found the near-deflector knots visible in F606W simply absent in
+  F814W/F438W, and F275W pure noise. **Do not build PSFs or spend further effort on this lens's
+  F814W/F438W/F275W** — correctly reduced, just not lensing-useful; only F606W is. → memory:
+  j1110_2808_f606w_only
 
 Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 each,
 F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
