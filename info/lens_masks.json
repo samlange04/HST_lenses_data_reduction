@@ -11,7 +11,164 @@
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.0396,
-                "brush_width": 0.05
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0201+3228": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0237-0641": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0742+3341": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0755+3445": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0856+2010": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J0918+5104": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1110+2808": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1110+3649": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1116+0915": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1141+2216": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1201+4743": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J1226+5457": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J2228+1205": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
+            }
+        },
+        "J2342-0120": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "display": "S/N",
+                "variant": "standard"
             }
         }
     },
