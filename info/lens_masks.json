@@ -14,5 +14,387 @@
                 "brush_width": 0.05
             }
         }
+    },
+    "slacs_gold": {
+        "J0008-0004": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0029-0055": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0157-0056": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0216-0813": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0252+0039": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0330-0020": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0728+3835": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0737+3216": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0822+2652": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0841+3824": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0903+4116": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0912+0029": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0936+0913": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0946+1006": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0956+5100": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J0959+0410": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1020+1122": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1023+4230": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1029+0420": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1032+5322": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1142+1001": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1143-0144": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1205+4910": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1213+6708": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1218+0830": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1250+0523": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1402+6321": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1420+6019": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1430+4105": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1432+6317": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1451-0239": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1525+3327": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1627-0053": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J1630+4520": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J2238-0754": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J2300+0022": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J2303+1422": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        },
+        "J2341+0000": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "brush_width": 0.01,
+                "display": "S/N",
+                "variant": "bcfill"
+            }
+        }
     }
 }
