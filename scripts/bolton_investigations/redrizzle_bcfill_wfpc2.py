@@ -34,7 +34,7 @@ Usage (no-arg form orchestrates all stages, each drizzle in its own process):
   python redrizzle_bcfill_wfpc2.py drizzle baseline|filled    # (internal) one drizzle pass
   python redrizzle_bcfill_wfpc2.py compare                     # rebuild the figure only
 
-Outputs (bolton_test_outputs/, tagged by lens so runs don't clobber):
+Outputs (diagnostics/bolton_test_outputs/, tagged by lens so runs don't clobber):
   redrizzle_wfpc2_<lens>_baseline_{sci,noise}.fits  - standard WF3 drizzle (stripe present)
   redrizzle_wfpc2_<lens>_filled_{sci,noise}.fits    - bad-columns filled pre-drizzle (no stripe)
   redrizzle_wfpc2_<lens>_bcfill_compare.png         - 3x3 (rows: standard / filled / difference;
@@ -57,7 +57,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # whose drizzle_files you want (the primary f606W dir here).
 LENS = os.environ.get('BCFILL_LENS', 'J0822+2652')
 SRC = f"{REPO}/data/drizzle_files/slacs_gold/{LENS}/f606W"    # pipeline-prepared WF3 inputs
-OUT = f"{REPO}/bolton_test_outputs"                           # tracked (final products)
+OUT = f"{REPO}/diagnostics/bolton_test_outputs"                           # tracked (final products)
 os.makedirs(OUT, exist_ok=True)
 WORK = f"{REPO}/output/redrizzle_wfpc2_work/{LENS}"           # git-ignored scratch, per lens
 

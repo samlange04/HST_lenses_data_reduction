@@ -18,7 +18,7 @@ what a pointer already settles; don't restate the tables here.
 > heal/mask, input-level bad-column fill + re-drizzle). The investigation settled on **option 3
 > (input-level bad-column fill), now productionized as `--bcfill`** — see *Bad-column fill*
 > below. The other scripts stay standalone validation-only tools writing to the tracked
-> `bolton_test_outputs/`, *not* `data/`; whether to keep that folder long-term is open.
+> `diagnostics/bolton_test_outputs/`, *not* `data/`; whether to keep that folder long-term is open.
 
 ## Environment
 
@@ -526,7 +526,7 @@ option 3).
 - Validated: ACS J1023+4230 (6.3% of the cutout is stripe, ratio ≤1.23) and WFPC2
   J0252+0039/J0822+2652 (4.7% of cutout, ratio median 1.12 / max 1.41; fill count
   detector-fixed at ~2020 px/frame, single- and split-visit identical). Standalone
-  comparison figures in `bolton_test_outputs/redrizzle[_wfpc2]_*bcfill_compare.png`.
+  comparison figures in `diagnostics/bolton_test_outputs/redrizzle[_wfpc2]_*bcfill_compare.png`.
 
 **`run_acs_all.sh` and `run_wfpc2_wf3.sh` are `--bcfill`-aware** — pass `--bcfill` as a
 second arg (after the optional sample) and it threads through every stage into the parallel
