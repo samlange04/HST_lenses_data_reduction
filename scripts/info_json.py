@@ -34,3 +34,10 @@ def update(path, sample, lens, key, value):
     data[sample] = dict(sorted(sample_data.items()))
     with open(path, 'w') as f:
         json.dump(dict(sorted(data.items())), f, indent=4)
+
+
+def entry(path, sample, lens, key, default=None):
+    """Read {sample: {lens: {key: ...}}} from `path`, or `default` if any level
+    is absent. The read-only counterpart to update(); used for per-lens override
+    JSONs (e.g. info/lens_cr_params.json) that a script consults but never writes."""
+    return load(path).get(sample, {}).get(lens, {}).get(key, default)

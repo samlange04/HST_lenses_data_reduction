@@ -110,8 +110,10 @@ _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False
                      'before drizzling, writing to the parallel data/drizzled_bcfill/ tree; '
                      'removes the dead-column noise stripe (see CLAUDE.md / '
                      'scripts/bolton_investigations)')
-_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
-_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# hardcoded default) is used; an explicit flag always wins. See the resolution below.
+_p.add_argument('--lacosmic-sigclip', type=float, default=None)
+_p.add_argument('--lacosmic-objlim',  type=float, default=None)
 # driz_cr tuning, only used by --cr-method drizcr. The AstroDrizzle defaults below
 # assume a well-sampled median image. With few exposures and a small dither the blotted
 # median under-samples the sharp ACS PSF core, so real galaxy centres get clipped as
@@ -139,6 +141,21 @@ if not do_cr and not do_nocrrej:
     _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None here means the flag
+# was not passed, so the JSON (else the default) wins; a passed --lacosmic-* always
+# wins. Persists a tuned lens's CR params so a blind re-drizzle keeps them instead of
+# reverting to the default -- e.g. J1420+6019 f814W, whose default sigclip/objlim
+# eroded a real arc knot (masked in all frames -> weight-0 noise hole).
+_cr_ovr = info_json.entry(
+    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+if _a.lacosmic_sigclip is None:
+    _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
+if _a.lacosmic_objlim is None:
+    _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
+if _cr_ovr:
+    print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
+          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
 # The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
 # cutout and mosaic scripts all agree on the suffix. The calibrated FLCs are shared (bcfill
 # edits copies in the work dir, never data/calibrated/), but the drizzled output and the
