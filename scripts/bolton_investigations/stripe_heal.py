@@ -27,7 +27,7 @@ version for comparison.
 
 Applied to J1023+4230 F814W (bad column through the deflector core).
 
-Outputs (bolton_test_outputs/ — tracked on this branch while testing):
+Outputs (diagnostics/bolton_test_outputs/ — tracked on this branch while testing):
   hybrid_J1023_noise.fits    - drizzle noise map, stripe healed in the lens region
   hybrid_J1023_stripe.fits   - the detected stripe mask (1 = healed)
   hybrid_J1023_compare.png   - 3x3 (rows: drizzle / healed / difference;
@@ -50,7 +50,7 @@ import matplotlib.pyplot as plt
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CUT = f"{REPO}/data/cutouts/slacs_gold/J1023+4230/f814W"
 CAL = f"{REPO}/data/calibrated/slacs_gold/J1023+4230/f814W"
-OUT = f"{REPO}/bolton_test_outputs"
+OUT = f"{REPO}/diagnostics/bolton_test_outputs"
 os.makedirs(OUT, exist_ok=True)
 
 ap = argparse.ArgumentParser()
