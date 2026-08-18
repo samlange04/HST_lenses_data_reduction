@@ -1508,7 +1508,7 @@
                 "offset_arcsec": 0.225,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.354556,
+                "weight_uniformity": 0.353022,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
