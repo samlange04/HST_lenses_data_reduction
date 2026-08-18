@@ -104,8 +104,10 @@ _p.add_argument('--wht-type',    default='IVM', choices=['ERR', 'IVM', 'EXP'])
 # (biased blotted-median reference on a steep core), which spikes the noise map; the
 # per-frame LACosmic route has no stacked reference to bias. See run_lacosmic below.
 _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizcr'])
-_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
-_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# hardcoded default) is used; an explicit flag always wins. See the resolution below.
+_p.add_argument('--lacosmic-sigclip', type=float, default=None)
+_p.add_argument('--lacosmic-objlim',  type=float, default=None)
 # The LACosmic CR pass is the science product for WFPC2 (LACosmic preserves the core, so
 # the CR mosaic is what make_cutouts --pass auto cuts). The no-CR ("nocrrej") pass used to
 # run unconditionally as a comparison; it is now opt-in via --nocrrej and off by default —
@@ -210,6 +212,19 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     return norm(fx), norm(fy)
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
+# not passed, so the JSON (else the default) wins. Keyed on the product filt (base
+# filter, or a split-visit key like f606W_v2), matching what --filt receives.
+_cr_ovr = info_json.entry(
+    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+if _a.lacosmic_sigclip is None:
+    _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
+if _a.lacosmic_objlim is None:
+    _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
+if _cr_ovr:
+    print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
+          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
 # The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
 # cutout and mosaic scripts all agree on the suffix (same mechanism as drizzle_acs_wfc.py).
 # The calibrated FLTs are shared (bcfill edits the extracted WF3 copies in the work dir,

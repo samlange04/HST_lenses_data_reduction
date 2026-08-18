@@ -426,6 +426,18 @@ driz_cr=False`); `--cr-method drizcr` restores the old route. WFPC2 uses the sam
 route (`--lacosmic-sigclip 4.5 --lacosmic-objlim 5.0`; gain/readnoise/saturate from the WF3
 header). Mask written to DQ bit 4096 with `resetbits=0`.
 
+**Per-lens LACosmic params: `info/lens_cr_params.json`.** The `--lacosmic-sigclip`/
+`--lacosmic-objlim` defaults are `None` in all four drizzle scripts, resolved after parse to
+this JSON (`{sample:{lens:{filt:{"lacosmic_sigclip":…,"lacosmic_objlim":…}}}}`) else the
+hardcoded `4.5`/`5.0`; an explicit CLI flag always wins (precedence: default < JSON < CLI,
+same as `info/psf_stars.json`). This **persists** a lens that needed non-default CR tuning so
+a blind re-drizzle keeps it instead of reverting to the default. Currently one entry:
+**J1420+6019 f814W = `sigclip 10 / objlim 12`**, because the default eroded a real all-frames
+arc knot into a weight-0 noise hole (→ memory: todo_lacosmic_erodes_real_features; a
+2026-08-18 sample-wide scan confirmed J1420 is the *only* affected product, so the pipeline
+default is unchanged). A run whose lens/filt has an entry prints `=== LACosmic params for …
+(info/lens_cr_params.json) ===`. Read-only; nothing writes it — edit by hand.
+
 `driz_cr` compares each frame to a blotted median; on a steep, undersampled PSF core that
 reference can read low, flagging real core pixels as CRs. **But this erosion is conditional on
 dither quality, not intrinsic to driz_cr** (re-measured 2026-08-10, → memory:

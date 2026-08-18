@@ -72,8 +72,10 @@ _p.add_argument('--cr-method',   default='drizcr', choices=['lacosmic', 'drizcr'
                      "WFC3/IR -- see the note above run_lacosmic(). 'drizcr' (default) is "
                      "AstroDrizzle's median/blot route; 'lacosmic' flags per frame with "
                      "astroscrappy into DQ 4096, and destroys point sources on this detector.")
-_p.add_argument('--lacosmic-sigclip', type=float, default=4.5)
-_p.add_argument('--lacosmic-objlim',  type=float, default=5.0)
+# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# hardcoded default) is used; an explicit flag always wins. See the resolution below.
+_p.add_argument('--lacosmic-sigclip', type=float, default=None)
+_p.add_argument('--lacosmic-objlim',  type=float, default=None)
 _p.add_argument('--dq-refine', type=float, default=3.0, metavar='SIGMA',
                 help="Un-flag DQ 8/16/32 pixels that are not actually deviant in their "
                      "own exposure, at this sigma (default 3.0; 0 disables). The dark "
@@ -91,6 +93,20 @@ do_cr          = _a.cr
 _is_subprocess = _a._subprocess
 
 ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
+# not passed, so the JSON (else the default) wins. (F160W has no CR pass by default,
+# so this is a no-op here unless CR is explicitly requested -- kept for consistency
+# across the four drizzle scripts.)
+_cr_ovr = info_json.entry(
+    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+if _a.lacosmic_sigclip is None:
+    _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
+if _a.lacosmic_objlim is None:
+    _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
+if _cr_ovr:
+    print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
+          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
