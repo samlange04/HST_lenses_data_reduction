@@ -642,7 +642,8 @@ noise FITS (from the weight map), and a 3-panel PNG.
 ```bash
 uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
 uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
-uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --no-broadcast --force
+uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
+uv run python scripts/make_masks.py --lens J0008-0004 --broadcast      # share one draw
 ```
 
 Interactive, manual tool — not part of the automated per-lens pipeline above. For each lens
@@ -653,12 +654,17 @@ cutout's science image, writes `cutout_[cr_]mask.fits`, and records provenance p
 lens, filt) in `info/lens_masks.json`. A lens that already has a mask is skipped (`--force`
 to redraw), so a long GUI session across a sample is resumable.
 
-**One draw per lens, then broadcast (WCS-reprojected) to every band** — settled 2026-09-03,
-the same model as `make_positions.py`. A mask marks a *sky* region (deflector+arcs to keep,
-contaminants to exclude), which is the same physical region in every band, so you draw **once**
-on the highest-S/N band available (priority `f814W>f606W>f555W>f160W>…`, shared with
-`make_positions` via `make_masks.pick_display_filt`) and it is broadcast to the lens's other
-bands. `--filt` forces the draw band. The broadcast is a rigorous **per-pixel WCS reprojection**
+**One draw per BAND; `--broadcast` shares it across bands.** Each run draws on one band —
+the highest-S/N available (priority `f814W>f606W>f555W>f160W>…`, shared with `make_positions`
+via `make_masks.pick_display_filt`) unless `--filt` forces it — and by default writes the mask
+for **that band only**; run again with `--filt <band>` for the next, the skip check being
+per-band so a sample sweep resumes cleanly. **This reverses the 2026-09-03 broadcast-by-default
+model** (changed the same day, at the user's call): a mask marks a *sky* region, so sharing it
+is well-defined, but what a mask should *exclude* is not in practice band-independent — a
+contaminant can be bright in one filter and absent in another, and each band's depth and PSF
+move where the sensible boundary falls. `--broadcast` (and, for anything that still passes it,
+the now-default `--no-broadcast`) keeps the shared-draw behaviour, and it remains a rigorous
+**per-pixel WCS reprojection**
 (`reproject_mask_bool`, nearest-neighbour via `scipy.ndimage.map_coordinates`, source
 sci-header WCS → target sci-header WCS), **not** an array-index copy — because only the 0.05″
 optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely different grid**
@@ -666,9 +672,9 @@ optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely
 reprojection places the mask correctly there (verified: a test box regrids 0.05″→0.06″
 area-preserving, centroid within 0.048″ ≈ sub-pixel). Provenance per band records `source` =
 `drawn` or `reprojected_from_<band>`, plus `n_excluded_px`.
-- **`--no-broadcast`** writes only the drawn band — the escape hatch for a mask that must
-  genuinely differ per band (e.g. a contaminant bright in only one filter). Pair with `--filt`
-  and `--force` to refine one band without touching the rest.
+- **`--broadcast`** opts back into writing every band from one draw. Without it, `--filt`
+  plus `--force` refines a single band without touching the rest — which is now simply the
+  normal mode of operation rather than an escape hatch.
 - Per band, the mask is written into that band's **priority tree** (bcfill where a bcfill cutout
   exists — ACS f814W/f555W + WFPC2 f606W; else standard — f160W, gallery, un-bcfilled lenses),
   and a lens is skipped if the *draw band* already has a mask in *either* variant.
@@ -712,7 +718,10 @@ you mark once on the best band and the same `Grid2DIrregular` is written to ever
 file per band into that band's **priority tree** (bcfill where a bcfill cutout exists, else
 standard — exactly as masks route), under that band's pass prefix. This is *simpler* than the
 mask broadcast — positions need no reprojection, the arcsec values transfer verbatim; only
-masks (per-pixel booleans on a specific grid) need the WCS regrid. Trees/skip/`--variant`/
+masks (per-pixel booleans on a specific grid) need the WCS regrid. **Positions still broadcast
+unconditionally** (there is no `--broadcast`/`--no-broadcast` there, unlike the two mask tools):
+a marked image is a sky coordinate that is literally the same number in every band, so there is
+no per-band judgement to preserve. Trees/skip/`--variant`/
 `--size` behave as in `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the
 samples (all three by default). These hand-marked positions are non-regenerable, so like the
 masks they live in the git-tracked `data/cutouts/` tree.
@@ -777,12 +786,14 @@ measurement, or a source-plane analysis.
   **ringed in the display** as a drawing guide (`--no-show-positions` off; silently inactive
   where no positions file exists). Both are display-only.
 - Refuses to write an empty draw — an empty arc region would mask out the whole stamp.
-- **The broadcast reprojects the ARC REGION, not the saved array.** Outside-footprint pixels
+- **Where `--broadcast` is used, it reprojects the ARC REGION, not the saved array.**
+  Outside-footprint pixels
   then default to "not arc" (masked out), the safe side of the stamp edge; reprojecting the
   inverted array would instead leave edge slivers unmasked. Verified across the f160W regrid
   (0.06″/200px vs 0.05″/240px): same sky area to 0.06%, same annulus radii to half a pixel.
-- Everything else — one draw per lens, band priority, `--size`/`--variant` routing,
-  skip/`--force` — is `make_masks.py`'s, imported rather than re-implemented. Provenance in
+- Everything else — one draw per **band** (`--broadcast` to share it, same default and same
+  reasoning as `make_masks.py`), band priority, `--size`/`--variant` routing, skip/`--force`
+  — is `make_masks.py`'s, imported rather than re-implemented. Provenance in
   `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
   region over the radial-subtracted image.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts

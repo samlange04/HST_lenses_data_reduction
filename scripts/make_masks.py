@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Interactive GUI mask-making, ONE draw per lens, broadcast (WCS-reprojected) to every band.
+Interactive GUI mask-making, ONE draw per band (opt-in WCS-reprojected broadcast).
 
 For each lens in a sample, launches PyAutoLens's `Scribbler` GUI over the lens's
 best-available cutout -- the same tool as
@@ -9,17 +9,21 @@ areas to REMOVE from the fit (painted = excluded, everything unpainted = kept; t
 opposite polarity to the autolens_workspace GUI, which scribbles the region to keep), then
 writes the result as cutout_[cr_]mask.fits alongside that cutout's sci/noise/psf products.
 
-ONE DRAW PER LENS, THEN BROADCAST. A mask marks a sky region (the deflector+arcs to keep,
-contaminants to exclude), which is the same physical region in every band. So you draw ONCE,
-on the highest-S/N band available (f814W > f606W > f555W > f160W > ...), and the mask is
-broadcast to the lens's other bands. The broadcast is a rigorous per-pixel WCS reprojection
-(nearest-neighbour, source sci-header WCS -> target sci-header WCS), NOT an array-index copy:
-the 0.05" optical bands (f814W/f606W/f555W) share a grid to <1px so it is nearly identity,
-but f160W is a genuinely different grid (0.06"/px, 200px vs 240px for a 12" stamp -- a common
-sky point sits ~20px away by index), and only reprojection places the mask correctly there.
-`--filt` forces which band you draw on; `--no-broadcast` writes only that one band (the escape
-hatch for a mask that must genuinely differ per band, e.g. a contaminant bright in only one
-filter).
+ONE DRAW PER BAND BY DEFAULT; --broadcast SHARES IT. Each run draws on ONE band -- the
+highest-S/N one available (f814W > f606W > f555W > f160W > ...) unless --filt forces it --
+and by default writes the mask for THAT BAND ONLY. Run again with --filt <band> to do the
+next band; the skip check is per-band, so a sample sweep resumes cleanly.
+
+Pass --broadcast to instead write the one drawn mask to every band of the lens. A mask marks
+a sky region, which is the same physical region in every band, so this is well-defined -- and
+the transfer is a rigorous per-pixel WCS reprojection (nearest-neighbour, source sci-header
+WCS -> target sci-header WCS), NOT an array-index copy: the 0.05" optical bands
+(f814W/f606W/f555W) share a grid to <1px so it is nearly identity, but f160W is a genuinely
+different grid (0.06"/px, 200px vs 240px for a 12" stamp -- a common sky point sits ~20px away
+by index), and only reprojection places the mask correctly there. Per-band drawing is the
+default because what a mask should exclude is NOT in practice band-independent: a contaminant
+can be bright in one filter and absent in another, and each band's own depth and PSF change
+where the sensible boundary falls.
 
 Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths.DEFAULT_SIZE)
 -- the tree these hand-drawn masks are meant for and the only size-variant tree tracked in
@@ -48,7 +52,8 @@ Usage:
     uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
     uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
-    uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --no-broadcast --force
+    uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
+    uv run python scripts/make_masks.py --lens J0008-0004 --broadcast       # share one draw
     uv run python scripts/make_masks.py --sample slacs_gold --force        # redraw everything
 """
 
@@ -404,14 +409,15 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
 
 
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
-                      no_broadcast, brush_radius=6, brush_width=None, display='snr',
+                      broadcast=False, brush_radius=6, brush_width=None, display='snr',
                       stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
                       subtract_radial=False):
-    """Draw a mask once for one lens (on its best/forced band) and broadcast it to every band
-    by WCS reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir),
-    bcfill before standard) from discover_targets. One mask FITS is written per band into that
-    band's priority tree (the two variants share a grid, so one serves both -- the skip check
-    covers either). Returns True if a mask was written.
+    """Draw a mask once for one lens, on its best/forced band. By default the mask is written
+    for THAT BAND ONLY; `broadcast=True` also writes it to the lens's other bands by WCS
+    reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir), bcfill
+    before standard) from discover_targets. A mask FITS goes into the band's priority tree (the
+    two variants share a grid, so one serves both -- the skip check covers either). Returns True
+    if a mask was written.
     """
     filts = sorted(filt_dirs)
     display_filt = pick_display_filt(filts, requested_filt)
@@ -444,11 +450,10 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
         subtract_radial=subtract_radial)
     src_wcs = WCS(src_hdr).celestial
 
-    # Broadcast: write one mask per band into that band's priority tree. The draw band uses the
-    # scribbled array verbatim (identity); every other band is WCS-reprojected onto its own grid
-    # (near-identity for the 0.05" optical bands, a real ~20px regrid for f160W). --no-broadcast
-    # restricts to the draw band only (the escape hatch for a genuinely band-specific mask).
-    targets = ([display_filt] if no_broadcast else filts)
+    # Default: the draw band only, using the scribbled array verbatim. --broadcast additionally
+    # writes every other band, WCS-reprojected onto its own grid (near-identity for the 0.05"
+    # optical bands, a real ~20px regrid for f160W).
+    targets = (filts if broadcast else [display_filt])
     for filt in targets:
         variant, cutout_dir = filt_dirs[filt][0]         # priority tree for this band
         prefix = find_prefix(cutout_dir, drizzle_pass)
@@ -494,13 +499,15 @@ def main():
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you DRAW on (e.g. f606W); default the best available '
-                        'band per lens (f814W>f606W>f555W>f160W>...). The mask is broadcast to '
-                        'every band regardless (unless --no-broadcast)')
-    p.add_argument('--no-broadcast', action='store_true', default=False,
-                   help='write the mask only to the drawn band, not reprojected to the others '
-                        '-- the escape hatch for a mask that must differ per band (e.g. a '
-                        'contaminant bright in only one filter). Pair with --filt and --force '
-                        'to refine one band without touching the rest')
+                        'band per lens (f814W>f606W>f555W>f160W>...). Only that band gets a '
+                        'mask unless --broadcast is passed')
+    p.add_argument('--broadcast', action=argparse.BooleanOptionalAction, default=False,
+                   help='ALSO write the drawn mask to the lens\'s other bands, WCS-reprojected '
+                        'onto each grid. Default OFF: one draw covers one band, and you run '
+                        'again with --filt for the next, because what a mask should exclude is '
+                        'not in practice band-independent (a contaminant can be bright in one '
+                        'filter and absent in another, and each band\'s depth and PSF move the '
+                        'sensible boundary)')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
                    help="which cutout pass to mask, matching make_cutouts.py's --pass: "
@@ -562,7 +569,7 @@ def main():
     trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
 
     # discover_targets yields per (lens, filt); regroup to filt -> write_dirs per lens so we
-    # draw once and broadcast across the lens's bands (filt=None: consider all bands, pick best).
+    # know every band of a lens (filt=None: consider all bands; pick_display_filt picks one).
     lens_filts = {}
     for lens, filt, _display_dir, write_dirs in discover_targets(trees, a.sample, a.lens, None):
         lens_filts.setdefault(lens, {})[filt] = write_dirs
@@ -576,7 +583,7 @@ def main():
     made = skipped = 0
     for lens in sorted(lens_filts):
         if process_lens_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
-                             a.force, a.no_broadcast, brush_radius=a.brush_radius,
+                             a.force, a.broadcast, brush_radius=a.brush_radius,
                              brush_width=a.brush_width, display=a.display, stretch=a.stretch,
                              vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
                              asinh_a=a.asinh_a, subtract_radial=a.subtract_radial):
