@@ -166,7 +166,7 @@ def write_arc_mask(arc_bool, pixel_scales, path):
 def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                           broadcast, brush_radius, brush_width, display, stretch,
                           vmin_percent, vmax_percent, asinh_a, subtract_radial,
-                          show_positions, ring_radius_px):
+                          side_by_side, show_positions, ring_radius_px):
     """Draw the arc mask once for one lens, on its best/forced band only unless
     `broadcast` is set (then also WCS-reprojected to the lens's other bands). Mirrors
     make_masks.process_lens_mask; differs only in polarity, product name, and the arc-specific
@@ -209,7 +209,8 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
     painted, src_ps, src_hdr, brush_width, start_radius, source_label = make_masks.draw_mask_gui(
         display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
         display, stretch, vmin_percent, vmax_percent, asinh_a,
-        subtract_radial=subtract_radial, prompt=prompt, overlay=overlay)
+        subtract_radial=subtract_radial, side_by_side=side_by_side,
+        prompt=prompt, overlay=overlay)
 
     arc_region = np.asarray(painted, dtype=bool)     # painted = the arcs to KEEP
     if not arc_region.any():
@@ -316,6 +317,12 @@ def main():
                         'DISPLAYED image (DEFAULT ON here -- the arcs are this mask\'s subject '
                         'and are usually invisible under the galaxy envelope without it). '
                         'Display only; --no-subtract-radial draws against the raw image')
+    p.add_argument('--side-by-side', action=argparse.BooleanOptionalAction, default=True,
+                   help='show BOTH views at once -- radial-subtracted left, as-observed right '
+                        '-- and accept scribbles on either panel, combined onto the one mask. '
+                        'The subtracted panel is where the arcs are visible; the as-observed '
+                        'one is where their real extent against the galaxy envelope is '
+                        '(default on)')
     p.add_argument('--show-positions', action=argparse.BooleanOptionalAction, default=True,
                    help='ring the images already marked by make_positions.py in the display, '
                         'as a guide for where the multiple images are (default on; silently '
@@ -349,8 +356,8 @@ def main():
         if process_lens_arc_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
                                  a.force, a.broadcast, a.brush_radius, a.brush_width,
                                  a.display, a.stretch, a.vmin_percent, a.vmax_percent,
-                                 a.asinh_a, a.subtract_radial, a.show_positions,
-                                 a.ring_radius):
+                                 a.asinh_a, a.subtract_radial, a.side_by_side,
+                                 a.show_positions, a.ring_radius):
             made += 1
         else:
             skipped += 1

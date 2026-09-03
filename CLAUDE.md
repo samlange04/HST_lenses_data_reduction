@@ -654,6 +654,20 @@ cutout's science image, writes `cutout_[cr_]mask.fits`, and records provenance p
 lens, filt) in `info/lens_masks.json`. A lens that already has a mask is skipped (`--force`
 to redraw), so a long GUI session across a sample is resumable.
 
+**Closing the GUI without painting writes NOTHING** — no FITS, no JSON entry — so the lens
+stays pending and the next run re-offers it. An all-False mask would be a legitimate "exclude
+nothing" mask, and that is exactly the ambiguity to avoid: an absent file means "not drawn
+yet", where an empty one would silently mark the lens finished. (Under `--force` on a lens
+that already has a mask, drawing nothing likewise writes nothing, so the existing mask
+survives untouched.) `make_arc_masks.py` refuses an empty draw for a different reason — there
+an empty arc region would mask out the whole stamp.
+
+**All hand-drawn masks were deleted 2026-09-03 at the user's request** (54 files: 39 under
+`data/cutouts_bcfill/slacs_gold/` — f814W plus one f555W — and 15 under
+`data/cutouts/gallery/` f606W), and `info/lens_masks.json` reset to `{}`. The tracked ones
+are recoverable from git history if ever wanted. Masking starts over under the current
+per-band defaults.
+
 **One draw per BAND; `--broadcast` shares it across bands.** Each run draws on one band —
 the highest-S/N available (priority `f814W>f606W>f555W>f160W>…`, shared with `make_positions`
 via `make_masks.pick_display_filt`) unless `--filt` forces it — and by default writes the mask
@@ -678,6 +692,19 @@ area-preserving, centroid within 0.048″ ≈ sub-pixel). Provenance per band re
 - Per band, the mask is written into that band's **priority tree** (bcfill where a bcfill cutout
   exists — ACS f814W/f555W + WFPC2 f606W; else standard — f160W, gallery, un-bcfilled lenses),
   and a lens is skipped if the *draw band* already has a mask in *either* variant.
+
+**Side-by-side display (`--side-by-side`, default on, active only with
+`--subtract-radial`).** Shows both views at once — radial-subtracted left, as-observed right,
+separated by a blank gutter — because each answers a different question: the subtracted panel
+is where the arcs are visible at all, the as-observed panel is where a contaminant's real
+extent and the galaxy envelope are. **You may scribble on either panel**; the two halves are
+read back and UNIONed onto the single-band mask, so the same stroke lands at the same sky
+position from either side (verified: identical masks from a left-panel and a right-panel
+stroke). Each panel is stretched independently — their dynamic ranges differ by orders of
+magnitude, so a shared scale would flatten one. `make_arc_masks.py` has the same flag, also
+on by default. A panel-labelling title is applied on the first in-axes mouse move, because
+`al.Scribbler` builds its figure and then blocks inside `__init__` — there is no
+post-construction hook.
 
 **Defaults to `cutout_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
 tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked in git (see
