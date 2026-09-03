@@ -148,26 +148,82 @@ _STRETCHES = {
 
 
 def stretched_display(data_native, pixel_scales, stretch='asinh',
-                      vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+                      vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                      exclude=None, vmax_value=None):
     """Return an al.Array2D holding a contrast-stretched COPY of `data_native`, for
-    display in the Scribbler only.
+    display in the Scribbler/Clicker only.
 
-    The mask is built from the pixel positions of scribble circles, never from pixel
-    values, so remapping the displayed values cannot change the saved mask -- this is
-    purely so bright cores and faint/problematic structure are both visible while
-    scribbling. Values are clipped to the [vmin_percent, vmax_percent] percentiles then
-    mapped through `stretch` onto [0, 1] (a plain linear imshow of that IS the stretch).
+    The mask is built from the pixel positions of scribble circles (and positions from
+    click coordinates), never from pixel values, so remapping the displayed values cannot
+    change the saved product -- this is purely so bright cores and faint/problematic
+    structure are both visible while scribbling. Values are clipped to the
+    [vmin_percent, vmax_percent] percentiles then mapped through `stretch` onto [0, 1] (a
+    plain linear imshow of that IS the stretch).
+
+    `exclude` (bool array, True = hide) blanks pixels to the display floor AND drops them
+    from the percentile statistics -- the second half is the point: a deflector core left
+    in the stats pins vmax far above the arcs, so blanking it also re-scales everything
+    else. `vmax_value` sets the upper clip in the base array's own units (S/N, or flux)
+    instead of by percentile, so anything brighter saturates at the top of the colourmap.
     """
     vals = np.asarray(data_native, dtype=float)
-    finite = vals[np.isfinite(vals)]
+    keep = np.isfinite(vals)
+    if exclude is not None:
+        keep &= ~np.asarray(exclude, dtype=bool)
+    finite = vals[keep]
     if finite.size == 0:
-        return al.Array2D.no_mask(values=vals, pixel_scales=pixel_scales).native
+        return al.Array2D.no_mask(values=np.nan_to_num(vals), pixel_scales=pixel_scales).native
     vmin, vmax = np.percentile(finite, [vmin_percent, vmax_percent])
+    if vmax_value is not None:
+        vmax = float(vmax_value)
     if not vmax > vmin:                      # flat/degenerate frame -- avoid /0 in interval
         vmax = vmin + (abs(vmin) or 1.0)
     st = AsinhStretch(a=asinh_a) if stretch == 'asinh' else _STRETCHES[stretch]()
-    disp = st(ManualInterval(vmin=vmin, vmax=vmax)(vals))  # clip -> stretch -> [0, 1]
-    return al.Array2D.no_mask(values=np.nan_to_num(disp), pixel_scales=pixel_scales).native
+    disp = np.nan_to_num(st(ManualInterval(vmin=vmin, vmax=vmax)(vals)))  # clip -> stretch
+    if exclude is not None:
+        disp[np.asarray(exclude, dtype=bool)] = 0.0    # hidden region -> colourmap floor
+    return al.Array2D.no_mask(values=disp, pixel_scales=pixel_scales).native
+
+
+def radial_median_subtract(data_native):
+    """Subtract the azimuthally-averaged (median) radial profile about the stamp centre.
+
+    A DISPLAY transform for finding lensed arcs: the deflector is a smooth, near-circular
+    elliptical, so its light is almost entirely a function of radius, while the arcs are
+    not -- subtracting the per-radius median removes the galaxy and leaves the source
+    images standing out, including the ones buried inside the galaxy envelope that a
+    central blank cannot reach without also hiding them. It is not a galaxy FIT: real
+    ellipticity leaves a quadrupole residual, and the arcs themselves bias the median at
+    their own radius (self-subtraction), so the result is a finding aid only -- never a
+    photometric product. Clicks snap on the untouched flux array regardless.
+    """
+    a = np.asarray(data_native, dtype=float)
+    n_y, n_x = a.shape
+    yy, xx = np.mgrid[0:n_y, 0:n_x]
+    r_bin = np.hypot(yy - (n_y - 1) / 2.0, xx - (n_x - 1) / 2.0).astype(int)
+    prof = np.zeros(r_bin.max() + 1)
+    for i in range(prof.size):
+        ring = a[r_bin == i]
+        ring = ring[np.isfinite(ring)]
+        if ring.size:
+            prof[i] = np.median(ring)
+    return a - prof[r_bin]
+
+
+def central_disc(shape, pixel_scales, radius_arcsec):
+    """Bool array, True inside a disc of `radius_arcsec` at the stamp centre.
+
+    Cutouts are recentred on the deflector (`make_cutouts.py --center-band`), so the stamp
+    centre IS the lens galaxy -- this is the region to hide when the central light drowns
+    the arcs. Returns None for a non-positive radius (feature off).
+    """
+    if not radius_arcsec or radius_arcsec <= 0:
+        return None
+    n_y, n_x = shape
+    yy, xx = np.mgrid[0:n_y, 0:n_x]
+    cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
+    r_px = float(radius_arcsec) / float(pixel_scales)
+    return ((yy - cy) ** 2 + (xx - cx) ** 2) <= r_px ** 2
 
 
 def pixel_scale_from_header(hdr):

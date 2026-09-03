@@ -717,6 +717,36 @@ masks (per-pixel booleans on a specific grid) need the WCS regrid. Trees/skip/`-
 samples (all three by default). These hand-marked positions are non-regenerable, so like the
 masks they live in the git-tracked `data/cutouts/` tree.
 
+**Three display-only levers make the arcs visible under the deflector light** (added
+2026-09-03). The deflector sets the colour scale on its own, so on most lenses the images
+you are trying to click are the least visible thing on screen. All three transform *only*
+the imshow'd array — `al.Clicker` still snaps on the untouched flux array, so the saved
+positions are bit-identical either way — and each is recorded in `info/lens_positions.json`
+so a stamp's provenance says how it was marked:
+- **`--subtract-radial`** — subtract the deflector's azimuthally-averaged (median) radial
+  profile. **The strongest of the three, and the one to reach for first**: an elliptical's
+  light is nearly a function of radius alone while the arcs are not, so the galaxy vanishes
+  and the images stand out, *including the ones buried inside the envelope* that a central
+  blank would hide along with the galaxy. Verified on J0330-0020 (all four images obvious)
+  and J0008-0004. A finding aid, never photometry: real ellipticity leaves a quadrupole
+  residual, and an arc biases the median at its own radius (self-subtraction).
+- **`--mask-center ARCSEC`** — blank a disc at the stamp centre (which *is* the deflector,
+  since `make_cutouts.py` recentres there). The blanked pixels are also **dropped from the
+  stretch percentiles** — that second half is most of the gain, since the core otherwise
+  pins `vmax` far above the arcs. The hidden disc is outlined so it is obvious what it
+  covers. Note the snap is flux-based, so a click at the blank's edge can still land on a
+  core pixel within `--search-box-size`.
+- **`--vmax-value V`** — saturate above an absolute value in the displayed base's units
+  (S/N by default, so `--vmax-value 10` is "everything above S/N 10 is red"); overrides
+  `--vmax-percent`. This one is also applied to the QC overlay PNG, while `--mask-center`
+  deliberately is not — the overlay should still show the deflector so you can judge the
+  positions against the whole system.
+
+The shared machinery lives in `make_masks.py` next to the other display helpers
+(`stretched_display` gained `exclude=`/`vmax_value=`, plus new `radial_median_subtract`
+and `central_disc`); the default call path is byte-identical to before, so `make_masks.py`'s
+own GUI is unchanged.
+
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
 ```bash

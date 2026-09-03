@@ -41,6 +41,12 @@ Usage:
     uv run python scripts/make_positions.py --lens J0008-0004              # one lens, best band
     uv run python scripts/make_positions.py --lens J0008-0004 --filt f606W # force the band
     uv run python scripts/make_positions.py --sample slacs_gold --force    # re-mark everything
+    uv run python scripts/make_positions.py --lens J0008-0004 --subtract-radial
+        # subtract the deflector's radial light profile so only the arcs are left
+    uv run python scripts/make_positions.py --lens J0008-0004 --mask-center 0.8 --vmax-value 10
+        # hide the central 0.8" of deflector light and saturate above S/N 10, so the arcs
+        # are the brightest thing on screen
+    (all three are DISPLAY ONLY -- the click snap uses true flux, saved positions are identical)
 """
 
 import argparse
@@ -75,14 +81,20 @@ pick_display_filt = make_masks.pick_display_filt
 
 
 def save_overlay_png(sci_native, pixel_scales, positions, out_path,
-                     stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+                     stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                     vmax_value=None):
     """QC overlay: the (stretched) science image with the marked positions scattered on
     top, in the same arcsec frame the Clicker used. Written per band so you can confirm the
     shared positions land on the lensed images in EVERY band, not just the marked one.
+
+    `vmax_value` (--vmax-value) saturates the bright core here too, so the arcs the
+    positions sit on are as visible in the QC PNG as they were in the GUI. The central
+    blank (--mask-center) is deliberately NOT applied: the QC image should still show the
+    deflector, so you can judge the positions against the whole system.
     """
     disp = make_masks.stretched_display(sci_native, pixel_scales, stretch=stretch,
                                          vmin_percent=vmin_percent, vmax_percent=vmax_percent,
-                                         asinh_a=asinh_a)
+                                         asinh_a=asinh_a, vmax_value=vmax_value)
     n_y, n_x = disp.shape_native
     hw = int(n_x / 2) * pixel_scales
     ext = [-hw, hw, -hw, hw]
@@ -103,7 +115,8 @@ def save_overlay_png(sci_native, pixel_scales, positions, out_path,
 
 def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
                        display='snr', display_base=None, stretch='asinh',
-                       vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+                       vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                       mask_center=0.0, vmax_value=None, subtract_radial=False):
     """Run the Clicker GUI once and return the clicked positions as a list of (y, x) arcsec.
 
     `sci_native` (REAL flux) is handed to al.Clicker so its brightest-pixel snap uses true
@@ -112,21 +125,45 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
     Clicker arrays share shape + orientation + extent, so what you click is what gets snapped.
     Figure construction mirrors the canonical workspace positions.py (jet, arcsec extent,
     onclick connected directly) -- only the imshow'd array is swapped for the stretched copy.
+
+    Two DISPLAY-ONLY levers make the source arcs readable under the deflector light, which
+    otherwise sets the colour scale on its own:
+      * `mask_center` (arcsec) blanks a disc at the stamp centre -- the deflector, since
+        every stamp is recentred on it -- and drops those pixels from the percentile
+        statistics, so the remaining pixels (the arcs) get the full colour range. The hidden
+        region is outlined so you can see what is behind the blank.
+      * `vmax_value` clips the display at an absolute value in the base array's units (S/N
+        by default), saturating everything brighter.
+      * `subtract_radial` removes the deflector's azimuthally-averaged radial profile,
+        which is the strongest of the three -- it reaches the images buried INSIDE the
+        galaxy envelope, where a central blank would hide them too.
+    Neither touches `sci_native`, so al.Clicker still snaps on true flux. Do note the snap
+    is flux-based: a click placed inside/adjacent to the blanked core can still snap onto a
+    core pixel within `search_box_size`.
     """
     clicker = al.Clicker(image=sci_native, pixel_scales=pixel_scales,
                          search_box_size=search_box_size)
 
     base = display_base if display_base is not None else sci_native
+    if subtract_radial:
+        base = make_masks.radial_median_subtract(base)
+    exclude = make_masks.central_disc(np.asarray(base).shape, pixel_scales, mask_center)
     disp = make_masks.stretched_display(base, pixel_scales, stretch=stretch,
                                         vmin_percent=vmin_percent, vmax_percent=vmax_percent,
-                                        asinh_a=asinh_a)
+                                        asinh_a=asinh_a, exclude=exclude,
+                                        vmax_value=vmax_value)
     n_y, n_x = disp.shape_native
     hw = int(n_x / 2) * pixel_scales
     ext = [-hw, hw, -hw, hw]
 
     fig = plt.figure(figsize=(12, 12))
+    ax = plt.gca()
     plt.imshow(np.asarray(disp.native), cmap='jet', extent=ext)
     plt.colorbar()
+    if exclude is not None:
+        # outline the blanked deflector so it is obvious what the black disc is hiding
+        ax.add_patch(plt.Circle((0.0, 0.0), mask_center, fill=False, color='white',
+                                lw=1.0, ls='--'))
     plt.title(f"{lens}  {filt}  --  DOUBLE-CLICK each lensed image, then close the window")
     plt.xlabel('arcsec'); plt.ylabel('arcsec')
     cid = fig.canvas.mpl_connect('button_press_event', clicker.onclick)
@@ -138,7 +175,8 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
 
 
 def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
-                 search_box_size, display, stretch, vmin_percent, vmax_percent, asinh_a):
+                 search_box_size, display, stretch, vmin_percent, vmax_percent, asinh_a,
+                 mask_center=0.0, vmax_value=None, subtract_radial=False):
     """Mark positions once for one lens and broadcast the result to every band.
 
     `filt_dirs` maps filt -> write_dirs (an ordered list of (variant, cutout_dir), bcfill
@@ -177,13 +215,23 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
     print(f"  {sci_path}")
     print(f"  display: {source_label}, {stretch} stretch  |  snap search box "
           f"= {search_box_size}px")
+    if mask_center and mask_center > 0:
+        print(f"  central {mask_center:g}\" blanked in the DISPLAY (deflector light hidden "
+              f"and dropped from the stretch percentiles); snap still uses true flux")
+    if vmax_value is not None:
+        print(f"  display saturated above {vmax_value:g} ({source_label})")
+    if subtract_radial:
+        print("  deflector's radial-median profile subtracted from the DISPLAY "
+              "(finding aid only -- expect a quadrupole residual on an elliptical)")
     print("  DOUBLE-CLICK each lensed image of the source (2 for a double, 4 for a quad).")
     print("  Each click snaps to the brightest nearby pixel. Close the window when done.")
 
     positions = mark_positions_gui(
         sci_native, pixel_scales, lens, display_filt, search_box_size,
         display=display, display_base=base, stretch=stretch,
-        vmin_percent=vmin_percent, vmax_percent=vmax_percent, asinh_a=asinh_a)
+        vmin_percent=vmin_percent, vmax_percent=vmax_percent, asinh_a=asinh_a,
+        mask_center=mask_center, vmax_value=vmax_value,
+        subtract_radial=subtract_radial)
 
     if len(positions) == 0:
         print(f"  no positions clicked -- nothing written for {lens}")
@@ -214,7 +262,8 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         save_overlay_png(band_native, band_ps, positions,
                          os.path.join(cutout_dir, f'{prefix}_positions.png'),
                          stretch=stretch, vmin_percent=vmin_percent,
-                         vmax_percent=vmax_percent, asinh_a=asinh_a)
+                         vmax_percent=vmax_percent, asinh_a=asinh_a,
+                         vmax_value=vmax_value)
         written.append({'filt': filt, 'variant': variant or 'standard', 'prefix': prefix})
         print(f"  wrote {json_path}")
 
@@ -227,6 +276,9 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         'pixel_scale_arcsec': round(pixel_scales, 6),
         'search_box_size': search_box_size,
         'display': source_label,
+        'display_mask_center_arcsec': mask_center or None,
+        'display_vmax_value': vmax_value,
+        'display_subtract_radial': bool(subtract_radial),
         'broadcast_to': written,
     })
     return True
@@ -277,6 +329,25 @@ def main():
                    help='lower clip percentile for the display stretch (default 5.0)')
     p.add_argument('--vmax-percent', type=float, default=99.5,
                    help='upper clip percentile for the display stretch (default 99.5)')
+    p.add_argument('--mask-center', type=float, default=0.0, metavar='ARCSEC',
+                   help='blank a disc of this radius (arcsec) at the stamp centre in the '
+                        'DISPLAYED image, to hide the deflector light that otherwise drowns '
+                        'the source arcs (default 0 = off; ~0.5-1.0 is typical). The hidden '
+                        'pixels are also dropped from the stretch percentiles, so the arcs '
+                        'get the full colour range. Display only -- the click snap still '
+                        'uses true flux and the saved positions are unaffected')
+    p.add_argument('--vmax-value', type=float, default=None,
+                   help='saturate the DISPLAYED image above this absolute value, in the '
+                        'units of --display (S/N by default, e.g. 10; raw flux with '
+                        '--display sci). Overrides --vmax-percent, and is applied to the QC '
+                        'overlay PNG as well. Display only')
+    p.add_argument('--subtract-radial', action='store_true', default=False,
+                   help="subtract the deflector's azimuthally-averaged radial profile from "
+                        'the DISPLAYED image. The strongest of the three arc-finding levers '
+                        '-- unlike --mask-center it reveals images buried inside the galaxy '
+                        'envelope rather than hiding them; expect a quadrupole residual '
+                        '(the deflector is elliptical, not circular) and treat it as a '
+                        'finding aid, not photometry. Display only')
     a = p.parse_args()
 
     # Same variant->tree resolution as make_masks (bcfill first for display preference).
@@ -305,7 +376,8 @@ def main():
     for lens in sorted(lens_filts):
         if process_lens(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass, a.force,
                         a.search_box_size, a.display, a.stretch,
-                        a.vmin_percent, a.vmax_percent, a.asinh_a):
+                        a.vmin_percent, a.vmax_percent, a.asinh_a,
+                        a.mask_center, a.vmax_value, a.subtract_radial):
             made += 1
         else:
             skipped += 1
