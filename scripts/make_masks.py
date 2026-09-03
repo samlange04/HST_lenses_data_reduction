@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 """
-Interactive GUI mask-making, cycling through a sample's cutouts.
+Interactive GUI mask-making, ONE draw per lens, broadcast (WCS-reprojected) to every band.
 
-For each (lens, filt) cutout on disk, launches PyAutoLens's `Scribbler` GUI over the
-cutout's science image -- the same tool as
+For each lens in a sample, launches PyAutoLens's `Scribbler` GUI over the lens's
+best-available cutout -- the same tool as
 autolens_workspace:scripts/imaging/data_preparation/gui/mask.py -- so you can scribble the
 areas to REMOVE from the fit (painted = excluded, everything unpainted = kept; this is the
 opposite polarity to the autolens_workspace GUI, which scribbles the region to keep), then
 writes the result as cutout_[cr_]mask.fits alongside that cutout's sci/noise/psf products.
+
+ONE DRAW PER LENS, THEN BROADCAST. A mask marks a sky region (the deflector+arcs to keep,
+contaminants to exclude), which is the same physical region in every band. So you draw ONCE,
+on the highest-S/N band available (f814W > f606W > f555W > f160W > ...), and the mask is
+broadcast to the lens's other bands. The broadcast is a rigorous per-pixel WCS reprojection
+(nearest-neighbour, source sci-header WCS -> target sci-header WCS), NOT an array-index copy:
+the 0.05" optical bands (f814W/f606W/f555W) share a grid to <1px so it is nearly identity,
+but f160W is a genuinely different grid (0.06"/px, 200px vs 240px for a 12" stamp -- a common
+sky point sits ~20px away by index), and only reprojection places the mask correctly there.
+`--filt` forces which band you draw on; `--no-broadcast` writes only that one band (the escape
+hatch for a mask that must genuinely differ per band, e.g. a contaminant bright in only one
+filter).
 
 Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths.DEFAULT_SIZE)
 -- the tree these hand-drawn masks are meant for and the only size-variant tree tracked in
@@ -28,15 +40,16 @@ f160W (WFC3/IR has no bad columns) or the gallery sample. So the default is:
     --variant bcfill: bcfill tree only (skip lenses/filters with no bcfill cutout).
     --variant standard: standard tree only (the historic behaviour, data/cutouts/).
 
-This is a manual, one-image-at-a-time tool (not a batch driver): each cutout blocks on its
-own Tk window until you press Esc. Already-masked cutouts are skipped so a run can be
-resumed across lenses; --force redraws.
+This is a manual, one-lens-at-a-time tool (not a batch driver): each lens blocks on its own
+Tk window until you press Esc. A lens that already has a mask is skipped so a run resumes
+across a sample; --force redraws.
 
 Usage:
-    uv run python scripts/make_masks.py --sample slacs_gold
-    uv run python scripts/make_masks.py --lens J0008-0004 --filt f814W
-    uv run python scripts/make_masks.py --sample slacs_gold --filt f814W   # one band, every lens
-    uv run python scripts/make_masks.py --sample slacs_gold --force
+    uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
+    uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
+    uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
+    uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --no-broadcast --force
+    uv run python scripts/make_masks.py --sample slacs_gold --force        # redraw everything
 """
 
 import argparse
@@ -230,43 +243,68 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
     return al.Array2D.no_mask(values=snr, pixel_scales=pixel_scales).native, 'S/N'
 
 
-def make_mask_for(display_dir, write_dirs, lens, filt, sample, drizzle_pass, force,
-                  brush_radius=6, brush_width=None, display='snr', stretch='asinh',
-                  vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
-    """Run the Scribbler GUI once and write ONE mask FITS, into the priority tree only
-    (`write_dirs[0]` -- bcfill where its cutout exists, else standard).
+# Preference order for "best band to draw the mask on" when --filt is not given. Same list
+# used by make_positions.pick_display_filt (which imports this) so the two GUIs agree on
+# which band is primary. f814W is the highest-S/N SLACS band and the cutout --center-band;
+# f606W is the gallery/BELLS primary; the rest follow by typical arc S/N.
+_BAND_PRIORITY = ['f814W', 'f606W', 'f606W_v2', 'f555W', 'f160W', 'f438W', 'f275W', 'f225W']
 
-    The trees share crop geometry exactly, so a single mask serves whichever reduction is
-    modelled; it is not duplicated across trees. Skips (draws nothing) if a mask already
-    exists in ANY of `write_dirs`, unless --force. Returns True if a mask was written.
+
+def _band_rank(filt):
+    try:
+        return _BAND_PRIORITY.index(filt)
+    except ValueError:
+        return len(_BAND_PRIORITY)
+
+
+def pick_display_filt(filts, requested):
+    """Choose which band to draw on. `requested` (--filt) wins if present among `filts`;
+    else the highest-priority available band. Returns None if the requested band is absent.
+    Shared with make_positions so both tools pick the same primary band per lens.
     """
-    display_prefix = find_prefix(display_dir, drizzle_pass)
-    if display_prefix is None:
-        print(f"{lens} {filt}: no cutout sci file for --pass {drizzle_pass}, skipping")
-        return False
+    if requested is not None:
+        return requested if requested in filts else None
+    return sorted(filts, key=lambda f: (_band_rank(f), f))[0]
 
-    # Existing masks anywhere across the trees -> skip (one mask suffices for both).
-    existing = []
-    for variant, cutout_dir in write_dirs:
-        prefix = find_prefix(cutout_dir, drizzle_pass)
-        if prefix is None:
-            continue
-        if os.path.exists(os.path.join(cutout_dir, f'{prefix}_mask.fits')):
-            existing.append(variant or 'standard')
-    if existing and not force:
-        print(f"{lens} {filt}: mask already exists in [{', '.join(existing)}], "
-              f"skipping (--force to redraw)")
-        return False
 
-    # Draw on, and write to, the priority tree only.
-    write_variant = write_dirs[0][0] or 'standard'
-    mask_path = os.path.join(display_dir, f'{display_prefix}_mask.fits')
+def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
+    """Rigorously reproject a boolean mask from the source cutout's WCS grid onto a target
+    cutout's WCS grid (nearest-neighbour), returning a bool array of shape `dst_shape`.
+
+    Each target pixel's sky position (via `dst_wcs`) is mapped back to a source pixel (via
+    `src_wcs`) and the nearest source mask value taken -- so the mask lands on the SAME sky
+    region regardless of pixel scale/size. For the 0.05" optical bands this is near-identity
+    (they share a grid to <1px); for f160W (0.06", 200px) it is the only correct transfer (a
+    common sky point is ~20px away by array index). Nearest-neighbour (order 0) is right for a
+    keep/exclude boolean -- no interpolation across the True/False boundary. Target pixels that
+    fall outside the source footprint (only sub-pixel stamp-edge slivers, since every band cuts
+    the same 12" angular size) default to False = kept.
+    """
+    from scipy.ndimage import map_coordinates
+    ny, nx = dst_shape
+    yy, xx = np.mgrid[0:ny, 0:nx]
+    sky = dst_wcs.pixel_to_world(xx.ravel(), yy.ravel())      # 0-based (x=col, y=row)
+    sx, sy = src_wcs.world_to_pixel(sky)                      # float source (col, row)
+    vals = map_coordinates(np.asarray(src_bool, dtype=float),
+                           np.vstack([sy, sx]),               # map_coordinates wants [row, col]
+                           order=0, mode='constant', cval=0.0)
+    return vals.reshape(ny, nx) > 0.5
+
+
+def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_width,
+                  display, stretch, vmin_percent, vmax_percent, asinh_a):
+    """Run the Scribbler GUI once on the chosen band. Returns
+    (scribbled_bool, pixel_scales, sci_header, brush_width, start_radius, source_label).
+    The scribbled array marks True = REMOVE from the fit (painted = excluded, unpainted =
+    kept -- al.Mask2D's own convention, so the scribbled array IS the mask, no inversion;
+    opposite polarity to autolens_workspace's mask.py, which scribbles the region to keep).
+    """
     sci_path = os.path.join(display_dir, f'{display_prefix}_sci.fits')
     with fits.open(sci_path) as hdul:
         sci_hdr = hdul[0].header
     pixel_scales = pixel_scale_from_header(sci_hdr)
 
-    print(f"\n{lens} {filt}  [{display_prefix} pass, {write_variant}]  "
+    print(f"\n{lens}  drawing on {filt}  [{display_prefix} pass]  "
           f"pixel_scale={pixel_scales:.4f}\"/pix")
     print(f"  {sci_path}")
     print("  Scribbler GUI: scribble the areas to REMOVE from the fit (contaminants, field")
@@ -290,26 +328,85 @@ def make_mask_for(display_dir, write_dirs, lens, filt, sample, drizzle_pass, for
     print(f"  brush start radius = {start_radius} px")
     scribbler = _GuardedScribbler(image=disp_array, brush_width=brush_width)
     scribbled = scribbler.show_mask()
-    # Scribbling here means REMOVE: the painted region is excluded from the fit, everything
-    # unpainted is kept. Scribbler marks the painted region True, and al.Mask2D's convention
-    # already has True = excluded from the fit, so the scribbled array IS the mask -- no
-    # inversion. (This is the opposite polarity from
-    # autolens_workspace:scripts/imaging/data_preparation/gui/mask.py, which scribbles the
-    # region to KEEP and inverts.)
-    mask = al.Mask2D(mask=scribbled, pixel_scales=pixel_scales)
+    return scribbled, pixel_scales, sci_hdr, brush_width, start_radius, source_label
 
-    aplt.fits_array(array=mask, file_path=mask_path, overwrite=True)
-    print(f"  wrote {mask_path}")
 
-    info_json.update(MASKS_JSON, sample, lens, filt, {
-        'prefix': display_prefix,
-        'drizzle_pass': 'cr' if display_prefix == 'cutout_cr' else 'nocrrej',
-        'pixel_scale_arcsec': round(pixel_scales, 6),
-        'brush_width': round(brush_width, 6),
-        'brush_radius_px': start_radius,
-        'display': source_label,
-        'variant': write_variant,
-    })
+def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
+                      no_broadcast, brush_radius=6, brush_width=None, display='snr',
+                      stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+    """Draw a mask once for one lens (on its best/forced band) and broadcast it to every band
+    by WCS reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir),
+    bcfill before standard) from discover_targets. One mask FITS is written per band into that
+    band's priority tree (the two variants share a grid, so one serves both -- the skip check
+    covers either). Returns True if a mask was written.
+    """
+    filts = sorted(filt_dirs)
+    display_filt = pick_display_filt(filts, requested_filt)
+    if display_filt is None:
+        print(f"{lens}: requested --filt {requested_filt} not present "
+              f"(have {', '.join(filts)}), skipping")
+        return False
+
+    display_dir = filt_dirs[display_filt][0][1]          # priority-tree dir of the draw band
+    display_prefix = find_prefix(display_dir, drizzle_pass)
+    if display_prefix is None:
+        print(f"{lens} {display_filt}: no cutout sci for --pass {drizzle_pass}, skipping")
+        return False
+
+    # Skip if the draw band already has a mask in EITHER variant, unless --force (one mask per
+    # band serves both variants; matches the historic skip-if-either behaviour).
+    existing = []
+    for variant, cutout_dir in filt_dirs[display_filt]:
+        prefix = find_prefix(cutout_dir, drizzle_pass)
+        if prefix and os.path.exists(os.path.join(cutout_dir, f'{prefix}_mask.fits')):
+            existing.append(variant or 'standard')
+    if existing and not force:
+        print(f"{lens}: mask already exists ({display_filt} in [{', '.join(existing)}]), "
+              f"skipping (--force to redraw)")
+        return False
+
+    scribbled, src_ps, src_hdr, brush_width, start_radius, source_label = draw_mask_gui(
+        display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
+        display, stretch, vmin_percent, vmax_percent, asinh_a)
+    src_wcs = WCS(src_hdr).celestial
+
+    # Broadcast: write one mask per band into that band's priority tree. The draw band uses the
+    # scribbled array verbatim (identity); every other band is WCS-reprojected onto its own grid
+    # (near-identity for the 0.05" optical bands, a real ~20px regrid for f160W). --no-broadcast
+    # restricts to the draw band only (the escape hatch for a genuinely band-specific mask).
+    targets = ([display_filt] if no_broadcast else filts)
+    for filt in targets:
+        variant, cutout_dir = filt_dirs[filt][0]         # priority tree for this band
+        prefix = find_prefix(cutout_dir, drizzle_pass)
+        if prefix is None:
+            continue
+        band_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+        band_ps = pixel_scale_from_header(band_hdr)
+        is_draw = (cutout_dir == display_dir)
+        if is_draw:
+            out_bool = scribbled
+        else:
+            out_bool = reproject_mask_bool(scribbled, src_wcs, WCS(band_hdr).celestial,
+                                           (band_hdr['NAXIS2'], band_hdr['NAXIS1']))
+        mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
+        aplt.fits_array(array=al.Mask2D(mask=out_bool, pixel_scales=band_ps),
+                        file_path=mask_path, overwrite=True)
+        n_excl = int(np.asarray(out_bool).sum())
+        print(f"  wrote {mask_path}  ({'drawn' if is_draw else f'reprojected<-{display_filt}'}, "
+              f"{n_excl}px excluded)")
+        entry = {
+            'prefix': prefix,
+            'drizzle_pass': 'cr' if prefix == 'cutout_cr' else 'nocrrej',
+            'pixel_scale_arcsec': round(band_ps, 6),
+            'display': source_label,
+            'variant': variant or 'standard',
+            'source': 'drawn' if is_draw else f'reprojected_from_{display_filt}',
+            'n_excluded_px': n_excl,
+        }
+        if is_draw:
+            entry['brush_width'] = round(brush_width, 6)
+            entry['brush_radius_px'] = start_radius
+        info_json.update(MASKS_JSON, sample, lens, filt, entry)
     return True
 
 
@@ -322,7 +419,14 @@ def main():
     p.add_argument('--lens', default=None,
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
-                   help='restrict to one filter; default every filter cutout the lens has')
+                   help='force which band you DRAW on (e.g. f606W); default the best available '
+                        'band per lens (f814W>f606W>f555W>f160W>...). The mask is broadcast to '
+                        'every band regardless (unless --no-broadcast)')
+    p.add_argument('--no-broadcast', action='store_true', default=False,
+                   help='write the mask only to the drawn band, not reprojected to the others '
+                        '-- the escape hatch for a mask that must differ per band (e.g. a '
+                        'contaminant bright in only one filter). Pair with --filt and --force '
+                        'to refine one band without touching the rest')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
                    help="which cutout pass to mask, matching make_cutouts.py's --pass: "
@@ -334,11 +438,10 @@ def main():
                         'the only size-variant tree tracked in git, see .gitignore; pass '
                         '--size 20 for the untracked, regenerable 20" tree)')
     p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
-                   help="which reduction's cutouts to mask: 'auto' (default) draws one mask "
-                        "on the bcfill sci where it exists (cleaner image, shared geometry) "
-                        "else the standard sci, skipping if a mask exists in EITHER tree; "
-                        "'bcfill' uses only data/cutouts_bcfill/; 'standard' uses only "
-                        "data/cutouts/")
+                   help="which reduction's cutouts to draw on: 'auto' (default) draws on the "
+                        "bcfill sci where it exists (cleaner image, shared geometry) else the "
+                        "standard sci, skipping if a mask exists in EITHER tree; 'bcfill' uses "
+                        "only data/cutouts_bcfill/; 'standard' uses only data/cutouts/")
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw a mask that already exists (default: skip it)')
     p.add_argument('--brush-radius', type=int, default=6,
@@ -377,25 +480,30 @@ def main():
         variants = ['bcfill', '']
     trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
 
-    targets = list(discover_targets(trees, a.sample, a.lens, a.filt))
-    if not targets:
+    # discover_targets yields per (lens, filt); regroup to filt -> write_dirs per lens so we
+    # draw once and broadcast across the lens's bands (filt=None: consider all bands, pick best).
+    lens_filts = {}
+    for lens, filt, _display_dir, write_dirs in discover_targets(trees, a.sample, a.lens, None):
+        lens_filts.setdefault(lens, {})[filt] = write_dirs
+
+    if not lens_filts:
         roots = ', '.join(r for _, r in trees)
         raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
-                         f"lens={a.lens!r} filt={a.filt!r}")
+                         f"lens={a.lens!r}")
 
-    print(f"{len(targets)} lens/filter cutout(s) to process")
+    print(f"{len(lens_filts)} lens(es) to process")
     made = skipped = 0
-    for lens, filt, display_dir, write_dirs in targets:
-        if make_mask_for(display_dir, write_dirs, lens, filt, a.sample, a.drizzle_pass,
-                         a.force, brush_radius=a.brush_radius, brush_width=a.brush_width,
-                         display=a.display, stretch=a.stretch,
-                         vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
-                         asinh_a=a.asinh_a):
+    for lens in sorted(lens_filts):
+        if process_lens_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
+                             a.force, a.no_broadcast, brush_radius=a.brush_radius,
+                             brush_width=a.brush_width, display=a.display, stretch=a.stretch,
+                             vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
+                             asinh_a=a.asinh_a):
             made += 1
         else:
             skipped += 1
 
-    print(f"\nDone: {made} mask(s) drawn, {skipped} skipped")
+    print(f"\nDone: {made} lens(es) masked, {skipped} skipped")
 
 
 if __name__ == '__main__':
