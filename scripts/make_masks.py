@@ -116,9 +116,23 @@ class _GuardedScribbler(al.Scribbler):
     _RESIZE_FACTOR = 1.4
     _MIN_RADIUS = 1
 
+    #: set before construction to title the figure (used to label side-by-side panels).
+    #: al.Scribbler builds its figure and then BLOCKS inside __init__, so there is no
+    #: post-construction hook -- the title has to go on from inside, hence this class attr.
+    title = None
+
+    def __init__(self, *args, **kwargs):
+        title, type(self).title = type(self).title, None
+        self._pending_title = title
+        super().__init__(*args, **kwargs)
+
     def on_mouse_motion(self, event):
         if event.inaxes != self.ax or event.xdata is None or event.ydata is None:
             return
+        pending = getattr(self, '_pending_title', None)
+        if pending is not None:                  # first in-axes motion: label the panels
+            self._pending_title = None
+            self.ax.set_title(pending, fontsize=11)
         super().on_mouse_motion(event)
         # Upstream repositions the brush patch but never redraws on the motion path, so
         # the circle can stop painting on later lenses (see class docstring). Force a
@@ -143,6 +157,9 @@ class _GuardedScribbler(al.Scribbler):
         self._apply_radius(min(self.brush_radius - 1,
                                self.brush_radius / self._RESIZE_FACTOR))
 
+
+#: blank columns between the two side-by-side display panels (see draw_mask_gui).
+_PANEL_GAP = 6
 
 _STRETCHES = {
     'asinh': AsinhStretch,   # bright cores + faint structure at once; --asinh-a tunes it
@@ -354,17 +371,28 @@ def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
 
 def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_width,
                   display, stretch, vmin_percent, vmax_percent, asinh_a,
-                  subtract_radial=False, prompt=None, overlay=None):
+                  subtract_radial=False, side_by_side=True, prompt=None, overlay=None):
     """Run the Scribbler GUI once on the chosen band. Returns
     (scribbled_bool, pixel_scales, sci_header, brush_width, start_radius, source_label).
 
-    `subtract_radial` shows the deflector's radial-median-subtracted image instead of the
-    raw one (see radial_median_subtract) -- DISPLAY ONLY, the scribble is read back as pixel
-    positions so it cannot change what a given brush stroke masks. Off by default here (a
-    contaminant mask is drawn against the real sky), on by default in make_arc_masks.py,
-    where the arcs are the whole subject. `prompt` replaces the printed instruction lines
-    (so the arc tool can state its own, opposite, polarity) and `overlay` is a callable
-    applied to the stretched display array just before it is handed to the Scribbler.
+    `subtract_radial` shows the deflector's radial-median-subtracted image (see
+    radial_median_subtract) -- DISPLAY ONLY, the scribble is read back as pixel positions so
+    it cannot change what a given brush stroke masks. Off by default here (a contaminant mask
+    is drawn against the real sky), on by default in make_arc_masks.py, where the arcs are
+    the whole subject.
+
+    `side_by_side` (default True, and only meaningful with subtract_radial) shows BOTH views
+    at once -- subtracted on the left, as-observed on the right, separated by a blank gutter
+    -- because each answers a different question: the subtracted panel is where the arcs are
+    visible at all, the as-observed panel is where a contaminant's real extent and the
+    galaxy envelope are. You may scribble on EITHER panel: the two halves are read back and
+    UNIONed onto the single-band mask, so a stroke on the right lands at the same sky
+    position as the same stroke on the left. Each panel is stretched independently (their
+    dynamic ranges differ by orders of magnitude, so a shared scale would flatten one).
+
+    `prompt` replaces the printed instruction lines (so the arc tool can state its own,
+    opposite, polarity) and `overlay` is a callable applied to each stretched panel just
+    before they are composited.
     The scribbled array marks True = REMOVE from the fit (painted = excluded, unpainted =
     kept -- al.Mask2D's own convention, so the scribbled array IS the mask, no inversion;
     opposite polarity to autolens_workspace's mask.py, which scribbles the region to keep).
@@ -384,14 +412,29 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     print("    keys:  '=' bigger brush | '-' smaller brush | 'z' undo last | Esc/q done")
 
     base, source_label = load_display_base(display_dir, display_prefix, display, pixel_scales)
+    # Which view(s) to show. Two panels only when there is genuinely something to compare.
+    panels = []
     if subtract_radial:
-        base = radial_median_subtract(base)
-        source_label += ', radial-median subtracted'
-    disp_array = stretched_display(base, pixel_scales, stretch=stretch,
-                                   vmin_percent=vmin_percent, vmax_percent=vmax_percent,
-                                   asinh_a=asinh_a)
-    if overlay is not None:
-        disp_array = overlay(disp_array, pixel_scales)
+        panels.append(('radial-subtracted', radial_median_subtract(base)))
+    if not subtract_radial or side_by_side:
+        panels.append(('as-observed', base))
+
+    def _panel(values):
+        d = stretched_display(values, pixel_scales, stretch=stretch, vmin_percent=vmin_percent,
+                              vmax_percent=vmax_percent, asinh_a=asinh_a)
+        return np.asarray((overlay(d, pixel_scales) if overlay is not None else d).native)
+
+    rendered = [_panel(v) for _, v in panels]
+    panel_n_x = rendered[0].shape[1]
+    if len(rendered) == 1:
+        composite, title = rendered[0], None
+    else:
+        gutter = np.zeros((rendered[0].shape[0], _PANEL_GAP))
+        composite = np.hstack([rendered[0], gutter, rendered[1]])
+        title = (f'LEFT: {panels[0][0]}   |   RIGHT: {panels[1][0]}   '
+                 f'--  scribble on either panel')
+    disp_array = al.Array2D.no_mask(values=composite, pixel_scales=pixel_scales).native
+    source_label += ', ' + ' + '.join(name for name, _ in panels)
     # al.Scribbler sizes the brush as int(image_height * brush_width), a fraction. To get a
     # stamp-independent default (--brush-radius px) we derive the fraction from this stamp's
     # own height; an explicit --brush-width fraction (if given) overrides it.
@@ -402,16 +445,29 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     print(f"  display: {source_label}, {stretch} stretch"
           + (f" (a={asinh_a})" if stretch == 'asinh' else '')
           + f", clip [{vmin_percent:g}, {vmax_percent:g}] percentile")
+    if len(panels) > 1:
+        print(f"  TWO PANELS side by side -- LEFT {panels[0][0]}, RIGHT {panels[1][0]}. "
+              f"Scribble on either;")
+        print(f"    the two halves are combined onto the one mask (same sky position).")
     print(f"  brush start radius = {start_radius} px")
+    _GuardedScribbler.title = title
     scribbler = _GuardedScribbler(image=disp_array, brush_width=brush_width)
-    scribbled = scribbler.show_mask()
+    scribbled = np.asarray(scribbler.show_mask(), dtype=bool)
+
+    if len(panels) > 1:                          # fold the two panels back onto one grid
+        left = scribbled[:, :panel_n_x]
+        right = scribbled[:, panel_n_x + _PANEL_GAP:panel_n_x + _PANEL_GAP + panel_n_x]
+        if left.any() and right.any():
+            print(f"  combined both panels ({int(left.sum())}px left + "
+                  f"{int(right.sum())}px right)")
+        scribbled = left | right
     return scribbled, pixel_scales, sci_hdr, brush_width, start_radius, source_label
 
 
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                       broadcast=False, brush_radius=6, brush_width=None, display='snr',
                       stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
-                      subtract_radial=False):
+                      subtract_radial=False, side_by_side=True):
     """Draw a mask once for one lens, on its best/forced band. By default the mask is written
     for THAT BAND ONLY; `broadcast=True` also writes it to the lens's other bands by WCS
     reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir), bcfill
@@ -447,7 +503,15 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
     scribbled, src_ps, src_hdr, brush_width, start_radius, source_label = draw_mask_gui(
         display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
         display, stretch, vmin_percent, vmax_percent, asinh_a,
-        subtract_radial=subtract_radial)
+        subtract_radial=subtract_radial, side_by_side=side_by_side)
+
+    # Nothing painted = you skipped this lens: write NO file. An all-False mask would be a
+    # legitimate "exclude nothing" mask, which is exactly the ambiguity to avoid -- an absent
+    # file means "not done yet" and the next run re-offers the lens, where an empty one would
+    # silently mark it finished.
+    if not np.asarray(scribbled).any():
+        print(f"  nothing drawn -- no mask written for {lens} (still pending)")
+        return False
     src_wcs = WCS(src_hdr).celestial
 
     # Default: the draw band only, using the scribbled array verbatim. --broadcast additionally
@@ -550,6 +614,11 @@ def main():
     p.add_argument('--vmax-percent', type=float, default=99.5,
                    help='upper clip percentile for the display stretch; lower it to brighten '
                         'and reveal problematic bright areas (default 99.5)')
+    p.add_argument('--side-by-side', action=argparse.BooleanOptionalAction, default=True,
+                   help='with --subtract-radial, show BOTH views at once -- subtracted left, '
+                        'as-observed right -- and accept scribbles on either panel, combining '
+                        'them onto the one mask (default on; ignored without --subtract-radial, '
+                        'where there is nothing to compare)')
     p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=False,
                    help="subtract the deflector's azimuthally-averaged radial profile from "
                         'the DISPLAYED image, so the arcs stand clear of the galaxy envelope '
@@ -586,7 +655,8 @@ def main():
                              a.force, a.broadcast, brush_radius=a.brush_radius,
                              brush_width=a.brush_width, display=a.display, stretch=a.stretch,
                              vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
-                             asinh_a=a.asinh_a, subtract_radial=a.subtract_radial):
+                             asinh_a=a.asinh_a, subtract_radial=a.subtract_radial,
+                             side_by_side=a.side_by_side):
             made += 1
         else:
             skipped += 1
