@@ -36,18 +36,20 @@ ALREADY-MARKED POSITIONS ARE SHOWN. Where `make_positions.py` has recorded
 cutout_[cr_]positions.json for the band, each marked image is ringed in the display so the
 arc mask can be drawn around the same multiple images. --no-show-positions turns it off.
 
-Everything else -- one draw per lens broadcast to every band by WCS reprojection, the
-band-priority order, --size/--variant tree routing, the skip/--force behaviour -- is
-`make_masks.py`'s, imported from it rather than re-implemented, so the two tools stay in
-lock-step. Note the reprojection is applied to the ARC REGION (True = arc), not to the
-saved array: outside-footprint pixels then default to 'not arc', which is the safe side --
-reprojecting the inverted array would instead leave stamp-edge slivers unmasked.
+Everything else -- ONE DRAW PER BAND by default (--broadcast opts into sharing the draw
+across the lens's bands by WCS reprojection), the band-priority order, --size/--variant tree
+routing, the skip/--force behaviour -- is `make_masks.py`'s, imported from it rather than
+re-implemented, so the two tools stay in lock-step. Where --broadcast IS used, note the
+reprojection is applied to the ARC REGION (True = arc), not to the saved array:
+outside-footprint pixels then default to 'not arc', which is the safe side -- reprojecting
+the inverted array would instead leave stamp-edge slivers unmasked.
 
 Usage:
     uv run python scripts/make_arc_masks.py --sample slacs_gold             # best band per lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020               # one lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --filt f606W  # force the band
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --no-subtract-radial --force
+    uv run python scripts/make_arc_masks.py --lens J0330-0020 --broadcast  # share one draw
 """
 
 import argparse
@@ -162,10 +164,11 @@ def write_arc_mask(arc_bool, pixel_scales, path):
 
 
 def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
-                          no_broadcast, brush_radius, brush_width, display, stretch,
+                          broadcast, brush_radius, brush_width, display, stretch,
                           vmin_percent, vmax_percent, asinh_a, subtract_radial,
                           show_positions, ring_radius_px):
-    """Draw the arc mask once for one lens and broadcast it to every band. Mirrors
+    """Draw the arc mask once for one lens, on its best/forced band only unless
+    `broadcast` is set (then also WCS-reprojected to the lens's other bands). Mirrors
     make_masks.process_lens_mask; differs only in polarity, product name, and the arc-specific
     display (radial subtraction + position rings). Returns True if a mask was written."""
     filts = sorted(filt_dirs)
@@ -215,7 +218,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
         return False
     src_wcs = WCS(src_hdr).celestial
 
-    targets = ([display_filt] if no_broadcast else filts)
+    targets = (filts if broadcast else [display_filt])
     for filt in targets:
         variant, cutout_dir = filt_dirs[filt][0]     # priority tree for this band
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
@@ -267,11 +270,14 @@ def main():
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you DRAW on (e.g. f606W); default the best available '
-                        'band per lens (f814W>f606W>f555W>f160W>...). The arc mask is broadcast '
-                        'to every band regardless (unless --no-broadcast)')
-    p.add_argument('--no-broadcast', action='store_true', default=False,
-                   help='write the arc mask only to the drawn band, not WCS-reprojected to the '
-                        'others -- e.g. when an arc is detected in one filter only')
+                        'band per lens (f814W>f606W>f555W>f160W>...). Only that band gets an '
+                        'arc mask unless --broadcast is passed')
+    p.add_argument('--broadcast', action=argparse.BooleanOptionalAction, default=False,
+                   help="ALSO write the arc mask to the lens's other bands, WCS-reprojected "
+                        'onto each grid. Default OFF: run again with --filt for the next band. '
+                        'An arc is often detected in one filter and not another, and its usable '
+                        'extent differs with each band\'s depth and PSF, so the drawn region is '
+                        'not in practice band-independent')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
                    help="which cutout pass to mask, matching make_masks.py/make_cutouts.py: "
@@ -341,7 +347,7 @@ def main():
     made = skipped = 0
     for lens in sorted(lens_filts):
         if process_lens_arc_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
-                                 a.force, a.no_broadcast, a.brush_radius, a.brush_width,
+                                 a.force, a.broadcast, a.brush_radius, a.brush_width,
                                  a.display, a.stretch, a.vmin_percent, a.vmax_percent,
                                  a.asinh_a, a.subtract_radial, a.show_positions,
                                  a.ring_radius):
