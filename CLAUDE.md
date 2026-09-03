@@ -640,18 +640,38 @@ noise FITS (from the weight map), and a 3-panel PNG.
 ## Masks (`scripts/make_masks.py`)
 
 ```bash
-uv run python scripts/make_masks.py --sample slacs_gold
-uv run python scripts/make_masks.py --lens J0008-0004 --filt f814W
+uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
+uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
+uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --no-broadcast --force
 ```
 
-Interactive, manual tool — not part of the automated per-lens pipeline above. Cycles
-through a sample's cutouts and, for each one, opens PyAutoLens's `Scribbler` GUI (a Tk
-window; scribble the region to keep, `Esc` to finish) over the cutout's science image, the
-same tool as `autolens_workspace:scripts/imaging/data_preparation/gui/mask.py`. Writes
-`cutout_[cr_]mask.fits` next to that cutout's sci/noise/psf products, and records
-provenance (pass, pixel scale, brush width) per (sample, lens, filt) in
-`info/lens_masks.json`. Already-masked cutouts are skipped (`--force` to redraw), so a long
-GUI session across a whole sample is resumable.
+Interactive, manual tool — not part of the automated per-lens pipeline above. For each lens
+in a sample it opens PyAutoLens's `Scribbler` GUI (a Tk window; scribble the areas to
+**REMOVE** from the fit — painted = excluded, unpainted = kept, the *opposite* polarity to
+`autolens_workspace:scripts/imaging/data_preparation/gui/mask.py`; `Esc` to finish) over the
+cutout's science image, writes `cutout_[cr_]mask.fits`, and records provenance per (sample,
+lens, filt) in `info/lens_masks.json`. A lens that already has a mask is skipped (`--force`
+to redraw), so a long GUI session across a sample is resumable.
+
+**One draw per lens, then broadcast (WCS-reprojected) to every band** — settled 2026-09-03,
+the same model as `make_positions.py`. A mask marks a *sky* region (deflector+arcs to keep,
+contaminants to exclude), which is the same physical region in every band, so you draw **once**
+on the highest-S/N band available (priority `f814W>f606W>f555W>f160W>…`, shared with
+`make_positions` via `make_masks.pick_display_filt`) and it is broadcast to the lens's other
+bands. `--filt` forces the draw band. The broadcast is a rigorous **per-pixel WCS reprojection**
+(`reproject_mask_bool`, nearest-neighbour via `scipy.ndimage.map_coordinates`, source
+sci-header WCS → target sci-header WCS), **not** an array-index copy — because only the 0.05″
+optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely different grid**
+(0.06″/px, 200px vs 240px for a 12″ stamp — a common sky point is ~20px away by index), and only
+reprojection places the mask correctly there (verified: a test box regrids 0.05″→0.06″
+area-preserving, centroid within 0.048″ ≈ sub-pixel). Provenance per band records `source` =
+`drawn` or `reprojected_from_<band>`, plus `n_excluded_px`.
+- **`--no-broadcast`** writes only the drawn band — the escape hatch for a mask that must
+  genuinely differ per band (e.g. a contaminant bright in only one filter). Pair with `--filt`
+  and `--force` to refine one band without touching the rest.
+- Per band, the mask is written into that band's **priority tree** (bcfill where a bcfill cutout
+  exists — ACS f814W/f555W + WFPC2 f606W; else standard — f160W, gallery, un-bcfilled lenses),
+  and a lens is skipped if the *draw band* already has a mask in *either* variant.
 
 **Defaults to `cutout_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
 tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked in git (see
@@ -659,16 +679,43 @@ tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked
 mosaics, but a hand-drawn mask is not, so it needs the same durability as a tracked product.
 Pass `--size 20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
 
-**`--variant` picks the reduction to mask (default `auto`, bcfill-preferred).** bcfill and
+**`--variant` picks the reduction to draw on (default `auto`, bcfill-preferred).** bcfill and
 standard cutouts share crop geometry **exactly** (identical NAXIS/CRPIX/CRVAL — a mask drawn
 on one is pixel-valid on the other), bcfill just having its dead-column stripes filled (a
-cleaner image to scribble on). So `--variant auto` (default) draws **one** mask per (lens,
-filt) on the bcfill cutout where it exists (ACS f814W/f555W + WFPC2 f606W), else the standard
-cutout (f160W, gallery, any un-bcfilled lens), and writes it into that **one** priority tree —
-never duplicated across trees, since one mask serves whichever reduction is modelled. A (lens,
-filt) is **skipped if a mask exists in *either* tree**; `--force` redraws into the priority
-(bcfill) tree. `--variant bcfill`/`standard` restrict to one tree. `info/lens_masks.json`
-records the `variant` the mask landed in.
+cleaner image to scribble on). So `auto` draws on the bcfill cutout where it exists, else the
+standard cutout; `--variant bcfill`/`standard` restrict to one tree.
+
+## Image positions (`scripts/make_positions.py`, `scripts/run_positions_all.sh`)
+
+```bash
+uv run python scripts/make_positions.py --sample slacs_gold            # best band per lens
+uv run python scripts/make_positions.py --lens J0008-0004 --filt f606W # force the band
+bash scripts/run_positions_all.sh                                      # every sample
+bash scripts/run_positions_all.sh slacs_gold --force                   # one sample, re-mark
+```
+
+Interactive, manual tool (the positions analogue of `make_masks.py`). For each lens it opens
+PyAutoLens's `al.Clicker` GUI over the lens's best cutout; you **double-click** each lensed
+image of the source (2 for a double, 4 for a quad), each click snapping to the brightest pixel
+within `--search-box-size` (default 5). The clicks are saved as an `al.Grid2DIrregular` in
+`cutout_[cr_]positions.json` (via `al.output_to_json`) — the file a modelling script loads to
+build a positions likelihood penalty (`al.PositionsLH`) that rejects mass models mapping the
+images too far apart in the source plane — plus a `cutout_[cr_]positions.png` QC overlay per
+band. Provenance per (sample, lens, marked-filt) in `info/lens_positions.json`.
+
+**One mark per lens, then broadcast to every band.** Image positions are band-**independent**
+sky coordinates: every band is cut about the same shared centre (`--center-band f814W`) and
+pinned to the same output WCS (`final_rot=0`, tangent point at the lens), so a position in
+**arcsec** relative to the stamp centre is identical in every band — even where pixel scales
+differ (f160W 0.06″), because arcsec, not pixels, is the shared frame PyAutoLens works in. So
+you mark once on the best band and the same `Grid2DIrregular` is written to every band, one
+file per band into that band's **priority tree** (bcfill where a bcfill cutout exists, else
+standard — exactly as masks route), under that band's pass prefix. This is *simpler* than the
+mask broadcast — positions need no reprojection, the arcsec values transfer verbatim; only
+masks (per-pixel booleans on a specific grid) need the WCS regrid. Trees/skip/`--variant`/
+`--size` behave as in `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the
+samples (all three by default). These hand-marked positions are non-regenerable, so like the
+masks they live in the git-tracked `data/cutouts/` tree.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
