@@ -723,8 +723,9 @@ you are trying to click are the least visible thing on screen. All three transfo
 the imshow'd array — `al.Clicker` still snaps on the untouched flux array, so the saved
 positions are bit-identical either way — and each is recorded in `info/lens_positions.json`
 so a stamp's provenance says how it was marked:
-- **`--subtract-radial`** — subtract the deflector's azimuthally-averaged (median) radial
-  profile. **The strongest of the three, and the one to reach for first**: an elliptical's
+- **`--subtract-radial` (DEFAULT ON since 2026-09-03; `--no-subtract-radial` opts out)** —
+  subtract the deflector's azimuthally-averaged (median) radial
+  profile. **The strongest of the three**: an elliptical's
   light is nearly a function of radius alone while the arcs are not, so the galaxy vanishes
   and the images stand out, *including the ones buried inside the envelope* that a central
   blank would hide along with the galaxy. Verified on J0330-0020 (all four images obvious)
@@ -744,8 +745,51 @@ so a stamp's provenance says how it was marked:
 
 The shared machinery lives in `make_masks.py` next to the other display helpers
 (`stretched_display` gained `exclude=`/`vmax_value=`, plus new `radial_median_subtract`
-and `central_disc`); the default call path is byte-identical to before, so `make_masks.py`'s
-own GUI is unchanged.
+and `central_disc`); its default call path is byte-identical to the pre-2026-09-03
+implementation. `make_masks.py` takes `--subtract-radial` too but **OFF by default** — a
+contaminant mask is normally judged against the real sky — while `make_arc_masks.py` (below)
+has it **on**.
+
+## Arc masks (`scripts/make_arc_masks.py`)
+
+```bash
+uv run python scripts/make_arc_masks.py --sample slacs_gold            # best band per lens
+uv run python scripts/make_arc_masks.py --lens J0330-0020 --force      # one lens, redraw
+```
+
+The second hand-drawn mask tool, and the **opposite polarity to `make_masks.py`**: you paint
+*only* the arcs / multiple images, and everything unpainted is masked out — the deflector
+included. The product isolates the lensed source, for a source-only fit, an arc S/N
+measurement, or a source-plane analysis.
+
+| tool | you paint | product |
+|---|---|---|
+| `make_masks.py` | what to REMOVE (contaminants) | `cutout_[cr_]mask.fits` |
+| `make_arc_masks.py` | the ARCS to KEEP | `cutout_[cr_]mask_arcs.fits` |
+
+- **The saved array is in `al.Mask2D` convention (`True` = EXCLUDED) in both files**, so they
+  load through the same reader and can't be swapped by polarity — but that means the arc
+  mask is the **inverse of what you painted** (`saved = ~painted`; `~mask` is the arc
+  region). Header records it: `MASKTYPE='ARCS'`, `MASKPOL`, `NARCPX`. A `make_masks.py`
+  scribble, by contrast, is saved verbatim.
+- **`--subtract-radial` is ON by default here** (the arcs are the subject and are usually
+  invisible under the galaxy envelope), and images already marked by `make_positions.py` are
+  **ringed in the display** as a drawing guide (`--no-show-positions` off; silently inactive
+  where no positions file exists). Both are display-only.
+- Refuses to write an empty draw — an empty arc region would mask out the whole stamp.
+- **The broadcast reprojects the ARC REGION, not the saved array.** Outside-footprint pixels
+  then default to "not arc" (masked out), the safe side of the stamp edge; reprojecting the
+  inverted array would instead leave edge slivers unmasked. Verified across the f160W regrid
+  (0.06″/200px vs 0.05″/240px): same sky area to 0.06%, same annulus radii to half a pixel.
+- Everything else — one draw per lens, band priority, `--size`/`--variant` routing,
+  skip/`--force` — is `make_masks.py`'s, imported rather than re-implemented. Provenance in
+  `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
+  region over the radial-subtracted image.
+- **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
+  row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position ring lands on the
+  *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
+  `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
+  outline needs `origin='upper'` or it is drawn vertically mirrored.
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 

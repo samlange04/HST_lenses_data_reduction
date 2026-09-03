@@ -41,8 +41,8 @@ Usage:
     uv run python scripts/make_positions.py --lens J0008-0004              # one lens, best band
     uv run python scripts/make_positions.py --lens J0008-0004 --filt f606W # force the band
     uv run python scripts/make_positions.py --sample slacs_gold --force    # re-mark everything
-    uv run python scripts/make_positions.py --lens J0008-0004 --subtract-radial
-        # subtract the deflector's radial light profile so only the arcs are left
+    uv run python scripts/make_positions.py --lens J0008-0004 --no-subtract-radial
+        # opt OUT of the default radial-profile subtraction and click on the raw image
     uv run python scripts/make_positions.py --lens J0008-0004 --mask-center 0.8 --vmax-value 10
         # hide the central 0.8" of deflector light and saturate above S/N 10, so the arcs
         # are the brightest thing on screen
@@ -116,7 +116,7 @@ def save_overlay_png(sci_native, pixel_scales, positions, out_path,
 def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
                        display='snr', display_base=None, stretch='asinh',
                        vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
-                       mask_center=0.0, vmax_value=None, subtract_radial=False):
+                       mask_center=0.0, vmax_value=None, subtract_radial=True):
     """Run the Clicker GUI once and return the clicked positions as a list of (y, x) arcsec.
 
     `sci_native` (REAL flux) is handed to al.Clicker so its brightest-pixel snap uses true
@@ -176,7 +176,7 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
 
 def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                  search_box_size, display, stretch, vmin_percent, vmax_percent, asinh_a,
-                 mask_center=0.0, vmax_value=None, subtract_radial=False):
+                 mask_center=0.0, vmax_value=None, subtract_radial=True):
     """Mark positions once for one lens and broadcast the result to every band.
 
     `filt_dirs` maps filt -> write_dirs (an ordered list of (variant, cutout_dir), bcfill
@@ -341,13 +341,15 @@ def main():
                         'units of --display (S/N by default, e.g. 10; raw flux with '
                         '--display sci). Overrides --vmax-percent, and is applied to the QC '
                         'overlay PNG as well. Display only')
-    p.add_argument('--subtract-radial', action='store_true', default=False,
+    p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=True,
                    help="subtract the deflector's azimuthally-averaged radial profile from "
-                        'the DISPLAYED image. The strongest of the three arc-finding levers '
-                        '-- unlike --mask-center it reveals images buried inside the galaxy '
-                        'envelope rather than hiding them; expect a quadrupole residual '
-                        '(the deflector is elliptical, not circular) and treat it as a '
-                        'finding aid, not photometry. Display only')
+                        'the DISPLAYED image (DEFAULT ON -- it is what makes the images '
+                        'clickable at all on most lenses). The strongest of the three '
+                        'arc-finding levers: unlike --mask-center it reveals images buried '
+                        'inside the galaxy envelope rather than hiding them. Expect a '
+                        'quadrupole residual (the deflector is elliptical, not circular) '
+                        'and treat it as a finding aid, not photometry. Display only -- pass '
+                        '--no-subtract-radial to click on the raw image instead')
     a = p.parse_args()
 
     # Same variant->tree resolution as make_masks (bcfill first for display preference).
