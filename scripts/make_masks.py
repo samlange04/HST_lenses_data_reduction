@@ -348,9 +348,18 @@ def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
 
 
 def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_width,
-                  display, stretch, vmin_percent, vmax_percent, asinh_a):
+                  display, stretch, vmin_percent, vmax_percent, asinh_a,
+                  subtract_radial=False, prompt=None, overlay=None):
     """Run the Scribbler GUI once on the chosen band. Returns
     (scribbled_bool, pixel_scales, sci_header, brush_width, start_radius, source_label).
+
+    `subtract_radial` shows the deflector's radial-median-subtracted image instead of the
+    raw one (see radial_median_subtract) -- DISPLAY ONLY, the scribble is read back as pixel
+    positions so it cannot change what a given brush stroke masks. Off by default here (a
+    contaminant mask is drawn against the real sky), on by default in make_arc_masks.py,
+    where the arcs are the whole subject. `prompt` replaces the printed instruction lines
+    (so the arc tool can state its own, opposite, polarity) and `overlay` is a callable
+    applied to the stretched display array just before it is handed to the Scribbler.
     The scribbled array marks True = REMOVE from the fit (painted = excluded, unpainted =
     kept -- al.Mask2D's own convention, so the scribbled array IS the mask, no inversion;
     opposite polarity to autolens_workspace's mask.py, which scribbles the region to keep).
@@ -363,14 +372,21 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     print(f"\n{lens}  drawing on {filt}  [{display_prefix} pass]  "
           f"pixel_scale={pixel_scales:.4f}\"/pix")
     print(f"  {sci_path}")
-    print("  Scribbler GUI: scribble the areas to REMOVE from the fit (contaminants, field")
-    print("    sources, bad regions). Everything you do NOT paint is kept in the fit.")
+    for line in (prompt or [
+            "  Scribbler GUI: scribble the areas to REMOVE from the fit (contaminants, field",
+            "    sources, bad regions). Everything you do NOT paint is kept in the fit."]):
+        print(line)
     print("    keys:  '=' bigger brush | '-' smaller brush | 'z' undo last | Esc/q done")
 
     base, source_label = load_display_base(display_dir, display_prefix, display, pixel_scales)
+    if subtract_radial:
+        base = radial_median_subtract(base)
+        source_label += ', radial-median subtracted'
     disp_array = stretched_display(base, pixel_scales, stretch=stretch,
                                    vmin_percent=vmin_percent, vmax_percent=vmax_percent,
                                    asinh_a=asinh_a)
+    if overlay is not None:
+        disp_array = overlay(disp_array, pixel_scales)
     # al.Scribbler sizes the brush as int(image_height * brush_width), a fraction. To get a
     # stamp-independent default (--brush-radius px) we derive the fraction from this stamp's
     # own height; an explicit --brush-width fraction (if given) overrides it.
@@ -389,7 +405,8 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
 
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                       no_broadcast, brush_radius=6, brush_width=None, display='snr',
-                      stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+                      stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                      subtract_radial=False):
     """Draw a mask once for one lens (on its best/forced band) and broadcast it to every band
     by WCS reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir),
     bcfill before standard) from discover_targets. One mask FITS is written per band into that
@@ -423,7 +440,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
 
     scribbled, src_ps, src_hdr, brush_width, start_radius, source_label = draw_mask_gui(
         display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
-        display, stretch, vmin_percent, vmax_percent, asinh_a)
+        display, stretch, vmin_percent, vmax_percent, asinh_a,
+        subtract_radial=subtract_radial)
     src_wcs = WCS(src_hdr).celestial
 
     # Broadcast: write one mask per band into that band's priority tree. The draw band uses the
@@ -525,6 +543,13 @@ def main():
     p.add_argument('--vmax-percent', type=float, default=99.5,
                    help='upper clip percentile for the display stretch; lower it to brighten '
                         'and reveal problematic bright areas (default 99.5)')
+    p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=False,
+                   help="subtract the deflector's azimuthally-averaged radial profile from "
+                        'the DISPLAYED image, so the arcs stand clear of the galaxy envelope '
+                        '(same lever as make_positions.py, where it is ON by default; here it '
+                        'is OFF by default, since a contaminant mask is normally judged '
+                        'against the real sky). Display only -- the mask is built from brush '
+                        'positions, so it cannot change what a stroke masks')
     a = p.parse_args()
 
     # Ordered by display preference: bcfill first (cleaner image), standard second.
@@ -554,7 +579,7 @@ def main():
                              a.force, a.no_broadcast, brush_radius=a.brush_radius,
                              brush_width=a.brush_width, display=a.display, stretch=a.stretch,
                              vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
-                             asinh_a=a.asinh_a):
+                             asinh_a=a.asinh_a, subtract_radial=a.subtract_radial):
             made += 1
         else:
             skipped += 1
