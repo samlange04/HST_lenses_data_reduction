@@ -668,9 +668,24 @@ an empty arc region would mask out the whole stamp.
 
 **All hand-drawn masks were deleted 2026-09-03 at the user's request** (54 files: 39 under
 `data/cutouts_bcfill/slacs_gold/` — f814W plus one f555W — and 15 under
-`data/cutouts/gallery/` f606W), and `info/lens_masks.json` reset to `{}`. The tracked ones
-are recoverable from git history if ever wanted. Masking starts over under the current
-per-band defaults.
+`data/cutouts/gallery/` f606W), and `info/lens_masks.json` reset to `{}`. The old ones are
+recoverable from git history if ever wanted; masking restarted under the current per-band
+defaults.
+
+**Current state (2026-09-04): 38 masks, all `slacs_gold` f814W**, drawn into
+`data/cutouts_bcfill/` (the priority tree for that band) and recorded in
+`info/lens_masks.json` — i.e. one per `slacs_gold` lens at the highest-S/N band, with no
+other band or sample masked yet. Two per-lens notes:
+- **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
+  at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
+  because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
+  within 0.3–0.5″ of it — clipping that image's PSF wing asymmetrically. **Worth checking on
+  any lens whose mask reaches inward past ~2 θ_E**: measure the distance from the mask to
+  each marked/known lensed image, not just how the stamp looks. The diffuse SW "fluff" the
+  mask covers is correctly excluded — vetted as not lensed (→ memory:
+  contaminant_vetting_j0728_j0841).
+- **J1020+1122 f814W needs redrawing** (`n_excluded_px` 25395, ~44% of the stamp) — flagged
+  by the user, not yet redone; `make_masks.py --lens J1020+1122 --filt f814W --force`.
 
 **One draw per BAND; `--broadcast` shares it across bands.** Each run draws on one band —
 the highest-S/N available (priority `f814W>f606W>f555W>f160W>…`, shared with `make_positions`
