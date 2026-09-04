@@ -5,7 +5,8 @@ Tile every lens's PSF kernel into per-filter-group QC mosaics.
 Sibling to make_mosaics.py: same 5-wide grid, same filter groups (mosaic_groups.py,
 shared between the two scripts). Reads the trimmed, modelling-ready kernels already
 written by make_psf.py
-(data/cutouts/<sample>/<lens>/<filt>/cutout[_cr]_psf.fits) - nothing is rebuilt.
+(cutout[_cr]_psf.fits, located per band by cutout_paths.psf_cutout_dir: the bcfill
+cutout dir where that reduction exists, else data/cutouts/) - nothing is rebuilt.
 
 Kernels are unit-sum normalised by construction (make_psf.trim_kernel_to_amplitude), so
 raw peak amplitude reflects kernel *size* (a broader/larger-footprint PSF has a lower
@@ -44,6 +45,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import mosaic_groups
+import cutout_paths
 from make_mosaics import short_filt, plot_mosaic
 
 ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
@@ -73,15 +75,23 @@ def method_tag(method):
     return 'emp' if str(method).startswith('empirical') else 'mod'
 
 
-def build_group(cutouts_dir, precedence):
+def build_group(sample, precedence):
     """Entries for one mosaic group - see make_mosaics.build_group for the precedence
     convention. `group` (the per-panel colourbar-split key) is only set for multi-filter
-    groups, same reasoning as make_mosaics.py."""
+    groups, same reasoning as make_mosaics.py.
+
+    Each kernel is located with cutout_paths.psf_cutout_dir, so it is found wherever the
+    placement rule put it (the bcfill cutout dir for ACS/WFPC2 bands, the standard one for
+    f160W and gallery); the lens list is the union of both trees for the same reason."""
     entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
-        lens = os.path.basename(lens_dir)
+    lenses = sorted({os.path.basename(d)
+                     for variant in cutout_paths.PSF_VARIANT_ORDER
+                     for d in glob.glob(os.path.join(
+                         cutout_paths.cutouts_root(ws_path, variant=variant), sample, '*'))
+                     if os.path.isdir(d)})
+    for lens in lenses:
         for filt in precedence:
-            path = find_psf_path(os.path.join(lens_dir, filt))
+            path = find_psf_path(cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt))
             if path is None:
                 continue
             with fits.open(path) as hdul:
@@ -115,9 +125,9 @@ def main():
 
     groups = mosaic_groups.groups_for_sample(a.sample, cutouts_dir)
     for group_name, precedence in groups.items():
-        entries_raw = build_group(cutouts_dir, precedence)
+        entries_raw = build_group(a.sample, precedence)
         if not entries_raw:
-            print(f"{group_name}: no PSF kernels found under {cutouts_dir}, skipping")
+            print(f"{group_name}: no PSF kernels found for sample {a.sample}, skipping")
             continue
 
         entries = [{'label': label} for _, label, _, _ in entries_raw]

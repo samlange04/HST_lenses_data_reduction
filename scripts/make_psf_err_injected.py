@@ -54,6 +54,7 @@ from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 
 import info_json
+import cutout_paths
 import make_psf
 import psf_models
 from psf_model_error import (align_resid, build_model_kernel, collect_targets,
@@ -276,7 +277,7 @@ def main():
     n_written, n_skipped, counts = 0, [], {}
     for sample, lens, filt, entry in targets:
         psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
-        cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', sample, lens, filt)
+        cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
         kernel_path = os.path.join(psf_dir, 'psf_kernel.fits')
         if not os.path.isfile(kernel_path):
             n_skipped.append(f'{sample}/{lens}/{filt} (no psf_kernel.fits)')

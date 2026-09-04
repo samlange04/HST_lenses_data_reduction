@@ -23,8 +23,11 @@ the injected kernel: the existing pre-broadening analytic-model files are moved 
   data/psf/<sample>/<lens>/<filt>/psf_kernel.fits             canonical (now the injected build)
   data/psf/<sample>/<lens>/<filt>/psf_kernel_analytic.fits    the superseded analytic model
   data/psf/<sample>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
-  data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf.fits            canonical (injected)
-  data/cutouts/<sample>/<lens>/<filt>/cutout_[cr_]psf_analytic.fits   superseded analytic
+  <psf cutout dir>/cutout_[cr_]psf.fits                       canonical (injected)
+  <psf cutout dir>/cutout_[cr_]psf_analytic.fits              superseded analytic
+    (<psf cutout dir> = cutout_paths.psf_cutout_dir(): data/cutouts_bcfill/<sample>/<lens>/
+     <filt>/ wherever a bcfill reduction exists, else data/cutouts/<...>/ -- one kernel per
+     band, placed beside the sci/noise/mask that will actually be modelled)
   info/lens_psf.json                                          method becomes inject_*
   info/lens_psf_injected.json                                 {sample:{lens:{filt:{...}}}}
 
@@ -97,6 +100,7 @@ import psf_models
 import make_psf
 from make_cutouts import find_products, _has_products, catalogue_coord_for
 import info_json
+import cutout_paths
 
 
 # ── Per-instrument drizzle configuration ─────────────────────────────────────────
@@ -585,7 +589,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
     src_dir = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
     psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
-    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', sample, lens, filt)
+    cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
     json_path = os.path.join(ws_path, 'info', 'lens_psf_injected.json')
 
     # No-data outcome: matches the other scripts -- record null, exit 0.
@@ -668,7 +672,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (lens, 'lens')
     khdr['PSFFILT'] = (filt, 'filter')
-    khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in data/cutouts/)')
+    khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in the psf cutout dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     khdr['PSFINJ'] = (True, 'built by artificial-star injection + re-drizzle')
 

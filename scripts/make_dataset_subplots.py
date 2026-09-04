@@ -21,14 +21,15 @@ NAXIS/CRPIX/CRVAL -- see scripts/cutout_paths.py and make_masks.py), so their ar
 pixel-aligned and a component may be taken from whichever tree has it:
   - the hand-drawn MASK lives in the bcfill tree for ACS/WFPC2 lenses (make_masks.py's
     default), while
-  - the PSF kernel is NOT duplicated into the bcfill tree (it is trimmed by amplitude, a
-    property of the band, so it lives only in data/cutouts/ -- see cutout_paths.py).
-So building a dataset from a single tree would usually be missing either the mask or the
-PSF. `--variant auto` (default) therefore resolves EACH of the four components independently
-from an ordered tree search (bcfill first, then standard): sci/noise/mask come from bcfill
-where present (the cleaner, dead-column-filled reduction and where the mask was drawn), and
-the psf falls back to standard. `--variant bcfill`/`standard` restrict the search to one
-tree (and then skip any (lens, filt) that tree can't fully supply).
+  - the PSF kernel is stored ONCE per band, not per tree: cutout_paths.psf_cutout_dir puts
+    it in the bcfill cutout dir wherever that reduction exists (ACS f814W/f555W, WFPC2
+    f606W) and in data/cutouts/ otherwise (f160W, gallery).
+`--variant auto` (default) therefore resolves EACH of sci/noise/mask independently from an
+ordered tree search (bcfill first, then standard); `--variant bcfill`/`standard` restrict
+that search to one tree. The psf is resolved separately, through
+cutout_paths.psf_cutout_dir, and so obeys neither --variant nor --size: a single stored
+kernel is the same file whichever tree holds it, and restricting would report it missing
+rather than reading the one that exists.
 
 Output: `{prefix}_dataset.png` written into the cutout dir the SIGNAL was taken from (so it
 sits beside that reduction's sci/noise), where `{prefix}` is `cutout_cr` or `cutout` exactly
@@ -163,13 +164,18 @@ def discover_targets(trees, sample, lens=None, filt=None):
         yield key[0], key[1], seen[key]
 
 
-def resolve_components(dirs_by_variant, tree_order, drizzle_pass):
+def resolve_components(dirs_by_variant, tree_order, drizzle_pass, psf_dir=None):
     """Locate each of the four components across the trees in preference order.
 
     `dirs_by_variant` maps variant -> cutout_dir for this (lens, filt). `tree_order` is the
     ordered list of variant keys to search. The drizzle prefix (cr/nocrrej) is fixed once,
     from the first tree that has a sci for `drizzle_pass`, so all four components come from
     the same pass. Returns (prefix, {component: (path, variant)}, missing_list).
+
+    `psf_dir` (cutout_paths.psf_cutout_dir) overrides the tree search for the psf component
+    only. The kernel is stored once per band -- variant-placed, and NOT size-keyed -- so it
+    is read from wherever that rule put it rather than from this run's --variant/--size
+    trees, which would otherwise report it missing whenever the two disagree.
     """
     # Fix the prefix from the first available tree (both trees share the same pass set).
     prefix = None
@@ -186,14 +192,19 @@ def resolve_components(dirs_by_variant, tree_order, drizzle_pass):
     resolved, missing = {}, []
     for comp in COMPONENTS:
         found = None
-        for variant in tree_order:
-            cutout_dir = dirs_by_variant.get(variant)
-            if cutout_dir is None:
-                continue
-            path = os.path.join(cutout_dir, f'{prefix}_{comp}.fits')
+        if comp == 'psf' and psf_dir is not None:
+            path = os.path.join(psf_dir, f'{prefix}_psf.fits')
             if os.path.exists(path):
-                found = (path, variant or 'standard')
-                break
+                found = (path, cutout_paths.psf_cutout_variant(psf_dir))
+        else:
+            for variant in tree_order:
+                cutout_dir = dirs_by_variant.get(variant)
+                if cutout_dir is None:
+                    continue
+                path = os.path.join(cutout_dir, f'{prefix}_{comp}.fits')
+                if os.path.exists(path):
+                    found = (path, variant or 'standard')
+                    break
         if found is None:
             missing.append(comp)
         else:
@@ -251,7 +262,9 @@ def process(lens, filt, sample, dirs_by_variant, tree_order, drizzle_pass, force
             check_noise_map, asinh=True, cmap=DEFAULT_CMAP):
     """Resolve components, build the dataset, and write the subplot. Returns True on write,
     False on skip (missing component or already present without --force)."""
-    prefix, resolved, missing = resolve_components(dirs_by_variant, tree_order, drizzle_pass)
+    prefix, resolved, missing = resolve_components(
+        dirs_by_variant, tree_order, drizzle_pass,
+        psf_dir=cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt))
     if prefix is None:
         print(f"{lens} {filt}: no cutout sci for --pass {drizzle_pass}, skipping")
         return False
