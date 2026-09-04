@@ -722,6 +722,38 @@ on one is pixel-valid on the other), bcfill just having its dead-column stripes 
 cleaner image to scribble on). So `auto` draws on the bcfill cutout where it exists, else the
 standard cutout; `--variant bcfill`/`standard` restrict to one tree.
 
+### Dataset QC subplots (`scripts/make_dataset_subplots.py`) — auto-rebuilt with every mask
+
+```bash
+uv run python scripts/make_dataset_subplots.py --sample slacs_gold           # all lenses
+uv run python scripts/make_dataset_subplots.py --lens J1451-0239 --filt f814W --force
+```
+
+Assembles the four FITS products a lens model actually consumes — sci, noise, PSF, mask — into
+an `al.Imaging`, applies the mask, and writes PyAutoLens's own 3x3
+`aplt.subplot_imaging_dataset` as `{prefix}_dataset.png` beside the sci it read. **It is the
+only QC PNG in the pipeline that shows the MASK laid over the data/noise/S-N**, i.e. what the
+fit will really see. Provenance per (sample, lens, filt) in `info/lens_dataset_subplots.json`;
+all four components are required, so an unmasked band is reported and skipped, not an error.
+
+- **sci/noise/mask are resolved per-component across BOTH cutout trees (`--variant auto`)** —
+  they legitimately differ (the hand-drawn mask lands in `data/cutouts_bcfill/` for ACS/WFPC2,
+  in `data/cutouts/` for f160W and gallery) and the two trees share crop geometry exactly, so
+  mixing is valid. **The psf is resolved separately, through `cutout_paths.psf_cutout_dir()`**,
+  and therefore obeys neither `--variant` nor `--size`: one stored kernel per band is the same
+  file whichever tree holds it, so restricting the search would report it missing rather than
+  read the one that exists. (`--variant standard` on an ACS lens consequently reports only the
+  *mask* missing, which is real — that mask is in the bcfill tree.)
+- Panels use the pipeline's own look (inferno + `PercentileInterval(99)` + `AsinhStretch(0.1)`)
+  via an `Axes.imshow` patch, since autolens's vendored plotter only knows linear/log norms; the
+  dedicated log10 panels stay log10.
+- **`make_masks.py` regenerates this PNG automatically for every band it writes a mask to**
+  (`--no-dataset-subplot` opts out), so the subplot always describes the mask on disk rather
+  than a previous draw. The hook is deliberately best-effort — the hand-drawn mask is the
+  non-regenerable product, so a plotting failure prints the retry command and is swallowed
+  rather than costing a mask that was just drawn. `make_arc_masks.py` does **not** trigger it:
+  its product is `cutout_[cr_]mask_arcs.fits`, which the subplot doesn't read.
+
 ## Image positions (`scripts/make_positions.py`, `scripts/run_positions_all.sh`)
 
 ```bash
