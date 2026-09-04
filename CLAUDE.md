@@ -200,7 +200,7 @@ data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled/<sample>/<lens>/<filter>/      ← final products (<prefix>_cr_*/_nocrrej_* sci+wht)
-  cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits
+  cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits (PSF only where there is no bcfill tree — see PSF generation)
   cutouts_<S>arcsec/<sample>/...          ← the same stamps cut at a non-default --size (see Cutouts)
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
@@ -588,11 +588,15 @@ noise FITS (from the weight map), and a 3-panel PNG.
   header. **A 20″ set exists for all three samples alongside the 12″ one** (2026-08-04; 90 +
   34 + 33 products, 0 failures). PSF kernels are *not* duplicated per size — the kernel is
   trimmed by amplitude, so it's a property of the band, and a size-variant stamp pairs with
-  the same `cutout_[cr_]psf.fits` from the default tree. **`data/cutouts/` (12″) is the tree
+  the same `cutout_[cr_]psf.fits` from the default tree. They *are* **variant-placed**
+  (2026-09-04): `cutout_paths.psf_cutout_dir()` puts the one kernel per band in the **bcfill**
+  cutout dir wherever that reduction exists, else the standard one — see *PSF generation*.
+  **`data/cutouts/` (12″) is the tree
   tracked in git**, made the pipeline default 2026-08-11 (swapped in place from the old 20″
   default, incl. the 422 `cutout_[cr_]psf*.fits`/mosaic-panel files `make_psf.py` and
-  `make_psf_mosaics.py` hardcode into `data/cutouts/`/`data/mosaics/` rather than going
-  through `cutout_paths.py`) because it's what `scripts/make_masks.py` targets and what
+  `make_psf_mosaics.py` then hardcoded into `data/cutouts/`/`data/mosaics/` rather than going
+  through `cutout_paths.py` — the PSF half of that now goes through `psf_cutout_dir()`)
+  because it's what `scripts/make_masks.py` targets and what
   downstream modelling reads. Other size variants (now including `data/cutouts_20arcsec/`)
   and their QC JSONs are gitignored (regenerable in one runner call, and the tree is ~316 MB,
   mostly PNGs whose size follows the figure, not the stamp) — **unless a tree carries
@@ -849,9 +853,36 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
   35/41/51; block-reduced from the in-memory oversampled ePSF, which is not itself written to
   disk — nothing reads it back), **`psf.png`** (4-panel QA: star montage · kernel linear ·
   kernel **log** · radial profile).
-- **`data/cutouts/<sample>/<lens>/<filt>/`** (modelling-ready): **`cutout_[cr_]psf.fits`** —
+- **the band's cutout dir** (modelling-ready): **`cutout_[cr_]psf.fits`** —
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
   radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
+
+  **Which cutout dir is `cutout_paths.psf_cutout_dir()`'s call, not the caller's**
+  (2026-09-04): the **bcfill** tree wherever that reduction exists —
+  `data/cutouts_bcfill/<sample>/<lens>/<filt>/`, i.e. ACS f814W/f555W + WFPC2 f606W in
+  `slacs_gold`/`slacs_other` — else `data/cutouts/<...>/` (WFC3/IR f160W, which has no bad
+  columns to fill, and all of `gallery`). **308 kernel/err/analytic files were moved into the
+  bcfill tree on 2026-09-04**; 114 stayed. The point is that the four products a fit consumes
+  — sci, noise, **psf**, mask — then sit together in the tree that is actually modelled.
+  - It is a **placement** rule, not duplication: still exactly one kernel per band, and the
+    same file either way. `make_psf.py` builds it from `data/drizzled/` (the standard mosaic)
+    in both cases — so a bcfill-placed kernel is not a separately-measured bcfill PSF.
+    **Building from `data/drizzled_bcfill/` instead was measured (2026-09-04) and is not
+    worth it**: half the products come out bit-identical (no PSF star's stamp touches a
+    filled column), the rest differ by ≈1× the kernel's own bootstrap error in the direction
+    of a *bias* (interpolating across a PSF core, a sharp ridge, is exactly where the fill's
+    local-linearity assumption fails) — and the bcfill tree has **no no-CR pass**, which the
+    empirical build depends on (+74% stars). The injected tier is structurally identical
+    (noiseless injected frames ⇒ dropping frames doesn't bias the drizzle mean; 1 of 60
+    products has any zero-weight pixel within 1.5″ of the lens). → memory:
+    psf_from_bcfill_no_gain
+  - It is **orthogonal to `--size`**: `psf_cutout_dir()` deliberately takes no size and always
+    resolves in the default-size trees, so a `--size 20` stamp still pairs with the one kernel.
+  - Every writer and reader goes through it: `make_psf.py`, `make_psf_inject.py` (incl.
+    `_promote`'s move-aside), `make_psf_err_injected.py`, `make_cutouts.py --psf-err`,
+    `make_psf_mosaics.py`, and `make_dataset_subplots.py` (which resolves the psf component
+    through it, so the psf obeys neither its `--variant` nor its `--size`). Never construct
+    `data/cutouts/<...>_psf.fits` by hand — for ACS/WFPC2 it is no longer there.
 
 For **empirical** builds, `make_psf.py` also writes a per-pixel **PSF error map** alongside
 each kernel — `psf_kernel_err.fits` (full) and `cutout_[cr_]psf_err.fits` (trimmed, same grid
@@ -1028,7 +1059,8 @@ way this is the model tier and injection is what it needs), `promote=False` for 
 `empirical` primary. `make_psf.py` calls it with `promote=True` explicitly right after
 building a model-tier product, so:
 
-- **`data/psf/<...>/psf_kernel.fits` / `data/cutouts/<...>/cutout_[cr_]psf.fits`** — the
+- **`data/psf/<...>/psf_kernel.fits` / `<psf cutout dir>/cutout_[cr_]psf.fits`** (the cutout
+  dir being `psf_cutout_dir()`'s — bcfill where it exists; see *PSF generation*) — the
   **canonical** files, now the drizzle-broadened injected kernel (`PSFINJ=True` in the
   header) for every model-tier lens.
 - **`data/psf/<...>/psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits`** — the

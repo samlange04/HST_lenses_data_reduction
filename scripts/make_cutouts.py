@@ -584,7 +584,13 @@ def main():
     # --corr-factor). PyAutoLens has no PSF-error input, so fold the PSF error map built by
     # make_psf.py into the noise: sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)).
     if a.psf_err:
-        psf_err_path = os.path.join(output_dir, f'{prefix}_psf_err.fits')
+        # The PSF products are variant-placed, not per-tree: resolve them through
+        # cutout_paths.psf_cutout_dir rather than assuming this run's own output_dir, so a
+        # standard-tree cut still finds the kernel that lives in the bcfill dir (and an
+        # --output one-off still folds in the canonical error map).
+        psf_err_path = os.path.join(
+            cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt),
+            f'{prefix}_psf_err.fits')
         if os.path.exists(psf_err_path):
             with fits.open(psf_err_path) as hdul:
                 psf_err_kernel = np.asarray(hdul[0].data, dtype=np.float64)

@@ -27,6 +27,12 @@ Outputs (data/psf/<sample>/<lens>/<filt>/):
                         ePSF, which is not itself written to disk -- nothing reads it back).
   * psf.png          -- QA panel: selected-star montage, the kernel, and a radial profile.
 
+The trimmed, modelling-ready kernel (cutout_[cr_]psf.fits, plus its _err/_analytic
+siblings) goes to cutout_paths.psf_cutout_dir(): the bcfill cutout dir wherever that
+reduction exists (ACS f814W/f555W, WFPC2 f606W) and data/cutouts/ otherwise (f160W,
+gallery). One kernel per band either way -- it is placed beside the sci/noise/mask a fit
+consumes, not duplicated per tree, and not keyed on stamp size.
+
 For a MODEL-tier build (method_used starts with 'model'), this auto-chains into
 make_psf_inject.run_injection(..., promote=True): the drizzle-broadened injected kernel
 becomes the canonical psf_kernel.fits / cutout_[cr_]psf.fits, and the analytic model this
@@ -81,6 +87,7 @@ import mast_target_names
 from make_cutouts import find_products, _has_products, catalogue_coord_for
 import psf_models
 import info_json
+import cutout_paths
 
 
 # ── Per-instrument defaults ─────────────────────────────────────────────────────
@@ -776,7 +783,7 @@ def main():
                         "forces the star build (fails if too few); 'model' forces STDPSF.")
     p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
                    help="amplitude fraction of peak at which the trimmed modelling kernel "
-                        "(data/cutouts/<...>_psf.fits) is cut. Default 1e-3 -- an "
+                        "(<psf cutout dir>/<...>_psf.fits) is cut. Default 1e-3 -- an "
                         "amplitude criterion, not enclosed-energy (which under-sizes).")
     p.add_argument('--n-boot', dest='n_boot', type=int, default=None,
                    help='bootstrap resamples for the empirical PSF error map (default 100; '
@@ -1007,7 +1014,7 @@ def main():
 
     # Full kernel (whole ePSF footprint binned to image scale) is the archival product in
     # data/psf/. The trimmed, amplitude-sized kernel for modelling goes next to the science
-    # stamp in data/cutouts/ (see trim_kernel_to_amplitude / the --trim-threshold flag).
+    # stamp (see trim_kernel_to_amplitude / the --trim-threshold flag).
     kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
     kernel, pedestal_frac = subtract_pedestal(kernel)
     if abs(pedestal_frac) >= 1e-4:
@@ -1068,7 +1075,7 @@ def main():
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (a.lens, 'lens')
     khdr['PSFFILT'] = (a.filt, 'filter')
-    khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in data/cutouts/)')
+    khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in the psf cutout dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
@@ -1076,8 +1083,11 @@ def main():
              os.path.join(output_dir, 'psf.png'),
              title=f'{a.lens}  {a.filt}  [{method_used}]  ({n_stars} stars)')
 
-    # ── Write the trimmed modelling kernel to data/cutouts/ (pass-matched prefix) ─
-    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample, a.lens, a.filt)
+    # ── Write the trimmed modelling kernel to the cutout tree (pass-matched prefix) ─
+    # cutout_paths.psf_cutout_dir puts it in the bcfill cutout dir wherever that reduction
+    # exists (so sci/noise/psf/mask sit together in the tree that is modelled), else the
+    # standard one -- one kernel per band either way, never duplicated across trees.
+    cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt)
     os.makedirs(cutouts_dir, exist_ok=True)
     prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
     thdr = khdr.copy()
