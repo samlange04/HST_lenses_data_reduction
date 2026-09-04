@@ -44,6 +44,12 @@ f160W (WFC3/IR has no bad columns) or the gallery sample. So the default is:
     --variant bcfill: bcfill tree only (skip lenses/filters with no bcfill cutout).
     --variant standard: standard tree only (the historic behaviour, data/cutouts/).
 
+Every mask written also REGENERATES that band's `{prefix}_dataset.png` QC subplot
+(scripts/make_dataset_subplots.py), so the one PNG that shows the mask laid over
+data/noise/S-N always describes the mask currently on disk instead of a previous draw. It is
+best-effort: a failure (e.g. no PSF kernel for that band yet) is reported and the mask is
+kept. --no-dataset-subplot skips it.
+
 This is a manual, one-lens-at-a-time tool (not a batch driver): each lens blocks on its own
 Tk window until you press Esc. A lens that already has a mask is skipped so a run resumes
 across a sample; --force redraws.
@@ -464,10 +470,43 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     return scribbled, pixel_scales, sci_hdr, brush_width, start_radius, source_label
 
 
+def regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass):
+    """Rebuild this band's `{prefix}_dataset.png` (scripts/make_dataset_subplots.py) so the
+    QC subplot -- the only pipeline PNG that shows the MASK laid over the data/noise/S-N a
+    fit actually consumes -- always matches the mask just written, rather than silently
+    continuing to describe the previous draw.
+
+    Best-effort and never fatal. The hand-drawn mask is the non-regenerable product here and
+    the subplot is not, so any failure (missing PSF kernel for that band, an autolens
+    plotting error) is reported with the command to retry and then swallowed -- it must never
+    cost a mask that has just been drawn by hand.
+
+    Components are resolved across BOTH cutout trees regardless of this script's own
+    --variant, because they legitimately live in different ones: the mask (and usually the
+    sci/noise) in bcfill, while the PSF kernel exists only in the standard tree (it is
+    trimmed by amplitude, a property of the band -- see cutout_paths.py). Restricting the
+    search would report a missing PSF on every ACS/WFPC2 lens.
+    """
+    try:
+        import make_dataset_subplots as mds
+        trees = [(v, cutout_paths.cutouts_root(ws_path, size, variant=v))
+                 for v in ('bcfill', '')]
+        tree_order = [v for v, _ in trees]
+        for t_lens, t_filt, dirs_by_variant in mds.discover_targets(trees, sample, lens, filt):
+            mds.process(t_lens, t_filt, sample, dirs_by_variant, tree_order, drizzle_pass,
+                        force=True, check_noise_map=False)
+    except Exception as exc:                    # deliberately broad -- see docstring
+        print(f"  NOTE: dataset subplot not regenerated for {lens} {filt} ({exc!r}). "
+              f"The mask is written; rebuild the subplot with\n"
+              f"    uv run python scripts/make_dataset_subplots.py "
+              f"--sample {sample} --lens {lens} --filt {filt} --force")
+
+
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                       broadcast=False, brush_radius=6, brush_width=None, display='snr',
                       stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
-                      subtract_radial=False, side_by_side=True):
+                      subtract_radial=False, side_by_side=True,
+                      size=cutout_paths.DEFAULT_SIZE, dataset_subplot=True):
     """Draw a mask once for one lens, on its best/forced band. By default the mask is written
     for THAT BAND ONLY; `broadcast=True` also writes it to the lens's other bands by WCS
     reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir), bcfill
@@ -550,6 +589,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
             entry['brush_width'] = round(brush_width, 6)
             entry['brush_radius_px'] = start_radius
         info_json.update(MASKS_JSON, sample, lens, filt, entry)
+        if dataset_subplot:
+            regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass)
     return True
 
 
@@ -626,6 +667,11 @@ def main():
                         'is OFF by default, since a contaminant mask is normally judged '
                         'against the real sky). Display only -- the mask is built from brush '
                         'positions, so it cannot change what a stroke masks')
+    p.add_argument('--dataset-subplot', action=argparse.BooleanOptionalAction, default=True,
+                   help='after writing each mask, regenerate that band\'s '
+                        '{prefix}_dataset.png QC subplot (scripts/make_dataset_subplots.py) '
+                        'so it shows the mask just drawn rather than the previous one '
+                        '(default on; best-effort -- a failure never costs the mask)')
     a = p.parse_args()
 
     # Ordered by display preference: bcfill first (cleaner image), standard second.
@@ -656,7 +702,8 @@ def main():
                              brush_width=a.brush_width, display=a.display, stretch=a.stretch,
                              vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
                              asinh_a=a.asinh_a, subtract_radial=a.subtract_radial,
-                             side_by_side=a.side_by_side):
+                             side_by_side=a.side_by_side, size=a.size,
+                             dataset_subplot=a.dataset_subplot):
             made += 1
         else:
             skipped += 1

@@ -7,10 +7,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.113229,
+                "frac_masked": 0.088194,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0008-0004/f814W/cutout_cr_dataset.png"
             }
@@ -22,10 +22,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.04349,
+                "frac_masked": 0.074236,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0029-0055/f814W/cutout_cr_dataset.png"
             }
@@ -37,10 +37,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.064236,
+                "frac_masked": 0.062656,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0157-0056/f814W/cutout_cr_dataset.png"
             }
@@ -52,10 +52,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.094201,
+                "frac_masked": 0.097101,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0216-0813/f814W/cutout_cr_dataset.png"
             }
@@ -67,10 +67,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.046979,
+                "frac_masked": 0.091198,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0252+0039/f814W/cutout_cr_dataset.png"
             }
@@ -82,10 +82,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.038125,
+                "frac_masked": 0.032431,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0330-0020/f814W/cutout_cr_dataset.png"
             }
@@ -97,10 +97,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.003455,
+                "frac_masked": 0.007674,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0728+3835/f814W/cutout_cr_dataset.png"
             }
@@ -112,10 +112,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.153854,
+                "frac_masked": 0.149757,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0737+3216/f814W/cutout_cr_dataset.png"
             }
@@ -127,10 +127,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.032465,
+                "frac_masked": 0.03934,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f814W/cutout_cr_dataset.png"
             }
@@ -142,10 +142,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.0,
+                "frac_masked": 0.023455,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0841+3824/f814W/cutout_cr_dataset.png"
             }
@@ -157,10 +157,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.096823,
+                "frac_masked": 0.179931,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0903+4116/f814W/cutout_cr_dataset.png"
             }
@@ -172,10 +172,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.039497,
+                "frac_masked": 0.084479,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0912+0029/f814W/cutout_cr_dataset.png"
             }
@@ -187,10 +187,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.088403,
+                "frac_masked": 0.069462,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0936+0913/f814W/cutout_cr_dataset.png"
             }
@@ -202,10 +202,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.078854,
+                "frac_masked": 0.076267,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0946+1006/f814W/cutout_cr_dataset.png"
             }
@@ -217,10 +217,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.04809,
+                "frac_masked": 0.07375,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0956+5100/f814W/cutout_cr_dataset.png"
             }
@@ -232,10 +232,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.008229,
+                "frac_masked": 0.016771,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0959+0410/f814W/cutout_cr_dataset.png"
             }
@@ -247,10 +247,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.079549,
+                "frac_masked": 0.440885,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1020+1122/f814W/cutout_cr_dataset.png"
             }
@@ -262,10 +262,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.01342,
+                "frac_masked": 0.012587,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1023+4230/f814W/cutout_cr_dataset.png"
             }
@@ -277,10 +277,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.028924,
+                "frac_masked": 0.022153,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1029+0420/f814W/cutout_cr_dataset.png"
             }
@@ -292,10 +292,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.008108,
+                "frac_masked": 0.00283,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1032+5322/f814W/cutout_cr_dataset.png"
             }
@@ -307,10 +307,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.011024,
+                "frac_masked": 0.033767,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1142+1001/f814W/cutout_cr_dataset.png"
             }
@@ -322,10 +322,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.036302,
+                "frac_masked": 0.166545,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1143-0144/f814W/cutout_cr_dataset.png"
             }
@@ -337,10 +337,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.084722,
+                "frac_masked": 0.077153,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1205+4910/f814W/cutout_cr_dataset.png"
             }
@@ -352,10 +352,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.015069,
+                "frac_masked": 0.016406,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1213+6708/f814W/cutout_cr_dataset.png"
             }
@@ -367,10 +367,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.0,
+                "frac_masked": 0.015816,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1218+0830/f814W/cutout_cr_dataset.png"
             }
@@ -382,10 +382,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.037865,
+                "frac_masked": 0.039948,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1250+0523/f814W/cutout_cr_dataset.png"
             }
@@ -397,10 +397,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.017135,
+                "frac_masked": 0.022969,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1402+6321/f814W/cutout_cr_dataset.png"
             }
@@ -412,10 +412,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.0,
+                "frac_masked": 0.026892,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1420+6019/f814W/cutout_cr_dataset.png"
             }
@@ -427,10 +427,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.050573,
+                "frac_masked": 0.063212,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1430+4105/f814W/cutout_cr_dataset.png"
             }
@@ -442,10 +442,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.001997,
+                "frac_masked": 0.002778,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1432+6317/f814W/cutout_cr_dataset.png"
             }
@@ -457,10 +457,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.079757,
+                "frac_masked": 0.148108,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1451-0239/f814W/cutout_cr_dataset.png"
             }
@@ -472,10 +472,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.0875,
+                "frac_masked": 0.091215,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1525+3327/f814W/cutout_cr_dataset.png"
             }
@@ -487,10 +487,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.067031,
+                "frac_masked": 0.090122,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1627-0053/f814W/cutout_cr_dataset.png"
             }
@@ -502,10 +502,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.073854,
+                "frac_masked": 0.091771,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J1630+4520/f814W/cutout_cr_dataset.png"
             }
@@ -517,10 +517,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.066389,
+                "frac_masked": 0.073333,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J2238-0754/f814W/cutout_cr_dataset.png"
             }
@@ -532,10 +532,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.032274,
+                "frac_masked": 0.043194,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J2300+0022/f814W/cutout_cr_dataset.png"
             }
@@ -547,10 +547,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.0,
+                "frac_masked": 0.004479,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J2303+1422/f814W/cutout_cr_dataset.png"
             }
@@ -562,10 +562,10 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.035503,
+                "frac_masked": 0.045156,
                 "sci_variant": "bcfill",
                 "noise_variant": "bcfill",
-                "psf_variant": "standard",
+                "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J2341+0000/f814W/cutout_cr_dataset.png"
             }
