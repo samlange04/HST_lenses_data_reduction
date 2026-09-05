@@ -205,14 +205,17 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
         "  Scribbler GUI: paint ONLY the arcs / multiple images of the source.",
         "    Everything you do NOT paint is masked OUT (the deflector included) -- this is",
         "    the OPPOSITE polarity to make_masks.py, which paints what to remove.",
+        "    keys '1' = GREEN brush, paint arc   |   '2' = RED brush, un-paint (erase)",
     ]
-    painted, src_ps, src_hdr, brush_width, start_radius, source_label = make_masks.draw_mask_gui(
+    (painted, erased, src_ps, src_hdr, brush_width, start_radius,
+     source_label) = make_masks.draw_mask_gui(
         display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
         display, stretch, vmin_percent, vmax_percent, asinh_a,
         subtract_radial=subtract_radial, side_by_side=side_by_side,
         prompt=prompt, overlay=overlay)
 
-    arc_region = np.asarray(painted, dtype=bool)     # painted = the arcs to KEEP
+    # painted = the arcs to KEEP; the red brush trims an over-painted stroke back off it.
+    arc_region = np.asarray(painted, dtype=bool) & ~np.asarray(erased, dtype=bool)
     if not arc_region.any():
         print(f"  nothing painted -- no arc mask written for {lens} (an empty arc region "
               f"would mask out the entire stamp)")

@@ -647,7 +647,8 @@ noise FITS (from the weight map), and a 3-panel PNG.
 uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
 uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
 uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-uv run python scripts/make_masks.py --lens J0008-0004 --broadcast      # share one draw
+uv run python scripts/make_masks.py --sample slacs_gold --filt f555W   # review f814W's mask
+uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
 ```
 
 Interactive, manual tool — not part of the automated per-lens pipeline above. For each lens
@@ -687,27 +688,56 @@ other band or sample masked yet. Two per-lens notes:
 - **J1020+1122 f814W needs redrawing** (`n_excluded_px` 25395, ~44% of the stamp) — flagged
   by the user, not yet redone; `make_masks.py --lens J1020+1122 --filt f814W --force`.
 
-**One draw per BAND; `--broadcast` shares it across bands.** Each run draws on one band —
-the highest-S/N available (priority `f814W>f606W>f555W>f160W>…`, shared with `make_positions`
-via `make_masks.pick_display_filt`) unless `--filt` forces it — and by default writes the mask
-for **that band only**; run again with `--filt <band>` for the next, the skip check being
-per-band so a sample sweep resumes cleanly. **This reverses the 2026-09-03 broadcast-by-default
-model** (changed the same day, at the user's call): a mask marks a *sky* region, so sharing it
-is well-defined, but what a mask should *exclude* is not in practice band-independent — a
-contaminant can be bright in one filter and absent in another, and each band's depth and PSF
-move where the sensible boundary falls. `--broadcast` (and, for anything that still passes it,
-the now-default `--no-broadcast`) keeps the shared-draw behaviour, and it remains a rigorous
-**per-pixel WCS reprojection**
+**One draw per BAND; the next band starts from a REVIEWED proposal, not a blank canvas
+(`--propose-from`, default `auto`, added 2026-09-04).** Each run draws on one band — the
+highest-S/N available (priority `f814W>f606W>f555W>f160W>…`, shared with `make_positions`
+via `make_masks.pick_display_filt`) unless `--filt` forces it — and writes the mask for
+**that band only**; run again with `--filt <band>` for the next, the skip check being
+per-band so a sample sweep resumes cleanly. **Per-band drawing reverses the 2026-09-03
+broadcast-by-default model** (changed the same day, at the user's call): a mask marks a *sky*
+region, so sharing it is well-defined, but what a mask should *exclude* is not in practice
+band-independent — a contaminant can be bright in one filter and absent in another, and each
+band's depth and PSF move where the sensible boundary falls.
+
+That is why a mask already drawn for another band is **proposed and reviewed** rather than
+written out blind. `find_proposal_mask` reprojects it onto the band about to be drawn and
+`draw_mask_gui` shows a **3-panel display** (the 2-panel side-by-side generalised to N):
+*radial-subtracted* (where the arcs are visible at all, so you can see what the inherited mask
+may be clipping) | *as-observed* in this band (the contaminant's real extent and the galaxy
+envelope) | *the proposal APPLIED* — this band with the mask blanked out, i.e. what a fit under
+it would actually keep, derived from the as-observed panel so both share one stretch. The
+proposal's 1-px boundary (`mask_boundary`) is outlined on all three.
+- **Two brushes, from `al.Scribbler`'s two built-in scribble segments** (nothing new to
+  maintain): `'1'` GREEN **adds** to the mask, `'2'` RED **erases** from it, on whichever
+  panel you like. `show_mask()` returns only segment 1, so the code reads `get_scribble_masks()`
+  after the blocking constructor returns. The mask written is
+  `(proposal | painted) & ~erased`. `make_arc_masks.py` inherits the eraser (its arc region
+  is `painted & ~erased`), which is the only change that tool needed.
+- **The decision comes AFTER the GUI closes**, so it is made having seen the mask over this
+  band's own image: `[a]` apply proposal+edits (default), `[d]` keep only what you drew
+  (rejecting the proposal outright), `[s]` skip and write nothing. A non-interactive stdin or
+  Ctrl-C gets `skip` — never a silently-written mask nobody approved.
+- **Source (`auto`)**: the band's **own** existing mask when `--force`-redrawing it (so
+  refining a mask is not redrawing it — this is how to fix J1020+1122 below), else the
+  highest-priority other band that has one. `--propose-from <band>` forces it, `none` disables.
+- `--subtract-radial` is now **tri-state**: on when reviewing a proposal, off when drawing
+  from scratch (a contaminant mask is judged against the real sky), explicit flag always wins.
+- Provenance per band records `source` = `drawn` / `accepted_from_<band>` /
+  `edited_from_<band>` / `reprojected_from_<band>`, plus `proposal_from`, `proposal_px`,
+  `n_added_px`, `n_erased_px`, `n_excluded_px`. **`accepted_from_x` with zero edits is a real,
+  deliberate outcome** and is deliberately distinguishable from a hand-drawn mask that
+  happens to resemble one.
+- **`--broadcast` is the old unreviewed route and is now mutually exclusive with
+  `--propose-from`** (argparse errors; pass `--propose-from none` alongside it) — combining
+  them would write a mask reviewed for f555W back over f814W's own.
+
+Both routes share the same transfer, a rigorous **per-pixel WCS reprojection**
 (`reproject_mask_bool`, nearest-neighbour via `scipy.ndimage.map_coordinates`, source
 sci-header WCS → target sci-header WCS), **not** an array-index copy — because only the 0.05″
 optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely different grid**
 (0.06″/px, 200px vs 240px for a 12″ stamp — a common sky point is ~20px away by index), and only
 reprojection places the mask correctly there (verified: a test box regrids 0.05″→0.06″
-area-preserving, centroid within 0.048″ ≈ sub-pixel). Provenance per band records `source` =
-`drawn` or `reprojected_from_<band>`, plus `n_excluded_px`.
-- **`--broadcast`** opts back into writing every band from one draw. Without it, `--filt`
-  plus `--force` refines a single band without touching the rest — which is now simply the
-  normal mode of operation rather than an escape hatch.
+area-preserving, centroid within 0.048″ ≈ sub-pixel).
 - Per band, the mask is written into that band's **priority tree** (bcfill where a bcfill cutout
   exists — ACS f814W/f555W + WFPC2 f606W; else standard — f160W, gallery, un-bcfilled lenses),
   and a lens is skipped if the *draw band* already has a mask in *either* variant.
@@ -720,7 +750,11 @@ extent and the galaxy envelope are. **You may scribble on either panel**; the tw
 read back and UNIONed onto the single-band mask, so the same stroke lands at the same sky
 position from either side (verified: identical masks from a left-panel and a right-panel
 stroke). Each panel is stretched independently — their dynamic ranges differ by orders of
-magnitude, so a shared scale would flatten one. `make_arc_masks.py` has the same flag, also
+magnitude, so a shared scale would flatten one; the exception is the review mode's third
+panel, derived from the already-rendered as-observed panel precisely *so* the two share one
+stretch and are comparable. The composite is now **N panels** (`fold_panels`, stride
+`panel_n_x + _PANEL_GAP`), the third appearing only when a proposal is under review.
+`make_arc_masks.py` has the same flag, also
 on by default. A panel-labelling title is applied on the first in-axes mouse move, because
 `al.Scribbler` builds its figure and then blocks inside `__init__` — there is no
 post-construction hook.
@@ -871,7 +905,11 @@ measurement, or a source-plane analysis.
   (0.06″/200px vs 0.05″/240px): same sky area to 0.06%, same annulus radii to half a pixel.
 - Everything else — one draw per **band** (`--broadcast` to share it, same default and same
   reasoning as `make_masks.py`), band priority, `--size`/`--variant` routing, skip/`--force`
-  — is `make_masks.py`'s, imported rather than re-implemented. Provenance in
+  — is `make_masks.py`'s, imported rather than re-implemented. It gets the **red erase brush**
+  (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
+  over-painted stroke is trimmed rather than undone whole — but **not** `--propose-from`:
+  reviewing an inherited *arc* region is a different judgement (an arc detected in one filter
+  is often simply absent in another) and is not wired up. Provenance in
   `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
   region over the radial-subtracted image.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts

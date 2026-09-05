@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Interactive GUI mask-making, ONE draw per band (opt-in WCS-reprojected broadcast).
+Interactive GUI mask-making, ONE draw per band, seeded by a REVIEWED mask from another band.
 
 For each lens in a sample, launches PyAutoLens's `Scribbler` GUI over the lens's
 best-available cutout -- the same tool as
@@ -9,21 +9,38 @@ areas to REMOVE from the fit (painted = excluded, everything unpainted = kept; t
 opposite polarity to the autolens_workspace GUI, which scribbles the region to keep), then
 writes the result as cutout_[cr_]mask.fits alongside that cutout's sci/noise/psf products.
 
-ONE DRAW PER BAND BY DEFAULT; --broadcast SHARES IT. Each run draws on ONE band -- the
-highest-S/N one available (f814W > f606W > f555W > f160W > ...) unless --filt forces it --
-and by default writes the mask for THAT BAND ONLY. Run again with --filt <band> to do the
-next band; the skip check is per-band, so a sample sweep resumes cleanly.
+ONE DRAW PER BAND. Each run draws on ONE band -- the highest-S/N one available (f814W >
+f606W > f555W > f160W > ...) unless --filt forces it -- and writes the mask for THAT BAND
+ONLY. Run again with --filt <band> to do the next band; the skip check is per-band, so a
+sample sweep resumes cleanly. Per-band drawing is the rule because what a mask should exclude
+is NOT in practice band-independent: a contaminant can be bright in one filter and absent in
+another, and each band's own depth and PSF change where the sensible boundary falls.
 
-Pass --broadcast to instead write the one drawn mask to every band of the lens. A mask marks
-a sky region, which is the same physical region in every band, so this is well-defined -- and
-the transfer is a rigorous per-pixel WCS reprojection (nearest-neighbour, source sci-header
-WCS -> target sci-header WCS), NOT an array-index copy: the 0.05" optical bands
-(f814W/f606W/f555W) share a grid to <1px so it is nearly identity, but f160W is a genuinely
-different grid (0.06"/px, 200px vs 240px for a 12" stamp -- a common sky point sits ~20px away
-by index), and only reprojection places the mask correctly there. Per-band drawing is the
-default because what a mask should exclude is NOT in practice band-independent: a contaminant
-can be bright in one filter and absent in another, and each band's own depth and PSF change
-where the sensible boundary falls.
+THE NEXT BAND STARTS FROM A REVIEWED PROPOSAL, NOT A BLANK CANVAS (--propose-from, default
+'auto'). A mask already drawn for another band of this lens is reprojected onto the band
+about to be drawn and shown for approval, in a 3-panel display:
+
+    LEFT   radial-subtracted -- where the arcs are visible at all, so you can see what the
+           inherited mask may be clipping;
+    MIDDLE as-observed -- the contaminant's real extent and the galaxy envelope in THIS band;
+    RIGHT  the proposal APPLIED -- this band with the mask blanked out, i.e. exactly what a
+           fit under it would keep.
+
+The proposal's 1-px boundary is outlined on all three. You then edit it with two brushes --
+'1' GREEN adds to the mask, '2' RED erases from it, scribbling on whichever panel you like --
+and on closing the GUI choose to [a]pply proposal+edits, keep only what you [d]rew (rejecting
+the proposal outright), or [s]kip the band. Source: the band's own existing mask when
+--force-redrawing it (so refining a mask does not mean redrawing it), else the highest-priority
+other band that has one. --propose-from <band> forces the source, --propose-from none draws on
+a blank canvas.
+
+--broadcast (mutually exclusive with the above) is the old unreviewed route: write the one
+drawn mask to every band of the lens, sight-unseen. Both share the same transfer -- a rigorous
+per-pixel WCS reprojection (nearest-neighbour, source sci-header WCS -> target sci-header WCS),
+NOT an array-index copy: the 0.05" optical bands (f814W/f606W/f555W) share a grid to <1px so it
+is nearly identity, but f160W is a genuinely different grid (0.06"/px, 200px vs 240px for a 12"
+stamp -- a common sky point sits ~20px away by index), and only reprojection places the mask
+correctly there.
 
 Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths.DEFAULT_SIZE)
 -- the tree these hand-drawn masks are meant for and the only size-variant tree tracked in
@@ -59,7 +76,9 @@ Usage:
     uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-    uv run python scripts/make_masks.py --lens J0008-0004 --broadcast       # share one draw
+    uv run python scripts/make_masks.py --sample slacs_gold --filt f555W    # review f814W's
+    uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
+    uv run python scripts/make_masks.py --lens J0008-0004 --broadcast --propose-from none
     uv run python scripts/make_masks.py --sample slacs_gold --force        # redraw everything
 """
 
@@ -238,6 +257,21 @@ def radial_median_subtract(data_native):
     return a - prof[r_bin]
 
 
+def mask_boundary(m):
+    """1-pixel inner boundary of a boolean mask, for outlining a proposed mask in the display.
+
+    Inner (`m & ~erosion(m)`), so the outline lies ON masked pixels -- it therefore survives
+    the proposal panel, where the mask interior is blanked to the display floor. `border_value
+    =1` treats outside-the-array as masked, so a mask running off the stamp edge is not
+    outlined along the frame itself.
+    """
+    from scipy.ndimage import binary_erosion
+    m = np.asarray(m, dtype=bool)
+    if not m.any():
+        return m
+    return m & ~binary_erosion(m, np.ones((3, 3), dtype=bool), border_value=1)
+
+
 def central_disc(shape, pixel_scales, radius_arcsec):
     """Bool array, True inside a disc of `radius_arcsec` at the stamp centre.
 
@@ -375,11 +409,127 @@ def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
     return vals.reshape(ny, nx) > 0.5
 
 
+def find_proposal_mask(filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from,
+                       force=False):
+    """Find a mask already drawn for this lens to PROPOSE as the starting point for the band
+    about to be drawn, reprojected onto that band's grid. Returns (source_filt, bool array)
+    or (None, None).
+
+    This is the reviewed alternative to `--broadcast`: instead of writing another band's mask
+    out blind, it is shown for approval and can be edited or rejected (see draw_mask_gui and
+    process_lens_mask). Source preference, `propose_from='auto'`:
+      1. the draw band's OWN existing mask, when there is one -- i.e. a `--force` redraw
+         starts from the mask being replaced, so refining it does not mean redrawing it;
+      2. otherwise the highest-priority OTHER band of this lens that has a mask
+         (`_BAND_PRIORITY`, so f814W's mask is what usually seeds f555W/f160W).
+    An explicit `propose_from='<band>'` restricts the search to that band; 'none' is handled
+    by the caller (no search at all).
+
+    The transfer is the same rigorous per-pixel WCS reprojection `--broadcast` uses -- near
+    identity across the 0.05" optical bands, a real ~20px regrid onto f160W's 0.06" grid.
+    """
+    if propose_from in (None, 'none'):
+        return None, None
+    if propose_from == 'auto':
+        others = sorted((f for f in filt_dirs if f != display_filt),
+                        key=lambda f: (_band_rank(f), f))
+        candidates = ([display_filt] if force else []) + others
+    else:
+        candidates = [propose_from]
+
+    dst_wcs = WCS(display_hdr).celestial
+    dst_shape = (display_hdr['NAXIS2'], display_hdr['NAXIS1'])
+    for cand in candidates:
+        for _variant, cutout_dir in filt_dirs.get(cand, []):
+            prefix = find_prefix(cutout_dir, drizzle_pass)
+            if prefix is None:
+                continue
+            mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
+            if not os.path.exists(mask_path):
+                continue
+            src_bool = np.asarray(fits.getdata(mask_path), dtype=bool)
+            if cand == display_filt:
+                return cand, src_bool                 # same grid -- no reprojection needed
+            # The mask FITS is a bare array (aplt.fits_array), so its band's sci header
+            # carries the WCS -- exactly as the --broadcast path resolves the target grid.
+            src_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+            return cand, reproject_mask_bool(src_bool, WCS(src_hdr).celestial,
+                                             dst_wcs, dst_shape)
+    return None, None
+
+
+def confirm_proposal(lens, filt, source_filt, n_prop, n_add, n_erase, n_final, n_drawn):
+    """Ask what to do with a reviewed proposal, AFTER the GUI has been closed -- so the
+    decision is made having actually seen the mask over this band's own image.
+
+    Three outcomes, and an empty answer means the common one (apply):
+      apply  -- write proposal + green additions - red erasures (the reviewed mask);
+      drawn  -- reject the proposal outright and keep only what was painted green;
+      skip   -- write NOTHING, leaving the band pending for a later run, which is also
+                what a non-interactive stdin or Ctrl-C gets (never silently write a mask
+                nobody approved).
+    """
+    print(f"\n  {lens} {filt}: proposal from {source_filt} = {n_prop}px; "
+          f"you added {n_add}px, erased {n_erase}px")
+    print(f"    [a] apply proposal + your edits  -> {n_final}px excluded   (default)")
+    print(f"    [d] drawn only, reject the proposal -> {n_drawn}px excluded")
+    print(f"    [s] skip this band, write nothing")
+    try:
+        ans = input("  choose [A]/d/s: ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return 'skip'
+    if ans in ('', 'a', 'apply', 'y'):
+        return 'apply'
+    if ans in ('d', 'drawn', 'r', 'reject'):
+        return 'drawn'
+    return 'skip'
+
+
+#: positional words used to label the composited panels in the figure title.
+_PANEL_POSITIONS = {1: [''], 2: ['LEFT', 'RIGHT'], 3: ['LEFT', 'MIDDLE', 'RIGHT'],
+                    4: ['1st', '2nd', '3rd', '4th']}
+
+
+def fold_panels(scribbled, n_panels, panel_n_x):
+    """Fold a scribble drawn on the horizontally-composited display back onto one band grid.
+
+    Every panel shows the SAME sky at the same pixel grid, so a stroke on any of them means
+    the same thing: the per-panel slices are OR-ed together. Panels are laid out at a stride
+    of `panel_n_x + _PANEL_GAP` (see draw_mask_gui). Returns (folded, px_per_panel).
+    """
+    scribbled = np.asarray(scribbled, dtype=bool)
+    if n_panels <= 1:
+        return scribbled, [int(scribbled.sum())]
+    step = panel_n_x + _PANEL_GAP
+    out = np.zeros((scribbled.shape[0], panel_n_x), dtype=bool)
+    per_panel = []
+    for i in range(n_panels):
+        s = scribbled[:, i * step: i * step + panel_n_x]
+        per_panel.append(int(s.sum()))
+        out |= s
+    return out, per_panel
+
+
 def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_width,
                   display, stretch, vmin_percent, vmax_percent, asinh_a,
-                  subtract_radial=False, side_by_side=True, prompt=None, overlay=None):
+                  subtract_radial=False, side_by_side=True, prompt=None, overlay=None,
+                  proposal=None, proposal_label='proposed mask'):
     """Run the Scribbler GUI once on the chosen band. Returns
-    (scribbled_bool, pixel_scales, sci_header, brush_width, start_radius, source_label).
+    (painted, erased, pixel_scales, sci_header, brush_width, start_radius, source_label).
+
+    TWO BRUSHES. al.Scribbler carries two independent scribble segments; this pipeline uses
+    them as ADD (segment '1', GREEN, the default) and ERASE (segment '2', RED) -- press '1'
+    and '2' in the GUI to switch. `painted` is the green scribble and `erased` the red one;
+    the caller decides what they mean (make_masks: mask = (proposal | painted) & ~erased).
+    Erasing is what makes an inherited mask editable rather than all-or-nothing.
+
+    `proposal` (bool array on this band's grid, optional) is a mask inherited from another
+    band, shown for review: its 1-px boundary is burned into EVERY panel (so you can see
+    where its edge falls against the real structure of this band), and an extra final panel
+    shows this band as-observed with the proposal APPLIED -- interior blanked to the display
+    floor -- i.e. what a fit under that mask would actually keep. It is derived from the
+    already-rendered as-observed panel so both share one stretch and are directly comparable.
 
     `subtract_radial` shows the deflector's radial-median-subtracted image (see
     radial_median_subtract) -- DISPLAY ONLY, the scribble is read back as pixel positions so
@@ -418,7 +568,7 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     print("    keys:  '=' bigger brush | '-' smaller brush | 'z' undo last | Esc/q done")
 
     base, source_label = load_display_base(display_dir, display_prefix, display, pixel_scales)
-    # Which view(s) to show. Two panels only when there is genuinely something to compare.
+    # Which view(s) to show. Extra panels only when there is genuinely something to compare.
     panels = []
     if subtract_radial:
         panels.append(('radial-subtracted', radial_median_subtract(base)))
@@ -431,16 +581,36 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
         return np.asarray((overlay(d, pixel_scales) if overlay is not None else d).native)
 
     rendered = [_panel(v) for _, v in panels]
+    panel_names = [name for name, _ in panels]
+    if proposal is not None:
+        prop = np.asarray(proposal, dtype=bool)
+        edge = mask_boundary(prop)
+        applied = rendered[-1].copy()             # derived from as-observed: one shared stretch
+        applied[prop] = 0.0                       # blanked = what the mask removes from the fit
+        rendered.append(applied)
+        panel_names.append(f'{proposal_label} APPLIED')
+        for r in rendered:                        # same outline on every panel
+            r[edge] = 1.0
+
     panel_n_x = rendered[0].shape[1]
     if len(rendered) == 1:
         composite, title = rendered[0], None
     else:
         gutter = np.zeros((rendered[0].shape[0], _PANEL_GAP))
-        composite = np.hstack([rendered[0], gutter, rendered[1]])
-        title = (f'LEFT: {panels[0][0]}   |   RIGHT: {panels[1][0]}   '
-                 f'--  scribble on either panel')
+        parts = []
+        for i, r in enumerate(rendered):
+            if i:
+                parts.append(gutter)
+            parts.append(r)
+        composite = np.hstack(parts)
+        pos = _PANEL_POSITIONS.get(len(rendered),
+                                   [str(i + 1) for i in range(len(rendered))])
+        title = '   |   '.join(f'{p}: {n}' for p, n in zip(pos, panel_names))
+        title += '   --  scribble on any panel'
+        if proposal is not None:
+            title += "   ('1' green = ADD, '2' red = ERASE)"
     disp_array = al.Array2D.no_mask(values=composite, pixel_scales=pixel_scales).native
-    source_label += ', ' + ' + '.join(name for name, _ in panels)
+    source_label += ', ' + ' + '.join(panel_names)
     # al.Scribbler sizes the brush as int(image_height * brush_width), a fraction. To get a
     # stamp-independent default (--brush-radius px) we derive the fraction from this stamp's
     # own height; an explicit --brush-width fraction (if given) overrides it.
@@ -451,23 +621,30 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     print(f"  display: {source_label}, {stretch} stretch"
           + (f" (a={asinh_a})" if stretch == 'asinh' else '')
           + f", clip [{vmin_percent:g}, {vmax_percent:g}] percentile")
-    if len(panels) > 1:
-        print(f"  TWO PANELS side by side -- LEFT {panels[0][0]}, RIGHT {panels[1][0]}. "
-              f"Scribble on either;")
-        print(f"    the two halves are combined onto the one mask (same sky position).")
+    if len(rendered) > 1:
+        print(f"  {len(rendered)} PANELS side by side -- "
+              + ", ".join(f"{p} {n}" for p, n in
+                          zip(_PANEL_POSITIONS.get(len(rendered), []), panel_names)) + ".")
+        print(f"    Scribble on any of them; the panels are combined onto the one mask "
+              f"(same sky position).")
+    if proposal is not None:
+        print(f"  the proposed mask is OUTLINED on every panel, and the last panel shows it "
+              f"APPLIED (blanked = removed).")
+        print(f"    keys '1' = GREEN brush, ADD to the mask   |   "
+              f"'2' = RED brush, ERASE from it")
     print(f"  brush start radius = {start_radius} px")
     _GuardedScribbler.title = title
     scribbler = _GuardedScribbler(image=disp_array, brush_width=brush_width)
-    scribbled = np.asarray(scribbler.show_mask(), dtype=bool)
+    scribbler.show_mask()             # returns the ADD segment; also does the plt.ioff()
+    segments = scribbler.get_scribble_masks()     # both segments: '1' = add, '2' = erase
 
-    if len(panels) > 1:                          # fold the two panels back onto one grid
-        left = scribbled[:, :panel_n_x]
-        right = scribbled[:, panel_n_x + _PANEL_GAP:panel_n_x + _PANEL_GAP + panel_n_x]
-        if left.any() and right.any():
-            print(f"  combined both panels ({int(left.sum())}px left + "
-                  f"{int(right.sum())}px right)")
-        scribbled = left | right
-    return scribbled, pixel_scales, sci_hdr, brush_width, start_radius, source_label
+    n_panels = len(rendered)
+    painted, add_per_panel = fold_panels(segments.get('1'), n_panels, panel_n_x)
+    erased, _ = fold_panels(segments.get('2'), n_panels, panel_n_x)
+    if n_panels > 1 and sum(1 for n in add_per_panel if n) > 1:
+        print("  combined panels (" + " + ".join(f"{n}px {p}" for n, p in
+              zip(add_per_panel, _PANEL_POSITIONS.get(n_panels, []))) + ")")
+    return painted, erased, pixel_scales, sci_hdr, brush_width, start_radius, source_label
 
 
 def regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass):
@@ -505,14 +682,23 @@ def regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass):
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                       broadcast=False, brush_radius=6, brush_width=None, display='snr',
                       stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
-                      subtract_radial=False, side_by_side=True,
-                      size=cutout_paths.DEFAULT_SIZE, dataset_subplot=True):
+                      subtract_radial=None, side_by_side=True,
+                      size=cutout_paths.DEFAULT_SIZE, dataset_subplot=True,
+                      propose_from='auto'):
     """Draw a mask once for one lens, on its best/forced band. By default the mask is written
     for THAT BAND ONLY; `broadcast=True` also writes it to the lens's other bands by WCS
     reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir), bcfill
     before standard) from discover_targets. A mask FITS goes into the band's priority tree (the
     two variants share a grid, so one serves both -- the skip check covers either). Returns True
     if a mask was written.
+
+    `propose_from` ('auto' by default, 'none' to disable, or an explicit band) turns this into
+    a REVIEW of a mask already drawn for another band of this lens instead of a blank canvas:
+    the inherited mask is reprojected onto this band, outlined on every panel and shown applied
+    on its own panel, and you then add (green) / erase (red) parts of it before choosing to
+    apply, reject, or skip. It is the deliberate alternative to `--broadcast`, which writes the
+    same mask to every band unseen -- what a mask should exclude is not band-independent in
+    practice, so the transfer is worth looking at in the band it is landing on.
     """
     filts = sorted(filt_dirs)
     display_filt = pick_display_filt(filts, requested_filt)
@@ -539,15 +725,51 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
               f"skipping (--force to redraw)")
         return False
 
-    scribbled, src_ps, src_hdr, brush_width, start_radius, source_label = draw_mask_gui(
+    display_hdr = fits.getheader(os.path.join(display_dir, f'{display_prefix}_sci.fits'))
+    proposal_from, proposal = find_proposal_mask(
+        filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from, force=force)
+    if proposal is not None:
+        print(f"{lens} {display_filt}: reviewing the mask from {proposal_from} "
+              f"({int(proposal.sum())}px) -- edit it in the GUI, then apply/reject")
+    # 'auto' radial subtraction: on when there is a proposal to review (you need to see the
+    # arcs the inherited mask may be clipping), off otherwise -- a contaminant mask drawn from
+    # scratch is normally judged against the real sky. An explicit --(no-)subtract-radial wins.
+    if subtract_radial is None:
+        subtract_radial = proposal is not None
+
+    (painted, erased, src_ps, src_hdr, brush_width, start_radius,
+     source_label) = draw_mask_gui(
         display_dir, display_prefix, lens, display_filt, brush_radius, brush_width,
         display, stretch, vmin_percent, vmax_percent, asinh_a,
-        subtract_radial=subtract_radial, side_by_side=side_by_side)
+        subtract_radial=subtract_radial, side_by_side=side_by_side,
+        proposal=proposal, proposal_label=f'{proposal_from} mask' if proposal_from else None)
+
+    painted = np.asarray(painted, dtype=bool)
+    erased = np.asarray(erased, dtype=bool)
+    drawn_only = painted & ~erased
+    n_add, n_erase = int(painted.sum()), int(erased.sum())
 
     # Nothing painted = you skipped this lens: write NO file. An all-False mask would be a
     # legitimate "exclude nothing" mask, which is exactly the ambiguity to avoid -- an absent
     # file means "not done yet" and the next run re-offers the lens, where an empty one would
-    # silently mark it finished.
+    # silently mark it finished. The same rule holds after a review: an approved mask that
+    # ends up empty (everything erased) is not written either.
+    if proposal is None:
+        scribbled, source_tag = drawn_only, 'drawn'
+    else:
+        reviewed = (proposal | painted) & ~erased
+        choice = confirm_proposal(lens, display_filt, proposal_from, int(proposal.sum()),
+                                  n_add, n_erase, int(reviewed.sum()), int(drawn_only.sum()))
+        if choice == 'skip':
+            print(f"  skipped -- no mask written for {lens} {display_filt} (still pending)")
+            return False
+        if choice == 'drawn':
+            scribbled, source_tag = drawn_only, 'drawn'
+            print(f"  proposal from {proposal_from} REJECTED -- keeping only what you painted")
+        else:
+            scribbled = reviewed
+            source_tag = (f'edited_from_{proposal_from}' if (n_add or n_erase)
+                          else f'accepted_from_{proposal_from}')
     if not np.asarray(scribbled).any():
         print(f"  nothing drawn -- no mask written for {lens} (still pending)")
         return False
@@ -574,20 +796,28 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
         aplt.fits_array(array=al.Mask2D(mask=out_bool, pixel_scales=band_ps),
                         file_path=mask_path, overwrite=True)
         n_excl = int(np.asarray(out_bool).sum())
-        print(f"  wrote {mask_path}  ({'drawn' if is_draw else f'reprojected<-{display_filt}'}, "
-              f"{n_excl}px excluded)")
+        print(f"  wrote {mask_path}  ({source_tag if is_draw else f'reprojected<-{display_filt}'}"
+              f", {n_excl}px excluded)")
         entry = {
             'prefix': prefix,
             'drizzle_pass': 'cr' if prefix == 'cutout_cr' else 'nocrrej',
             'pixel_scale_arcsec': round(band_ps, 6),
             'display': source_label,
             'variant': variant or 'standard',
-            'source': 'drawn' if is_draw else f'reprojected_from_{display_filt}',
+            'source': source_tag if is_draw else f'reprojected_from_{display_filt}',
             'n_excluded_px': n_excl,
         }
         if is_draw:
             entry['brush_width'] = round(brush_width, 6)
             entry['brush_radius_px'] = start_radius
+            if proposal is not None:
+                # What the reviewed mask inherited vs what this session changed by hand --
+                # 'accepted_from_x' with 0 edits is a real, deliberate outcome and needs to
+                # be distinguishable from a hand-drawn mask that merely resembles one.
+                entry['proposal_from'] = proposal_from
+                entry['proposal_px'] = int(proposal.sum())
+                entry['n_added_px'] = n_add
+                entry['n_erased_px'] = n_erase
         info_json.update(MASKS_JSON, sample, lens, filt, entry)
         if dataset_subplot:
             regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass)
@@ -613,6 +843,15 @@ def main():
                         'not in practice band-independent (a contaminant can be bright in one '
                         'filter and absent in another, and each band\'s depth and PSF move the '
                         'sensible boundary)')
+    p.add_argument('--propose-from', default='auto',
+                   help="review a mask already drawn for this lens instead of starting from a "
+                        "blank canvas: 'auto' (default) proposes the band's own existing mask "
+                        'when --force-redrawing it, else the highest-priority other band that '
+                        'has one; a band name (e.g. f814W) forces the source; \'none\' disables '
+                        'it. The proposal is reprojected onto the drawn band, outlined on every '
+                        'panel and shown APPLIED on its own panel, and you add (green) / erase '
+                        '(red) parts of it before choosing to apply, reject, or skip -- the '
+                        'reviewed alternative to --broadcast')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
                    help="which cutout pass to mask, matching make_cutouts.py's --pass: "
@@ -660,12 +899,14 @@ def main():
                         'as-observed right -- and accept scribbles on either panel, combining '
                         'them onto the one mask (default on; ignored without --subtract-radial, '
                         'where there is nothing to compare)')
-    p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=False,
+    p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=None,
                    help="subtract the deflector's azimuthally-averaged radial profile from "
                         'the DISPLAYED image, so the arcs stand clear of the galaxy envelope '
-                        '(same lever as make_positions.py, where it is ON by default; here it '
-                        'is OFF by default, since a contaminant mask is normally judged '
-                        'against the real sky). Display only -- the mask is built from brush '
+                        '(same lever as make_positions.py, where it is ON by default). Default '
+                        'is AUTO: on when a mask is being reviewed (--propose-from), where you '
+                        'need to see the arcs the inherited mask may be clipping, and off when '
+                        'drawing from scratch, since a contaminant mask is normally judged '
+                        'against the real sky. Display only -- the mask is built from brush '
                         'positions, so it cannot change what a stroke masks')
     p.add_argument('--dataset-subplot', action=argparse.BooleanOptionalAction, default=True,
                    help='after writing each mask, regenerate that band\'s '
@@ -673,6 +914,14 @@ def main():
                         'so it shows the mask just drawn rather than the previous one '
                         '(default on; best-effort -- a failure never costs the mask)')
     a = p.parse_args()
+
+    # --broadcast writes one draw to every band unseen; --propose-from reviews another band's
+    # mask in the band it is landing on. They are two answers to the same question, and
+    # combining them would write a reviewed-for-f555W mask back over f814W's own.
+    if a.broadcast and a.propose_from != 'none':
+        p.error('--broadcast and --propose-from are alternatives: pass --propose-from none '
+                'to broadcast one draw to every band unseen, or drop --broadcast to review '
+                'the inherited mask per band')
 
     # Ordered by display preference: bcfill first (cleaner image), standard second.
     if a.variant == 'bcfill':
@@ -703,7 +952,8 @@ def main():
                              vmin_percent=a.vmin_percent, vmax_percent=a.vmax_percent,
                              asinh_a=a.asinh_a, subtract_radial=a.subtract_radial,
                              side_by_side=a.side_by_side, size=a.size,
-                             dataset_subplot=a.dataset_subplot):
+                             dataset_subplot=a.dataset_subplot,
+                             propose_from=a.propose_from):
             made += 1
         else:
             skipped += 1
