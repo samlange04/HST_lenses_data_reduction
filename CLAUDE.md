@@ -350,6 +350,29 @@ and `--ref` (the frame, default F814W); products record `ASTROREF` alongside `GS
 `-FIT_REL_GSC242`/`-GAIAeDR3`) means that band is the ~0.5″ one, whatever the instrument.
 Defaults are unchanged and stay correct for every other lens.
 
+**It varies per FILTER within one visit, and `WCSNAME` predicts it exactly — 4 `slacs_gold`
+F555W products were tied 2026-09-05.** J1402+6321 (1.327″), J1205+4910 (0.605″), J1420+6019
+(0.546″) and J0959+0410 (0.464″) each sat that far off their *own lens's* F814W despite being
+the same day, same visit, same proposal (10494): MAST fitted an absolute solution to the F814W
+exposures and not the F555W ones. **The rule is exact over all 16 F555W products: `WCSNAME`
+carrying `FIT_REL_*`/`FIT_IMG_*` is fine (all 12 within 0.048″); a bare IDCTAB or a `-GSC240`
+suffix is offset (all 4).** J1402+6321's was bare `IDC_4bb1536oj` — no absolute fit at all —
+and its 1.33″ sits close to `MAX_SHIFT = 1.5″`. Fixed with the tool as-is (`--target f555W
+--ref f814W`, run in **both** trees, `--bcfill` second), then `make_cutouts.py --lens L --filt
+f555W` in both — the crop window moves, so the stamps must be re-cut. F606W (0/22, already
+tied) and F160W (0/13, max 0.078″) were clean. **Symptom to recognise:** a mask reprojected
+from F814W lands with the *right shape in the wrong place*, because `reproject_mask_bool`
+correctly puts it at the right *sky* position while the band's own WCS points that sky
+position at the wrong pixels — and for the same reason the stamp itself is cut off-centre
+(J1402's deflector sat at pixel 145 rather than 120).
+- **Verify a tie with the median VECTOR residual over field sources, never a scalar
+  separation.** Post-tie cross-matched separations read 0.06–0.18″ median and look like a
+  residual; they are cross-filter centroid scatter. The median (dRA·cos δ, dDec) came to
+  0.006–0.028″ on all four, matching never-offset J0216-0813 (0.025″). Field sources are the
+  right check because the tie uses only the deflector centroid, so they are independent of it.
+- A whole-sample sweep of centroid offset vs `WCSNAME` costs one read-only survey; worth
+  re-running after any re-drizzle, and before trusting a cross-band mask broadcast.
+
 ## Weight maps and noise: `final_wht_type` and `cutout_noise.fits`
 
 All scripts take `--wht-type {ERR,IVM,EXP}`. `cutout_noise.fits` is `1/sqrt(WHT)`, so the
