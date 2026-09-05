@@ -18,15 +18,15 @@ another, and each band's own depth and PSF change where the sensible boundary fa
 
 THE NEXT BAND STARTS FROM A REVIEWED PROPOSAL, NOT A BLANK CANVAS (--propose-from, default
 'auto'). A mask already drawn for another band of this lens is reprojected onto the band
-about to be drawn and shown for approval, in a 3-panel display:
+about to be drawn and OUTLINED for approval over the usual two panels:
 
     LEFT   radial-subtracted -- where the arcs are visible at all, so you can see what the
            inherited mask may be clipping;
-    MIDDLE as-observed -- the contaminant's real extent and the galaxy envelope in THIS band;
-    RIGHT  the proposal APPLIED -- this band with the mask blanked out, i.e. exactly what a
-           fit under it would keep.
+    RIGHT  as-observed -- the contaminant's real extent and the galaxy envelope in THIS band.
 
-The proposal's 1-px boundary is outlined on all three. You then edit it with two brushes --
+The outline is all the review needs; a filled-in "mask applied" panel was tried and dropped,
+since it showed nothing the boundary does not already carry while hiding the pixels being
+judged. You then edit the proposal with two brushes --
 '1' GREEN adds to the mask, '2' RED erases from it, scribbling on whichever panel you like --
 and on closing the GUI choose to [a]pply proposal+edits, keep only what you [d]rew (rejecting
 the proposal outright), or [s]kip the band. Source: the band's own existing mask when
@@ -525,11 +525,10 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     Erasing is what makes an inherited mask editable rather than all-or-nothing.
 
     `proposal` (bool array on this band's grid, optional) is a mask inherited from another
-    band, shown for review: its 1-px boundary is burned into EVERY panel (so you can see
-    where its edge falls against the real structure of this band), and an extra final panel
-    shows this band as-observed with the proposal APPLIED -- interior blanked to the display
-    floor -- i.e. what a fit under that mask would actually keep. It is derived from the
-    already-rendered as-observed panel so both share one stretch and are directly comparable.
+    band, shown for review as a 1-px OUTLINE burned into every panel -- where its edge falls
+    against this band's own structure being the whole question. Only an outline: a filled-in
+    "mask applied" panel was tried and dropped, since blanking the interior showed nothing the
+    boundary does not already carry while hiding the pixels being judged.
 
     `subtract_radial` shows the deflector's radial-median-subtracted image (see
     radial_median_subtract) -- DISPLAY ONLY, the scribble is read back as pixel positions so
@@ -582,15 +581,16 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
 
     rendered = [_panel(v) for _, v in panels]
     panel_names = [name for name, _ in panels]
+    title_extra = ''
     if proposal is not None:
-        prop = np.asarray(proposal, dtype=bool)
-        edge = mask_boundary(prop)
-        applied = rendered[-1].copy()             # derived from as-observed: one shared stretch
-        applied[prop] = 0.0                       # blanked = what the mask removes from the fit
-        rendered.append(applied)
-        panel_names.append(f'{proposal_label} APPLIED')
-        for r in rendered:                        # same outline on every panel
+        # OUTLINE ONLY, on every panel -- deliberately no extra "mask applied" panel. Blanking
+        # the interior showed nothing the boundary does not already carry, and it hid the very
+        # pixels you are judging the mask against while costing every other panel a third of
+        # the window. Where the edge falls against this band's structure is the question.
+        edge = mask_boundary(np.asarray(proposal, dtype=bool))
+        for r in rendered:
             r[edge] = 1.0
+        title_extra = f'   --  {proposal_label} OUTLINED'
 
     panel_n_x = rendered[0].shape[1]
     if len(rendered) == 1:
@@ -606,11 +606,13 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
         pos = _PANEL_POSITIONS.get(len(rendered),
                                    [str(i + 1) for i in range(len(rendered))])
         title = '   |   '.join(f'{p}: {n}' for p, n in zip(pos, panel_names))
-        title += '   --  scribble on any panel'
+        title += title_extra + '   --  scribble on any panel'
         if proposal is not None:
             title += "   ('1' green = ADD, '2' red = ERASE)"
     disp_array = al.Array2D.no_mask(values=composite, pixel_scales=pixel_scales).native
     source_label += ', ' + ' + '.join(panel_names)
+    if proposal is not None:
+        source_label += f' ({proposal_label} outlined)'
     # al.Scribbler sizes the brush as int(image_height * brush_width), a fraction. To get a
     # stamp-independent default (--brush-radius px) we derive the fraction from this stamp's
     # own height; an explicit --brush-width fraction (if given) overrides it.
@@ -628,8 +630,7 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
         print(f"    Scribble on any of them; the panels are combined onto the one mask "
               f"(same sky position).")
     if proposal is not None:
-        print(f"  the proposed mask is OUTLINED on every panel, and the last panel shows it "
-              f"APPLIED (blanked = removed).")
+        print(f"  the proposed mask ({proposal_label}) is OUTLINED on every panel.")
         print(f"    keys '1' = GREEN brush, ADD to the mask   |   "
               f"'2' = RED brush, ERASE from it")
     print(f"  brush start radius = {start_radius} px")
@@ -694,9 +695,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
 
     `propose_from` ('auto' by default, 'none' to disable, or an explicit band) turns this into
     a REVIEW of a mask already drawn for another band of this lens instead of a blank canvas:
-    the inherited mask is reprojected onto this band, outlined on every panel and shown applied
-    on its own panel, and you then add (green) / erase (red) parts of it before choosing to
-    apply, reject, or skip. It is the deliberate alternative to `--broadcast`, which writes the
+    the inherited mask is reprojected onto this band and outlined on every panel, and you then
+    add (green) / erase (red) parts of it before choosing to apply, reject, or skip. It is the deliberate alternative to `--broadcast`, which writes the
     same mask to every band unseen -- what a mask should exclude is not band-independent in
     practice, so the transfer is worth looking at in the band it is landing on.
     """
@@ -848,8 +848,8 @@ def main():
                         "blank canvas: 'auto' (default) proposes the band's own existing mask "
                         'when --force-redrawing it, else the highest-priority other band that '
                         'has one; a band name (e.g. f814W) forces the source; \'none\' disables '
-                        'it. The proposal is reprojected onto the drawn band, outlined on every '
-                        'panel and shown APPLIED on its own panel, and you add (green) / erase '
+                        'it. The proposal is reprojected onto the drawn band and OUTLINED on '
+                        'every panel, and you add (green) / erase '
                         '(red) parts of it before choosing to apply, reject, or skip -- the '
                         'reviewed alternative to --broadcast')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],

@@ -701,12 +701,14 @@ band's depth and PSF move where the sensible boundary falls.
 
 That is why a mask already drawn for another band is **proposed and reviewed** rather than
 written out blind. `find_proposal_mask` reprojects it onto the band about to be drawn and
-`draw_mask_gui` shows a **3-panel display** (the 2-panel side-by-side generalised to N):
+`draw_mask_gui` **outlines** it (1-px boundary, `mask_boundary`) over the usual two panels:
 *radial-subtracted* (where the arcs are visible at all, so you can see what the inherited mask
 may be clipping) | *as-observed* in this band (the contaminant's real extent and the galaxy
-envelope) | *the proposal APPLIED* — this band with the mask blanked out, i.e. what a fit under
-it would actually keep, derived from the as-observed panel so both share one stretch. The
-proposal's 1-px boundary (`mask_boundary`) is outlined on all three.
+envelope). **A third "proposal APPLIED" panel — the same view with the mask interior blanked —
+was built and then dropped the same day at the user's call**: it differed from the as-observed
+panel only by the fill, which showed nothing the boundary does not already carry while hiding
+the very pixels being judged and costing the other panels a third of the window. Where the
+edge falls against this band's structure is the whole question, so the outline is the review.
 - **Two brushes, from `al.Scribbler`'s two built-in scribble segments** (nothing new to
   maintain): `'1'` GREEN **adds** to the mask, `'2'` RED **erases** from it, on whichever
   panel you like. `show_mask()` returns only segment 1, so the code reads `get_scribble_masks()`
@@ -750,10 +752,9 @@ extent and the galaxy envelope are. **You may scribble on either panel**; the tw
 read back and UNIONed onto the single-band mask, so the same stroke lands at the same sky
 position from either side (verified: identical masks from a left-panel and a right-panel
 stroke). Each panel is stretched independently — their dynamic ranges differ by orders of
-magnitude, so a shared scale would flatten one; the exception is the review mode's third
-panel, derived from the already-rendered as-observed panel precisely *so* the two share one
-stretch and are comparable. The composite is now **N panels** (`fold_panels`, stride
-`panel_n_x + _PANEL_GAP`), the third appearing only when a proposal is under review.
+magnitude, so a shared scale would flatten one. Panel read-back goes through `fold_panels`
+(stride `panel_n_x + _PANEL_GAP`), which is written for N panels though only 1 or 2 are ever
+built — a reviewed proposal adds an outline to both panels, not a panel of its own.
 `make_arc_masks.py` has the same flag, also
 on by default. A panel-labelling title is applied on the first in-axes mouse move, because
 `al.Scribbler` builds its figure and then blocks inside `__init__` — there is no
