@@ -11,7 +11,7 @@ the module has no dependency beyond astroquery + requests (both in stenv).
 The database is described in Dauphin et al., "The WFPC2 and WFC3 PSF Database"
 (ISR WFC3 2021-12). WFPC2's filter field is `filter_1` (not `filter`), and the
 `chip` column is the WFPC2 CCD / FITS extension: 1=PC, 2=WF2, 3=WF3, 4=WF4 --
-our lens galaxies fall on WF3 (chip 3). See CLAUDE.md 'WFPC2: the lens is on WF3'.
+our lens galaxies fall on WF3 (chip 3). See AGENTS.md 'WFPC2: the lens is on WF3'.
 """
 
 import os

@@ -102,13 +102,13 @@ _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
 # The products land in a PARALLEL tree (data/drizzled_bcfill/, its own drizzle_files_bcfill/
 # work dir) so the standard drizzle is never overwritten. ACS-only by construction (the
 # stripe is an ACS dead-column artifact). See scripts/bolton_investigations/redrizzle_bcfill.py
-# (the standalone prototype this ports) and CLAUDE.md. The filled pixels carry no independent
+# (the standalone prototype this ports) and AGENTS.md. The filled pixels carry no independent
 # information, so the resulting noise is optimistic by ~sqrt(3/4)~13% on those columns -- an
 # opt-in cosmetic/uniformity choice, not the science default.
 _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
                 help='interpolate ACS dead columns (DQ 4|128) in SCI+ERR and un-flag them '
                      'before drizzling, writing to the parallel data/drizzled_bcfill/ tree; '
-                     'removes the dead-column noise stripe (see CLAUDE.md / '
+                     'removes the dead-column noise stripe (see AGENTS.md / '
                      'scripts/bolton_investigations)')
 # Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
@@ -773,7 +773,7 @@ if _lc is not None and len(single_sci_files) >= 2:
             print(f'  {_name}: peak={_p:.3g} ({_ratio:.2f}x median)' + ('  <-- WARNING' if _flag else ''))
         if _bad:
             print('  WARNING: possible cross-visit WCS mismatch -- inspect before '
-                  'trusting this product (see CLAUDE.md "WCS alignment")')
+                  'trusting this product (see AGENTS.md "WCS alignment")')
         else:
             print('  OK - all frames consistent')
 

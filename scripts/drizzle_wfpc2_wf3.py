@@ -138,12 +138,12 @@ _p.add_argument('--out-suffix',  default='')
 # separately). The filled pixels carry no independent information, so the noise is optimistic
 # by ~sqrt(3/4)~13% on those columns -- an opt-in cosmetic/uniformity choice, not the science
 # default. Validated standalone on J0822+2652 / J0252+0039 (scripts/bolton_investigations/
-# redrizzle_bcfill_wfpc2.py); see CLAUDE.md.
+# redrizzle_bcfill_wfpc2.py); see AGENTS.md.
 _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
                 help='interpolate WF3 dead columns (DQ 2|256) in SCI and un-flag them before '
                      'building the IVM + drizzling, writing to the parallel '
                      'data/drizzled_bcfill/ tree; removes the dead-column noise stripe (see '
-                     'CLAUDE.md / scripts/bolton_investigations)')
+                     'AGENTS.md / scripts/bolton_investigations)')
 _a = _p.parse_args()
 
 lens       = _a.lens
@@ -690,7 +690,7 @@ def measure_noise_floor(sci, dq, gain):
 # a fit: ERR/sqrt(SCI) == 1.000000 for 100.00% of good pixels. That is Poisson
 # statistics applied to DATA NUMBERS as though they were electrons, so it omits the
 # gain conversion entirely and carries no read-noise term at all. It overstates the
-# true noise by ~2.1x at sky level (see the ERR-array section in CLAUDE.md).
+# true noise by ~2.1x at sky level (see the ERR-array section in AGENTS.md).
 def build_ivm_files(wf3_files):
     """Write '<sci> -> IVM,1' files with IVM = 1/(SCI/gain + floor^2), in DN^-2."""
     ivm_files = []

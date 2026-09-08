@@ -537,7 +537,7 @@ def subtract_pedestal(kernel):
 # estimate a per-pixel PSF error map by resampling the star sample and rebuilding the ePSF:
 # bootstrap-with-replacement where there are enough stars, leave-one-out jackknife where there
 # are too few for bootstrap to be non-degenerate. Empirical tier only -- the model/injected
-# tiers have their own (deferred) error budget. See the PSF uncertainty note in CLAUDE.md.
+# tiers have their own (deferred) error budget. See the PSF uncertainty note in AGENTS.md.
 JACKKNIFE_MAX_STARS = 6   # < this, bootstrap draws collapse onto 1-2 stars; use jackknife
 
 
@@ -1032,7 +1032,7 @@ def main():
     # ensemble psf_models already built (per-exposure or bootstrap-over-DB-stars, see
     # psf_models._reduce_ensemble / _wfpc2_f606w_db_ensemble) via the SAME psf_error_map()
     # statistics, just converted to kernels first. STDPSF has no natural per-lens ensemble
-    # and is skipped (err stays null) -- see the PSF uncertainty note in CLAUDE.md. The
+    # and is skipped (err stays null) -- see the PSF uncertainty note in AGENTS.md. The
     # point-estimate kernel above is untouched either way; this only adds parallel
     # *_err.fits products.
     err_full = err_trim = err_frac = fwhm_err = err_method = n_boot_valid = None

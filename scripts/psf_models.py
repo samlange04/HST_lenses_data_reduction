@@ -297,7 +297,7 @@ def analytic_drop_broaden(kernel, pixfrac, native_scale, out_scale, n_frames=1):
 # FALLBACK, slotted ABOVE the STDPSF F555W proxy.
 
 _WFPC2_F606W_DB_CACHE = os.path.join(ws_path, 'data', 'reference_files', 'wfpc2_f606w_psfdb')
-_WF3_LENS_XY = (435, 424)     # lens galaxy position on WF3 (chip 3); see CLAUDE.md
+_WF3_LENS_XY = (435, 424)     # lens galaxy position on WF3 (chip 3); see AGENTS.md
 _F606W_DB = dict(
     qfit_max=0.05,        # low qfit == good template fit; ~8.6k WF3 F606W stars qualify
     radius=200,           # x_cal/y_cal box half-width around the lens WF3 position

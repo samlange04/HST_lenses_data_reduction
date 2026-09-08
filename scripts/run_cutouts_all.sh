@@ -7,7 +7,7 @@
 #          (defaults: mast_target_names.DEFAULT_SAMPLE, 12)
 #
 # --bcfill cuts from the bad-column-filled drizzles (data/drizzled_bcfill/) into the parallel
-# tracked data/cutouts_bcfill/ tree (see CLAUDE.md *Bad-column fill*). Only ACS/WFPC2 bands
+# tracked data/cutouts_bcfill/ tree (see AGENTS.md *Bad-column fill*). Only ACS/WFPC2 bands
 # have a bcfill tree; a band without one globs to nothing, which is harmless.
 #
 # SIZE_ARCSEC is passed straight to make_cutouts.py --size. A non-default size writes to

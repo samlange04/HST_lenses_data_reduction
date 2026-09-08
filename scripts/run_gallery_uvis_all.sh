@@ -14,7 +14,7 @@
 # Unlike run_acs_all.sh this does NOT rm the output dir first: it relies on the drizzle
 # script's idempotent skip (final product exists -> skip) so a multi-GB gallery campaign
 # is resumable after an interruption. To force a re-run, delete the lens's dir under
-# data/drizzled/ (and data/drizzle_files/) as CLAUDE.md describes.
+# data/drizzled/ (and data/drizzle_files/) as AGENTS.md describes.
 #
 # The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/, which does nothing after a wipe.

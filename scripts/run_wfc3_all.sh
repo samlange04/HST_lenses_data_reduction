@@ -5,7 +5,7 @@
 # Usage: run_wfc3_all.sh [SAMPLE]       (default: mast_target_names.DEFAULT_SAMPLE)
 #
 # No --cr: the IR PSF is ~1 px FWHM at 0.1283"/px, so both LACosmic and driz_cr eat
-# point sources, and the FLTs are already up-the-ramp CR-rejected. See CLAUDE.md.
+# point sources, and the FLTs are already up-the-ramp CR-rejected. See AGENTS.md.
 #
 # The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/, which only ever re-runs what is already on disk

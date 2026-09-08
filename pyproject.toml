@@ -23,5 +23,5 @@ dependencies = [
 [tool.uv]
 # Fully uv-managed interpreter (not a system/Homebrew/conda python): `uv sync` on any
 # machine downloads this exact CPython build itself, so the environment is reproducible
-# on macOS (arm64 or x86_64) and Linux with no external install step. See CLAUDE.md.
+# on macOS (arm64 or x86_64) and Linux with no external install step. See AGENTS.md.
 python-preference = "only-managed"

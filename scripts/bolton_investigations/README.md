@@ -24,7 +24,7 @@ Run any of them with `uv run python scripts/bolton_investigations/<script>.py`.
 ## Background: why our noise maps stripe and the legacy ones don't
 
 The stripe is real and **correctly represented** — it is not a bug and `final_bits` is
-already right (`'256,64,16'`; see CLAUDE.md → *AstroDrizzle key parameters* /
+already right (`'256,64,16'`; see AGENTS.md → *AstroDrizzle key parameters* /
 *Drizzle correlated noise*, and the `legacy-slacs-bolton-bilinear-no-stripes` memory).
 
 - ACS dead columns are DQ **bit 128** (bad column, ~19 near-full columns on chip 1) plus
@@ -215,7 +215,7 @@ opt-in `--bcfill` flag on **both** `drizzle_acs_wfc.py` (ACS bits 4|128) and
 `drizzle_wfpc2_wf3.py` (WF3 bits 2|256, interior-only, IVM rebuilt on the filled columns).
 It writes to parallel tracked trees (`data/drizzled_bcfill/` → `make_cutouts.py --bcfill` →
 `data/cutouts_bcfill/` → `make_mosaics.py --bcfill` → `data/mosaics_bcfill/`), keyed via
-`cutout_paths.py`'s `variant` axis. See CLAUDE.md *Bad-column fill (`--bcfill`)* for the full
+`cutout_paths.py`'s `variant` axis. See AGENTS.md *Bad-column fill (`--bcfill`)* for the full
 contract. NOT for WFC3/IR F160W — an IR array has no bad columns (its noise-map dots are
 hot-pixel replicas, a different artifact).
 

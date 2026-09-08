@@ -9,7 +9,7 @@
 #
 # make_positions.py already loops every lens WITHIN a sample and marks positions once per
 # lens on its best band, broadcasting the result to that lens's other bands (positions are
-# band-independent arcsec coords -- see the script header / CLAUDE.md). So this wrapper's
+# band-independent arcsec coords -- see the script header / AGENTS.md). So this wrapper's
 # only job is to sweep the samples; with no SAMPLE arg it does all three science samples in
 # order. It is INTERACTIVE (a blocking Tk window per lens) and deliberately does NOT
 # redirect to log files -- you need to see the GUI and the per-click console output. It is
