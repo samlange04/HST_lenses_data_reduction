@@ -211,7 +211,7 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     norm = lambda s: len({0.0 if v in (0.0, 1.0) else v for v in s})
     return norm(fx), norm(fy)
 
-ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins. Keyed on the product filt (base

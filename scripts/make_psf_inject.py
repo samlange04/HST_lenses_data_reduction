@@ -82,7 +82,7 @@ import astropy.units as u
 from photutils.centroids import centroid_com
 from scipy.ndimage import map_coordinates
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

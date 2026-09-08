@@ -76,7 +76,7 @@ from photutils.centroids import centroid_com
 from photutils.detection import DAOStarFinder
 from photutils.psf import EPSFBuilder, extract_stars
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names

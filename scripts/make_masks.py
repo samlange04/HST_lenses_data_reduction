@@ -102,7 +102,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='autonerves')
 import autolens as al
 import autolens.plot as aplt
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import info_json

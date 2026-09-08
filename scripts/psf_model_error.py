@@ -65,7 +65,7 @@ from scipy.optimize import minimize
 import make_psf
 import psf_models
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def unit(k):
