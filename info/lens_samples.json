@@ -107,7 +107,7 @@
         }
     },
     "gallery": {
-        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in CLAUDE.md). Reduction scripts not yet written.",
+        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduction scripts not yet written.",
         "coords": "info/gallery_coords.py",
         "lenses": {
             "J0029+2544": {

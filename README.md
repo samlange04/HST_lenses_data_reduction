@@ -5,7 +5,7 @@ mosaics + cutouts for gravitational-lens samples (SLACS, BELLS). One product per
 **lens + filter**.
 
 > This README is the operator's quick-start: what to run, in what order, and how the
-> instruments differ. `CLAUDE.md` is the deep reference — every non-obvious decision and
+> instruments differ. `AGENTS.md` is the deep reference — every non-obvious decision and
 > the trap it avoids. When in doubt about *why*, read that; when the doc and the code
 > disagree, trust the code.
 

@@ -12,7 +12,7 @@ scripts stay in sync. For slacs_gold/slacs_other (SLACS: WFPC2 F606W and ACS F55
 never share a lens):
     f814W          - ACS/WFC
     f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v2) merged with ACS F555W
-    f160W          - WFC3/IR only (NICMOS F160W products were deleted, see CLAUDE.md)
+    f160W          - WFC3/IR only (NICMOS F160W products were deleted, see AGENTS.md)
 gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f275W,
 f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
 per filter subdirectory found on disk.

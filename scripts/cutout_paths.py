@@ -14,14 +14,14 @@ derived here rather than in each script:
 Keying the tree on --size itself, rather than on an independent --output flag the caller
 has to remember to set, is deliberate: `make_cutouts.py --size 20` on its own then cannot
 silently clobber the 12" product set. That is exactly the class of quietly-wrong-product
-failure CLAUDE.md warns about, and the cutout FITS names (cutout_[cr_]{sci,noise}.fits)
+failure AGENTS.md warns about, and the cutout FITS names (cutout_[cr_]{sci,noise}.fits)
 carry no size in them, so a clobbered stamp is indistinguishable from a correct one on
 inspection. An explicit --output still wins, for one-off work.
 
 `variant` is a second, orthogonal keying axis for a whole alternate *reduction* (not just a
 different crop of the same mosaic). The one variant so far is 'bcfill' -- the ACS
 bad-column-filled re-drizzle (drizzle_acs_wfc.py --bcfill; see
-scripts/bolton_investigations/redrizzle_bcfill.py and CLAUDE.md). It suffixes the drizzled
+scripts/bolton_investigations/redrizzle_bcfill.py and AGENTS.md). It suffixes the drizzled
 tree too, since the mosaics themselves differ, and composes before the size tag:
 
     variant 'bcfill', 12"   data/drizzled_bcfill/  data/cutouts_bcfill/  data/mosaics_bcfill/
@@ -34,7 +34,7 @@ tree (a small alternate science product worth versioning, like data/cutouts/). A
 tree at a non-default size stays untracked, same as any other size variant.
 
 The PSF products (cutout_[cr_]psf*.fits) are NOT size-keyed and are not duplicated into a
-size tree: the kernel is trimmed by amplitude (CLAUDE.md, *PSF generation*), so it is a
+size tree: the kernel is trimmed by amplitude (AGENTS.md, *PSF generation*), so it is a
 property of the band, not of the stamp it will be convolved with. A size-variant stamp
 pairs with the same kernel from the default tree.
 

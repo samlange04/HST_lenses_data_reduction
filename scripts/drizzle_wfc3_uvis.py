@@ -646,7 +646,7 @@ if _lc is not None and len(single_sci_files) >= 2:
             print(f'  {_name}: peak={_p:.3g} ({_ratio:.2f}x median)' + ('  <-- WARNING' if _flag else ''))
         if _bad:
             print('  WARNING: possible cross-visit WCS mismatch -- inspect before '
-                  'trusting this product (see CLAUDE.md "WCS alignment")')
+                  'trusting this product (see AGENTS.md "WCS alignment")')
         else:
             print('  OK - all frames consistent')
 

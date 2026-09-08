@@ -21,7 +21,7 @@
 #                  injected build) is moved aside to *_analytic.
 #   --all          also run empirical products, so psf_kernel_injected.fits can be compared
 #                  against the empirical truth (validation: injected-model should approach the
-#                  empirical FWHM, both being drizzled -- see the F160W check in CLAUDE.md).
+#                  empirical FWHM, both being drizzled -- see the F160W check in AGENTS.md).
 #                  Promotion never applies to an empirical primary -- these write the
 #                  parallel *_injected-suffixed comparison files instead, as before.
 #

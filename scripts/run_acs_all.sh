@@ -6,7 +6,7 @@
 # Usage: run_acs_all.sh [SAMPLE] [--bcfill]   (default: mast_target_names.DEFAULT_SAMPLE)
 #
 # --bcfill drizzles the bad-column-filled reduction into the PARALLEL data/drizzled_bcfill/
-# tree (see CLAUDE.md *Bad-column fill*); the standard tree is untouched. Logs are tagged
+# tree (see AGENTS.md *Bad-column fill*); the standard tree is untouched. Logs are tagged
 # _bcfill so they don't clobber the standard run's.
 #
 # The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --

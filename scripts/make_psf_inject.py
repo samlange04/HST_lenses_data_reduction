@@ -87,7 +87,7 @@ sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # macOS AstroDrizzle write-hang workaround -- must be installed before AstroDrizzle runs
-# (see CLAUDE.md / mmap_fits_write). No-op off macOS.
+# (see AGENTS.md / mmap_fits_write). No-op off macOS.
 import mmap_fits_write
 mmap_fits_write.install()
 from drizzlepac import astrodrizzle
@@ -511,7 +511,7 @@ def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
     native_scale = float(sci_hdr['D001ISCL'])
     out_scale = float(sci_hdr['D001SCAL'])
     # NDRIZIM is the drizzled IMAGE count, not exposure count: ACS/WFC and WFC3/UVIS FLCs
-    # are 2-chip MEFs (NDRIZIM = 2x exposures; see CLAUDE.md's tracking-JSON section), and
+    # are 2-chip MEFs (NDRIZIM = 2x exposures; see AGENTS.md's tracking-JSON section), and
     # both chips of one exposure share the same dither phase, so they must not be counted
     # as two independent phase samples. WFC3/IR and WFPC2 (single chip) need no correction.
     inst_key = make_psf.instrument_key(sci_hdr)

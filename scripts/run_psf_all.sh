@@ -51,7 +51,7 @@ fi
 # (ACS/WFPC2 hold *_cr_*; F160W holds *nocrrej* -- make_psf --pass auto picks the right one).
 # f438W is gallery's blue UVIS science band; F225W/F275W are deliberately omitted -- they
 # are confirmed unusable for lens science sample-wide (arc undetected), so no PSF work is
-# done on them (see CLAUDE.md, gallery_uv_bands_unusable). The extra filters are no-ops for
+# done on them (see AGENTS.md, gallery_uv_bands_unusable). The extra filters are no-ops for
 # samples that lack them (the glob matches nothing).
 ok=0; fail=0; skip=0
 for filt in f606W f814W f555W f160W f438W; do

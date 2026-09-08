@@ -210,7 +210,7 @@ def casertano_r(pixfrac, scale_ratio):
     output-to-native pixel `scale_ratio` (s) alone.
 
     This is a closed-form CROSS-CHECK against the empirically-measured correlation factors
-    in CLAUDE.md's *Drizzle correlated noise* section (~1.24 ACS F814W, ~1.17 F160W, ~1.5-1.6
+    in AGENTS.md's *Drizzle correlated noise* section (~1.24 ACS F814W, ~1.17 F160W, ~1.5-1.6
     gallery UVIS -- each from a blank-sky block-sum test on a handful of lenses, not derived
     from pixfrac/scale). It is reported alongside --corr-factor for comparison, not used to
     set it automatically: r is the *variance*-reduction factor of a single, idealised drizzle
@@ -435,7 +435,7 @@ def main():
                    help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
                         'produced by drizzle_acs_wfc.py --bcfill) into the parallel, tracked '
                         'data/cutouts_bcfill/ tree; its own info/lens_cutout_qc_bcfill.json. '
-                        'Removes the ACS dead-column noise stripe -- see CLAUDE.md / '
+                        'Removes the ACS dead-column noise stripe -- see AGENTS.md / '
                         'scripts/bolton_investigations. ACS bands only.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
@@ -575,7 +575,7 @@ def main():
         print(f"  Casertano R (analytic, pixfrac={float(pixfrac):g}, "
               f"scale_ratio={scale_ratio:.3f}): {r_analytic:.3f}"
               + (f"  [--corr-factor is {a.corr_factor:g}]" if a.corr_factor != 1.0 else
-                 "  (--corr-factor not set; empirical values are in CLAUDE.md)"))
+                 "  (--corr-factor not set; empirical values are in AGENTS.md)"))
         noise_hdr['CASR'] = (round(r_analytic, 4), 'analytic Casertano correlated-noise R')
     else:
         print("  Casertano R: not available (D001PIXF/D001ISCL/D001SCAL missing from header)")
