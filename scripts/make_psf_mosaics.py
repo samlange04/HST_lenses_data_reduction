@@ -48,7 +48,7 @@ import mosaic_groups
 import cutout_paths
 from make_mosaics import short_filt, plot_mosaic
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def pooled_log_norm(arrays):

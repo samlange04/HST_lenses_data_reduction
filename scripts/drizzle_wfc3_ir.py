@@ -92,7 +92,7 @@ filt           = _a.filt
 do_cr          = _a.cr
 _is_subprocess = _a._subprocess
 
-ws_path     = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins. (F160W has no CR pass by default,

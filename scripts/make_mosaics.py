@@ -45,7 +45,7 @@ import matplotlib.patheffects as pe
 from astropy.io import fits
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
 
-ws_path = '/Users/samlange/Code/HST_lenses_data_reduction'
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
