@@ -57,7 +57,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # whose drizzle_files you want (the primary f606W dir here).
 LENS = os.environ.get('BCFILL_LENS', 'J0822+2652')
 SRC = f"{REPO}/data/drizzle_files/slacs_gold/{LENS}/f606W"    # pipeline-prepared WF3 inputs
-OUT = f"{REPO}/diagnostics/bolton_test_outputs"                           # tracked (final products)
+OUT = f"{REPO}/diagnostics/bolton_test_outputs"                           # not checked in
 os.makedirs(OUT, exist_ok=True)
 WORK = f"{REPO}/output/redrizzle_wfpc2_work/{LENS}"           # git-ignored scratch, per lens
 

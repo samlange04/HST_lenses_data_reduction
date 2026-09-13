@@ -22,7 +22,7 @@ Recipe (faithful to the paper, deliberately minimal):
 Applied to J1023+4230 F814W, whose bad detector column runs through the deflector core,
 so the drizzle stripe is maximally visible for the side-by-side.
 
-Outputs (all under diagnostics/bolton_test_outputs/ — tracked on this branch while testing):
+Outputs (all under diagnostics/bolton_test_outputs/ — not checked in; recreated on run):
   bolton_J1023_sci.fits    - Bolton-style science image (e/s)
   bolton_J1023_noise.fits  - Bolton-style noise map (e/s)
   bolton_J1023_compare.png - 3x3 comparison vs this repo's drizzle products

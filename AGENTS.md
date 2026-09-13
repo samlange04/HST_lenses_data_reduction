@@ -20,8 +20,12 @@ re-litigate it"; the slug names the note, not a file in this repo.
 > the ACS dead-column noise-stripe question (Bolton-2008 bilinear reduction, post-hoc stripe
 > heal/mask, input-level bad-column fill + re-drizzle). The investigation settled on **option 3
 > (input-level bad-column fill), now productionized as `--bcfill`** — see *Bad-column fill*
-> below. The other scripts stay standalone validation-only tools writing to the tracked
-> `diagnostics/bolton_test_outputs/`, *not* `data/`; whether to keep that folder long-term is open.
+> below. The other scripts stay standalone validation-only tools writing to
+> `diagnostics/bolton_test_outputs/`, *not* `data/`. **That folder was deleted 2026-09-13**
+> (24 files, 31 MB), closing the "keep it long-term?" question: the investigation is settled
+> and bcfill is in production, so the demonstrator figures no longer earn their place in the
+> repo. Every script recreates the folder on run (`makedirs(..., exist_ok=True)`), and the
+> deleted figures are recoverable from git history if a claim ever needs re-checking.
 
 ## Environment
 
@@ -574,8 +578,10 @@ option 3).
   drizzle stripe) rather than masking to a huge value.
 - Validated: ACS J1023+4230 (6.3% of the cutout is stripe, ratio ≤1.23) and WFPC2
   J0252+0039/J0822+2652 (4.7% of cutout, ratio median 1.12 / max 1.41; fill count
-  detector-fixed at ~2020 px/frame, single- and split-visit identical). Standalone
-  comparison figures in `diagnostics/bolton_test_outputs/redrizzle[_wfpc2]_*bcfill_compare.png`.
+  detector-fixed at ~2020 px/frame, single- and split-visit identical). The standalone
+  comparison figures (`redrizzle[_wfpc2]_*bcfill_compare.png`) were deleted with
+  `diagnostics/bolton_test_outputs/` on 2026-09-13; rerun the scripts, or read them out of git
+  history, to see them again.
 
 **`run_acs_all.sh` and `run_wfpc2_wf3.sh` are `--bcfill`-aware** — pass `--bcfill` as a
 second arg (after the optional sample) and it threads through every stage into the parallel
