@@ -716,14 +716,16 @@ an empty arc region would mask out the whole stamp.
 recoverable from git history if ever wanted; masking restarted under the current per-band
 defaults.
 
-**Current state (2026-09-13): 90 masks — `slacs_gold` is COMPLETE on every band**: f814W
+**Current state (2026-09-13): 93 masks — `slacs_gold` is COMPLETE on every band**: f814W
 38/38, f606W 22/22, f555W 16/16, f160W 13/13. ACS/WFPC2 bands are in
 `data/cutouts_bcfill/`, f160W in `data/cutouts/` (its priority tree), all recorded in
 `info/lens_masks.json`. Most bands after the first came through the reviewed-proposal route
 rather than fresh draws (f606W 21 `edited_from_f814W` + 1 `drawn`; f160W 9 + 4). **The last
 gap, `J0822+2652 f606W_v2`, is now drawn too** — the split-visit second visit is its own
-product directory and so needed its own draw, which is why it trailed the f606W sweep. Still
-entirely unmasked: `slacs_other` (0/34) and `gallery` (0/33). Three per-lens notes:
+product directory and so needed its own draw, which is why it trailed the f606W sweep.
+**`slacs_other` f814W is now drawn as well (4/4)** — that sample's ACS band, and its only
+band with a bcfill tree. Its f606W (0/24) and f160W (0/6) are still open, as is all of
+`gallery` (0/33). Three per-lens notes:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
   because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
