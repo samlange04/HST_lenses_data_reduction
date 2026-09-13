@@ -7,17 +7,22 @@ repo's AstroDrizzle reduction correctly shows in its ACS noise maps, and what it
 to reproduce that clean look while keeping drizzle's advantages.
 
 All scripts here read the repo's real products under `data/` and write their outputs to
-**`diagnostics/bolton_test_outputs/`** — a folder under the repo-root `diagnostics/` dir that is
-**tracked on the `bolton_interpolation` branch** so the products are visible while testing (the bulky re-drizzle scratch mosaics go to
-git-ignored `output/redrizzle_work/` instead). They are self-contained and hard-wired to the
+**`diagnostics/bolton_test_outputs/`** — a folder under the repo-root `diagnostics/` dir (the
+bulky re-drizzle scratch mosaics go to git-ignored `output/redrizzle_work/` instead).
+**That folder and its 24 figures/FITS were deleted from the repo on 2026-09-13**, the
+investigation having settled and `--bcfill` being in production; every script here recreates
+it on run, and the old outputs are in git history. They are self-contained and hard-wired to the
 demonstrator lens **J1023+4230 F814W**, whose bad detector column runs straight through the
 deflector core — the worst case, and the clearest for a side-by-side.
 
 Run any of them with `uv run python scripts/bolton_investigations/<script>.py`.
 
-> **Status:** exploratory only. None of these is wired into the pipeline, and **no cutouts or
-> downstream products under `data/` have been regenerated** with any of them — everything they
-> produce is the single demonstrator lens, in `diagnostics/bolton_test_outputs/`.
+> **Status:** exploratory only, and **closed** — the question these scripts were written to
+> answer is settled (option 3, input-level bad-column fill, is productionized as `--bcfill`;
+> see AGENTS.md → *Bad-column fill*). They are kept as re-runnable validation tools. None is
+> wired into the pipeline, and **no cutouts or downstream products under `data/` have been
+> regenerated** with any of them — everything they produce is the single demonstrator lens, in
+> `diagnostics/bolton_test_outputs/`, which is no longer checked in.
 
 ---
 
@@ -99,7 +104,7 @@ sharpness, residual, photometry and radial profiles. Output: `bolton_vs_drizzle.
 
 ---
 
-## Output plots (in `diagnostics/bolton_test_outputs/`)
+## Output plots (written to `diagnostics/bolton_test_outputs/` on run; not checked in)
 
 All panels use `inferno` + asinh for science, a percentile-clipped linear scale for noise,
 and a diverging `RdBu_r` for difference maps. All are J1023+4230 F814W, 0.05″/px, ~20″.

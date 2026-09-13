@@ -27,7 +27,7 @@ version for comparison.
 
 Applied to J1023+4230 F814W (bad column through the deflector core).
 
-Outputs (diagnostics/bolton_test_outputs/ — tracked on this branch while testing):
+Outputs (diagnostics/bolton_test_outputs/ — not checked in; recreated on run):
   hybrid_J1023_noise.fits    - drizzle noise map, stripe healed in the lens region
   hybrid_J1023_stripe.fits   - the detected stripe mask (1 = healed)
   hybrid_J1023_compare.png   - 3x3 (rows: drizzle / healed / difference;

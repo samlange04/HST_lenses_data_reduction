@@ -8,7 +8,7 @@ them. We solve for shift + flux-scale + background offset by least-squares on th
 then report the residual and the PSF sharpness (the expected real difference: bilinear
 resampling is softer than drizzle).
 
-Outputs (diagnostics/bolton_test_outputs/ — tracked on this branch while testing):
+Outputs (diagnostics/bolton_test_outputs/ — not checked in; recreated on run):
   bolton_vs_drizzle.png   - images, difference, radial profiles, star-PSF cuts
   (prints the metrics table)
 """
