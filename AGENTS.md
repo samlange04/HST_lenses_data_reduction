@@ -1726,9 +1726,10 @@ The `gallery` sample (15 lenses, Shu et al. 2016 Table 1 class E-S-A) is BELLS G
 (props 14189, 16734), imaged in WFC3/UVIS across five filters: **F225W, F275W, F438W,
 F606W, F814W**. One filter-agnostic script (`--filt`), modeled closely on
 `drizzle_acs_wfc.py` — UVIS is a two-CCD optical detector like ACS/WFC, so it inherits the
-same alignment/CR reasoning, not yet independently re-audited on gallery data (a per-lens
-`--align` override table exists in the script but is empty so far; an explicit `--align`
-always wins).
+same alignment/CR reasoning. **That inheritance was independently audited on gallery data
+2026-09-13 and both halves hold** (see *Gallery audit* below); the per-lens `--align`
+override table in the script is still empty, which the audit now justifies rather than
+merely reflects (an explicit `--align` always wins).
 
 ```bash
 uv run python scripts/drizzle_wfc3_uvis.py --lens J1110+3649 --filt f606W
@@ -1783,13 +1784,59 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   F814W/F438W/F275W** — correctly reduced, just not lensing-useful; only F606W is. → memory:
   j1110_2808_f606w_only
 
+### Gallery audit (2026-09-13) — the inherited ACS reasoning, checked
+
+Read-only; nothing was re-drizzled or rewritten.
+
+**Alignment: no cross-band tie is needed — verified, not assumed.** Field sources
+cross-matched between F606W and F814W on all 6 lenses that have both (8–140 matches each)
+give median VECTOR offsets of **≤0.04″** (largest component 0.039″). So a lens's bands do
+co-register and `align_wfpc2_to_acs.py` has nothing to fix here, exactly as claimed above.
+WCSNAME does vary per lens and per filter as documented, but unlike ACS F555W it does **not**
+predict a real offset.
+
+- **TRAP: do not point `align_wfpc2_to_acs.py` at gallery.** Its deflector-centroid test —
+  the measurement that correctly drove the F555W tie in 882b813 — reports **0.16–0.63″** on
+  these same well-aligned lenses. The centroid genuinely moves between bands because
+  gallery's lensed arc is blue and bright in F606W while the deflector is red, so the light
+  centroid is not a fixed point across filters. Acting on that number would shift CRVAL by up
+  to 0.6″ and **break** astrometry that is currently good. The SLACS F555W case was safe from
+  this only because its arcs are faint in both ACS bands. **Cross-band astrometry on gallery
+  must use field sources, not the deflector.**
+
+**CR rejection: the LACosmic default stands; no per-lens tuning is warranted.** Core flux
+(r<1″) is preserved to a median **0.985** of the no-CR pass across F606W/F814W. The arc
+annulus (1–2″) sits at 0.932 vs 0.989 for a slacs_gold F814W control, which looked like
+erosion and is not — a `scripts/lacosmic_erosion_scan.py` sweep over
+sigclip 4.5–10 / objlim 5–12 on the two worst lenses (J2228+1205, J0237-0641) shows their
+CR-flags-on-real-signal fraction barely responds to the thresholds (−13%, −10%), where the
+documented ACS erosion case J1420+6019 halves (−54%). **The best-behaved gallery lens scores
+the *highest* absolute fraction**, so the quantity does not track arc loss at all. Read that
+script's docstring before repeating this: the intuitive "flagged in every frame" metric
+returns zero even on the known-eroded product, and the absolute fraction is not comparable
+across instruments — only the *response* to the thresholds is.
+
+- Two measurement traps this audit walked into, both worth avoiding: **selecting pixels on
+  the no-CR pass and then measuring CR/no-CR biases the ratio low** (F438W read 0.29–0.76
+  that way and 0.96–1.01 selecting the other way — the truth is ~1); and **ratios of
+  background-dominated sums are meaningless**, which is what made the first F438W and
+  arc-annulus numbers look alarming.
+
+**F438W detects the ARC but not the deflector** — sharpen "science-ready" accordingly. Peak
+S/N within 0.5″ of the lens centre is **2.2–3.5** on all six lenses, indistinguishable from
+the unusable UV bands; but over the inner 3″ it reaches **S/N 5.0–19.7**. The band is doing
+exactly what a blue filter should on a red lens with a blue source: the deflector is absent
+and the lensed arc is not. So F438W is usable for source/arc work and useless for deflector
+light or for anything keyed on the deflector centroid — including the tie check above.
+
 Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 each,
 F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
 GALLERY actually has on MAST, not a pipeline gap. `run_cutouts_all.sh` was extended to glob
 the UV/blue bands (`f438W f275W f225W`) alongside the SLACS filters so it stays one runner
 for every sample. **F225W/F275W across every lens, and F814W/F438W/F275W specifically for
 J1110+2808, are not lensing-useful** (see bullets above) — treat only F606W (all 15 lenses)
-and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready.
+and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready, with the
+F438W qualification from the audit above: **arc yes, deflector no.**
 
 ## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
 
