@@ -716,12 +716,15 @@ an empty arc region would mask out the whole stamp.
 recoverable from git history if ever wanted; masking restarted under the current per-band
 defaults.
 
-**Current state (2026-09-13): 54 masks — `slacs_gold` f814W 38/38 and f555W 16/16**, drawn
-into `data/cutouts_bcfill/` (the priority tree for both bands) and recorded in
-`info/lens_masks.json`. The f555W sweep completed 2026-09-13, mostly as reviewed proposals off
-f814W (13 `edited_from_f814W`, 2 `accepted_from_*`, 1 `drawn`). Still unmasked: `slacs_gold`
-f606W (0/22) and f160W (0/13), and all of `slacs_other` (0/34) and `gallery` (0/33). Three
-per-lens notes:
+**Current state (2026-09-13): 89 masks — `slacs_gold` is COMPLETE on every band**: f814W
+38/38, f606W 22/22, f555W 16/16, f160W 13/13. ACS/WFPC2 bands are in
+`data/cutouts_bcfill/`, f160W in `data/cutouts/` (its priority tree), all recorded in
+`info/lens_masks.json`. Most bands after the first came through the reviewed-proposal route
+rather than fresh draws (f606W 21 `edited_from_f814W` + 1 `drawn`; f160W 9 + 4). **The one
+`slacs_gold` gap is `J0822+2652 f606W_v2` (0/1)** — the split-visit second visit, which is a
+separate product directory and so a separate draw; decide whether that shorter visit is worth
+modelling at all before drawing it. Still entirely unmasked: `slacs_other` (0/34) and
+`gallery` (0/33). Three per-lens notes:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
   because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
@@ -739,14 +742,20 @@ per-lens notes:
   erase of any f555W mask in the sample. It is also the same lens as the note above, whose
   f814W mask had to be pulled back off lensed image A; the two cautions compound, so check
   the f555W boundary against image A's centroid too.
-- **J1020+1122 f814W excludes ~47% of the stamp, and that is CORRECT — do not "fix" it.**
-  `n_excluded_px` 27173 of the 240×240 stamp, redrawn 2026-09-13 (`source: drawn`, the
-  inherited 25395-px proposal rejected and drawn fresh). **Two large nearby galaxies
-  contaminate the right side of the frame**, so the mask is that big because the
-  contamination is. Confirmed by the user 2026-09-13, superseding the earlier
-  "needs redrawing" flag — which was raised on stamp fraction alone, before anyone had
-  looked at what was in the frame. The general lesson: `n_excluded_px` is not on its own
-  evidence of a bad mask, so check the image before flagging a large one.
+- **J1020+1122: the mask SIZE is correct, the BOUNDARY is uncertain — and most uncertain in
+  f160W.** Two things that are easy to conflate, so keep them apart. *The size is settled*:
+  **two large nearby galaxies contaminate the right side of the frame**, so a mask covering
+  ~47% of the f814W stamp (`n_excluded_px` 27173) is that big because the contamination is —
+  confirmed by the user, and it retires the older "needs redrawing" flag, which was raised on
+  stamp fraction alone before anyone looked at what was in the frame. **`n_excluded_px` is not
+  on its own evidence of a bad mask; check the image before flagging a large one.** *Where the
+  edge falls is not settled*: the user flags this lens's masks as uncertain across bands and
+  **f160W most of all** (2026-09-13), so treat them as provisional and refit with the mask
+  varied before quoting anything sensitive to it. The provenance shows the disagreement — all
+  three bands were **drawn fresh, each rejecting the f814W proposal outright** (`source:
+  drawn`, `n_erased_px` 0), and they do not agree on sky area: **67.93 arcsec² excluded in
+  f814W, 53.39 in f606W, 66.10 in f160W**, i.e. f606W excludes ~21% less sky than f814W for
+  the same contaminants. Per-band `note` keys in `info/lens_masks.json` carry this.
 
 **One draw per BAND; the next band starts from a REVIEWED proposal, not a blank canvas
 (`--propose-from`, default `auto`, added 2026-09-04).** Each run draws on one band — the

@@ -1,6 +1,19 @@
 {
     "slacs_gold": {
         "J0008-0004": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.081927,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0008-0004/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -16,6 +29,32 @@
             }
         },
         "J0029-0055": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.07685,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0029-0055/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.074253,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0029-0055/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -31,6 +70,19 @@
             }
         },
         "J0157-0056": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.070608,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0157-0056/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -74,6 +126,32 @@
             }
         },
         "J0252+0039": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.083475,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0252+0039/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.085729,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0252+0039/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -89,6 +167,19 @@
             }
         },
         "J0330-0020": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.065069,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0330-0020/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -104,6 +195,32 @@
             }
         },
         "J0728+3835": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.018825,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0728+3835/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.009132,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0728+3835/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -147,6 +264,32 @@
             }
         },
         "J0822+2652": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.038975,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0822+2652/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.03783,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -162,6 +305,32 @@
             }
         },
         "J0841+3824": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.02195,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0841+3824/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.033003,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0841+3824/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -177,6 +346,32 @@
             }
         },
         "J0903+4116": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.275125,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0903+4116/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.180469,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0903+4116/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -220,6 +415,32 @@
             }
         },
         "J0936+0913": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.0368,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0936+0913/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.039965,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0936+0913/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -235,6 +456,32 @@
             }
         },
         "J0946+1006": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.077175,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J0946+1006/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.07526,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0946+1006/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -306,6 +553,32 @@
             }
         },
         "J1020+1122": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.459,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J1020+1122/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.370764,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1020+1122/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -321,6 +594,32 @@
             }
         },
         "J1023+4230": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.0382,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J1023+4230/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.041128,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1023+4230/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -336,6 +635,32 @@
             }
         },
         "J1029+0420": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.021625,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J1029+0420/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.022344,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1029+0420/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -351,6 +676,32 @@
             }
         },
         "J1032+5322": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.014475,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J1032+5322/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.01599,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1032+5322/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -366,6 +717,19 @@
             }
         },
         "J1142+1001": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.034913,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1142+1001/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -437,6 +801,19 @@
             }
         },
         "J1213+6708": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.018368,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1213+6708/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -452,6 +829,19 @@
             }
         },
         "J1218+0830": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.031806,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1218+0830/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -551,6 +941,32 @@
             }
         },
         "J1430+4105": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.05865,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_gold/J1430+4105/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.075903,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1430+4105/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -566,6 +982,19 @@
             }
         },
         "J1432+6317": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.004774,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1432+6317/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -609,6 +1038,19 @@
             }
         },
         "J1525+3327": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.088247,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J1525+3327/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
@@ -764,6 +1206,19 @@
             }
         },
         "J2341+0000": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.089271,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J2341+0000/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
