@@ -1302,6 +1302,24 @@
                 "brush_radius_px": 6
             }
         },
+        "J1016+3859": {
+            "f814W": {
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "drizzle_pass": "cr",
+                "n_added_px": 512,
+                "n_erased_px": 0,
+                "n_excluded_px": 7954,
+                "note": "2026-09-13: the compact red object 3.68\" from the deflector is NOT an arc and is masked. It is tangentially elongated (b/a 0.70, major axis 89 deg from radial), which is why it reads as one, but that is weak shear, not strong lensing: no counter-image anywhere at 2.5-5.5\", and it is ~3x REDDER than the deflector (f160W/f814W) where a lensed SLACS source would be bluer. The implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\" that are the real lensed features. See diagnostics/J1016+3859_f814W_arc_test.png.",
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f814W",
+                "proposal_px": 7442,
+                "source": "edited_from_f814W",
+                "variant": "bcfill"
+            }
+        },
         "J1153+4612": {
             "f814W": {
                 "prefix": "cutout_cr",

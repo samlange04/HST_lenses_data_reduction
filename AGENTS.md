@@ -716,7 +716,7 @@ an empty arc region would mask out the whole stamp.
 recoverable from git history if ever wanted; masking restarted under the current per-band
 defaults.
 
-**Current state (2026-09-13): 93 masks — `slacs_gold` is COMPLETE on every band**: f814W
+**Current state (2026-09-13): 94 masks — `slacs_gold` is COMPLETE on every band**: f814W
 38/38, f606W 22/22, f555W 16/16, f160W 13/13. ACS/WFPC2 bands are in
 `data/cutouts_bcfill/`, f160W in `data/cutouts/` (its priority tree), all recorded in
 `info/lens_masks.json`. Most bands after the first came through the reviewed-proposal route
@@ -725,7 +725,7 @@ gap, `J0822+2652 f606W_v2`, is now drawn too** — the split-visit second visit 
 product directory and so needed its own draw, which is why it trailed the f606W sweep.
 **`slacs_other` f814W is now drawn as well (4/4)** — that sample's ACS band, and its only
 band with a bcfill tree. Its f606W (0/24) and f160W (0/6) are still open, as is all of
-`gallery` (0/33). Three per-lens notes:
+`gallery` (0/33). Four per-lens notes:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
   because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
@@ -757,6 +757,24 @@ band with a bcfill tree. Its f606W (0/24) and f160W (0/6) are still open, as is 
   drawn`, `n_erased_px` 0), and they do not agree on sky area: **67.93 arcsec² excluded in
   f814W, 53.39 in f606W, 66.10 in f160W**, i.e. f606W excludes ~21% less sky than f814W for
   the same contaminants. Per-band `note` keys in `info/lens_masks.json` carry this.
+
+- **J1016+3859 (`slacs_other`) f814W: the obvious "arc" is not one — check before you spare
+  it.** A compact red object 3.68″ from the deflector reads as a lensed image and was left
+  unmasked for that reason; it is now masked. It really is **tangentially elongated** (b/a
+  0.70, major axis 89° from the lens-radial direction, stable across annuli and surviving
+  removal of the deflector's radial envelope in both f814W and f160W) — but that is **weak
+  shear, not strong lensing**. Three things settle it: **no counter-image** anywhere at
+  2.5–5.5″; it is **~3× REDDER than the deflector** in f160W/f814W (and 3× fainter relatively
+  in f606W) where a lensed SLACS source is a blue star-forming galaxy; and 3.68″ is a wild
+  θ_E for a single early-type. The consistent reading is a background galaxy just outside the
+  caustic, singly imaged and sheared ~20%. That is self-checking: the observed ellipticity
+  implies **θ_E ≈ 1.3–1.4″** (SIS, γ = θ_E/2r), and the faint f606W knots at **r = 1.4–1.8″**
+  — the *real* lensed features, invisible in f814W — sit at that same radius. Figures:
+  `diagnostics/J1016+3859_f814W_arc_test.png` (three-band) and `..._mask_check.png`.
+  **Generalise the method, not the verdict**: tangential elongation alone does not make an
+  arc, and colour-relative-to-the-deflector plus a counter-image search is the cheap test.
+  Compare colours as a *ratio against the deflector's own* — raw cross-band flux is
+  meaningless here (F606W is WFPC2 DN/s, F814W ACS e/s; see *F606W `BUNIT`* above).
 
 **One draw per BAND; the next band starts from a REVIEWED proposal, not a blank canvas
 (`--propose-from`, default `auto`, added 2026-09-04).** Each run draws on one band — the

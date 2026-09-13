@@ -1263,6 +1263,21 @@
                 "output": "data/cutouts_bcfill/slacs_other/J0959+4416/f814W/cutout_cr_dataset.png"
             }
         },
+        "J1016+3859": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.13809,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1016+3859/f814W/cutout_cr_dataset.png"
+            }
+        },
         "J1153+4612": {
             "f814W": {
                 "prefix": "cutout_cr",
