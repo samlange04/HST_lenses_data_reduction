@@ -1287,5 +1287,46 @@
                 "variant": "bcfill"
             }
         }
+    },
+    "slacs_other": {
+        "J0959+4416": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 421,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1153+4612": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 2426,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1416+5136": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 403,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        }
     }
 }
