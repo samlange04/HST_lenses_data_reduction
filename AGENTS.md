@@ -1807,7 +1807,8 @@ predict a real offset.
 **CR rejection: the LACosmic default stands; no per-lens tuning is warranted.** Core flux
 (r<1″) is preserved to a median **0.985** of the no-CR pass across F606W/F814W. The arc
 annulus (1–2″) sits at 0.932 vs 0.989 for a slacs_gold F814W control, which looked like
-erosion and is not — a `scripts/lacosmic_erosion_scan.py` sweep over
+erosion and is **fully explained by the arcs being fainter** (see next bullet) — a
+`scripts/lacosmic_erosion_scan.py` sweep over
 sigclip 4.5–10 / objlim 5–12 on the two worst lenses (J2228+1205, J0237-0641) shows their
 CR-flags-on-real-signal fraction barely responds to the thresholds (−13%, −10%), where the
 documented ACS erosion case J1420+6019 halves (−54%). **The best-behaved gallery lens scores
@@ -1816,6 +1817,21 @@ script's docstring before repeating this: the intuitive "flagged in every frame"
 returns zero even on the known-eroded product, and the absolute fraction is not comparable
 across instruments — only the *response* to the thresholds is.
 
+- **Why the arc annulus reads 0.932 on gallery and 0.989 on SLACS — same CR flux, fainter
+  arcs, nothing eroded.** The decisive control is a **blank-sky annulus (8–10″)** in the same
+  images, where there is no source to shave. Per lens, *(CR flux removed at the arc) / (CR
+  flux removed in blank sky)* comes out at **gallery median 1.01** (range 0.70–2.04, n=15)
+  and **slacs median 1.11** (0.64–1.76, n=6): the source region loses exactly what empty sky
+  loses, in both samples, and gallery is if anything the cleaner of the two. So the numerator
+  is cosmic rays, uniformly distributed. What differs is the **denominator** — annulus surface
+  brightness is **5.8 e/s/arcsec² on gallery vs 38.5 on slacs_gold, 6.7× fainter** — while the
+  CR flux removed is essentially the same (0.38 vs 0.48 e/s/arcsec² in blank sky). Same
+  subtraction, much smaller thing to subtract it from. Independent confirmation from frame
+  count: a CR is diluted 1/N by the drizzle average, and the two NDRIZIM=24 gallery lenses
+  lose **0.154** e/s/arcsec² against **0.381** for the NDRIZIM=8 majority — a factor 2.5
+  against the 3.0 predicted. **The lesson for any future check: a CR/no-CR flux RATIO is not
+  a measure of erosion, because it divides by source brightness.** Compare the absolute flux
+  removed against blank sky in the same image instead.
 - Two measurement traps this audit walked into, both worth avoiding: **selecting pixels on
   the no-CR pass and then measuring CR/no-CR biases the ratio low** (F438W read 0.29–0.76
   that way and 0.96–1.01 selecting the other way — the truth is ~1); and **ratios of
