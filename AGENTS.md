@@ -716,10 +716,12 @@ an empty arc region would mask out the whole stamp.
 recoverable from git history if ever wanted; masking restarted under the current per-band
 defaults.
 
-**Current state (2026-09-04): 38 masks, all `slacs_gold` f814W**, drawn into
-`data/cutouts_bcfill/` (the priority tree for that band) and recorded in
-`info/lens_masks.json` — i.e. one per `slacs_gold` lens at the highest-S/N band, with no
-other band or sample masked yet. Two per-lens notes:
+**Current state (2026-09-13): 54 masks — `slacs_gold` f814W 38/38 and f555W 16/16**, drawn
+into `data/cutouts_bcfill/` (the priority tree for both bands) and recorded in
+`info/lens_masks.json`. The f555W sweep completed 2026-09-13, mostly as reviewed proposals off
+f814W (13 `edited_from_f814W`, 2 `accepted_from_*`, 1 `drawn`). Still unmasked: `slacs_gold`
+f606W (0/22) and f160W (0/13), and all of `slacs_other` (0/34) and `gallery` (0/33). Three
+per-lens notes:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
   because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
@@ -728,8 +730,23 @@ other band or sample masked yet. Two per-lens notes:
   each marked/known lensed image, not just how the stamp looks. The diffuse SW "fluff" the
   mask covers is correctly excluded — vetted as not lensed (→ memory:
   contaminant_vetting_j0728_j0841).
-- **J1020+1122 f814W needs redrawing** (`n_excluded_px` 25395, ~44% of the stamp) — flagged
-  by the user, not yet redone; `make_masks.py --lens J1020+1122 --filt f814W --force`.
+- **J1451-0239 f555W is UNCERTAIN and should be treated as provisional** (flagged by the
+  user on drawing it, 2026-09-13). Where the mask boundary belongs on this lens is a genuine
+  judgement call, not a settled one, so **any result that is sensitive to it needs a
+  refit with the mask varied** before it is quoted. Provenance is consistent with that:
+  it is `edited_from_f814W`, and the f814W proposal was heavily reworked rather than accepted
+  — 8456 px proposed → 7222 px kept, with 2633 px erased and only 259 added, the largest
+  erase of any f555W mask in the sample. It is also the same lens as the note above, whose
+  f814W mask had to be pulled back off lensed image A; the two cautions compound, so check
+  the f555W boundary against image A's centroid too.
+- **J1020+1122 f814W excludes ~47% of the stamp, and that is CORRECT — do not "fix" it.**
+  `n_excluded_px` 27173 of the 240×240 stamp, redrawn 2026-09-13 (`source: drawn`, the
+  inherited 25395-px proposal rejected and drawn fresh). **Two large nearby galaxies
+  contaminate the right side of the frame**, so the mask is that big because the
+  contamination is. Confirmed by the user 2026-09-13, superseding the earlier
+  "needs redrawing" flag — which was raised on stamp fraction alone, before anyone had
+  looked at what was in the frame. The general lesson: `n_excluded_px` is not on its own
+  evidence of a bad mask, so check the image before flagging a large one.
 
 **One draw per BAND; the next band starts from a REVIEWED proposal, not a blank canvas
 (`--propose-from`, default `auto`, added 2026-09-04).** Each run draws on one band — the
