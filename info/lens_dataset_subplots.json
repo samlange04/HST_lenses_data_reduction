@@ -290,6 +290,19 @@
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f606W/cutout_cr_dataset.png"
             },
+            "f606W_v2": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.043003,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f606W_v2/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
