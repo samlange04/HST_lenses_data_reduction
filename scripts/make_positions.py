@@ -25,12 +25,9 @@ sci/noise/psf/mask. `--filt` forces which band you mark on.
 
 Trees mirror make_masks.py exactly: `--size` selects the cutout tree (default 12",
 data/cutouts/, the git-tracked one -- and, like hand-drawn masks, these hand-marked
-positions are a NON-regenerable product, so they belong in the tracked tree), and
-`--variant {auto,bcfill,standard}` picks the reduction shown (bcfill and standard share
-crop geometry EXACTLY, so positions marked on one are valid on the other; auto prefers
-bcfill as the cleaner image). Each band's file is written into its PRIORITY tree only
-(bcfill where a bcfill cutout exists, else standard) -- one file serves whichever reduction
-is modelled, same convention as make_masks.py.
+positions are a NON-regenerable product, so they belong in the tracked tree). There is one
+cutout dir per band (cutout_paths.py), so each band's file lands beside the sci it was
+marked on, with nothing to choose and no second copy to keep in step.
 
 This is a manual, one-lens-at-a-time tool (not a batch driver): each lens blocks on its own
 Tk window until you close it. A lens that already has positions is skipped so a run resumes
@@ -70,7 +67,7 @@ import mast_target_names
 import info_json
 import cutout_paths
 # Reuse make_masks' display/tree/discovery helpers so the two GUIs stay in lock-step
-# (same pass-prefix rule, same variant-sharing, same stretched display).
+# (same pass-prefix rule, same tree discovery, same stretched display).
 import make_masks
 
 POSITIONS_JSON = os.path.join(ws_path, 'info', 'lens_positions.json')
@@ -179,9 +176,8 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                  mask_center=0.0, vmax_value=None, subtract_radial=True):
     """Mark positions once for one lens and broadcast the result to every band.
 
-    `filt_dirs` maps filt -> write_dirs (an ordered list of (variant, cutout_dir), bcfill
-    before standard) for that lens, from make_masks.discover_targets. Returns True if
-    positions were written.
+    `filt_dirs` maps filt -> cutout_dir for that lens, from make_masks.discover_targets.
+    Returns True if positions were written.
     """
     filts = sorted(filt_dirs)
     display_filt = pick_display_filt(filts, requested_filt)
@@ -190,7 +186,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
               f"(have {', '.join(filts)}), skipping")
         return False
 
-    display_dir = filt_dirs[display_filt][0][1]          # priority-tree dir of marked band
+    display_dir = filt_dirs[display_filt]                # cutout dir of the marked band
     display_prefix = make_masks.find_prefix(display_dir, drizzle_pass)
     if display_prefix is None:
         print(f"{lens} {display_filt}: no cutout sci for --pass {drizzle_pass}, skipping")
@@ -242,14 +238,12 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
 
     grid = al.Grid2DIrregular(values=positions)
 
-    # Broadcast the SAME arcsec Grid2DIrregular to every band, ONE file per band into that
-    # band's PRIORITY tree only (filt_dirs[filt][0] -- bcfill where a bcfill cutout exists,
-    # else standard), matching make_masks.py exactly: bcfill and standard share crop geometry,
-    # so one file serves whichever reduction is modelled, and downstream reads the priority
-    # tree. Each under that dir's own pass prefix (f160W has no CR pass -> cutout_positions.json).
+    # Broadcast the SAME arcsec Grid2DIrregular to every band, one file per band into that
+    # band's cutout dir, matching make_masks.py exactly. Each under that dir's own pass
+    # prefix (f160W has no CR pass -> cutout_positions.json).
     written = []
     for filt in filts:
-        variant, cutout_dir = filt_dirs[filt][0]         # priority tree for this band
+        cutout_dir = filt_dirs[filt]
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
@@ -264,7 +258,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                          stretch=stretch, vmin_percent=vmin_percent,
                          vmax_percent=vmax_percent, asinh_a=asinh_a,
                          vmax_value=vmax_value)
-        written.append({'filt': filt, 'variant': variant or 'standard', 'prefix': prefix})
+        written.append({'filt': filt, 'prefix': prefix})
         print(f"  wrote {json_path}")
 
     info_json.update(POSITIONS_JSON, sample, lens, display_filt, {
@@ -305,11 +299,6 @@ def main():
                    help=f'cutout tree to mark positions in (default {cutout_paths.DEFAULT_SIZE:g}", '
                         'data/cutouts/ -- the git-tracked tree; hand-marked positions are '
                         'non-regenerable, like masks, so they belong here)')
-    p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
-                   help="which reduction's cutouts to show: 'auto' (default) marks on the "
-                        "bcfill sci where it exists (cleaner image; shared geometry), else "
-                        "standard; 'bcfill'/'standard' restrict to one tree. Positions are "
-                        "broadcast to every variant dir regardless")
     p.add_argument('--force', action='store_true', default=False,
                    help='re-mark a lens that already has positions (default: skip it)')
     p.add_argument('--search-box-size', type=int, default=5,
@@ -352,25 +341,17 @@ def main():
                         '--no-subtract-radial to click on the raw image instead')
     a = p.parse_args()
 
-    # Same variant->tree resolution as make_masks (bcfill first for display preference).
-    if a.variant == 'bcfill':
-        variants = ['bcfill']
-    elif a.variant == 'standard':
-        variants = ['']
-    else:  # auto
-        variants = ['bcfill', '']
-    trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
+    root = cutout_paths.cutouts_root(ws_path, a.size)
 
-    # discover_targets yields per (lens, filt); regroup to filt -> write_dirs per lens so we
+    # discover_targets yields per (lens, filt); regroup to filt -> cutout_dir per lens so we
     # mark once and broadcast across the lens's bands.
     lens_filts = {}
-    for lens, filt, _display_dir, write_dirs in make_masks.discover_targets(
-            trees, a.sample, a.lens, None):   # filt=None: consider all bands, pick best below
-        lens_filts.setdefault(lens, {})[filt] = write_dirs
+    for lens, filt, cutout_dir in make_masks.discover_targets(
+            root, a.sample, a.lens, None):    # filt=None: consider all bands, pick best below
+        lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:
-        roots = ', '.join(r for _, r in trees)
-        raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
+        raise SystemExit(f"no cutouts found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")

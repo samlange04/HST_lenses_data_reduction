@@ -433,20 +433,41 @@ def main():
                         'native PSF-error input. No-op with a warning if no error map exists.')
     p.add_argument('--bcfill', action='store_true', default=False,
                    help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
-                        'produced by drizzle_acs_wfc.py --bcfill) into the parallel, tracked '
-                        'data/cutouts_bcfill/ tree; its own info/lens_cutout_qc_bcfill.json. '
-                        'Removes the ACS dead-column noise stripe -- see AGENTS.md / '
-                        'scripts/bolton_investigations. ACS bands only.')
+                        'produced by drizzle_acs_wfc.py --bcfill) instead of data/drizzled/. '
+                        'The stamp lands in the SAME cutout dir either way -- bcfill '
+                        'supersedes standard for the bands it covers -- and carries BCFILL=T '
+                        'from the drizzled header. Removes the ACS dead-column noise stripe; '
+                        'see AGENTS.md / scripts/bolton_investigations. ACS/WFPC2 bands only.')
+    p.add_argument('--force', action='store_true', default=False,
+                   help='overwrite an existing bcfill stamp with a standard (non---bcfill) '
+                        'cut. Refused without this -- see the check below.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
-                        'data/cutouts[_<variant>][_<size>arcsec]/<sample>/<lens>/<filt>')
+                        'data/cutouts[_<size>arcsec]/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
     variant = 'bcfill' if a.bcfill else ''
     drizzled_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
                                 a.sample, a.lens, a.filt)
-    output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size, variant),
+    output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size),
                                           a.sample, a.lens, a.filt)
+
+    # There is ONE stamp per band (cutout_paths.py): --bcfill picks which reduction it is
+    # cut from, not a parallel tree. That makes re-cutting a band without remembering
+    # --bcfill a silent downgrade -- same filenames, same geometry, a dead-column noise
+    # stripe back in the science image and the hand-drawn mask beside it now describing a
+    # different reduction. Nothing downstream would notice, so refuse it here instead. The
+    # provenance is read from the stamp's own BCFILL card, which it inherits from the
+    # drizzled product (drizzle_acs_wfc.py / drizzle_wfpc2_wf3.py stamp it).
+    if not a.bcfill and not a.force:
+        for existing in sorted(glob.glob(os.path.join(output_dir, 'cutout*_sci.fits'))):
+            if fits.getheader(existing).get('BCFILL', False):
+                sys.exit(
+                    f"{a.lens} {a.filt}: {os.path.basename(existing)} is a bcfill stamp "
+                    f"(BCFILL=T) and a standard cut would overwrite it.\n"
+                    f"  Re-cut it with --bcfill, or pass --force to deliberately replace "
+                    f"the bcfill product with the standard reduction.")
+
     os.makedirs(output_dir, exist_ok=True)
 
     # Resolve which pass to cut from. --cr is a deprecated alias for --pass cr.
@@ -584,10 +605,10 @@ def main():
     # --corr-factor). PyAutoLens has no PSF-error input, so fold the PSF error map built by
     # make_psf.py into the noise: sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)).
     if a.psf_err:
-        # The PSF products are variant-placed, not per-tree: resolve them through
+        # The PSF products are not size-keyed: resolve them through
         # cutout_paths.psf_cutout_dir rather than assuming this run's own output_dir, so a
-        # standard-tree cut still finds the kernel that lives in the bcfill dir (and an
-        # --output one-off still folds in the canonical error map).
+        # --size variant cut (and an --output one-off) still folds in the canonical error
+        # map from the default-size tree.
         psf_err_path = os.path.join(
             cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt),
             f'{prefix}_psf_err.fits')
@@ -627,9 +648,10 @@ def main():
     # just the raw sci/noise arrays -- so a later audit doesn't have to re-derive them from
     # the console log. Keyed like every other tracking JSON (info_json.update), one entry
     # per (sample, lens, filt) product directory.
-    info_json.update(cutout_paths.qc_json_path(ws_path, a.size, variant), a.sample, a.lens,
+    info_json.update(cutout_paths.qc_json_path(ws_path, a.size), a.sample, a.lens,
                      a.filt, {
         'size_arcsec': a.size,
+        'bcfill': bool(a.bcfill),
         'drizzle_pass': drizzle_pass,
         'center_source': peak_src,
         'offset_arcsec': round(offset, 4),

@@ -1,4 +1,4 @@
-"""Stamp-size- and variant-keyed output paths, shared by the drizzle/cutout/mosaic scripts.
+"""Stamp-size-keyed output paths, shared by the drizzle/cutout/mosaic scripts.
 
 The science stamps are 12" square (make_cutouts.py --size default) -- switched from 20"
 2026-08-11, since the 12" tree is the one carrying scripts/make_masks.py's hand-drawn,
@@ -18,34 +18,31 @@ failure AGENTS.md warns about, and the cutout FITS names (cutout_[cr_]{sci,noise
 carry no size in them, so a clobbered stamp is indistinguishable from a correct one on
 inspection. An explicit --output still wins, for one-off work.
 
-`variant` is a second, orthogonal keying axis for a whole alternate *reduction* (not just a
-different crop of the same mosaic). The one variant so far is 'bcfill' -- the ACS
-bad-column-filled re-drizzle (drizzle_acs_wfc.py --bcfill; see
-scripts/bolton_investigations/redrizzle_bcfill.py and AGENTS.md). It suffixes the drizzled
-tree too, since the mosaics themselves differ, and composes before the size tag:
+**One stamp per (sample, lens, filt) -- the bcfill/standard split is a drizzle-layer axis
+only** (2026-09-14). `variant` ('bcfill') keys a whole alternate *reduction*: the ACS/WFPC2
+bad-column-filled re-drizzle (drizzle_acs_wfc.py --bcfill; see AGENTS.md, *Bad-column
+fill*). The mosaics it produces genuinely differ, so `drizzled_root` is variant-keyed:
 
-    variant 'bcfill', 12"   data/drizzled_bcfill/  data/cutouts_bcfill/  data/mosaics_bcfill/
-                            info/lens_cutout_qc_bcfill.json
-    variant 'bcfill', 20"   data/cutouts_bcfill_20arcsec/  (etc.)
+    standard   data/drizzled/          work dir data/drizzle_files/
+    bcfill     data/drizzled_bcfill/   work dir data/drizzle_files_bcfill/
 
-The default-size bcfill QC JSON (lens_cutout_qc_bcfill.json) does NOT match the gitignore's
-`*arcsec.json`, so it is tracked -- deliberately, since data/cutouts_bcfill/ is a tracked
-tree (a small alternate science product worth versioning, like data/cutouts/). A bcfill
-tree at a non-default size stays untracked, same as any other size variant.
+But the *cutouts* are not. bcfill supersedes standard for the bands it covers -- its stamps
+are what the masks were drawn on and what the fits read -- so cutting a band with --bcfill
+replaces that band's stamp in the one tree rather than starting a parallel one. There is
+therefore exactly one science stamp per band, no priority-tree search to resolve, and the
+four products a fit consumes (sci, noise, psf, mask) always sit together by construction.
+Which reduction a stamp came from is read from its **BCFILL header card** (and mirrored in
+the `bcfill` key of info/lens_cutout_qc.json), not from its path.
+
+The guard that replaces the old parallel tree lives in make_cutouts.py: a standard cut
+refuses to overwrite a stamp whose header says BCFILL=True unless --force, so re-cutting a
+band without remembering --bcfill cannot silently downgrade it.
 
 The PSF products (cutout_[cr_]psf*.fits) are NOT size-keyed and are not duplicated into a
 size tree: the kernel is trimmed by amplitude (AGENTS.md, *PSF generation*), so it is a
 property of the band, not of the stamp it will be convolved with. A size-variant stamp
-pairs with the same kernel from the default tree.
-
-They are, however, VARIANT-placed, by `psf_cutout_dir` below: one kernel per (sample, lens,
-filt), stored in the bcfill cutout dir wherever that reduction exists and in the standard
-one otherwise -- so the four products a fit consumes (sci, noise, psf, mask) sit together in
-the tree that is actually modelled. It is a placement rule, not a duplication: there is
-still exactly one kernel per band, and it is the same file either way (make_psf.py builds
-it from data/drizzled/, the standard mosaic; bcfill differs only in dead-column filling,
-which is not a PSF-scale change). Readers must therefore resolve it through
-`psf_cutout_dir`, never by assuming data/cutouts/.
+pairs with the same kernel from the default tree -- which is what `psf_cutout_dir` below
+exists to express.
 """
 import os
 
@@ -67,67 +64,53 @@ def variant_tag(variant):
 def drizzled_root(ws_path, variant=''):
     """data/drizzled[_<variant>] -- the tree holding the drizzled mosaics.
 
-    Unlike cutouts/mosaics this has no size axis (a mosaic is size-independent); it is
-    variant-keyed only, so the bad-column-filled re-drizzle lands in data/drizzled_bcfill/
-    alongside the standard data/drizzled/ instead of overwriting it.
+    Unlike cutouts/mosaics this has no size axis (a mosaic is size-independent), and unlike
+    them it IS variant-keyed: the bad-column-filled re-drizzle is a different mosaic, so it
+    lands in data/drizzled_bcfill/ alongside data/drizzled/ instead of overwriting it. Both
+    feed the one cutout tree; see the module docstring.
     """
     return os.path.join(ws_path, 'data', f'drizzled{variant_tag(variant)}')
 
 
-def cutouts_root(ws_path, size=DEFAULT_SIZE, variant=''):
-    """data/cutouts[_<variant>][_<S>arcsec] -- stamps for `variant` at `size`."""
-    return os.path.join(ws_path, 'data', f'cutouts{variant_tag(variant)}{size_tag(size)}')
+def cutouts_root(ws_path, size=DEFAULT_SIZE):
+    """data/cutouts[_<S>arcsec] -- the single science-stamp tree at `size`."""
+    return os.path.join(ws_path, 'data', f'cutouts{size_tag(size)}')
 
 
-def mosaics_root(ws_path, size=DEFAULT_SIZE, variant=''):
-    """data/mosaics[_<variant>][_<S>arcsec] -- the QC mosaics tiling those stamps."""
-    return os.path.join(ws_path, 'data', f'mosaics{variant_tag(variant)}{size_tag(size)}')
+def mosaics_root(ws_path, size=DEFAULT_SIZE):
+    """data/mosaics[_<S>arcsec] -- the QC mosaics tiling those stamps."""
+    return os.path.join(ws_path, 'data', f'mosaics{size_tag(size)}')
 
 
-def qc_json_path(ws_path, size=DEFAULT_SIZE, variant=''):
-    """info/lens_cutout_qc[_<variant>][_<S>arcsec].json.
+def qc_json_path(ws_path, size=DEFAULT_SIZE):
+    """info/lens_cutout_qc[_<S>arcsec].json.
 
-    A separate file per (variant, size), not a deeper nesting inside one: info_json.update
-    is {sample: {lens: {key: value}}} throughout info/, and the per-cutout diagnostics it
-    records (weight_uniformity in particular) are measured over the cutout region, so
-    they genuinely differ between reductions/sizes and must not overwrite each other.
+    A separate file per size, not a deeper nesting inside one: info_json.update is
+    {sample: {lens: {key: value}}} throughout info/, and the per-cutout diagnostics it
+    records (weight_uniformity in particular) are measured over the cutout region, so they
+    genuinely differ between sizes and must not overwrite each other. Each band record
+    carries a `bcfill` flag naming the reduction its stamp came from.
     """
-    return os.path.join(ws_path, 'info',
-                        f'lens_cutout_qc{variant_tag(variant)}{size_tag(size)}.json')
+    return os.path.join(ws_path, 'info', f'lens_cutout_qc{size_tag(size)}.json')
 
 
-# Search order for the PSF products: the bcfill cutout dir wherever that reduction exists,
-# else the standard one. Ordered, not a set -- 'bcfill' first is what makes the kernel land
-# beside the sci/noise/mask a fit actually reads for ACS/WFPC2 lenses.
-PSF_VARIANT_ORDER = ('bcfill', '')
+def cutout_dir(ws_path, sample, lens, filt, size=DEFAULT_SIZE):
+    """The one cutout dir for this band: data/cutouts[_<S>arcsec]/<sample>/<lens>/<filt>."""
+    return os.path.join(cutouts_root(ws_path, size), sample, lens, filt)
 
 
-def psf_cutout_dir(ws_path, sample, lens, filt, variant_order=PSF_VARIANT_ORDER):
-    """The cutout dir holding this (sample, lens, filt)'s modelling PSF products
-    (cutout_[cr_]psf*.fits): the first tree in `variant_order` whose dir exists, else the
-    standard tree's path (which the caller may create).
+def psf_cutout_dir(ws_path, sample, lens, filt):
+    """The cutout dir holding this band's modelling PSF products (cutout_[cr_]psf*.fits).
 
-    Deliberately takes no `size`: the kernel is not size-keyed (see above), so it is always
-    resolved in the DEFAULT_SIZE trees and a stamp cut at another size pairs with that same
-    kernel. Taking a size here would let a --size 20 run look for a kernel that by design
-    does not exist there.
+    Deliberately takes no `size`: the kernel is not size-keyed (see the module docstring),
+    so it is always resolved in the DEFAULT_SIZE tree and a stamp cut at another size pairs
+    with that same kernel. Taking a size here would let a --size 20 run look for a kernel
+    that by design does not exist there. That size-independence is the whole of what this
+    wrapper now asserts -- before 2026-09-14 it also had to pick between the bcfill and
+    standard trees, which no longer exist separately.
 
-    Used by every writer and reader of those files, so the placement rule lives in one
-    place: make_psf.py / make_psf_inject.py / make_psf_err_injected.py write here,
-    make_cutouts.py --psf-err and make_psf_mosaics.py read here, and
-    make_dataset_subplots.py resolves the psf component across the same trees. Bands with
-    no bcfill reduction (WFC3/IR f160W -- an IR array has no bad columns -- and the whole
-    gallery sample) simply fall through to the standard tree.
+    Used by every writer and reader of those files: make_psf.py / make_psf_inject.py /
+    make_psf_err_injected.py write here, make_cutouts.py --psf-err and make_psf_mosaics.py
+    read here, and make_dataset_subplots.py resolves the psf component through it.
     """
-    for variant in variant_order:
-        d = os.path.join(cutouts_root(ws_path, variant=variant), sample, lens, filt)
-        if os.path.isdir(d):
-            return d
-    return os.path.join(cutouts_root(ws_path), sample, lens, filt)
-
-
-def psf_cutout_variant(psf_dir):
-    """'bcfill' or 'standard' -- which tree a psf_cutout_dir() path landed in (provenance)."""
-    return 'bcfill' if os.path.basename(
-        os.path.dirname(os.path.dirname(os.path.dirname(psf_dir)))
-    ).endswith('_bcfill') else 'standard'
+    return cutout_dir(ws_path, sample, lens, filt)

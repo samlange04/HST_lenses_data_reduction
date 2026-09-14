@@ -6,9 +6,11 @@
 # Usage: run_cutouts_all.sh [SAMPLE] [SIZE_ARCSEC] [--bcfill]
 #          (defaults: mast_target_names.DEFAULT_SAMPLE, 12)
 #
-# --bcfill cuts from the bad-column-filled drizzles (data/drizzled_bcfill/) into the parallel
-# tracked data/cutouts_bcfill/ tree (see AGENTS.md *Bad-column fill*). Only ACS/WFPC2 bands
-# have a bcfill tree; a band without one globs to nothing, which is harmless.
+# --bcfill cuts from the bad-column-filled drizzles (data/drizzled_bcfill/) into the SAME
+# data/cutouts/ tree, superseding that band's standard stamp (see AGENTS.md *Bad-column
+# fill*). Only ACS/WFPC2 bands have a bcfill drizzle; a band without one globs to nothing,
+# which is harmless. Note the reverse is guarded, not silent: re-running WITHOUT --bcfill
+# over a band that has a bcfill stamp is refused by make_cutouts.py unless --force.
 #
 # SIZE_ARCSEC is passed straight to make_cutouts.py --size. A non-default size writes to
 # the parallel data/cutouts_<size>arcsec/ tree (see scripts/cutout_paths.py), so running
@@ -21,7 +23,7 @@
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
 # Pull the optional --bcfill flag out of the args, leaving SAMPLE=$1 and SIZE=$2. bcfill reads
-# data/drizzled_bcfill/ and writes data/cutouts_bcfill/ (matching make_cutouts.py --bcfill).
+# data/drizzled_bcfill/ and writes data/cutouts/ (matching make_cutouts.py --bcfill).
 BCFILL=""; ARGS=()
 for _arg in "$@"; do
   if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"; else ARGS+=("$_arg"); fi

@@ -8,24 +8,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.081927,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0008-0004/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0008-0004/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
-                "cmap": "inferno",
-                "drizzle_pass": "cr",
-                "frac_masked": 0.088194,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0008-0004/f814W/cutout_cr_dataset.png",
-                "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.088194,
+                "bcfill": true,
+                "output": "data/cutouts/slacs_gold/J0008-0004/f814W/cutout_cr_dataset.png"
             }
         },
         "J0029-0055": {
@@ -36,11 +30,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.07685,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0029-0055/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0029-0055/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -49,24 +40,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.074253,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0029-0055/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0029-0055/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.074236,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0029-0055/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0029-0055/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0157-0056": {
@@ -77,24 +62,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.070608,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0157-0056/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0157-0056/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.062656,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0157-0056/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0157-0056/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0216-0813": {
@@ -102,27 +81,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.102378,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0216-0813/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0216-0813/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.101667,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0216-0813/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0216-0813/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0252+0039": {
@@ -133,11 +106,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.083475,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0252+0039/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0252+0039/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -146,24 +116,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.085729,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0252+0039/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0252+0039/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.091198,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0252+0039/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0252+0039/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0330-0020": {
@@ -174,24 +138,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.065069,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0330-0020/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0330-0020/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.032431,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0330-0020/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0330-0020/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0728+3835": {
@@ -202,11 +160,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.018825,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0728+3835/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0728+3835/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -215,24 +170,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.009132,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0728+3835/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0728+3835/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.007674,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0728+3835/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0728+3835/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0737+3216": {
@@ -240,27 +189,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.148698,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0737+3216/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0737+3216/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.149757,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0737+3216/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0737+3216/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0822+2652": {
@@ -271,11 +214,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.038975,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0822+2652/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0822+2652/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -284,11 +224,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.03783,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0822+2652/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f606W_v2": {
                 "prefix": "cutout_cr",
@@ -297,24 +234,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.043003,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f606W_v2/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0822+2652/f606W_v2/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.03934,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0822+2652/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0822+2652/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0841+3824": {
@@ -325,11 +256,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.02195,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0841+3824/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0841+3824/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -338,24 +266,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.033003,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0841+3824/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0841+3824/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.023455,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0841+3824/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0841+3824/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0903+4116": {
@@ -366,11 +288,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.275125,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0903+4116/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0903+4116/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -379,24 +298,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.180469,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0903+4116/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0903+4116/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.179931,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0903+4116/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0903+4116/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0912+0029": {
@@ -404,27 +317,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.084774,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0912+0029/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0912+0029/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.084479,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0912+0029/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0912+0029/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0936+0913": {
@@ -435,10 +342,7 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.0368,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
+                "bcfill": false,
                 "output": "data/cutouts/slacs_gold/J0936+0913/f160W/cutout_dataset.png"
             },
             "f606W": {
@@ -448,24 +352,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.039965,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0936+0913/f606W/cutout_cr_dataset.png"
+                "bcfill": true,
+                "output": "data/cutouts/slacs_gold/J0936+0913/f606W/cutout_cr_dataset.png"
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.069462,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0936+0913/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0936+0913/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0946+1006": {
@@ -476,11 +374,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.077175,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J0946+1006/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0946+1006/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -489,24 +384,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.07526,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0946+1006/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0946+1006/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.076267,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0946+1006/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0946+1006/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0956+5100": {
@@ -514,27 +403,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.073056,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0956+5100/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0956+5100/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.07375,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0956+5100/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0956+5100/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J0959+0410": {
@@ -545,24 +428,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.016076,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0959+0410/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J0959+0410/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.016771,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J0959+0410/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J0959+0410/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1020+1122": {
@@ -573,11 +450,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.459,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J1020+1122/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1020+1122/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -586,11 +460,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.370764,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1020+1122/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1020+1122/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "prefix": "cutout_cr",
@@ -599,11 +470,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.471753,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1020+1122/f814W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1020+1122/f814W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1023+4230": {
@@ -614,11 +482,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.0382,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J1023+4230/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1023+4230/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -627,24 +492,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.041128,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1023+4230/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1023+4230/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.012587,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1023+4230/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1023+4230/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1029+0420": {
@@ -655,11 +514,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.021625,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J1029+0420/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1029+0420/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -668,24 +524,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.022344,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1029+0420/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1029+0420/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.022153,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1029+0420/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1029+0420/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1032+5322": {
@@ -696,11 +546,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.014475,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J1032+5322/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1032+5322/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -709,24 +556,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.01599,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1032+5322/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1032+5322/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.00283,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1032+5322/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1032+5322/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1142+1001": {
@@ -737,24 +578,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.034913,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1142+1001/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1142+1001/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.033767,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1142+1001/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1142+1001/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1143-0144": {
@@ -762,27 +597,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.166476,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1143-0144/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1143-0144/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.166545,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1143-0144/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1143-0144/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1205+4910": {
@@ -793,24 +622,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.085833,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1205+4910/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1205+4910/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.077153,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1205+4910/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1205+4910/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1213+6708": {
@@ -821,24 +644,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.018368,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1213+6708/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1213+6708/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.016406,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1213+6708/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1213+6708/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1218+0830": {
@@ -849,24 +666,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.031806,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1218+0830/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1218+0830/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.015816,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1218+0830/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1218+0830/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1250+0523": {
@@ -874,27 +685,21 @@
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.041372,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1250+0523/f555W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1250+0523/f555W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.039948,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1250+0523/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1250+0523/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1402+6321": {
@@ -905,24 +710,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.022882,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1402+6321/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1402+6321/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.022969,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1402+6321/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1402+6321/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1420+6019": {
@@ -933,24 +732,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.003264,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1420+6019/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1420+6019/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.026892,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1420+6019/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1420+6019/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1430+4105": {
@@ -961,11 +754,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.05865,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_gold/J1430+4105/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1430+4105/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -974,24 +764,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.075903,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1430+4105/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1430+4105/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.063212,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1430+4105/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1430+4105/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1432+6317": {
@@ -1002,24 +786,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.004774,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1432+6317/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1432+6317/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.002778,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1432+6317/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1432+6317/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1451-0239": {
@@ -1030,24 +808,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.125382,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1451-0239/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1451-0239/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.148108,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1451-0239/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1451-0239/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1525+3327": {
@@ -1058,24 +830,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.088247,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1525+3327/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1525+3327/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.091215,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1525+3327/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1525+3327/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1627-0053": {
@@ -1086,24 +852,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.085833,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1627-0053/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1627-0053/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.090122,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1627-0053/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1627-0053/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J1630+4520": {
@@ -1114,24 +874,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.087656,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1630+4520/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J1630+4520/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.091771,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J1630+4520/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J1630+4520/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J2238-0754": {
@@ -1142,24 +896,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.071632,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2238-0754/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J2238-0754/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.073333,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2238-0754/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J2238-0754/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J2300+0022": {
@@ -1170,24 +918,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.060833,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2300+0022/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J2300+0022/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.043194,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2300+0022/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J2300+0022/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J2303+1422": {
@@ -1198,24 +940,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.001927,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2303+1422/f555W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J2303+1422/f555W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.004479,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2303+1422/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J2303+1422/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         },
         "J2341+0000": {
@@ -1226,24 +962,18 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.089271,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2341+0000/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_gold/J2341+0000/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "cmap": "inferno",
                 "drizzle_pass": "cr",
                 "frac_masked": 0.045156,
-                "mask_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_gold/J2341+0000/f814W/cutout_cr_dataset.png",
+                "output": "data/cutouts/slacs_gold/J2341+0000/f814W/cutout_cr_dataset.png",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "psf_variant": "bcfill",
-                "sci_variant": "bcfill",
-                "stretch": "asinh"
+                "stretch": "asinh",
+                "bcfill": true
             }
         }
     },
@@ -1256,11 +986,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.021927,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0037-0942/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J0037-0942/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J0044+0113": {
@@ -1271,11 +998,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.012309,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0044+0113/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J0044+0113/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J0935-0003": {
@@ -1286,11 +1010,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.154844,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0935-0003/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J0935-0003/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J0955+0101": {
@@ -1301,11 +1022,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.099497,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0955+0101/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J0955+0101/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J0959+4416": {
@@ -1316,11 +1034,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.007075,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J0959+4416/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J0959+4416/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1329,11 +1044,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.007274,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0959+4416/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J0959+4416/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "prefix": "cutout_cr",
@@ -1342,11 +1054,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.007309,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J0959+4416/f814W/cutout_cr_dataset.png"
+                "bcfill": true,
+                "output": "data/cutouts/slacs_other/J0959+4416/f814W/cutout_cr_dataset.png"
             }
         },
         "J1016+3859": {
@@ -1357,11 +1066,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.1502,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J1016+3859/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J1016+3859/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1370,11 +1076,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.144653,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1016+3859/f606W/cutout_cr_dataset.png"
+                "bcfill": true,
+                "output": "data/cutouts/slacs_other/J1016+3859/f606W/cutout_cr_dataset.png"
             },
             "f814W": {
                 "prefix": "cutout_cr",
@@ -1383,11 +1086,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.13809,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1016+3859/f814W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1016+3859/f814W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1100+5329": {
@@ -1398,11 +1098,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.178472,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1100+5329/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1100+5329/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1106+5228": {
@@ -1413,11 +1110,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.00875,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1106+5228/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1106+5228/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1112+0826": {
@@ -1428,11 +1122,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.075278,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1112+0826/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1112+0826/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1134+6027": {
@@ -1443,11 +1134,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.1489,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J1134+6027/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J1134+6027/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1456,11 +1144,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.160625,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1134+6027/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1134+6027/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1153+4612": {
@@ -1471,11 +1156,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.040775,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J1153+4612/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J1153+4612/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1484,11 +1166,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.042118,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1153+4612/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1153+4612/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "prefix": "cutout_cr",
@@ -1497,11 +1176,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.042118,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1153+4612/f814W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1153+4612/f814W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1204+0358": {
@@ -1512,11 +1188,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.086979,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1204+0358/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1204+0358/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1251-0208": {
@@ -1527,11 +1200,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.178725,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J1251-0208/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J1251-0208/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1540,11 +1210,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.180885,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1251-0208/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1251-0208/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1403+0006": {
@@ -1555,11 +1222,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.054219,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1403+0006/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1403+0006/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1416+5136": {
@@ -1570,11 +1234,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.021319,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1416+5136/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1416+5136/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             },
             "f814W": {
                 "prefix": "cutout_cr",
@@ -1583,11 +1244,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.006997,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1416+5136/f814W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1416+5136/f814W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1436-0000": {
@@ -1598,11 +1256,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.044132,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1436-0000/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1436-0000/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1443+0304": {
@@ -1613,11 +1268,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.244236,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1443+0304/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1443+0304/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1531-0105": {
@@ -1628,11 +1280,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.006962,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1531-0105/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1531-0105/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1538+5817": {
@@ -1643,11 +1292,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.007604,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1538+5817/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1538+5817/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1621+3931": {
@@ -1658,11 +1304,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.056424,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1621+3931/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1621+3931/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J1636+4707": {
@@ -1673,11 +1316,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
                 "frac_masked": 0.026125,
-                "sci_variant": "standard",
-                "noise_variant": "standard",
-                "psf_variant": "standard",
-                "mask_variant": "standard",
-                "output": "data/cutouts/slacs_other/J1636+4707/f160W/cutout_dataset.png"
+                "output": "data/cutouts/slacs_other/J1636+4707/f160W/cutout_dataset.png",
+                "bcfill": false
             },
             "f606W": {
                 "prefix": "cutout_cr",
@@ -1686,11 +1326,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.017917,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J1636+4707/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J1636+4707/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J2141-0001": {
@@ -1701,11 +1338,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.001997,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J2141-0001/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J2141-0001/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J2302-0840": {
@@ -1716,11 +1350,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.019323,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J2302-0840/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J2302-0840/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         },
         "J2321-0939": {
@@ -1731,11 +1362,8 @@
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
                 "frac_masked": 0.007431,
-                "sci_variant": "bcfill",
-                "noise_variant": "bcfill",
-                "psf_variant": "bcfill",
-                "mask_variant": "bcfill",
-                "output": "data/cutouts_bcfill/slacs_other/J2321-0939/f606W/cutout_cr_dataset.png"
+                "output": "data/cutouts/slacs_other/J2321-0939/f606W/cutout_cr_dataset.png",
+                "bcfill": true
             }
         }
     }

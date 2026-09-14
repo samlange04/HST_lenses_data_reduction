@@ -15,6 +15,20 @@ re-litigate it"; the slug names the note, not a file in this repo.
 > verify against source — argparse defaults, what the runner actually passes, tracking
 > JSONs vs what's on disk.
 
+> **One science tree, 2026-09-14.** `data/cutouts_bcfill/` and `data/mosaics_bcfill/` were
+> merged into `data/cutouts/` and `data/mosaics/`: bcfill supersedes the standard stamp in
+> place for the 105 ACS/WFPC2 bands it covers, so there is now exactly **one science stamp
+> per (sample, lens, filter)** — sci, noise, psf, mask and the QC PNGs all in one dir, with
+> nothing to choose and no second copy to keep in step. Which reduction a stamp is comes from
+> its `BCFILL` header card and the matching `bcfill` key in the `info/` tracking JSONs, never
+> from its path. The variant axis survives only at the drizzle layer
+> (`data/drizzled[_bcfill]/`), which is gitignored. Consequences: `--variant` is gone from
+> `make_masks.py`, `make_arc_masks.py`, `make_positions.py` and `make_dataset_subplots.py`;
+> `make_mosaics.py` has no `--bcfill`; `cutout_paths.psf_cutout_dir()` now asserts only
+> size-independence; `info/lens_cutout_qc_bcfill.json` was merged away. **`make_cutouts.py`
+> gained the guard that replaces the old tree separation** — a standard cut refuses to
+> overwrite a `BCFILL=T` stamp without `--force`.
+>
 > **Bolton-interpolation investigation → bcfill productionized.**
 > `scripts/bolton_investigations/` (+ `README.md`) holds the standalone exploratory scripts for
 > the ACS dead-column noise-stripe question (Bolton-2008 bilinear reduction, post-hoc stripe
@@ -217,8 +231,8 @@ F160W (6/27) and gallery's five UVIS bands cleared the gate everywhere they had 
 data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
-  drizzled/<sample>/<lens>/<filter>/      ← final products (<prefix>_cr_*/_nocrrej_* sci+wht)
-  cutouts/<sample>/<lens>/<filter>/       ← cutout_sci.fits / cutout_noise.fits / cutout.png / cutout_[cr_]psf.fits (PSF only where there is no bcfill tree — see PSF generation)
+  drizzled[_bcfill]/<sample>/<lens>/<filter>/ ← final products (<prefix>_cr_*/_nocrrej_* sci+wht); _bcfill is the bad-column-filled re-drizzle
+  cutouts/<sample>/<lens>/<filter>/       ← THE science tree: one stamp per band — cutout_[cr_]{sci,noise,psf,psf_err,mask}.fits + cutout_[cr_][_dataset].png
   cutouts_<S>arcsec/<sample>/...          ← the same stamps cut at a non-default --size (see Cutouts)
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
@@ -561,12 +575,20 @@ option 3).
   chip border), *before* `build_ivm_files` so the IVM noise model is rebuilt consistently on
   the filled columns. Per-visit like every WFPC2 product. Both stamp `BCFILL=True` in the
   product header.
-- **Parallel tracked trees, keyed via `cutout_paths.py`'s `variant` axis** (orthogonal to
-  `--size`): `data/drizzled_bcfill/`, work dir `data/drizzle_files_bcfill/`, then
-  `make_cutouts.py --bcfill` → `data/cutouts_bcfill/` (+ `info/lens_cutout_qc_bcfill.json`)
-  and `make_mosaics.py --bcfill` → `data/mosaics_bcfill/`. `cutouts_bcfill`/`mosaics_bcfill`
-  are **tracked** (small alternate science product, like `data/cutouts/`); `drizzled_bcfill`
-  stays gitignored (big mosaics). The standard reduction is never touched.
+- **A parallel tree at the DRIZZLE layer only, keyed via `cutout_paths.py`'s `variant` axis**
+  (orthogonal to `--size`): `data/drizzled_bcfill/`, work dir `data/drizzle_files_bcfill/`.
+  Both gitignored (big mosaics / scratch); the standard drizzle is never touched.
+  **`make_cutouts.py --bcfill` then cuts from that tree into the SAME `data/cutouts/`
+  stamp** (2026-09-14) — bcfill supersedes standard for the bands it covers, so there is one
+  science stamp per (sample, lens, filter) and no `cutouts_bcfill`/`mosaics_bcfill` to keep
+  in step. Which reduction a stamp is comes from its **`BCFILL` header card** (inherited from
+  the drizzled product) and the matching `bcfill` key in `info/lens_cutout_qc.json`, not from
+  its path. `make_mosaics.py` likewise has no `--bcfill`: one cutout tree, one set of QC grids.
+  - **The guard that replaces the old parallel tree** lives in `make_cutouts.py`: a standard
+    (non-`--bcfill`) cut **refuses to overwrite a stamp whose header says `BCFILL=T`** unless
+    `--force`. Re-cutting a band and forgetting `--bcfill` would otherwise be a silent
+    downgrade — same filenames, same geometry, the dead-column noise stripe back in the
+    science image and the hand-drawn mask beside it now describing a different reduction.
 - **NOT for WFC3/IR F160W** — an IR array has **no bad columns** (verified on J0822: 0
   columns >50% dropped vs 57 for WF3); its noise-map dots are quadrupled hot-pixel replicas,
   a different, already-correct artifact AGENTS.md warns against altering. `--bcfill` exists
@@ -584,13 +606,16 @@ option 3).
   history, to see them again.
 
 **`run_acs_all.sh` and `run_wfpc2_wf3.sh` are `--bcfill`-aware** — pass `--bcfill` as a
-second arg (after the optional sample) and it threads through every stage into the parallel
-`*_bcfill` trees, with `_bcfill`-tagged logs. `run_acs_all.sh --bcfill` *drizzles* f814W+f555W
-(no cutout step — it never cuts); `run_wfpc2_wf3.sh --bcfill` runs the full drizzle → tie →
-cutout for F606W (the tie is against the bcfill tree's OWN f814W, so the ACS bcfill drizzle
-must run first). A whole-sample campaign is thus: `run_acs_all.sh <sample> --bcfill` →
-`run_wfpc2_wf3.sh <sample> --bcfill` → `make_cutouts.py --bcfill` per ACS product (the cutout
-step the ACS runner skips) → `make_mosaics.py --sample <sample> --bcfill`. The other runners
+second arg (after the optional sample) and it threads through the *drizzle* stages into the
+parallel `data/drizzled_bcfill/` tree, with `_bcfill`-tagged logs. `run_acs_all.sh --bcfill`
+*drizzles* f814W+f555W (no cutout step — it never cuts); `run_wfpc2_wf3.sh --bcfill` runs the
+full drizzle → tie → cutout for F606W (the tie is against the bcfill tree's OWN f814W, so the
+ACS bcfill drizzle must run first). A whole-sample campaign is thus: `run_acs_all.sh <sample>
+--bcfill` → `run_wfpc2_wf3.sh <sample> --bcfill` → `make_cutouts.py --bcfill` per ACS product
+(the cutout step the ACS runner skips) → `make_mosaics.py --sample <sample>`. **The cutout and
+mosaic steps land in the ordinary `data/cutouts/`/`data/mosaics/`** — bcfill supersedes the
+standard stamp in place — so `make_mosaics.py` takes no `--bcfill` and the bcfill `--size`
+tag composes with nothing. The other runners
 (`run_wfc3_all.sh`, `run_gallery_uvis_all.sh`, `run_cutouts_all.sh`, `run_psf_all.sh`) are
 **not** `--bcfill`-aware — bcfill is ACS+WFPC2 only, so there's nothing for them to pass.
 
@@ -631,9 +656,9 @@ noise FITS (from the weight map), and a 3-panel PNG.
   header. **A 20″ set exists for all three samples alongside the 12″ one** (2026-08-04; 90 +
   34 + 33 products, 0 failures). PSF kernels are *not* duplicated per size — the kernel is
   trimmed by amplitude, so it's a property of the band, and a size-variant stamp pairs with
-  the same `cutout_[cr_]psf.fits` from the default tree. They *are* **variant-placed**
-  (2026-09-04): `cutout_paths.psf_cutout_dir()` puts the one kernel per band in the **bcfill**
-  cutout dir wherever that reduction exists, else the standard one — see *PSF generation*.
+  the same `cutout_[cr_]psf.fits` from the default tree — which is the whole of what
+  `cutout_paths.psf_cutout_dir()` now asserts (before 2026-09-14 it also had to pick between
+  the bcfill and standard trees). See *PSF generation*.
   **`data/cutouts/` (12″) is the tree
   tracked in git**, made the pipeline default 2026-08-11 (swapped in place from the old 20″
   default, incl. the 422 `cutout_[cr_]psf*.fits`/mosaic-panel files `make_psf.py` and
@@ -641,7 +666,7 @@ noise FITS (from the weight map), and a 3-panel PNG.
   through `cutout_paths.py` — the PSF half of that now goes through `psf_cutout_dir()`)
   because it's what `scripts/make_masks.py` targets and what
   downstream modelling reads. Other size variants (now including `data/cutouts_20arcsec/`)
-  and their QC JSONs are gitignored (regenerable in one runner call, and the tree is ~316 MB,
+  and their QC JSONs are gitignored (regenerable in one runner call, and the tree is ~550 MB,
   mostly PNGs whose size follows the figure, not the stamp) — **unless a tree carries
   non-regenerable content**, which is why `data/cutouts/` is the exception: `make_masks.py`
   writes its hand-drawn GUI masks there, and unlike every other file in the tree those aren't
@@ -680,9 +705,12 @@ noise FITS (from the weight map), and a 3-panel PNG.
     capture geometric distortion or real dither-pattern effects, so it can (and does, e.g.
     ACS: analytic 1.5 vs the empirically-measured 1.24 in *Drizzle correlated noise* above)
     disagree with the measured factor. Stamped as `CASR`.
-  - Both diagnostics, plus the recentring offset, drizzle pass, and centring source, are
-    recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` — structured provenance
-    for what shaped a given cutout, not just the sci/noise arrays themselves.
+  - Both diagnostics, plus the recentring offset, drizzle pass, centring source, and a
+    **`bcfill` flag naming the reduction the stamp was cut from** (mirroring its `BCFILL`
+    header card), are recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` —
+    structured provenance for what shaped a given cutout, not just the sci/noise arrays
+    themselves. `info/lens_masks.json`, `info/lens_arc_masks.json` and
+    `info/lens_dataset_subplots.json` carry the same `bcfill` key, for the same reason.
 
 ## Masks (`scripts/make_masks.py`)
 
@@ -710,21 +738,21 @@ that already has a mask, drawing nothing likewise writes nothing, so the existin
 survives untouched.) `make_arc_masks.py` refuses an empty draw for a different reason — there
 an empty arc region would mask out the whole stamp.
 
-**All hand-drawn masks were deleted 2026-09-03 at the user's request** (54 files: 39 under
-`data/cutouts_bcfill/slacs_gold/` — f814W plus one f555W — and 15 under
-`data/cutouts/gallery/` f606W), and `info/lens_masks.json` reset to `{}`. The old ones are
+**All hand-drawn masks were deleted 2026-09-03 at the user's request** (54 files: 39
+`slacs_gold` ACS — f814W plus one f555W — and 15 `gallery` f606W; at the time those ACS ones
+lived in the separate `data/cutouts_bcfill/` tree), and `info/lens_masks.json` reset to `{}`. The old ones are
 recoverable from git history if ever wanted; masking restarted under the current per-band
 defaults.
 
 **Current state (2026-09-13): 94 masks — `slacs_gold` is COMPLETE on every band**: f814W
-38/38, f606W 22/22, f555W 16/16, f160W 13/13. ACS/WFPC2 bands are in
-`data/cutouts_bcfill/`, f160W in `data/cutouts/` (its priority tree), all recorded in
-`info/lens_masks.json`. Most bands after the first came through the reviewed-proposal route
+38/38, f606W 22/22, f555W 16/16, f160W 13/13 — all in `data/cutouts/` beside the sci they
+were drawn on, all recorded in `info/lens_masks.json` (whose per-band `bcfill` key says which
+reduction that was). Most bands after the first came through the reviewed-proposal route
 rather than fresh draws (f606W 21 `edited_from_f814W` + 1 `drawn`; f160W 9 + 4). **The last
 gap, `J0822+2652 f606W_v2`, is now drawn too** — the split-visit second visit is its own
 product directory and so needed its own draw, which is why it trailed the f606W sweep.
 **`slacs_other` f814W is now drawn as well (4/4)** — that sample's ACS band, and its only
-band with a bcfill tree. Its f606W (0/24) and f160W (0/6) are still open, as is all of
+band with a bcfill reduction behind it. Its f606W (0/24) and f160W (0/6) are still open, as is all of
 `gallery` (0/33). Four per-lens notes:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
@@ -937,9 +965,8 @@ optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely
 (0.06″/px, 200px vs 240px for a 12″ stamp — a common sky point is ~20px away by index), and only
 reprojection places the mask correctly there (verified: a test box regrids 0.05″→0.06″
 area-preserving, centroid within 0.048″ ≈ sub-pixel).
-- Per band, the mask is written into that band's **priority tree** (bcfill where a bcfill cutout
-  exists — ACS f814W/f555W + WFPC2 f606W; else standard — f160W, gallery, un-bcfilled lenses),
-  and a lens is skipped if the *draw band* already has a mask in *either* variant.
+- Per band, the mask is written into that band's one cutout dir, beside the sci it was drawn
+  on, and a lens is skipped if the *draw band* already has a mask there.
 
 **Side-by-side display (`--side-by-side`, default on, active only with
 `--subtract-radial`).** Shows both views at once — radial-subtracted left, as-observed right,
@@ -963,11 +990,11 @@ tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked
 mosaics, but a hand-drawn mask is not, so it needs the same durability as a tracked product.
 Pass `--size 20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
 
-**`--variant` picks the reduction to draw on (default `auto`, bcfill-preferred).** bcfill and
-standard cutouts share crop geometry **exactly** (identical NAXIS/CRPIX/CRVAL — a mask drawn
-on one is pixel-valid on the other), bcfill just having its dead-column stripes filled (a
-cleaner image to scribble on). So `auto` draws on the bcfill cutout where it exists, else the
-standard cutout; `--variant bcfill`/`standard` restrict to one tree.
+**There is nothing to pick — one cutout dir per band** (`--variant` was removed 2026-09-14
+along with the parallel trees). For ACS f814W/f555W + WFPC2 f606W you are scribbling on the
+bcfill image (the same geometry with its dead-column stripes filled — a cleaner image to draw
+on); for f160W, the gallery and un-bcfilled lenses, on the standard one. Either way the mask
+lands beside that sci and there is no second copy to keep in step.
 
 ### Dataset QC subplots (`scripts/make_dataset_subplots.py`) — auto-rebuilt with every mask
 
@@ -983,14 +1010,12 @@ only QC PNG in the pipeline that shows the MASK laid over the data/noise/S-N**, 
 fit will really see. Provenance per (sample, lens, filt) in `info/lens_dataset_subplots.json`;
 all four components are required, so an unmasked band is reported and skipped, not an error.
 
-- **sci/noise/mask are resolved per-component across BOTH cutout trees (`--variant auto`)** —
-  they legitimately differ (the hand-drawn mask lands in `data/cutouts_bcfill/` for ACS/WFPC2,
-  in `data/cutouts/` for f160W and gallery) and the two trees share crop geometry exactly, so
-  mixing is valid. **The psf is resolved separately, through `cutout_paths.psf_cutout_dir()`**,
-  and therefore obeys neither `--variant` nor `--size`: one stored kernel per band is the same
-  file whichever tree holds it, so restricting the search would report it missing rather than
-  read the one that exists. (`--variant standard` on an ACS lens consequently reports only the
-  *mask* missing, which is real — that mask is in the bcfill tree.)
+- **All four components come from the band's one cutout dir** — there is no per-component
+  tree search left to get wrong, and no way for the mask to describe a different reduction
+  than the sci beside it. **The psf is the one exception, and only along `--size`**: it is
+  resolved through `cutout_paths.psf_cutout_dir()`, which always points at the default-size
+  tree because the kernel is trimmed by amplitude and is not size-keyed, so a `--size 20` run
+  pairs its stamps with that same kernel rather than reporting it missing.
 - Panels use the pipeline's own look (inferno + `PercentileInterval(99)` + `AsinhStretch(0.1)`)
   via an `Axes.imshow` patch, since autolens's vendored plotter only knows linear/log norms; the
   dedicated log10 panels stay log10.
@@ -1025,14 +1050,13 @@ pinned to the same output WCS (`final_rot=0`, tangent point at the lens), so a p
 **arcsec** relative to the stamp centre is identical in every band — even where pixel scales
 differ (f160W 0.06″), because arcsec, not pixels, is the shared frame PyAutoLens works in. So
 you mark once on the best band and the same `Grid2DIrregular` is written to every band, one
-file per band into that band's **priority tree** (bcfill where a bcfill cutout exists, else
-standard — exactly as masks route), under that band's pass prefix. This is *simpler* than the
+file per band into that band's cutout dir (exactly as masks route), under that band's pass
+prefix. This is *simpler* than the
 mask broadcast — positions need no reprojection, the arcsec values transfer verbatim; only
 masks (per-pixel booleans on a specific grid) need the WCS regrid. **Positions still broadcast
 unconditionally** (there is no `--broadcast`/`--no-broadcast` there, unlike the two mask tools):
 a marked image is a sky coordinate that is literally the same number in every band, so there is
-no per-band judgement to preserve. Trees/skip/`--variant`/
-`--size` behave as in `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the
+no per-band judgement to preserve. Trees/skip/`--size` behave as in `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the
 samples (all three by default). These hand-marked positions are non-regenerable, so like the
 masks they live in the git-tracked `data/cutouts/` tree.
 
@@ -1102,7 +1126,7 @@ measurement, or a source-plane analysis.
   inverted array would instead leave edge slivers unmasked. Verified across the f160W regrid
   (0.06″/200px vs 0.05″/240px): same sky area to 0.06%, same annulus radii to half a pixel.
 - Everything else — one draw per **band** (`--broadcast` to share it, same default and same
-  reasoning as `make_masks.py`), band priority, `--size`/`--variant` routing, skip/`--force`
+  reasoning as `make_masks.py`), band priority, `--size` routing, skip/`--force`
   — is `make_masks.py`'s, imported rather than re-implemented. It gets the **red erase brush**
   (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
   over-painted stroke is trimmed rather than undone whole — but **not** `--propose-from`:
@@ -1140,16 +1164,14 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
   radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
 
-  **Which cutout dir is `cutout_paths.psf_cutout_dir()`'s call, not the caller's**
-  (2026-09-04): the **bcfill** tree wherever that reduction exists —
-  `data/cutouts_bcfill/<sample>/<lens>/<filt>/`, i.e. ACS f814W/f555W + WFPC2 f606W in
-  `slacs_gold`/`slacs_other` — else `data/cutouts/<...>/` (WFC3/IR f160W, which has no bad
-  columns to fill, and all of `gallery`). **308 kernel/err/analytic files were moved into the
-  bcfill tree on 2026-09-04**; 114 stayed. The point is that the four products a fit consumes
-  — sci, noise, **psf**, mask — then sit together in the tree that is actually modelled.
-  - It is a **placement** rule, not duplication: still exactly one kernel per band, and the
-    same file either way. `make_psf.py` builds it from `data/drizzled/` (the standard mosaic)
-    in both cases — so a bcfill-placed kernel is not a separately-measured bcfill PSF.
+  **Which cutout dir is `cutout_paths.psf_cutout_dir()`'s call, not the caller's**: the one
+  cutout dir for the band, `data/cutouts/<sample>/<lens>/<filt>/`, so the four products a fit
+  consumes — sci, noise, **psf**, mask — sit together by construction. *(Between 2026-09-04
+  and 2026-09-14 this function also had to choose between the parallel bcfill and standard
+  trees — 308 kernel/err/analytic files were moved into the bcfill one on 2026-09-04, 114
+  stayed. The trees are now merged, so all it still asserts is the size-independence below.)*
+  - There is still exactly **one kernel per band**, built from `data/drizzled/`, the standard
+    mosaic — a kernel sitting beside a bcfill stamp is not a separately-measured bcfill PSF.
     **Building from `data/drizzled_bcfill/` instead was measured (2026-09-04) and is not
     worth it**: half the products come out bit-identical (no PSF star's stamp touches a
     filled column), the rest differ by ≈1× the kernel's own bootstrap error in the direction
@@ -1159,13 +1181,14 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
     (noiseless injected frames ⇒ dropping frames doesn't bias the drizzle mean; 1 of 60
     products has any zero-weight pixel within 1.5″ of the lens). → memory:
     psf_from_bcfill_no_gain
-  - It is **orthogonal to `--size`**: `psf_cutout_dir()` deliberately takes no size and always
-    resolves in the default-size trees, so a `--size 20` stamp still pairs with the one kernel.
+  - It is **orthogonal to `--size`**, which is now its whole job: `psf_cutout_dir()`
+    deliberately takes no size and always resolves in the default-size tree, so a `--size 20`
+    stamp still pairs with the one kernel instead of looking for one that by design is not
+    there.
   - Every writer and reader goes through it: `make_psf.py`, `make_psf_inject.py` (incl.
     `_promote`'s move-aside), `make_psf_err_injected.py`, `make_cutouts.py --psf-err`,
     `make_psf_mosaics.py`, and `make_dataset_subplots.py` (which resolves the psf component
-    through it, so the psf obeys neither its `--variant` nor its `--size`). Never construct
-    `data/cutouts/<...>_psf.fits` by hand — for ACS/WFPC2 it is no longer there.
+    through it, so the psf does not obey its `--size`).
 
 For **empirical** builds, `make_psf.py` also writes a per-pixel **PSF error map** alongside
 each kernel — `psf_kernel_err.fits` (full) and `cutout_[cr_]psf_err.fits` (trimmed, same grid
@@ -1343,7 +1366,7 @@ way this is the model tier and injection is what it needs), `promote=False` for 
 building a model-tier product, so:
 
 - **`data/psf/<...>/psf_kernel.fits` / `<psf cutout dir>/cutout_[cr_]psf.fits`** (the cutout
-  dir being `psf_cutout_dir()`'s — bcfill where it exists; see *PSF generation*) — the
+  dir being `psf_cutout_dir()`'s — the band's, always default-size; see *PSF generation*) — the
   **canonical** files, now the drizzle-broadened injected kernel (`PSFINJ=True` in the
   header) for every model-tier lens.
 - **`data/psf/<...>/psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits`** — the

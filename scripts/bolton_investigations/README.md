@@ -218,11 +218,13 @@ whole reason the legacy images look fine for modelling but you'd still prefer dr
 **Option 3 (input-level bad-column fill + re-drizzle) is now wired into the pipeline** as an
 opt-in `--bcfill` flag on **both** `drizzle_acs_wfc.py` (ACS bits 4|128) and
 `drizzle_wfpc2_wf3.py` (WF3 bits 2|256, interior-only, IVM rebuilt on the filled columns).
-It writes to parallel tracked trees (`data/drizzled_bcfill/` → `make_cutouts.py --bcfill` →
-`data/cutouts_bcfill/` → `make_mosaics.py --bcfill` → `data/mosaics_bcfill/`), keyed via
-`cutout_paths.py`'s `variant` axis. See AGENTS.md *Bad-column fill (`--bcfill`)* for the full
-contract. NOT for WFC3/IR F160W — an IR array has no bad columns (its noise-map dots are
-hot-pixel replicas, a different artifact).
+It drizzles into a parallel tree (`data/drizzled_bcfill/`, keyed via `cutout_paths.py`'s
+`variant` axis); `make_cutouts.py --bcfill` then cuts from there into the ordinary
+`data/cutouts/`, superseding that band's standard stamp rather than starting a second stamp
+tree (the parallel `cutouts_bcfill`/`mosaics_bcfill` trees were merged away 2026-09-14).
+See AGENTS.md *Bad-column fill (`--bcfill`)* for the full contract. NOT for WFC3/IR F160W
+— an IR array has no bad columns (its noise-map dots are hot-pixel replicas, a different
+artifact).
 
 `redrizzle_bcfill.py` (ACS) and **`redrizzle_bcfill_wfpc2.py`** (WFPC2, `BCFILL_LENS=<lens>`)
 remain as the standalone validation prototypes behind the productionized flag — they build

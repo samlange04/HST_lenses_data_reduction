@@ -37,8 +37,8 @@ cutout_[cr_]positions.json for the band, each marked image is ringed in the disp
 arc mask can be drawn around the same multiple images. --no-show-positions turns it off.
 
 Everything else -- ONE DRAW PER BAND by default (--broadcast opts into sharing the draw
-across the lens's bands by WCS reprojection), the band-priority order, --size/--variant tree
-routing, the skip/--force behaviour -- is `make_masks.py`'s, imported from it rather than
+across the lens's bands by WCS reprojection), the band-priority order, --size tree routing,
+the skip/--force behaviour -- is `make_masks.py`'s, imported from it rather than
 re-implemented, so the two tools stay in lock-step. Where --broadcast IS used, note the
 reprojection is applied to the ARC REGION (True = arc), not to the saved array:
 outside-footprint pixels then default to 'not arc', which is the safe side -- reprojecting
@@ -178,21 +178,16 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
               f"(have {', '.join(filts)}), skipping")
         return False
 
-    display_dir = filt_dirs[display_filt][0][1]
+    display_dir = filt_dirs[display_filt]
     display_prefix = make_masks.find_prefix(display_dir, drizzle_pass)
     if display_prefix is None:
         print(f"{lens} {display_filt}: no cutout sci for --pass {drizzle_pass}, skipping")
         return False
 
-    # Skip if the draw band already has an arc mask in EITHER variant (they share a grid).
-    existing = []
-    for variant, cutout_dir in filt_dirs[display_filt]:
-        prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
-        if prefix and os.path.exists(os.path.join(cutout_dir, f'{prefix}_{ARC_SUFFIX}.fits')):
-            existing.append(variant or 'standard')
-    if existing and not force:
-        print(f"{lens}: arc mask already exists ({display_filt} in [{', '.join(existing)}]), "
-              f"skipping (--force to redraw)")
+    # Skip if the draw band already has an arc mask, unless --force.
+    if (os.path.exists(os.path.join(display_dir, f'{display_prefix}_{ARC_SUFFIX}.fits'))
+            and not force):
+        print(f"{lens}: arc mask already exists ({display_filt}), skipping (--force to redraw)")
         return False
 
     positions = load_positions(display_dir, display_prefix) if show_positions else []
@@ -224,7 +219,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
 
     targets = (filts if broadcast else [display_filt])
     for filt in targets:
-        variant, cutout_dir = filt_dirs[filt][0]     # priority tree for this band
+        cutout_dir = filt_dirs[filt]
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
@@ -250,7 +245,8 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
             'drizzle_pass': 'cr' if prefix == 'cutout_cr' else 'nocrrej',
             'pixel_scale_arcsec': round(band_ps, 6),
             'display': source_label,
-            'variant': variant or 'standard',
+            # Which reduction the stamp was drawn on, from its own header (cutout_paths.py).
+            'bcfill': bool(band_hdr.get('BCFILL', False)),
             'source': 'drawn' if is_draw else f'reprojected_from_{display_filt}',
             'n_arc_px': n_arc,
             'polarity': 'saved True=excluded (al.Mask2D); ~mask = arc region',
@@ -291,10 +287,6 @@ def main():
                    help=f'cutout tree to draw arc masks for (default '
                         f'{cutout_paths.DEFAULT_SIZE:g}", data/cutouts/ -- the git-tracked '
                         'tree; like every hand-drawn product these are non-regenerable)')
-    p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
-                   help="which reduction's cutouts to draw on: 'auto' (default) prefers the "
-                        'bcfill sci (cleaner image, identical geometry) else standard, skipping '
-                        'if an arc mask exists in EITHER tree')
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw an arc mask that already exists (default: skip it)')
     p.add_argument('--brush-radius', type=int, default=4,
@@ -334,23 +326,14 @@ def main():
                    help='radius in pixels of those position rings (default 6)')
     a = p.parse_args()
 
-    # Tree resolution, identical to make_masks/make_positions (bcfill first for display).
-    if a.variant == 'bcfill':
-        variants = ['bcfill']
-    elif a.variant == 'standard':
-        variants = ['']
-    else:
-        variants = ['bcfill', '']
-    trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
+    root = cutout_paths.cutouts_root(ws_path, a.size)
 
     lens_filts = {}
-    for lens, filt, _display_dir, write_dirs in make_masks.discover_targets(
-            trees, a.sample, a.lens, None):
-        lens_filts.setdefault(lens, {})[filt] = write_dirs
+    for lens, filt, cutout_dir in make_masks.discover_targets(root, a.sample, a.lens, None):
+        lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:
-        roots = ', '.join(r for _, r in trees)
-        raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
+        raise SystemExit(f"no cutouts found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")

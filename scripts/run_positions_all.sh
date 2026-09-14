@@ -17,7 +17,7 @@
 #
 # The first arg is treated as SAMPLE only if it does not start with '-'; anything else
 # (and every arg after the sample) is forwarded verbatim to make_positions.py, so --filt,
-# --force, --pass, --variant, --size, --search-box-size, --display etc. all pass through.
+# --force, --pass, --size, --search-box-size, --display etc. all pass through.
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 
 # All science samples with cutouts. Positions are a lens-modelling product, so every sample
