@@ -59,3 +59,28 @@ __pycache__/
 # pyproject.toml/uv.lock/.python-version are tracked (they define the env, including
 # the exact CPython build); the venv itself is machine-local and rebuilt via `uv sync`.
 .venv/
+
+# ── SLACS SNAP F814W test recoveries (2026-09-14) ──────────────────────────────
+# Three slacs_other lenses had their ACS F814W drizzled past the 500s BLOCK_EXPTIME gate
+# (drizzle_acs_wfc.py --block-exptime 400) purely to attempt cross-band COLOUR tests while
+# judging masks. They are single 420s SLACS snapshot frames: no dither, no frame-to-frame
+# CR rejection, CR holes that can land on the target, and depth ~10x below the F606W they
+# were compared against -- on J1538+5817 the test failed outright (a ring image measured
+# S/N -17.7, i.e. model error). They are diagnostics, not science products, so the pixels
+# stay out of git while remaining on disk for further tests. The tracking JSONs are kept at
+# their gated values (f814W null) to match: the science inventory should not list a product
+# the repo does not carry. Re-create with the --block-exptime flag; see AGENTS.md.
+data/cutouts/slacs_other/J1134+6027/f814W/
+data/cutouts/slacs_other/J1403+0006/f814W/
+data/cutouts/slacs_other/J1538+5817/f814W/
+
+# ── diagnostics/ ───────────────────────────────────────────────────────────────
+# One-off QC and investigation figures (LACosmic scans, arc-vs-contaminant tests, mask
+# proposals). They are regenerable from the scripts and the products in data/, they are
+# read once while judging a decision, and they accumulate fast, so they stay out of git.
+# The DECISION each figure supported belongs in AGENTS.md / info/*.json, which is where a
+# reader should find it -- so do not cite a diagnostics/ path as evidence in a commit
+# message or a note without also stating the numbers, because a fresh clone will not have
+# the image. Untracked from 2026-09-14; the five previously-committed PNGs remain in git
+# history.
+diagnostics/
