@@ -1248,7 +1248,93 @@
         }
     },
     "slacs_other": {
+        "J0037-0942": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.021927,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J0037-0942/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J0044+0113": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.012309,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J0044+0113/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J0935-0003": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.154844,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J0935-0003/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J0955+0101": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.099497,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J0955+0101/f606W/cutout_cr_dataset.png"
+            }
+        },
         "J0959+4416": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.007075,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J0959+4416/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.007274,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J0959+4416/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1264,6 +1350,32 @@
             }
         },
         "J1016+3859": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.1502,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J1016+3859/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.144653,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1016+3859/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1278,7 +1390,106 @@
                 "output": "data/cutouts_bcfill/slacs_other/J1016+3859/f814W/cutout_cr_dataset.png"
             }
         },
+        "J1100+5329": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.178472,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1100+5329/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1106+5228": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.00875,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1106+5228/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1112+0826": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.075278,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1112+0826/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1134+6027": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.1489,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J1134+6027/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.160625,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1134+6027/f606W/cutout_cr_dataset.png"
+            }
+        },
         "J1153+4612": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.040775,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J1153+4612/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.042118,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1153+4612/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1293,7 +1504,78 @@
                 "output": "data/cutouts_bcfill/slacs_other/J1153+4612/f814W/cutout_cr_dataset.png"
             }
         },
+        "J1204+0358": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.086979,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1204+0358/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1251-0208": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.178725,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J1251-0208/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.180885,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1251-0208/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1403+0006": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.054219,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1403+0006/f606W/cutout_cr_dataset.png"
+            }
+        },
         "J1416+5136": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.021319,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1416+5136/f606W/cutout_cr_dataset.png"
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1306,6 +1588,154 @@
                 "psf_variant": "bcfill",
                 "mask_variant": "bcfill",
                 "output": "data/cutouts_bcfill/slacs_other/J1416+5136/f814W/cutout_cr_dataset.png"
+            }
+        },
+        "J1436-0000": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.044132,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1436-0000/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1443+0304": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.244236,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1443+0304/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1531-0105": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.006962,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1531-0105/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1538+5817": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.007604,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1538+5817/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1621+3931": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.056424,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1621+3931/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J1636+4707": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.06,
+                "frac_masked": 0.026125,
+                "sci_variant": "standard",
+                "noise_variant": "standard",
+                "psf_variant": "standard",
+                "mask_variant": "standard",
+                "output": "data/cutouts/slacs_other/J1636+4707/f160W/cutout_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.017917,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J1636+4707/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J2141-0001": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.001997,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J2141-0001/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J2302-0840": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.019323,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J2302-0840/f606W/cutout_cr_dataset.png"
+            }
+        },
+        "J2321-0939": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.007431,
+                "sci_variant": "bcfill",
+                "noise_variant": "bcfill",
+                "psf_variant": "bcfill",
+                "mask_variant": "bcfill",
+                "output": "data/cutouts_bcfill/slacs_other/J2321-0939/f606W/cutout_cr_dataset.png"
             }
         }
     }
