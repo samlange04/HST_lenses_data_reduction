@@ -1289,7 +1289,89 @@
         }
     },
     "slacs_other": {
+        "J0037-0942": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 1263,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J0044+0113": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 709,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J0935-0003": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 8919,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J0955+0101": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 5731,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
         "J0959+4416": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "variant": "standard",
+                "source": "accepted_from_f814W",
+                "n_excluded_px": 283,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 283,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "variant": "bcfill",
+                "source": "edited_from_f814W",
+                "n_excluded_px": 419,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 421,
+                "n_added_px": 111,
+                "n_erased_px": 200
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1303,6 +1385,37 @@
             }
         },
         "J1016+3859": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "variant": "standard",
+                "source": "edited_from_f814W",
+                "n_excluded_px": 6008,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 5447,
+                "n_added_px": 875,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "drizzle_pass": "cr",
+                "n_added_px": 378,
+                "n_erased_px": 0,
+                "n_excluded_px": 8332,
+                "note": "2026-09-13: masks a SECOND weakly-sheared background galaxy, object B, at dRA -3.67 dDec +1.43 (sky NW), r=3.94\" -- distinct from the red object A at r=3.68\" that the f814W note covers. Not an arc and not part of A. A and B have OPPOSITE colours (A redder than the deflector, B bluer: f606W/f814W relative to the lens 0.30 vs 1.42), which rules out the fold-pair reading two objects at the same radius would otherwise invite -- two images of one source must share a colour. No counter-image (f606W S/N -0.2 at B's mirror position vs 3.7 at B). Its tangential elongation (b/a 0.75 at 82 deg from radial in f814W, 0.56 at 70 deg in f606W) matches the 0.71 weak shear predicts at that radius for theta_E 1.35\". B is faint (S/N 5-6) so the shape is noisy; the counter-image null and the radius carry the argument. B is detected in all three bands but is masked ONLY here -- add it to f814W when that mask is next touched.",
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f814W",
+                "proposal_px": 7954,
+                "source": "edited_from_f814W",
+                "variant": "bcfill"
+            },
             "f814W": {
                 "brush_radius_px": 6,
                 "brush_width": 0.025,
@@ -1311,7 +1424,7 @@
                 "n_added_px": 512,
                 "n_erased_px": 0,
                 "n_excluded_px": 7954,
-                "note": "2026-09-13: the compact red object 3.68\" from the deflector is NOT an arc and is masked. It is tangentially elongated (b/a 0.70, major axis 89 deg from radial), which is why it reads as one, but that is weak shear, not strong lensing: no counter-image anywhere at 2.5-5.5\", and it is ~3x REDDER than the deflector (f160W/f814W) where a lensed SLACS source would be bluer. The implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\" that are the real lensed features. See diagnostics/J1016+3859_f814W_arc_test.png.",
+                "note": "2026-09-13: the compact red object 3.68\" from the deflector is NOT an arc and is masked. It is tangentially elongated (b/a 0.70, major axis 89 deg from radial), which is why it reads as one, but that is weak shear, not strong lensing: no counter-image anywhere at 2.5-5.5\", and it is ~3x REDDER than the deflector (f160W/f814W) where a lensed SLACS source would be bluer. The implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\" that are the real lensed features. See diagnostics/J1016+3859_f814W_arc_test.png. A second sheared galaxy, object B, sits at r=3.94\" (sky NW) and is masked in f606W but NOT here, though it is detected in f814W at S/N ~5; see the f606W note.",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
                 "proposal_from": "f814W",
@@ -1320,7 +1433,109 @@
                 "variant": "bcfill"
             }
         },
+        "J1100+5329": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "bcfill",
+                "source": "edited_from_f606W",
+                "n_excluded_px": 10280,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 9499,
+                "n_added_px": 1130,
+                "n_erased_px": 0
+            }
+        },
+        "J1106+5228": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 504,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1112+0826": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 4336,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1134+6027": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "standard",
+                "source": "edited_from_f606W",
+                "n_excluded_px": 5956,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 6284,
+                "n_added_px": 504,
+                "n_erased_px": 555
+            },
+            "f606W": {
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "edited": "2026-09-14: pulled back off the arc radius -- cleared masked pixels within 1.6\" of the deflector (9494 -> 9252 px). Measured theta_E = 2.93 kpc = 1.10\" (Auger+2009), and the mask previously reached 1.20\", only 0.10\" outside it. 1.60\" is 1.45x theta_E and costs nothing: the masked S object spans r=1.63-2.45\", so the mask stays continuous from 1.60\" outward. Done after the f606W->f160W astrometric re-tie and re-cut the same day.",
+                "n_excluded_px": 9252,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "source": "drawn",
+                "variant": "bcfill"
+            }
+        },
         "J1153+4612": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "variant": "standard",
+                "source": "edited_from_f814W",
+                "n_excluded_px": 1631,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 1665,
+                "n_added_px": 335,
+                "n_erased_px": 582
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "variant": "bcfill",
+                "source": "accepted_from_f814W",
+                "n_excluded_px": 2426,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 2426,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1333,7 +1548,85 @@
                 "brush_radius_px": 6
             }
         },
+        "J1204+0358": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 5010,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1251-0208": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "standard",
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 7149,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 7149,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "bcfill",
+                "source": "edited_from_f606W",
+                "n_excluded_px": 10419,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 10225,
+                "n_added_px": 324,
+                "n_erased_px": 0
+            }
+        },
+        "J1403+0006": {
+            "f606W": {
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "drizzle_pass": "cr",
+                "edited": "2026-09-14: pulled back off the expected arc radius -- cleared masked pixels within 1.2\" of the deflector (3147 -> 3123 px). Bolton 2008 gives sigma=213+/-17 km/s, z_l=0.1888, z_s=0.4730 -> SIS theta_E=0.75\", and that estimator runs ~30-40% low against rings measured in this repo, so the arc is expected near ~1.0\". The mask previously reached 1.06\", i.e. onto that radius. No arc is actually detected here (no blue excess anywhere in f606W/f814W) and the masked companion at r=1.77\" is ~1.8x theta_E, so it is very unlikely to be the lensed source -- this is precautionary clearance, not a correction.",
+                "n_added_px": 342,
+                "n_erased_px": 0,
+                "n_excluded_px": 3123,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f606W",
+                "proposal_px": 2897,
+                "source": "edited_from_f606W",
+                "variant": "bcfill"
+            }
+        },
         "J1416+5136": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "bcfill",
+                "source": "edited_from_f606W",
+                "n_excluded_px": 1228,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 383,
+                "n_added_px": 845,
+                "n_erased_px": 0
+            },
             "f814W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1342,6 +1635,138 @@
                 "variant": "bcfill",
                 "source": "drawn",
                 "n_excluded_px": 403,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1436-0000": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 2542,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1443+0304": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 14068,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1531-0105": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 401,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1538+5817": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 438,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1621+3931": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 3250,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1636+4707": {
+            "f160W": {
+                "prefix": "cutout",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "variant": "standard",
+                "source": "edited_from_f606W",
+                "n_excluded_px": 1045,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 710,
+                "n_added_px": 467,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 1032,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J2141-0001": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 115,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J2302-0840": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 1113,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J2321-0939": {
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed",
+                "variant": "bcfill",
+                "source": "drawn",
+                "n_excluded_px": 428,
                 "brush_width": 0.025,
                 "brush_radius_px": 6
             }
