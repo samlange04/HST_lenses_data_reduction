@@ -6,5 +6,19 @@
                 "lacosmic_objlim": 12.0
             }
         }
+    },
+    "slacs_other": {
+        "J1538+5817": {
+            "f606W": {
+                "lacosmic_sigclip": 10.0,
+                "lacosmic_objlim": 12.0
+            }
+        },
+        "J2302-0840": {
+            "f606W": {
+                "lacosmic_sigclip": 10.0,
+                "lacosmic_objlim": 12.0
+            }
+        }
     }
 }
