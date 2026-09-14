@@ -769,12 +769,121 @@ band with a bcfill tree. Its f606W (0/24) and f160W (0/6) are still open, as is 
   θ_E for a single early-type. The consistent reading is a background galaxy just outside the
   caustic, singly imaged and sheared ~20%. That is self-checking: the observed ellipticity
   implies **θ_E ≈ 1.3–1.4″** (SIS, γ = θ_E/2r), and the faint f606W knots at **r = 1.4–1.8″**
-  — the *real* lensed features, invisible in f814W — sit at that same radius. Figures:
-  `diagnostics/J1016+3859_f814W_arc_test.png` (three-band) and `..._mask_check.png`.
+  — the *real* lensed features, invisible in f814W — sit at that same radius. (Three-band and
+  mask-check figures were written to the now-untracked `diagnostics/`; regenerate rather than
+  expect them in a clone.)
   **Generalise the method, not the verdict**: tangential elongation alone does not make an
   arc, and colour-relative-to-the-deflector plus a counter-image search is the cheap test.
   Compare colours as a *ratio against the deflector's own* — raw cross-band flux is
   meaningless here (F606W is WFPC2 DN/s, F814W ACS e/s; see *F606W `BUNIT`* above).
+  - **A SECOND sheared galaxy, object B, at r=3.94″ (sky NW; dRA −3.67, dDec +1.43),
+    masked in f606W 2026-09-13.** Same verdict, reached the same way, and it sharpens the
+    method. Two objects at nearly the same radius on the same side invite a **fold-pair**
+    reading — merging images straddling the critical curve, which is what a knotty arc looks
+    like — and **colour kills it outright: A is redder than the deflector and B is bluer**
+    (f606W/f814W relative to the lens 0.30 vs 1.42). *Two images of one source must share a
+    colour*, so A and B cannot be images of anything. B also has no counter-image (f606W S/N
+    −0.2 at its mirror position vs 3.7 at B), and its elongation (b/a 0.75 at 82° from radial
+    in f814W, 0.56 at 70° in f606W) matches the **0.71 that weak shear predicts at 3.94″ for
+    θ_E 1.35″**. B is faint (S/N 5–6) so its shape is noisy — the counter-image null and the
+    radius carry it. Bonus: two independent galaxies at r≈3.7–3.9″ both sheared ~20% is a
+    small weak-lensing measurement, and it agrees with the θ_E the f606W knots give.
+    **B is detected in all three bands but masked only in f606W** — add it to f814W when that
+    mask is next touched (it is outside the default 3.5″ aperture, so nothing is wrong today).
+  - **J1538+5817 (`slacs_other`): two faint features near the ring, C1 and C2, are
+  UNRESOLVED — left unmasked deliberately.** The lens itself is a **ring at θ_E ≈ 1.0″**
+  (three images, PA ≈ 340/145/260, f606W S/N 37/33/17) and the drawn mask correctly clears
+  it (0% masked inside 1.2″, nearest masked px 1.20″). Two marginal features sit outside it:
+  **C1 (col 136, row 143; r=1.44″)** and **C2 (col 117, row 161; r=2.08″)**, both raw peak
+  S/N ≈ 4, smoothed 2.7. C2 is tangential (80° from radial) but at twice the ring radius, so
+  it cannot be another image of the ring source; C1 at 47° is neither radial nor tangential.
+  **Spiral arm of the deflector vs lensed emission is NOT settled.** The F814W SNAP frame was
+  recovered to try the colour test and **it failed**: at 420 s it is ~10× shallower than the
+  4400 s F606W, the ring is at or below its limit, and its own elliptical model over-subtracts
+  — one ring image reads **S/N −17.7**, which is model error, not flux. Do not quote colours
+  for this lens from that product. Both features are left unmasked: C1 is only 0.44″ outside
+  the ring, so masking a marginal detection there risks eating real lensed flux.
+- **J1416+5136 (`slacs_other`): θ_E is 1.37″ and the two bright objects are NOT at it — but
+  whether they are lensed is still OPEN.** Measured θ_E = 6.08 kpc = **1.37″** (Auger+2009;
+  the system has a successful lens model, so an arc definitely exists). The two objects sit at
+  **r = 2.2″ and 2.6″, i.e. 1.6–1.9 × θ_E**, neither has a counter-image (mirror of the bright
+  one reads S/N −4.4 against 264 at the object), and both are resolved galaxies (2.08× and
+  1.55× the PSF, b/a ≈ 0.92). A **weak bridge joins them** and survives MGE subtraction: +2σ
+  at the midpoint against +0.1σ 1.2″ perpendicular, with the ends dominated by each object's
+  own halo. **Open hypothesis, to be tested by modelling:** that this diffuse material is
+  *extended source emission offset from the main source centre* — an extended source does
+  image over a range of radii, so 1.6–1.9 × θ_E is large but not impossible. The plan is to
+  fit both with the object-2 knots included and excluded and compare. **Do not treat the
+  "companion galaxies" reading as settled**, and keep any mask outside **~1.6″** so it cannot
+  touch the 1.37″ arc.
+  - **Two of my own claims here were wrong and are retracted**: an azimuthal-median model
+    showed a "diffuse arc connecting the objects" that is mostly model residual (MGE removes
+    most of it), and an apparent **"Einstein ring at r=0.83″, radius constant to 0.018″"** was
+    a **centring dipole**, not a ring — the annulus reads +8σ at PA 0–100 and **−6σ** at PA
+    140–220. *A real arc is positive on one side and ~0 opposite; it is never negative.* A
+    radius that constant should itself have raised suspicion.
+  - The galaxy model is the limiting factor, not the data: even with a 36-component MGE with a
+    fitted centre (residuals within a few percent), a ~10σ dipole remains, because the MGE uses
+    a single PA and real ellipticals twist. At 1.37″ the residual is +5σ at PA 240–280 and −6σ
+    at PA 40–60 — the arc is in there and cannot yet be cleanly separated from model error.
+    A Sérsic-plus-twist fit, or a real MGE code (`mgefit` is not installed), is the way on.
+- **Orientation, which bit twice while working on this lens: on screen the stamps are NOT
+    North-up-East-left.** The WCS is North-up in the usual sense (+column = **West**,
+    +row = **North**), but the display puts row 0 at the top, so **North appears DOWN and East
+    appears RIGHT** — a 180° rotation from the convention. An object called "NE" at the GUI is
+    sky-SW. Quote sky offsets (ΔRA/ΔDec) rather than compass words when it matters, and derive
+    them from the WCS rather than from how the panel looks.
+
+**Where the arc should be: use the MEASURED Einstein radius, not an estimate.** Auger+2009
+(SLACS IX) modelled these systems and VizieR carries the result:
+`J/ApJ/705/1099/lenses`, keyed on `SDSS` (e.g. `J1416+5136`), column **`RE` — the Einstein
+radius in kpc**, alongside `zlens`, `zsrc`, `sigma`, `MType`. Convert with
+θ_E["] = RE[kpc] / D_A(z_lens)[kpc] × 206265. **A lens appearing in that table has a
+successful lens model, which is itself the answer to "does this system really have an arc?"**
+Fetch it directly (`curl` the `asu-tsv` endpoint); the Bolton+2008 table
+`J/ApJ/682/964/table4` has the classification and σ but **no Einstein radius**.
+
+Measured values for the lenses worked on here, against what image analysis found:
+
+| lens | θ_E measured | found in the images |
+|---|---|---|
+| J1538+5817 | **1.00″** | ring measured at 1.00″ — exact |
+| J1100+5329 | **1.52″** | images at 1.50/1.63″ — 2% |
+| J1016+3859 | **1.09″** | 1.35″ inferred from shear — 24% high |
+| J1251-0208 | **0.84″** | blue arc knots at 1.22″ — 45% high |
+| J1403+0006 | **0.83″** | no arc found; masked companion at 1.77″ = **2.1×θ_E** |
+| J1416+5136 | **1.37″** | no arc found; two objects at 2.2/2.6″ = **1.6–1.9×θ_E** |
+| J1134+6027 | **1.10″** | no arc found; the N/S pair at 2.00/3.79″ |
+
+**This is the cheapest way to settle "is that bright thing the lensed source?"** — on the last
+three it confirmed, independently of colour or counter-image searches, that the eye-catching
+objects sit well outside θ_E. Two cautions: an *extended* source arcs outside θ_E (J1251 at
+1.45×), so treat θ_E as a floor not an exact locus; and a σ-based SIS estimate is a poor
+substitute where the table has no row — against these measurements it ran low by factors of
+1.05, 1.11, 1.39 and 1.43, too scattered to correct with a single scaling.
+
+**Two ways of looking that have each produced a WRONG mask verdict here. Both are easy to
+repeat, so check against them before recommending anything.**
+
+- **An integrated-aperture S/N invents sources that are not there.** Summing
+  `flux/sqrt(sum(noise^2))` over a ~100-pixel aperture turns a faint positive background
+  residual — an imperfectly subtracted envelope gradient, say — into a confident-looking
+  detection. It produced a phantom "counter-image" at J1403+0006 PA300 (integrated S/N 35.9,
+  actual **peak S/N 1.9**, zero pixels above S/N 4) and another at J1251-0208 PA240
+  (integrated 11.5–12.8, **peak 3.0**, one pixel above S/N 4), and it inflated the J1538+5817
+  colour work. **Judge a detection on per-pixel S/N and the count of connected pixels above
+  threshold**, never on an aperture sum alone; quote the peak alongside any integrated number.
+- **Compact-source detection is structurally blind to a diffuse arc.** A `S/N > 4` per-pixel
+  cut with a 3x3 opening finds knots and misses low-surface-brightness lensed emission
+  entirely. At J1416+5136 that produced "no ring anywhere" and a recommendation to mask two
+  objects — when smoothing the deflector-subtracted image to 0.3" reveals a coherent ridge
+  over **~220 degrees of azimuth**, fitting a circle centred **0.58" from the deflector**
+  (compare J1100+5329's neighbour galaxy at **4.13"**, which really was unlensed), with the
+  diffuse light measuring **9% bluer than the deflector** once the bright knots are excluded.
+  **Before concluding a lens has no arc, smooth and look for extended structure**, and fit the
+  ridge curvature — an arc curves about the deflector, a tidal bridge or neighbour does not.
+  Beware the converse: heavy smoothing of an imperfectly subtracted galaxy makes coherent
+  residuals of its own, so confirm with colour and with a better galaxy model.
 
 **One draw per BAND; the next band starts from a REVIEWED proposal, not a blank canvas
 (`--propose-from`, default `auto`, added 2026-09-04).** Each run draws on one band — the
