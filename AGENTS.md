@@ -237,7 +237,6 @@ data/
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
   mosaics_<S>arcsec/<sample>/             ← QC mosaics of the <S>" stamps
-  pre_drizzled/                           ← 46 MAST-delivered mosaics (zipped as slacs.zip), kept for reference; not pipeline output
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
 ```
@@ -1651,7 +1650,9 @@ only**. `psf_model_error_injected.py` does the honest per-lens comparison wherev
 > **Full reset, 2026-07-26.** All three files were emptied to `{}` and every product under
 > `data/` deleted (`calibrated/`, `drizzle_files/`, `drizzled/`, `cutouts/`, `mosaics/`,
 > `run_logs/`) as a deliberate clean restart. Kept: `data/reference_files/` (CRDS cache) and
-> `data/pre_drizzled/` (46 MAST-delivered mosaics, not pipeline output). The sample was
+> `data/pre_drizzled/` (46 MAST-delivered mosaics, not pipeline output; **that folder was
+> deleted 2026-09-14** — it had been empty for some time, so any claim elsewhere that the
+> repo carries MAST-delivered mosaics is void). The sample was
 > renamed `slacs` → **`slacs_gold`** in the same pass. **Any surviving `data/*/slacs/` path,
 > and any "current on-disk state" / "Not regenerated" claim in memory, is pre-reset and
 > void** — the *reasoning* in those notes stands and is why reruns use the current scripts;

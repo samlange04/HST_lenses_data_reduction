@@ -48,8 +48,11 @@ Bolton 2008's pipeline, which **masked only CRs + cold pixels** (no bad-column D
 rectified frames onto the 0.05″ grid by **bilinear interpolation** (not drizzle), and
 **never built a per-pixel weight/noise map** — so a masked column has nothing to imprint on.
 Confirmed from the papers themselves (Etherington 2022 arXiv:2202.09201 and Nightingale 2022
-arXiv:2209.10566 both cite Bolton 2008 for their SLACS reduction). `data/pre_drizzled/` is a
-*different* thing — a genuine AstroDrizzle/HLA re-drizzle — and it **does** stripe, like ours.
+arXiv:2209.10566 both cite Bolton 2008 for their SLACS reduction). The MAST-delivered
+mosaics that used to sit in `data/pre_drizzled/` were a *different* thing — a genuine
+AstroDrizzle/HLA re-drizzle — and they **did** stripe, like ours. (That folder was deleted
+2026-09-14, after it turned out to have been empty for some time; re-download from MAST if
+the comparison is ever wanted again. The conclusion it supported stands on the papers.)
 
 ---
 
