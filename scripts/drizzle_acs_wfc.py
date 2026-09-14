@@ -82,6 +82,13 @@ _p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
 # BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
+# --block-exptime overrides the block threshold for one run, default unchanged. It exists
+# because the SLACS ACS SNAP programme (10587) delivered a SINGLE 420s F814W frame per
+# lens -- the very imaging Bolton et al. classified these systems from -- which sits just
+# under the 500s floor, so 15 slacs_other lenses have their discovery band gated out. Such
+# a product is a ONE-FRAME drizzle: no dither, and no frame-to-frame CR rejection, so it
+# leans entirely on LACosmic (per-frame and object-protected, which is why it is the
+# default). Check the CR pass before trusting one.
 # Per-exposure floor: a dead/aborted frame (guide-star acquisition failure, pointing
 # check shot) can carry a small nonzero EXPTIME (0.5s seen on real archive data) that
 # `> 0` does not catch. 10s matches WFPC2's own MIN_EXPTIME (drizzle_wfpc2_wf3.py) --
@@ -94,6 +101,11 @@ MIN_EXPTIME = 10.0
 # missing source shot noise), so 1/sqrt(EXP-WHT) is not a physical noise map. See
 # DrizzlePac Handbook pp.103,139 and Bayer et al. 2023 (sigma=sqrt(N/W+sigma_sky^2)).
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
+_p.add_argument('--block-exptime', type=float, default=None,
+                help='override the %.0fs total-exposure block threshold for this run '
+                     '(e.g. 400 to admit a single 420s SLACS SNAP frame). Does not change '
+                     'the WARN threshold, so a short product is still flagged.'
+                     % BLOCK_EXPTIME)
 # Bad-column fill (Bolton-style). When set, each FLC's DQ-flagged dead columns (ACS bad
 # column bit 128 + bad detector pixel bit 4) are linearly interpolated across in SCI *and*
 # ERR and un-flagged BEFORE drizzling, so those output pixels get full weight from every
@@ -396,11 +408,15 @@ _frames = [
 _obs_ids = sorted(rootname for rootname, exp in _frames if exp > MIN_EXPTIME)
 _total_exptime = sum(exp for _, exp in _frames if exp > MIN_EXPTIME)
 
-if _total_exptime < BLOCK_EXPTIME:
+_block_exptime = BLOCK_EXPTIME if _a.block_exptime is None else _a.block_exptime
+if _block_exptime != BLOCK_EXPTIME:
+    print(f'  EXPTIME GATE OVERRIDDEN: block threshold {_block_exptime:.0f}s '
+          f'(default {BLOCK_EXPTIME:.0f}s)')
+if _total_exptime < _block_exptime:
     info_json.update(exptime_json_path,    sample, lens, filt_key, None)
     info_json.update(instrument_json_path, sample, lens, filt_key, None)
     print(f'=== BLOCKED (exptime): {lens} {filt_key} total exptime {_total_exptime:.1f}s '
-          f'< {BLOCK_EXPTIME:.0f}s minimum (recorded as null) ===')
+          f'< {_block_exptime:.0f}s minimum (recorded as null) ===')
     sys.exit(0)
 if _total_exptime < WARN_EXPTIME:
     print(f'  EXPTIME WARNING: {lens} {filt_key} total exptime {_total_exptime:.1f}s '
