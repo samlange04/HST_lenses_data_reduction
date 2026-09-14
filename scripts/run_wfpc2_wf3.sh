@@ -15,7 +15,8 @@
 # --bcfill runs the bad-column-filled reduction through all three stages: drizzle into the
 # parallel data/drizzled_bcfill/ tree, tie F606W within that tree (against its OWN F814W --
 # so run_acs_all.sh --bcfill must have produced the bcfill F814W products FIRST), and cut
-# into data/cutouts_bcfill/. See AGENTS.md *Bad-column fill*. Logs are _bcfill-tagged.
+# into data/cutouts/, superseding that band's standard stamp. See AGENTS.md *Bad-column
+# fill*. Logs are _bcfill-tagged.
 #
 # EVERY lens in the sample is tried, not a hand-maintained subset. Only 22 of the 38
 # slacs_gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and

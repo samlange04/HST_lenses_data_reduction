@@ -91,10 +91,18 @@ default, split visits, the mandatory align step).
 data/
   calibrated/<sample>/<lens>/<filter>/    downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ AstroDrizzle working dir (logs, shift files, PNGs)
-  drizzled/<sample>/<lens>/<filter>/      final mosaics (_cr_ / _nocrrej_, sci + wht)
-  cutouts/<sample>/<lens>/<filter>/       cutout_sci.fits / cutout_noise.fits / cutout.png
+  drizzled[_bcfill]/<sample>/<lens>/<filter>/  final mosaics (_cr_ / _nocrrej_, sci + wht)
+  cutouts/<sample>/<lens>/<filter>/       THE science tree -- one stamp per band:
+                                          cutout_[cr_]{sci,noise,psf,mask}.fits + PNGs
+  mosaics/<sample>/                       QC grids tiling those stamps
   reference_files/                        CRDS cache (auto-downloaded once)
   run_logs/                               per-lens batch-runner logs
+
+Everything under data/ is gitignored except cutouts/ and mosaics/ -- the small, final
+science products, and the only place a hand-drawn (non-regenerable) mask lives. The
+bad-column-filled reduction (--bcfill) is a separate tree only at the drizzle layer; its
+stamps supersede the standard ones inside the one cutouts/ tree, tagged BCFILL in the
+header rather than by path. See AGENTS.md and scripts/cutout_paths.py.
 info/
   lens_samples.json     single source of truth for sample membership + MAST quirks
   wfpc2_alignment.json  per-lens WFPC2 align mode (mast) and split-visit handling

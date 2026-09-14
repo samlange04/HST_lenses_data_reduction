@@ -25,9 +25,9 @@ the injected kernel: the existing pre-broadening analytic-model files are moved 
   data/psf/<sample>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
   <psf cutout dir>/cutout_[cr_]psf.fits                       canonical (injected)
   <psf cutout dir>/cutout_[cr_]psf_analytic.fits              superseded analytic
-    (<psf cutout dir> = cutout_paths.psf_cutout_dir(): data/cutouts_bcfill/<sample>/<lens>/
-     <filt>/ wherever a bcfill reduction exists, else data/cutouts/<...>/ -- one kernel per
-     band, placed beside the sci/noise/mask that will actually be modelled)
+    (<psf cutout dir> = cutout_paths.psf_cutout_dir(): data/cutouts/<sample>/<lens>/<filt>/,
+     beside the sci/noise/mask that will actually be modelled -- one kernel per band, always
+     in the default-size tree since the kernel is not size-keyed)
   info/lens_psf.json                                          method becomes inject_*
   info/lens_psf_injected.json                                 {sample:{lens:{filt:{...}}}}
 

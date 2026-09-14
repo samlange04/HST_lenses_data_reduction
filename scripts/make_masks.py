@@ -47,19 +47,14 @@ Defaults to the pipeline's standard 12" cutout tree (data/cutouts/, cutout_paths
 git (see .gitignore) precisely because it carries them, which no script can regenerate.
 Pass --size 20 to mask the (untracked, regenerable) 20" tree instead.
 
-bcfill variant (--variant, default 'auto'). The bad-column-filled re-drizzle
-(data/cutouts_bcfill/, also tracked) shares crop geometry with the standard tree EXACTLY
--- identical NAXIS/CRPIX/CRVAL -- so a mask drawn on one is pixel-valid on the other, and
-bcfill differs only by having its dead-column noise stripes filled (a cleaner image to
-scribble on). It covers ACS (f814W/f555W) + WFPC2 (f606W) only -- there is no bcfill for
-f160W (WFC3/IR has no bad columns) or the gallery sample. So the default is:
-    --variant auto  (default): per (lens, filt), a single mask is drawn on and written to
-        the bcfill cutout if it exists, else the standard cutout. Because the geometry is
-        shared, that one mask serves whichever reduction is modelled -- it is NOT duplicated
-        across trees. A (lens, filt) is SKIPPED if a mask already exists in EITHER tree
-        (bcfill or standard); with --force it is redrawn, again into the priority tree.
-    --variant bcfill: bcfill tree only (skip lenses/filters with no bcfill cutout).
-    --variant standard: standard tree only (the historic behaviour, data/cutouts/).
+One cutout dir per band, so one mask per band, written beside the sci it was drawn on.
+The bad-column-filled re-drizzle (--bcfill) supersedes the standard one in place rather
+than starting a parallel tree (cutout_paths.py), so for ACS (f814W/f555W) + WFPC2 (f606W)
+you are scribbling on the bcfill image -- the same geometry with its dead-column noise
+stripes filled, i.e. a cleaner image to draw on -- and for f160W and the gallery, which
+have no bcfill, on the standard one. Either way there is nothing to choose and no second
+copy of the mask to keep in step. A (lens, filt) with a mask already on disk is SKIPPED;
+--force redraws it.
 
 Every mask written also REGENERATES that band's `{prefix}_dataset.png` QC subplot
 (scripts/make_dataset_subplots.py), so the one PNG that shows the mask laid over
@@ -308,30 +303,20 @@ def find_prefix(cutout_dir, drizzle_pass='auto'):
     return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
-def discover_targets(trees, sample, lens=None, filt=None):
-    """Yield (lens, filt, display_dir, write_dirs) per lens/filt that has a cutout in any
-    of `trees`, sorted for a reproducible run order.
-
-    `trees` is an ordered list of (variant, cutouts_root_dir) in display-preference order
-    (bcfill before standard for --variant auto). For each (lens, filt) present in any tree:
-      - write_dirs   = every tree's cutout_dir that has a matching sci file (both trees
-                       share crop geometry exactly, so one mask is valid for all of them),
-                       tagged with its variant;
-      - display_dir  = the first such tree in preference order (the image scribbled on).
+def discover_targets(root, sample, lens=None, filt=None):
+    """Yield (lens, filt, cutout_dir) per band with a cutout under `root` -- the dir both
+    scribbled on and written to -- sorted for a reproducible run order.
     """
-    seen = {}
-    for variant, root in trees:
-        pattern = os.path.join(root, sample, lens or '*', filt or '*')
-        for cutout_dir in sorted(glob.glob(pattern)):
-            if find_prefix(cutout_dir, 'auto') is None:
-                continue
-            this_filt = os.path.basename(cutout_dir)
-            this_lens = os.path.basename(os.path.dirname(cutout_dir))
-            seen.setdefault((this_lens, this_filt), []).append((variant, cutout_dir))
-    for (this_lens, this_filt) in sorted(seen):
-        write_dirs = seen[(this_lens, this_filt)]        # already in preference order
-        display_variant, display_dir = write_dirs[0]
-        yield this_lens, this_filt, display_dir, write_dirs
+    found = {}
+    pattern = os.path.join(root, sample, lens or '*', filt or '*')
+    for cutout_dir in sorted(glob.glob(pattern)):
+        if find_prefix(cutout_dir, 'auto') is None:
+            continue
+        this_filt = os.path.basename(cutout_dir)
+        this_lens = os.path.basename(os.path.dirname(cutout_dir))
+        found[(this_lens, this_filt)] = cutout_dir
+    for key in sorted(found):
+        yield key[0], key[1], found[key]
 
 
 def load_display_base(display_dir, prefix, display, pixel_scales):
@@ -440,7 +425,8 @@ def find_proposal_mask(filt_dirs, display_filt, display_hdr, drizzle_pass, propo
     dst_wcs = WCS(display_hdr).celestial
     dst_shape = (display_hdr['NAXIS2'], display_hdr['NAXIS1'])
     for cand in candidates:
-        for _variant, cutout_dir in filt_dirs.get(cand, []):
+        cutout_dir = filt_dirs.get(cand)
+        if cutout_dir is not None:
             prefix = find_prefix(cutout_dir, drizzle_pass)
             if prefix is None:
                 continue
@@ -659,19 +645,12 @@ def regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass):
     plotting error) is reported with the command to retry and then swallowed -- it must never
     cost a mask that has just been drawn by hand.
 
-    Components are resolved across BOTH cutout trees regardless of this script's own
-    --variant, because they legitimately live in different ones: the mask (and usually the
-    sci/noise) in bcfill, while the PSF kernel exists only in the standard tree (it is
-    trimmed by amplitude, a property of the band -- see cutout_paths.py). Restricting the
-    search would report a missing PSF on every ACS/WFPC2 lens.
     """
     try:
         import make_dataset_subplots as mds
-        trees = [(v, cutout_paths.cutouts_root(ws_path, size, variant=v))
-                 for v in ('bcfill', '')]
-        tree_order = [v for v, _ in trees]
-        for t_lens, t_filt, dirs_by_variant in mds.discover_targets(trees, sample, lens, filt):
-            mds.process(t_lens, t_filt, sample, dirs_by_variant, tree_order, drizzle_pass,
+        root = cutout_paths.cutouts_root(ws_path, size)
+        for t_lens, t_filt, cutout_dir in mds.discover_targets(root, sample, lens, filt):
+            mds.process(t_lens, t_filt, sample, cutout_dir, drizzle_pass,
                         force=True, check_noise_map=False)
     except Exception as exc:                    # deliberately broad -- see docstring
         print(f"  NOTE: dataset subplot not regenerated for {lens} {filt} ({exc!r}). "
@@ -688,10 +667,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
                       propose_from='auto'):
     """Draw a mask once for one lens, on its best/forced band. By default the mask is written
     for THAT BAND ONLY; `broadcast=True` also writes it to the lens's other bands by WCS
-    reprojection. `filt_dirs` maps filt -> write_dirs (ordered (variant, cutout_dir), bcfill
-    before standard) from discover_targets. A mask FITS goes into the band's priority tree (the
-    two variants share a grid, so one serves both -- the skip check covers either). Returns True
-    if a mask was written.
+    reprojection. `filt_dirs` maps filt -> cutout_dir from discover_targets; the mask FITS
+    goes into that dir, beside the sci it describes. Returns True if a mask was written.
 
     `propose_from` ('auto' by default, 'none' to disable, or an explicit band) turns this into
     a REVIEW of a mask already drawn for another band of this lens instead of a blank canvas:
@@ -707,22 +684,16 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
               f"(have {', '.join(filts)}), skipping")
         return False
 
-    display_dir = filt_dirs[display_filt][0][1]          # priority-tree dir of the draw band
+    display_dir = filt_dirs[display_filt]                # cutout dir of the draw band
     display_prefix = find_prefix(display_dir, drizzle_pass)
     if display_prefix is None:
         print(f"{lens} {display_filt}: no cutout sci for --pass {drizzle_pass}, skipping")
         return False
 
-    # Skip if the draw band already has a mask in EITHER variant, unless --force (one mask per
-    # band serves both variants; matches the historic skip-if-either behaviour).
-    existing = []
-    for variant, cutout_dir in filt_dirs[display_filt]:
-        prefix = find_prefix(cutout_dir, drizzle_pass)
-        if prefix and os.path.exists(os.path.join(cutout_dir, f'{prefix}_mask.fits')):
-            existing.append(variant or 'standard')
-    if existing and not force:
-        print(f"{lens}: mask already exists ({display_filt} in [{', '.join(existing)}]), "
-              f"skipping (--force to redraw)")
+    # Skip if the draw band already has a mask, unless --force.
+    if (os.path.exists(os.path.join(display_dir, f'{display_prefix}_mask.fits'))
+            and not force):
+        print(f"{lens}: mask already exists ({display_filt}), skipping (--force to redraw)")
         return False
 
     display_hdr = fits.getheader(os.path.join(display_dir, f'{display_prefix}_sci.fits'))
@@ -780,7 +751,7 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
     # optical bands, a real ~20px regrid for f160W).
     targets = (filts if broadcast else [display_filt])
     for filt in targets:
-        variant, cutout_dir = filt_dirs[filt][0]         # priority tree for this band
+        cutout_dir = filt_dirs[filt]
         prefix = find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
@@ -803,7 +774,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
             'drizzle_pass': 'cr' if prefix == 'cutout_cr' else 'nocrrej',
             'pixel_scale_arcsec': round(band_ps, 6),
             'display': source_label,
-            'variant': variant or 'standard',
+            # Which reduction the stamp was drawn on, from its own header (cutout_paths.py).
+            'bcfill': bool(band_hdr.get('BCFILL', False)),
             'source': source_tag if is_draw else f'reprojected_from_{display_filt}',
             'n_excluded_px': n_excl,
         }
@@ -862,11 +834,6 @@ def main():
                         'i.e. data/cutouts/ -- the tree this tool is meant for and '
                         'the only size-variant tree tracked in git, see .gitignore; pass '
                         '--size 20 for the untracked, regenerable 20" tree)')
-    p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
-                   help="which reduction's cutouts to draw on: 'auto' (default) draws on the "
-                        "bcfill sci where it exists (cleaner image, shared geometry) else the "
-                        "standard sci, skipping if a mask exists in EITHER tree; 'bcfill' uses "
-                        "only data/cutouts_bcfill/; 'standard' uses only data/cutouts/")
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw a mask that already exists (default: skip it)')
     p.add_argument('--brush-radius', type=int, default=6,
@@ -923,24 +890,16 @@ def main():
                 'to broadcast one draw to every band unseen, or drop --broadcast to review '
                 'the inherited mask per band')
 
-    # Ordered by display preference: bcfill first (cleaner image), standard second.
-    if a.variant == 'bcfill':
-        variants = ['bcfill']
-    elif a.variant == 'standard':
-        variants = ['']
-    else:  # auto
-        variants = ['bcfill', '']
-    trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
+    root = cutout_paths.cutouts_root(ws_path, a.size)
 
-    # discover_targets yields per (lens, filt); regroup to filt -> write_dirs per lens so we
+    # discover_targets yields per (lens, filt); regroup to filt -> cutout_dir per lens so we
     # know every band of a lens (filt=None: consider all bands; pick_display_filt picks one).
     lens_filts = {}
-    for lens, filt, _display_dir, write_dirs in discover_targets(trees, a.sample, a.lens, None):
-        lens_filts.setdefault(lens, {})[filt] = write_dirs
+    for lens, filt, cutout_dir in discover_targets(root, a.sample, a.lens, None):
+        lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:
-        roots = ', '.join(r for _, r in trees)
-        raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
+        raise SystemExit(f"no cutouts found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")

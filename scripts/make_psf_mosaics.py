@@ -5,8 +5,8 @@ Tile every lens's PSF kernel into per-filter-group QC mosaics.
 Sibling to make_mosaics.py: same 5-wide grid, same filter groups (mosaic_groups.py,
 shared between the two scripts). Reads the trimmed, modelling-ready kernels already
 written by make_psf.py
-(cutout[_cr]_psf.fits, located per band by cutout_paths.psf_cutout_dir: the bcfill
-cutout dir where that reduction exists, else data/cutouts/) - nothing is rebuilt.
+(cutout[_cr]_psf.fits, in the band's cutout dir - cutout_paths.psf_cutout_dir, which
+resolves in the default-size tree whatever size a stamp was cut at) - nothing is rebuilt.
 
 Kernels are unit-sum normalised by construction (make_psf.trim_kernel_to_amplitude), so
 raw peak amplitude reflects kernel *size* (a broader/larger-footprint PSF has a lower
@@ -80,14 +80,12 @@ def build_group(sample, precedence):
     convention. `group` (the per-panel colourbar-split key) is only set for multi-filter
     groups, same reasoning as make_mosaics.py.
 
-    Each kernel is located with cutout_paths.psf_cutout_dir, so it is found wherever the
-    placement rule put it (the bcfill cutout dir for ACS/WFPC2 bands, the standard one for
-    f160W and gallery); the lens list is the union of both trees for the same reason."""
+    Each kernel is located with cutout_paths.psf_cutout_dir, which pins it to the
+    default-size tree (the kernel is not size-keyed - see cutout_paths.py)."""
     entries = []
     lenses = sorted({os.path.basename(d)
-                     for variant in cutout_paths.PSF_VARIANT_ORDER
                      for d in glob.glob(os.path.join(
-                         cutout_paths.cutouts_root(ws_path, variant=variant), sample, '*'))
+                         cutout_paths.cutouts_root(ws_path), sample, '*'))
                      if os.path.isdir(d)})
     for lens in lenses:
         for filt in precedence:

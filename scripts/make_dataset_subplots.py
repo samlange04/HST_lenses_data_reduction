@@ -15,27 +15,18 @@ missing -- a subplot cannot be built from a partial dataset. In particular the M
 hand-drawn by scripts/make_masks.py and is not regenerable, so a lens that has not been
 masked yet is simply reported and skipped, not an error.
 
-Variant / component mixing (--variant, default 'auto'). The standard (data/cutouts/) and
-bad-column-filled (data/cutouts_bcfill/) reductions share crop geometry EXACTLY (identical
-NAXIS/CRPIX/CRVAL -- see scripts/cutout_paths.py and make_masks.py), so their arrays are
-pixel-aligned and a component may be taken from whichever tree has it:
-  - the hand-drawn MASK lives in the bcfill tree for ACS/WFPC2 lenses (make_masks.py's
-    default), while
-  - the PSF kernel is stored ONCE per band, not per tree: cutout_paths.psf_cutout_dir puts
-    it in the bcfill cutout dir wherever that reduction exists (ACS f814W/f555W, WFPC2
-    f606W) and in data/cutouts/ otherwise (f160W, gallery).
-`--variant auto` (default) therefore resolves EACH of sci/noise/mask independently from an
-ordered tree search (bcfill first, then standard); `--variant bcfill`/`standard` restrict
-that search to one tree. The psf is resolved separately, through
-cutout_paths.psf_cutout_dir, and so obeys neither --variant nor --size: a single stored
-kernel is the same file whichever tree holds it, and restricting would report it missing
-rather than reading the one that exists.
+All four come from the ONE cutout dir for the band (cutout_paths.py: bcfill supersedes
+standard in place, so there is no priority-tree search to do and no way for the mask to
+describe a different reduction than the sci beside it). The PSF is the one exception, and
+only along the size axis: it is resolved through cutout_paths.psf_cutout_dir, which always
+points at the default-size tree because the kernel is trimmed by amplitude and is not
+size-keyed -- so a --size 20 run pairs its stamps with that same kernel rather than
+reporting it missing.
 
-Output: `{prefix}_dataset.png` written into the cutout dir the SIGNAL was taken from (so it
-sits beside that reduction's sci/noise), where `{prefix}` is `cutout_cr` or `cutout` exactly
-as make_cutouts.py named the products. Provenance (which tree each of the four components
-came from, pixel scale, masked-pixel fraction) is recorded per (sample, lens, filt) in
-info/lens_dataset_subplots.json.
+Output: `{prefix}_dataset.png` written into that cutout dir, where `{prefix}` is
+`cutout_cr` or `cutout` exactly as make_cutouts.py named the products. Provenance (which
+reduction the stamp came from, pixel scale, masked-pixel fraction) is recorded per
+(sample, lens, filt) in info/lens_dataset_subplots.json.
 
 Usage:
     uv run python scripts/make_dataset_subplots.py --lens J0008-0004 --filt f814W
@@ -143,72 +134,46 @@ def find_prefix(cutout_dir, drizzle_pass='auto'):
     return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
-def discover_targets(trees, sample, lens=None, filt=None):
-    """Yield (lens, filt, {variant: cutout_dir}) for every (lens, filt) present in any tree,
-    sorted for a reproducible run order. `trees` is an ordered list of (variant, root) in
-    search-preference order (bcfill before standard for --variant auto).
+def discover_targets(root, sample, lens=None, filt=None):
+    """Yield (lens, filt, cutout_dir) for every band with a cutout under `root`, sorted for
+    a reproducible run order.
     """
-    seen = {}
-    for variant, root in trees:
-        pattern = os.path.join(root, sample, lens or '*', filt or '*')
-        for cutout_dir in sorted(glob.glob(pattern)):
-            if not os.path.isdir(cutout_dir):
-                continue
-            if find_prefix(cutout_dir, 'auto') is None:
-                continue
-            this_filt = os.path.basename(cutout_dir)
-            this_lens = os.path.basename(os.path.dirname(cutout_dir))
-            # first tree in preference order wins for a given variant key
-            seen.setdefault((this_lens, this_filt), {}).setdefault(variant, cutout_dir)
-    for key in sorted(seen):
-        yield key[0], key[1], seen[key]
-
-
-def resolve_components(dirs_by_variant, tree_order, drizzle_pass, psf_dir=None):
-    """Locate each of the four components across the trees in preference order.
-
-    `dirs_by_variant` maps variant -> cutout_dir for this (lens, filt). `tree_order` is the
-    ordered list of variant keys to search. The drizzle prefix (cr/nocrrej) is fixed once,
-    from the first tree that has a sci for `drizzle_pass`, so all four components come from
-    the same pass. Returns (prefix, {component: (path, variant)}, missing_list).
-
-    `psf_dir` (cutout_paths.psf_cutout_dir) overrides the tree search for the psf component
-    only. The kernel is stored once per band -- variant-placed, and NOT size-keyed -- so it
-    is read from wherever that rule put it rather than from this run's --variant/--size
-    trees, which would otherwise report it missing whenever the two disagree.
-    """
-    # Fix the prefix from the first available tree (both trees share the same pass set).
-    prefix = None
-    for variant in tree_order:
-        cutout_dir = dirs_by_variant.get(variant)
-        if cutout_dir is None:
+    pattern = os.path.join(root, sample, lens or '*', filt or '*')
+    found = {}
+    for cutout_dir in sorted(glob.glob(pattern)):
+        if not os.path.isdir(cutout_dir):
             continue
-        prefix = find_prefix(cutout_dir, drizzle_pass)
-        if prefix is not None:
-            break
+        if find_prefix(cutout_dir, 'auto') is None:
+            continue
+        this_filt = os.path.basename(cutout_dir)
+        this_lens = os.path.basename(os.path.dirname(cutout_dir))
+        found[(this_lens, this_filt)] = cutout_dir
+    for key in sorted(found):
+        yield key[0], key[1], found[key]
+
+
+def resolve_components(cutout_dir, drizzle_pass, psf_dir=None):
+    """Locate the four components for one band. The drizzle prefix (cr/nocrrej) is fixed
+    once from the sci file, so all four come from the same pass. Returns
+    (prefix, {component: path}, missing_list).
+
+    `psf_dir` (cutout_paths.psf_cutout_dir) overrides `cutout_dir` for the psf component
+    only, and matters only for a non-default --size: the kernel is trimmed by amplitude and
+    is not size-keyed, so it lives in the default-size tree and a size-variant run must
+    read it from there rather than report it missing.
+    """
+    prefix = find_prefix(cutout_dir, drizzle_pass)
     if prefix is None:
         return None, {}, list(COMPONENTS)
 
     resolved, missing = {}, []
     for comp in COMPONENTS:
-        found = None
-        if comp == 'psf' and psf_dir is not None:
-            path = os.path.join(psf_dir, f'{prefix}_psf.fits')
-            if os.path.exists(path):
-                found = (path, cutout_paths.psf_cutout_variant(psf_dir))
+        src_dir = psf_dir if (comp == 'psf' and psf_dir is not None) else cutout_dir
+        path = os.path.join(src_dir, f'{prefix}_{comp}.fits')
+        if os.path.exists(path):
+            resolved[comp] = path
         else:
-            for variant in tree_order:
-                cutout_dir = dirs_by_variant.get(variant)
-                if cutout_dir is None:
-                    continue
-                path = os.path.join(cutout_dir, f'{prefix}_{comp}.fits')
-                if os.path.exists(path):
-                    found = (path, variant or 'standard')
-                    break
-        if found is None:
             missing.append(comp)
-        else:
-            resolved[comp] = found
     return prefix, resolved, missing
 
 
@@ -216,17 +181,18 @@ def build_and_plot(lens, filt, sample, prefix, resolved, output_dir, check_noise
                    asinh=True, cmap=DEFAULT_CMAP):
     """Assemble the al.Imaging dataset, apply the mask, and write the subplot PNG. Returns
     a provenance dict (also recorded in the tracking JSON by the caller)."""
-    sci_path = resolved['sci'][0]
-    pixel_scales = pixel_scale_from_header(fits.getheader(sci_path))
+    sci_path = resolved['sci']
+    sci_hdr = fits.getheader(sci_path)
+    pixel_scales = pixel_scale_from_header(sci_hdr)
 
     dataset = al.Imaging.from_fits(
         pixel_scales=pixel_scales,
         data_path=sci_path,
-        noise_map_path=resolved['noise'][0],
-        psf_path=resolved['psf'][0],
+        noise_map_path=resolved['noise'],
+        psf_path=resolved['psf'],
         check_noise_map=check_noise_map,
     )
-    mask = al.Mask2D.from_fits(file_path=resolved['mask'][0], pixel_scales=pixel_scales)
+    mask = al.Mask2D.from_fits(file_path=resolved['mask'], pixel_scales=pixel_scales)
     frac_masked = float(np.asarray(mask).astype(bool).mean())
     dataset = dataset.apply_mask(mask=mask)
 
@@ -250,40 +216,36 @@ def build_and_plot(lens, filt, sample, prefix, resolved, output_dir, check_noise
         'cmap': cmap,
         'pixel_scale_arcsec': round(pixel_scales, 6),
         'frac_masked': round(frac_masked, 6),
-        'sci_variant': resolved['sci'][1],
-        'noise_variant': resolved['noise'][1],
-        'psf_variant': resolved['psf'][1],
-        'mask_variant': resolved['mask'][1],
+        # Which reduction the stamp came from, read from its own header rather than its
+        # path -- the one tree holds both (cutout_paths.py).
+        'bcfill': bool(sci_hdr.get('BCFILL', False)),
         'output': os.path.relpath(out_png, ws_path),
     }
 
 
-def process(lens, filt, sample, dirs_by_variant, tree_order, drizzle_pass, force,
+def process(lens, filt, sample, cutout_dir, drizzle_pass, force,
             check_noise_map, asinh=True, cmap=DEFAULT_CMAP):
     """Resolve components, build the dataset, and write the subplot. Returns True on write,
     False on skip (missing component or already present without --force)."""
     prefix, resolved, missing = resolve_components(
-        dirs_by_variant, tree_order, drizzle_pass,
+        cutout_dir, drizzle_pass,
         psf_dir=cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt))
     if prefix is None:
         print(f"{lens} {filt}: no cutout sci for --pass {drizzle_pass}, skipping")
         return False
     if missing:
-        have = {c: resolved[c][1] for c in resolved}
         print(f"{lens} {filt} [{prefix}]: missing {missing} "
-              f"(have {have or 'nothing'}) -- cannot build dataset, skipping")
+              f"(have {sorted(resolved) or 'nothing'}) -- cannot build dataset, skipping")
         return False
 
-    # Output lands beside the reduction the SIGNAL came from.
-    output_dir = os.path.dirname(resolved['sci'][0])
+    output_dir = cutout_dir
     out_png = os.path.join(output_dir, f'{prefix}_dataset.png')
     if os.path.exists(out_png) and not force:
         print(f"{lens} {filt} [{prefix}]: {os.path.basename(out_png)} exists, "
               f"skipping (--force to redraw)")
         return False
 
-    srcs = ', '.join(f"{c}:{resolved[c][1]}" for c in COMPONENTS)
-    print(f"\n{lens} {filt} [{prefix}]  {srcs}")
+    print(f"\n{lens} {filt} [{prefix}]")
     provenance = build_and_plot(lens, filt, sample, prefix, resolved, output_dir,
                                 check_noise_map, asinh=asinh, cmap=cmap)
     info_json.update(SUBPLOTS_JSON, sample, lens, filt, provenance)
@@ -309,12 +271,6 @@ def main():
                    help=f'cutout tree to read (default {cutout_paths.DEFAULT_SIZE:g}", i.e. '
                         'data/cutouts/ -- the tracked, default-size tree carrying the '
                         'hand-drawn masks; pass --size 20 for the 20" tree)')
-    p.add_argument('--variant', choices=['auto', 'bcfill', 'standard'], default='auto',
-                   help="which reduction(s) to draw components from: 'auto' (default) "
-                        "resolves each of sci/noise/psf/mask from bcfill where present else "
-                        "standard (the two share crop geometry exactly, so mixing is valid); "
-                        "'bcfill' uses only data/cutouts_bcfill/; 'standard' uses only "
-                        "data/cutouts/")
     p.add_argument('--stretch', choices=['asinh', 'default'], default='asinh',
                    help="colour stretch for the linear panels (Data/Noise/S-N/over-sample): "
                         "'asinh' (default) matches the pipeline's own plots "
@@ -332,26 +288,16 @@ def main():
                         "heuristic at low-coverage edges)")
     a = p.parse_args()
 
-    # Search order: bcfill first (cleaner image, where masks live), standard second.
-    if a.variant == 'bcfill':
-        variants = ['bcfill']
-    elif a.variant == 'standard':
-        variants = ['']
-    else:  # auto
-        variants = ['bcfill', '']
-    trees = [(v, cutout_paths.cutouts_root(ws_path, a.size, variant=v)) for v in variants]
-    tree_order = [v for v, _ in trees]
-
-    targets = list(discover_targets(trees, a.sample, a.lens, a.filt))
+    root = cutout_paths.cutouts_root(ws_path, a.size)
+    targets = list(discover_targets(root, a.sample, a.lens, a.filt))
     if not targets:
-        roots = ', '.join(r for _, r in trees)
-        raise SystemExit(f"no cutouts found under [{roots}] for sample {a.sample} matching "
+        raise SystemExit(f"no cutouts found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r} filt={a.filt!r}")
 
     print(f"{len(targets)} lens/filter cutout(s) to process")
     made = skipped = 0
-    for lens, filt, dirs_by_variant in targets:
-        if process(lens, filt, a.sample, dirs_by_variant, tree_order, a.drizzle_pass,
+    for lens, filt, cutout_dir in targets:
+        if process(lens, filt, a.sample, cutout_dir, a.drizzle_pass,
                    a.force, a.check_noise_map, asinh=(a.stretch == 'asinh'), cmap=a.cmap):
             made += 1
         else:

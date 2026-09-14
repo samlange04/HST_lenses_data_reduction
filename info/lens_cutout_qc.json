@@ -13,7 +13,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -27,7 +28,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -41,7 +43,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -55,7 +58,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0201+3228": {
@@ -71,7 +75,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0237-0641": {
@@ -87,7 +92,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0742+3341": {
@@ -103,7 +109,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -117,7 +124,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -131,7 +139,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -145,7 +154,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0755+3445": {
@@ -161,7 +171,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -175,7 +186,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -189,7 +201,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -203,7 +216,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0856+2010": {
@@ -219,7 +233,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J0918+5104": {
@@ -235,7 +250,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -249,7 +265,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -263,7 +280,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -277,7 +295,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1110+2808": {
@@ -293,7 +312,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -307,7 +327,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -321,7 +342,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -335,7 +357,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1110+3649": {
@@ -351,7 +374,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1116+0915": {
@@ -367,7 +391,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1141+2216": {
@@ -383,7 +408,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1201+4743": {
@@ -399,7 +425,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J1226+5457": {
@@ -415,7 +442,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J2228+1205": {
@@ -431,7 +459,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         },
         "J2342-0120": {
@@ -447,7 +476,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -461,7 +491,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -475,7 +506,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -489,7 +521,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.3045
+                "casertano_r_analytic": 1.3045,
+                "bcfill": false
             }
         }
     },
@@ -502,12 +535,13 @@
                 "offset_arcsec": 0.0026,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.079731,
+                "weight_uniformity": 0.070554,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -521,7 +555,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0029-0055": {
@@ -537,7 +572,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -546,12 +582,13 @@
                 "offset_arcsec": 0.257,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.165169,
+                "weight_uniformity": 0.162028,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -560,12 +597,13 @@
                 "offset_arcsec": 0.257,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.186212,
+                "weight_uniformity": 0.184693,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0157-0056": {
@@ -576,12 +614,13 @@
                 "offset_arcsec": 0.0358,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.090466,
+                "weight_uniformity": 0.082136,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -595,7 +634,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0216-0813": {
@@ -611,7 +651,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -625,7 +666,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0252+0039": {
@@ -641,7 +683,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -650,12 +693,13 @@
                 "offset_arcsec": 0.1001,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.143262,
+                "weight_uniformity": 0.140288,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -664,12 +708,13 @@
                 "offset_arcsec": 0.1001,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.162784,
+                "weight_uniformity": 0.161282,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0330-0020": {
@@ -680,12 +725,13 @@
                 "offset_arcsec": 0.1424,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.137225,
+                "weight_uniformity": 0.134053,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -694,12 +740,13 @@
                 "offset_arcsec": 0.1424,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.153234,
+                "weight_uniformity": 0.152004,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0728+3835": {
@@ -715,7 +762,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -724,12 +772,13 @@
                 "offset_arcsec": 0.1996,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.198097,
+                "weight_uniformity": 0.195645,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -738,12 +787,13 @@
                 "offset_arcsec": 0.1996,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.210184,
+                "weight_uniformity": 0.209831,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0737+3216": {
@@ -754,12 +804,13 @@
                 "offset_arcsec": 0.0297,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.134185,
+                "weight_uniformity": 0.130211,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -768,12 +819,13 @@
                 "offset_arcsec": 0.0297,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.199486,
+                "weight_uniformity": 0.196266,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0822+2652": {
@@ -789,7 +841,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -798,12 +851,13 @@
                 "offset_arcsec": 0.0199,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.178991,
+                "weight_uniformity": 0.176132,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f606W_v2": {
                 "size_arcsec": 12.0,
@@ -812,12 +866,13 @@
                 "offset_arcsec": 0.0199,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.187195,
+                "weight_uniformity": 0.181193,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -826,12 +881,13 @@
                 "offset_arcsec": 0.0199,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.201941,
+                "weight_uniformity": 0.199128,
                 "weight_uniformity_limit": 0.2,
-                "weight_uniformity_ok": false,
+                "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0841+3824": {
@@ -847,7 +903,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -856,12 +913,13 @@
                 "offset_arcsec": 0.0502,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.291533,
+                "weight_uniformity": 0.290409,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -870,12 +928,13 @@
                 "offset_arcsec": 0.0502,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.291916,
+                "weight_uniformity": 0.290377,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0903+4116": {
@@ -891,7 +950,8 @@
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -900,12 +960,13 @@
                 "offset_arcsec": 0.1278,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.123326,
+                "weight_uniformity": 0.119604,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -914,12 +975,13 @@
                 "offset_arcsec": 0.1278,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.146833,
+                "weight_uniformity": 0.145608,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0912+0029": {
@@ -930,12 +992,13 @@
                 "offset_arcsec": 0.0295,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.223814,
+                "weight_uniformity": 0.22134,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -944,17 +1007,19 @@
                 "offset_arcsec": 0.0295,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.320605,
+                "weight_uniformity": 0.318019,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0936+0913": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.0975,
@@ -974,12 +1039,13 @@
                 "offset_arcsec": 0.0975,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.213581,
+                "weight_uniformity": 0.212112,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -988,12 +1054,13 @@
                 "offset_arcsec": 0.0975,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.223056,
+                "weight_uniformity": 0.220691,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0946+1006": {
@@ -1009,7 +1076,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1018,12 +1086,13 @@
                 "offset_arcsec": 0.1092,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.173765,
+                "weight_uniformity": 0.171626,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1032,12 +1101,13 @@
                 "offset_arcsec": 0.1092,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.173531,
+                "weight_uniformity": 0.169863,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0956+5100": {
@@ -1048,12 +1118,13 @@
                 "offset_arcsec": 0.2752,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.176776,
+                "weight_uniformity": 0.172757,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1062,12 +1133,13 @@
                 "offset_arcsec": 0.2752,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.250604,
+                "weight_uniformity": 0.247105,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J0959+0410": {
@@ -1078,12 +1150,13 @@
                 "offset_arcsec": 0.035,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.15736,
+                "weight_uniformity": 0.154546,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1092,12 +1165,13 @@
                 "offset_arcsec": 0.035,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.205931,
+                "weight_uniformity": 0.203959,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1020+1122": {
@@ -1113,7 +1187,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1122,12 +1197,13 @@
                 "offset_arcsec": 0.0386,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.150744,
+                "weight_uniformity": 0.147845,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1136,12 +1212,13 @@
                 "offset_arcsec": 0.0386,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.171914,
+                "weight_uniformity": 0.169131,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1023+4230": {
@@ -1157,7 +1234,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1166,12 +1244,13 @@
                 "offset_arcsec": 0.0505,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.186579,
+                "weight_uniformity": 0.185073,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1180,12 +1259,13 @@
                 "offset_arcsec": 0.0505,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.21492,
+                "weight_uniformity": 0.211729,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1029+0420": {
@@ -1201,7 +1281,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1210,12 +1291,13 @@
                 "offset_arcsec": 0.0701,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.252484,
+                "weight_uniformity": 0.250221,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1224,12 +1306,13 @@
                 "offset_arcsec": 0.0701,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.217093,
+                "weight_uniformity": 0.213696,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1032+5322": {
@@ -1245,7 +1328,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1254,12 +1338,13 @@
                 "offset_arcsec": 0.299,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.201547,
+                "weight_uniformity": 0.200341,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1268,12 +1353,13 @@
                 "offset_arcsec": 0.299,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.230763,
+                "weight_uniformity": 0.228707,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1142+1001": {
@@ -1284,12 +1370,13 @@
                 "offset_arcsec": 0.596,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.144917,
+                "weight_uniformity": 0.140603,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1298,12 +1385,13 @@
                 "offset_arcsec": 0.596,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.150966,
+                "weight_uniformity": 0.146595,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1143-0144": {
@@ -1311,29 +1399,31 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "f814W",
-                "offset_arcsec": 0.0421,
+                "offset_arcsec": 0.0508,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.258417,
+                "weight_uniformity": 0.249499,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.0421,
+                "offset_arcsec": 0.0508,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.325756,
+                "weight_uniformity": 0.319098,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1205+4910": {
@@ -1344,12 +1434,13 @@
                 "offset_arcsec": 0.3079,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.184022,
+                "weight_uniformity": 0.183284,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1358,12 +1449,13 @@
                 "offset_arcsec": 0.3079,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.258927,
+                "weight_uniformity": 0.257891,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1213+6708": {
@@ -1374,12 +1466,13 @@
                 "offset_arcsec": 0.4794,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.282002,
+                "weight_uniformity": 0.278561,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1388,12 +1481,13 @@
                 "offset_arcsec": 0.4794,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.317055,
+                "weight_uniformity": 0.315083,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1218+0830": {
@@ -1404,12 +1498,13 @@
                 "offset_arcsec": 0.0725,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.249926,
+                "weight_uniformity": 0.248482,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1418,12 +1513,13 @@
                 "offset_arcsec": 0.0725,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.279288,
+                "weight_uniformity": 0.271484,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1250+0523": {
@@ -1434,12 +1530,13 @@
                 "offset_arcsec": 0.088,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.167501,
+                "weight_uniformity": 0.16662,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1448,12 +1545,13 @@
                 "offset_arcsec": 0.088,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.228628,
+                "weight_uniformity": 0.227565,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1402+6321": {
@@ -1464,12 +1562,13 @@
                 "offset_arcsec": 0.2317,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.17482,
+                "weight_uniformity": 0.173941,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1478,12 +1577,13 @@
                 "offset_arcsec": 0.2317,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.241779,
+                "weight_uniformity": 0.24082,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1420+6019": {
@@ -1494,12 +1594,13 @@
                 "offset_arcsec": 0.225,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.288365,
+                "weight_uniformity": 0.284029,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1508,12 +1609,13 @@
                 "offset_arcsec": 0.225,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.353022,
+                "weight_uniformity": 0.348846,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1430+4105": {
@@ -1529,7 +1631,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1538,12 +1641,13 @@
                 "offset_arcsec": 0.1077,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.233562,
+                "weight_uniformity": 0.231372,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1552,12 +1656,13 @@
                 "offset_arcsec": 0.1077,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.247524,
+                "weight_uniformity": 0.244914,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1432+6317": {
@@ -1568,12 +1673,13 @@
                 "offset_arcsec": 0.1331,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.2987,
+                "weight_uniformity": 0.298149,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1582,12 +1688,13 @@
                 "offset_arcsec": 0.1331,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.340901,
+                "weight_uniformity": 0.338686,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1451-0239": {
@@ -1598,12 +1705,13 @@
                 "offset_arcsec": 0.0947,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.164864,
+                "weight_uniformity": 0.153914,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1612,12 +1720,13 @@
                 "offset_arcsec": 0.0947,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.214914,
+                "weight_uniformity": 0.206006,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1525+3327": {
@@ -1628,12 +1737,13 @@
                 "offset_arcsec": 0.115,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.178671,
+                "weight_uniformity": 0.176536,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1642,12 +1752,13 @@
                 "offset_arcsec": 0.115,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.196425,
+                "weight_uniformity": 0.193145,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1627-0053": {
@@ -1658,12 +1769,13 @@
                 "offset_arcsec": 0.0909,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.152314,
+                "weight_uniformity": 0.149042,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1672,12 +1784,13 @@
                 "offset_arcsec": 0.0909,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.209842,
+                "weight_uniformity": 0.206388,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1630+4520": {
@@ -1685,29 +1798,31 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "f814W",
-                "offset_arcsec": 0.1206,
+                "offset_arcsec": 0.115,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.170266,
+                "weight_uniformity": 0.167686,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.1206,
+                "offset_arcsec": 0.115,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.242117,
+                "weight_uniformity": 0.239808,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J2238-0754": {
@@ -1718,12 +1833,13 @@
                 "offset_arcsec": 0.0835,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.165801,
+                "weight_uniformity": 0.162272,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1732,12 +1848,13 @@
                 "offset_arcsec": 0.0835,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.220672,
+                "weight_uniformity": 0.217503,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J2300+0022": {
@@ -1748,12 +1865,13 @@
                 "offset_arcsec": 0.1021,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.11981,
+                "weight_uniformity": 0.114895,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1762,12 +1880,13 @@
                 "offset_arcsec": 0.1021,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.160761,
+                "weight_uniformity": 0.156925,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J2303+1422": {
@@ -1778,12 +1897,13 @@
                 "offset_arcsec": 0.1203,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.173586,
+                "weight_uniformity": 0.170716,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1792,12 +1912,13 @@
                 "offset_arcsec": 0.1203,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.254482,
+                "weight_uniformity": 0.251832,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J2341+0000": {
@@ -1808,12 +1929,13 @@
                 "offset_arcsec": 0.0739,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.216087,
+                "weight_uniformity": 0.214179,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1827,7 +1949,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         }
     },
@@ -1840,12 +1963,13 @@
                 "offset_arcsec": 0.7562,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.217916,
+                "weight_uniformity": 0.216614,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J0044+0113": {
@@ -1853,15 +1977,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.2507,
+                "offset_arcsec": 0.2457,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.206739,
+                "weight_uniformity": 0.204104,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J0935-0003": {
@@ -1869,15 +1994,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.419,
+                "offset_arcsec": 0.1826,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.161066,
+                "weight_uniformity": 0.157856,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J0955+0101": {
@@ -1888,12 +2014,13 @@
                 "offset_arcsec": 0.7789,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.201573,
+                "weight_uniformity": 0.200172,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J0959+4416": {
@@ -1909,7 +2036,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1918,12 +2046,13 @@
                 "offset_arcsec": 0.1143,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.185194,
+                "weight_uniformity": 0.182735,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1932,12 +2061,13 @@
                 "offset_arcsec": 0.1143,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.218306,
+                "weight_uniformity": 0.21587,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1016+3859": {
@@ -1953,7 +2083,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1962,12 +2093,13 @@
                 "offset_arcsec": 0.1939,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.220662,
+                "weight_uniformity": 0.218167,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1976,12 +2108,13 @@
                 "offset_arcsec": 0.1939,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.24874,
+                "weight_uniformity": 0.245941,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1100+5329": {
@@ -1992,12 +2125,13 @@
                 "offset_arcsec": 0.491,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.183686,
+                "weight_uniformity": 0.182135,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1106+5228": {
@@ -2008,12 +2142,13 @@
                 "offset_arcsec": 0.4072,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.303088,
+                "weight_uniformity": 0.300064,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1112+0826": {
@@ -2024,12 +2159,13 @@
                 "offset_arcsec": 0.0919,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.165186,
+                "weight_uniformity": 0.163145,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1134+6027": {
@@ -2045,21 +2181,23 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
-                "center_source": "f814W",
-                "offset_arcsec": 0.4297,
+                "center_source": "this band",
+                "offset_arcsec": 0.4137,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.236912,
+                "weight_uniformity": 0.234547,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1153+4612": {
@@ -2075,7 +2213,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2084,12 +2223,13 @@
                 "offset_arcsec": 0.0695,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.201643,
+                "weight_uniformity": 0.19926,
                 "weight_uniformity_limit": 0.2,
-                "weight_uniformity_ok": false,
+                "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2098,12 +2238,13 @@
                 "offset_arcsec": 0.0695,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.210421,
+                "weight_uniformity": 0.207821,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1204+0358": {
@@ -2111,15 +2252,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.2478,
+                "offset_arcsec": 0.1987,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.193851,
+                "weight_uniformity": 0.191273,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1251-0208": {
@@ -2135,7 +2277,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2144,12 +2287,13 @@
                 "offset_arcsec": 0.0706,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.172881,
+                "weight_uniformity": 0.170178,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1403+0006": {
@@ -2157,15 +2301,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.5818,
+                "offset_arcsec": 0.0532,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.195831,
+                "weight_uniformity": 0.194812,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1416+5136": {
@@ -2176,12 +2321,13 @@
                 "offset_arcsec": 0.132,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.168731,
+                "weight_uniformity": 0.166255,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2190,12 +2336,13 @@
                 "offset_arcsec": 0.132,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.205128,
+                "weight_uniformity": 0.202185,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "bcfill": true
             }
         },
         "J1436-0000": {
@@ -2206,12 +2353,13 @@
                 "offset_arcsec": 0.7463,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.164435,
+                "weight_uniformity": 0.161606,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1443+0304": {
@@ -2222,12 +2370,13 @@
                 "offset_arcsec": 0.3075,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.203555,
+                "weight_uniformity": 0.201174,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1531-0105": {
@@ -2235,15 +2384,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.6553,
+                "offset_arcsec": 0.0682,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.224368,
+                "weight_uniformity": 0.221418,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1538+5817": {
@@ -2254,12 +2404,13 @@
                 "offset_arcsec": 0.4834,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.226759,
+                "weight_uniformity": 0.224744,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1621+3931": {
@@ -2267,15 +2418,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.2531,
+                "offset_arcsec": 0.0512,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.217111,
+                "weight_uniformity": 0.214516,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J1636+4707": {
@@ -2291,7 +2443,8 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "bcfill": false
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2300,12 +2453,13 @@
                 "offset_arcsec": 0.2625,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.197561,
+                "weight_uniformity": 0.194678,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J2141-0001": {
@@ -2313,15 +2467,16 @@
                 "size_arcsec": 12.0,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.1602,
+                "offset_arcsec": 0.0491,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.159156,
+                "weight_uniformity": 0.156945,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J2302-0840": {
@@ -2332,12 +2487,13 @@
                 "offset_arcsec": 0.0843,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.211457,
+                "weight_uniformity": 0.209596,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         },
         "J2321-0939": {
@@ -2348,12 +2504,13 @@
                 "offset_arcsec": 0.167,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.333386,
+                "weight_uniformity": 0.330291,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "bcfill": true
             }
         }
     }

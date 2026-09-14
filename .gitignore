@@ -5,7 +5,7 @@
 # ~185 GB across ~3900 FITS files, so it must never enter git history.
 #
 # data/cutouts is the deliberate exception: the final science stamps (12" square, the
-# pipeline default -- see scripts/cutout_paths.py) are small (~316 MB) and worth
+# pipeline default -- see scripts/cutout_paths.py) are small (~500 MB) and worth
 # versioning across pipeline changes; it also carries scripts/make_masks.py's hand-drawn
 # GUI masks (cutout_[cr_]mask.fits), which are NOT regenerable by any script, so losing
 # them means redoing manual mask work. data/mosaics is the same deal: small QC grids
@@ -14,17 +14,17 @@
 # regenerable from the same drizzled mosaics by one runner call (run_cutouts_all.sh
 # <sample> <size>), and carry no masks of their own since make_masks.py targets the
 # default (12") tree.
+#
+# There is ONE stamp per (sample, lens, filter) in there (2026-09-14): the bad-column-filled
+# reduction (--bcfill) supersedes the standard one in place for the ACS/WFPC2 bands it
+# covers, rather than in the parallel data/cutouts_bcfill/ + data/mosaics_bcfill/ trees it
+# used to occupy. Which reduction a stamp is comes from its BCFILL header card and the
+# matching `bcfill` key in info/lens_cutout_qc.json, not from its path. The drizzle layer
+# still has both (data/drizzled[_bcfill]/, data/drizzle_files[_bcfill]/) and all of it stays
+# ignored by the data/* rule.
 data/*
 !data/cutouts/
 !data/mosaics/
-# The bad-column-filled reduction (drizzle_acs_wfc.py --bcfill) is a small, tracked
-# alternate science product, same rationale as data/cutouts/ above. Only its default-size
-# cutouts + QC mosaics are versioned; data/drizzled_bcfill/ (the big mosaics) and
-# data/drizzle_files_bcfill/ (scratch) stay ignored by the data/* rule, like their
-# standard-reduction counterparts. A non-default-size bcfill tree (cutouts_bcfill_<S>arcsec)
-# is NOT matched here, so it stays untracked like any other size variant.
-!data/cutouts_bcfill/
-!data/mosaics_bcfill/
 # ...and neither is the per-size QC provenance for an untracked size, which would
 # otherwise be a tracked file describing products nobody else has on disk. The default
 # (12") info/lens_cutout_qc.json is tracked as an ordinary info/ file, untouched by this

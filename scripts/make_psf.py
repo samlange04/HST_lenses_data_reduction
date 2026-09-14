@@ -28,10 +28,10 @@ Outputs (data/psf/<sample>/<lens>/<filt>/):
   * psf.png          -- QA panel: selected-star montage, the kernel, and a radial profile.
 
 The trimmed, modelling-ready kernel (cutout_[cr_]psf.fits, plus its _err/_analytic
-siblings) goes to cutout_paths.psf_cutout_dir(): the bcfill cutout dir wherever that
-reduction exists (ACS f814W/f555W, WFPC2 f606W) and data/cutouts/ otherwise (f160W,
-gallery). One kernel per band either way -- it is placed beside the sci/noise/mask a fit
-consumes, not duplicated per tree, and not keyed on stamp size.
+siblings) goes to cutout_paths.psf_cutout_dir(): the band's cutout dir, beside the
+sci/noise/mask a fit consumes. One kernel per band, and NOT keyed on stamp size -- it is
+trimmed by amplitude, a property of the band, so a --size variant stamp pairs with this
+same kernel in the default-size tree.
 
 For a MODEL-tier build (method_used starts with 'model'), this auto-chains into
 make_psf_inject.run_injection(..., promote=True): the drizzle-broadened injected kernel
@@ -1084,9 +1084,8 @@ def main():
              title=f'{a.lens}  {a.filt}  [{method_used}]  ({n_stars} stars)')
 
     # ── Write the trimmed modelling kernel to the cutout tree (pass-matched prefix) ─
-    # cutout_paths.psf_cutout_dir puts it in the bcfill cutout dir wherever that reduction
-    # exists (so sci/noise/psf/mask sit together in the tree that is modelled), else the
-    # standard one -- one kernel per band either way, never duplicated across trees.
+    # cutout_paths.psf_cutout_dir pins it to the default-size tree (the kernel is not
+    # size-keyed), beside the sci/noise/mask a fit consumes.
     cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt)
     os.makedirs(cutouts_dir, exist_ok=True)
     prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
