@@ -1289,16 +1289,19 @@
                 "bcfill": true
             },
             "f814W": {
-                "brush_radius_px": 6,
-                "brush_width": 0.025,
-                "display": "S/N, radial-subtracted + as-observed",
-                "drizzle_pass": "cr",
-                "edited": "2026-09-04: pulled back from lensed image A -- cleared masked pixels at r<2.0\" of the deflector and r<0.5\" of image A (was 8930 px)",
-                "n_excluded_px": 8531,
-                "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "source": "drawn",
-                "bcfill": true
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "bcfill": true,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 8847,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 8531,
+                "n_added_px": 598,
+                "n_erased_px": 0
             }
         },
         "J1525+3327": {
