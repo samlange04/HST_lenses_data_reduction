@@ -1,0 +1,1991 @@
+{
+    "slacs_gold": {
+        "J0008-0004": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect+f814W",
+                "n_arc_px": 6335,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 4834,
+                "n_added_px": 3300,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 43,
+                        "peak_snr": 5.14,
+                        "peak_snr_smoothed": 5.36,
+                        "r_arcsec": 1.388,
+                        "r_over_theta_e": 1.198,
+                        "tangential_deg": 22.2,
+                        "mirror_snr": 1.53
+                    },
+                    {
+                        "area_px": 34,
+                        "peak_snr": 6.55,
+                        "peak_snr_smoothed": 6.26,
+                        "r_arcsec": 0.968,
+                        "r_over_theta_e": 0.835,
+                        "tangential_deg": 16.5,
+                        "mirror_snr": -0.33
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.159,
+                "detector_band_offset_px": [
+                    0.324,
+                    0.255
+                ],
+                "detector_core_dipole": 1.3,
+                "proposal_px_by_source": {
+                    "detect": 221,
+                    "f814W": 4823
+                },
+                "proposal_overlap_px": 210
+            }
+        },
+        "J0029-0055": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect+f814W",
+                "n_arc_px": 3076,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 2028,
+                "n_added_px": 3012,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 170,
+                        "peak_snr": 10.63,
+                        "peak_snr_smoothed": 10.22,
+                        "r_arcsec": 0.734,
+                        "r_over_theta_e": 0.768,
+                        "tangential_deg": 69.8,
+                        "mirror_snr": -1.86
+                    },
+                    {
+                        "area_px": 72,
+                        "peak_snr": 7.6,
+                        "peak_snr_smoothed": 7.33,
+                        "r_arcsec": 1.025,
+                        "r_over_theta_e": 1.072,
+                        "tangential_deg": 2.0,
+                        "mirror_snr": -1.02
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 0.957,
+                "detector_band_offset_px": [
+                    0.073,
+                    -0.011
+                ],
+                "detector_core_dipole": 0.75,
+                "proposal_px_by_source": {
+                    "detect": 536,
+                    "f814W": 1879
+                },
+                "proposal_overlap_px": 387
+            }
+        },
+        "J0157-0056": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect+f814W",
+                "n_arc_px": 6216,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 5090,
+                "n_added_px": 2451,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 52,
+                        "peak_snr": 8.8,
+                        "peak_snr_smoothed": 9.07,
+                        "r_arcsec": 1.451,
+                        "r_over_theta_e": 1.836,
+                        "tangential_deg": 13.2,
+                        "mirror_snr": 0.1
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 0.79,
+                "detector_band_offset_px": [
+                    0.019,
+                    0.077
+                ],
+                "detector_core_dipole": 0.79,
+                "proposal_px_by_source": {
+                    "detect": 132,
+                    "f814W": 5090
+                },
+                "proposal_overlap_px": 132
+            }
+        },
+        "J0216-0813": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect+f814W",
+                "n_arc_px": 3589,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 3351,
+                "n_added_px": 665,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 424,
+                        "peak_snr": 9.94,
+                        "peak_snr_smoothed": 10.5,
+                        "r_arcsec": 1.684,
+                        "r_over_theta_e": 1.453,
+                        "tangential_deg": 27.6,
+                        "mirror_snr": -0.92
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.159,
+                "detector_band_offset_px": [
+                    -0.351,
+                    0.409
+                ],
+                "detector_core_dipole": 1.61,
+                "proposal_px_by_source": {
+                    "detect": 716,
+                    "f814W": 3351
+                },
+                "proposal_overlap_px": 716
+            }
+        },
+        "J0252+0039": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "accepted_from_detect+f814W",
+                "n_arc_px": 2034,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 2034,
+                "n_added_px": 0,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 37,
+                        "peak_snr": 6.36,
+                        "peak_snr_smoothed": 5.88,
+                        "r_arcsec": 1.182,
+                        "r_over_theta_e": 1.14,
+                        "tangential_deg": 53.8,
+                        "mirror_snr": -0.18
+                    },
+                    {
+                        "area_px": 17,
+                        "peak_snr": 5.32,
+                        "peak_snr_smoothed": 4.86,
+                        "r_arcsec": 0.802,
+                        "r_over_theta_e": 0.774,
+                        "tangential_deg": 7.5,
+                        "mirror_snr": 0.95
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.037,
+                "detector_band_offset_px": [
+                    0.029,
+                    -0.074
+                ],
+                "detector_core_dipole": 1.72,
+                "proposal_px_by_source": {
+                    "detect": 178,
+                    "f814W": 2034
+                },
+                "proposal_overlap_px": 178
+            }
+        },
+        "J0330-0020": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 1817,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 640,
+                "n_added_px": 1817,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 392,
+                        "peak_snr": 20.54,
+                        "peak_snr_smoothed": 20.62,
+                        "r_arcsec": 1.604,
+                        "r_over_theta_e": 1.456,
+                        "tangential_deg": 7.1,
+                        "mirror_snr": 0.11
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.101,
+                "detector_band_offset_px": [
+                    -0.016,
+                    0.054
+                ],
+                "detector_core_dipole": 3.37
+            }
+        },
+        "J0728+3835": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3571,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 105,
+                "n_added_px": 3571,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 37,
+                        "peak_snr": 4.92,
+                        "peak_snr_smoothed": 5.07,
+                        "r_arcsec": 1.253,
+                        "r_over_theta_e": 1.005,
+                        "tangential_deg": 5.2,
+                        "mirror_snr": 1.54
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.247,
+                "detector_band_offset_px": [
+                    -0.076,
+                    0.002
+                ],
+                "detector_core_dipole": 3.09
+            }
+        },
+        "J0737+3216": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect",
+                "n_arc_px": 1591,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 791,
+                "n_added_px": 1125,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 319,
+                        "peak_snr": 15.83,
+                        "peak_snr_smoothed": 17.29,
+                        "r_arcsec": 0.905,
+                        "r_over_theta_e": 0.908,
+                        "tangential_deg": 9.1,
+                        "mirror_snr": -1.93
+                    },
+                    {
+                        "area_px": 85,
+                        "peak_snr": 13.64,
+                        "peak_snr_smoothed": 14.3,
+                        "r_arcsec": 1.206,
+                        "r_over_theta_e": 1.21,
+                        "tangential_deg": 7.2,
+                        "mirror_snr": 2.65
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 0.997,
+                "detector_band_offset_px": [
+                    -0.024,
+                    -0.101
+                ],
+                "detector_core_dipole": 1.34
+            }
+        },
+        "J0822+2652": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 2491,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 539,
+                "n_added_px": 2491,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 131,
+                        "peak_snr": 5.99,
+                        "peak_snr_smoothed": 6.32,
+                        "r_arcsec": 0.732,
+                        "r_over_theta_e": 0.626,
+                        "tangential_deg": 82.0,
+                        "mirror_snr": 0.85
+                    },
+                    {
+                        "area_px": 47,
+                        "peak_snr": 5.42,
+                        "peak_snr_smoothed": 8.25,
+                        "r_arcsec": 2.086,
+                        "r_over_theta_e": 1.784,
+                        "tangential_deg": 89.1,
+                        "mirror_snr": 0.12
+                    },
+                    {
+                        "area_px": 29,
+                        "peak_snr": 7.11,
+                        "peak_snr_smoothed": 6.43,
+                        "r_arcsec": 1.703,
+                        "r_over_theta_e": 1.456,
+                        "tangential_deg": 6.9,
+                        "mirror_snr": -0.2
+                    },
+                    {
+                        "area_px": 15,
+                        "peak_snr": 4.72,
+                        "peak_snr_smoothed": 4.61,
+                        "r_arcsec": 0.524,
+                        "r_over_theta_e": 0.448,
+                        "tangential_deg": 21.9,
+                        "mirror_snr": 2.87
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.169,
+                "detector_band_offset_px": [
+                    -0.045,
+                    -0.027
+                ],
+                "detector_core_dipole": 0.64
+            }
+        },
+        "J0841+3824": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 1510,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 176,
+                "n_added_px": 1510,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 33,
+                        "peak_snr": 4.35,
+                        "peak_snr_smoothed": 4.49,
+                        "r_arcsec": 1.724,
+                        "r_over_theta_e": 1.224,
+                        "tangential_deg": 78.0,
+                        "mirror_snr": 0.13
+                    },
+                    {
+                        "area_px": 23,
+                        "peak_snr": 5.81,
+                        "peak_snr_smoothed": 4.9,
+                        "r_arcsec": 0.984,
+                        "r_over_theta_e": 0.698,
+                        "tangential_deg": 62.2,
+                        "mirror_snr": 0.96
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.409,
+                "detector_band_offset_px": [
+                    -0.087,
+                    -0.022
+                ],
+                "detector_core_dipole": 1.52
+            }
+        },
+        "J0903+4116": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 4515,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 830,
+                "n_added_px": 4515,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 400,
+                        "peak_snr": 13.15,
+                        "peak_snr_smoothed": 13.9,
+                        "r_arcsec": 1.892,
+                        "r_over_theta_e": 1.468,
+                        "tangential_deg": 20.9,
+                        "mirror_snr": -0.26
+                    },
+                    {
+                        "area_px": 94,
+                        "peak_snr": 5.23,
+                        "peak_snr_smoothed": 6.03,
+                        "r_arcsec": 0.884,
+                        "r_over_theta_e": 0.686,
+                        "tangential_deg": 18.6,
+                        "mirror_snr": 0.1
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.289,
+                "detector_band_offset_px": [
+                    0.167,
+                    -0.298
+                ],
+                "detector_core_dipole": 1.1
+            }
+        },
+        "J0912+0029": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 7380,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 1901,
+                "n_added_px": 7380,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 505,
+                        "peak_snr": 10.54,
+                        "peak_snr_smoothed": 12.35,
+                        "r_arcsec": 2.397,
+                        "r_over_theta_e": 1.473,
+                        "tangential_deg": 64.9,
+                        "mirror_snr": 1.38
+                    },
+                    {
+                        "area_px": 494,
+                        "peak_snr": 9.48,
+                        "peak_snr_smoothed": 10.2,
+                        "r_arcsec": 2.157,
+                        "r_over_theta_e": 1.325,
+                        "tangential_deg": 57.4,
+                        "mirror_snr": 0.49
+                    },
+                    {
+                        "area_px": 60,
+                        "peak_snr": 5.48,
+                        "peak_snr_smoothed": 5.81,
+                        "r_arcsec": 0.947,
+                        "r_over_theta_e": 0.582,
+                        "tangential_deg": 22.4,
+                        "mirror_snr": -1.04
+                    },
+                    {
+                        "area_px": 42,
+                        "peak_snr": 5.3,
+                        "peak_snr_smoothed": 5.78,
+                        "r_arcsec": 3.111,
+                        "r_over_theta_e": 1.911,
+                        "tangential_deg": 29.6,
+                        "mirror_snr": 1.07
+                    },
+                    {
+                        "area_px": 21,
+                        "peak_snr": 4.79,
+                        "peak_snr_smoothed": 4.85,
+                        "r_arcsec": 2.325,
+                        "r_over_theta_e": 1.429,
+                        "tangential_deg": 25.3,
+                        "mirror_snr": 11.04
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.627,
+                "detector_band_offset_px": [
+                    -0.005,
+                    -0.019
+                ],
+                "detector_core_dipole": 0.91
+            }
+        },
+        "J0936+0913": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 2407,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 151,
+                "n_added_px": 2407,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 63,
+                        "peak_snr": 5.78,
+                        "peak_snr_smoothed": 6.0,
+                        "r_arcsec": 1.612,
+                        "r_over_theta_e": 1.48,
+                        "tangential_deg": 14.1,
+                        "mirror_snr": -1.97
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.089,
+                "detector_band_offset_px": [
+                    0.004,
+                    0.093
+                ],
+                "detector_core_dipole": 2.21
+            }
+        },
+        "J0946+1006": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3324,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 1333,
+                "n_added_px": 3324,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 623,
+                        "peak_snr": 18.95,
+                        "peak_snr_smoothed": 19.75,
+                        "r_arcsec": 1.443,
+                        "r_over_theta_e": 1.043,
+                        "tangential_deg": 8.9,
+                        "mirror_snr": 0.18
+                    },
+                    {
+                        "area_px": 121,
+                        "peak_snr": 11.11,
+                        "peak_snr_smoothed": 10.93,
+                        "r_arcsec": 1.235,
+                        "r_over_theta_e": 0.892,
+                        "tangential_deg": 3.9,
+                        "mirror_snr": 8.37
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.384,
+                "detector_band_offset_px": [
+                    0.212,
+                    0.109
+                ],
+                "detector_core_dipole": 1.88
+            }
+        },
+        "J0956+5100": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 10491,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 1116,
+                "n_added_px": 10491,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 611,
+                        "peak_snr": 12.9,
+                        "peak_snr_smoothed": 14.72,
+                        "r_arcsec": 1.88,
+                        "r_over_theta_e": 1.417,
+                        "tangential_deg": 21.9,
+                        "mirror_snr": -0.39
+                    },
+                    {
+                        "area_px": 64,
+                        "peak_snr": 7.28,
+                        "peak_snr_smoothed": 8.95,
+                        "r_arcsec": 2.567,
+                        "r_over_theta_e": 1.935,
+                        "tangential_deg": 1.1,
+                        "mirror_snr": 0.13
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.327,
+                "detector_band_offset_px": [
+                    -0.011,
+                    0.007
+                ],
+                "detector_core_dipole": 1.34
+            }
+        },
+        "J0959+0410": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 6115,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 315,
+                "n_added_px": 6115,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 61,
+                        "peak_snr": 6.35,
+                        "peak_snr_smoothed": 5.84,
+                        "r_arcsec": 1.649,
+                        "r_over_theta_e": 1.661,
+                        "tangential_deg": 12.1,
+                        "mirror_snr": 2.02
+                    },
+                    {
+                        "area_px": 29,
+                        "peak_snr": 9.22,
+                        "peak_snr_smoothed": 7.62,
+                        "r_arcsec": 1.206,
+                        "r_over_theta_e": 1.215,
+                        "tangential_deg": 15.0,
+                        "mirror_snr": 1.7
+                    },
+                    {
+                        "area_px": 19,
+                        "peak_snr": 4.2,
+                        "peak_snr_smoothed": 4.09,
+                        "r_arcsec": 1.594,
+                        "r_over_theta_e": 1.605,
+                        "tangential_deg": 0.1,
+                        "mirror_snr": 2.23
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 0.993,
+                "detector_band_offset_px": [
+                    0.149,
+                    0.221
+                ],
+                "detector_core_dipole": 2.73
+            }
+        },
+        "J1020+1122": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3224,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 381,
+                "n_added_px": 3224,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 37,
+                        "peak_snr": 5.18,
+                        "peak_snr_smoothed": 5.35,
+                        "r_arcsec": 1.796,
+                        "r_over_theta_e": 1.497,
+                        "tangential_deg": 63.3,
+                        "mirror_snr": 1.15
+                    },
+                    {
+                        "area_px": 35,
+                        "peak_snr": 6.08,
+                        "peak_snr_smoothed": 6.03,
+                        "r_arcsec": 0.889,
+                        "r_over_theta_e": 0.74,
+                        "tangential_deg": 36.3,
+                        "mirror_snr": 0.06
+                    },
+                    {
+                        "area_px": 32,
+                        "peak_snr": 5.31,
+                        "peak_snr_smoothed": 5.39,
+                        "r_arcsec": 1.37,
+                        "r_over_theta_e": 1.142,
+                        "tangential_deg": 12.4,
+                        "mirror_snr": 0.25
+                    },
+                    {
+                        "area_px": 21,
+                        "peak_snr": 5.78,
+                        "peak_snr_smoothed": 5.44,
+                        "r_arcsec": 2.324,
+                        "r_over_theta_e": 1.936,
+                        "tangential_deg": 3.0,
+                        "mirror_snr": -1.17
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.2,
+                "detector_band_offset_px": [
+                    0.068,
+                    0.052
+                ],
+                "detector_core_dipole": 0.45
+            }
+        },
+        "J1023+4230": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3799,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 114,
+                "n_added_px": 3799,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 42,
+                        "peak_snr": 6.23,
+                        "peak_snr_smoothed": 6.05,
+                        "r_arcsec": 2.262,
+                        "r_over_theta_e": 1.599,
+                        "tangential_deg": 8.5,
+                        "mirror_snr": 0.68
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.414,
+                "detector_band_offset_px": [
+                    0.037,
+                    0.049
+                ],
+                "detector_core_dipole": 1.62
+            }
+        },
+        "J1029+0420": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 4581,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 307,
+                "n_added_px": 4581,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 92,
+                        "peak_snr": 5.22,
+                        "peak_snr_smoothed": 4.85,
+                        "r_arcsec": 1.838,
+                        "r_over_theta_e": 1.827,
+                        "tangential_deg": 13.1,
+                        "mirror_snr": -1.46
+                    },
+                    {
+                        "area_px": 27,
+                        "peak_snr": 4.61,
+                        "peak_snr_smoothed": 4.61,
+                        "r_arcsec": 1.91,
+                        "r_over_theta_e": 1.899,
+                        "tangential_deg": 13.0,
+                        "mirror_snr": -0.9
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.006,
+                "detector_band_offset_px": [
+                    0.063,
+                    0.071
+                ],
+                "detector_core_dipole": 4.36
+            }
+        },
+        "J1032+5322": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 5985,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 1832,
+                "n_added_px": 5985,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 1042,
+                        "peak_snr": 13.35,
+                        "peak_snr_smoothed": 13.73,
+                        "r_arcsec": 1.649,
+                        "r_over_theta_e": 1.597,
+                        "tangential_deg": 4.3,
+                        "mirror_snr": 0.62
+                    },
+                    {
+                        "area_px": 222,
+                        "peak_snr": 7.43,
+                        "peak_snr_smoothed": 7.28,
+                        "r_arcsec": 0.805,
+                        "r_over_theta_e": 0.78,
+                        "tangential_deg": 0.0,
+                        "mirror_snr": 2.49
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.033,
+                "detector_band_offset_px": [
+                    -0.101,
+                    -0.059
+                ],
+                "detector_core_dipole": 0.63
+            }
+        },
+        "J1142+1001": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 2279,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 616,
+                "n_added_px": 2279,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 229,
+                        "peak_snr": 11.45,
+                        "peak_snr_smoothed": 12.19,
+                        "r_arcsec": 1.566,
+                        "r_over_theta_e": 1.591,
+                        "tangential_deg": 2.4,
+                        "mirror_snr": -0.77
+                    },
+                    {
+                        "area_px": 44,
+                        "peak_snr": 6.34,
+                        "peak_snr_smoothed": 9.5,
+                        "r_arcsec": 0.452,
+                        "r_over_theta_e": 0.459,
+                        "tangential_deg": 7.7,
+                        "mirror_snr": 0.94
+                    },
+                    {
+                        "area_px": 26,
+                        "peak_snr": 4.89,
+                        "peak_snr_smoothed": 4.9,
+                        "r_arcsec": 0.91,
+                        "r_over_theta_e": 0.925,
+                        "tangential_deg": 5.5,
+                        "mirror_snr": 0.36
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 0.984,
+                "detector_band_offset_px": [
+                    0.078,
+                    0.163
+                ],
+                "detector_core_dipole": 0.64
+            }
+        },
+        "J1143-0144": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 6491,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 1585,
+                "n_added_px": 6491,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 853,
+                        "peak_snr": 42.95,
+                        "peak_snr_smoothed": 49.45,
+                        "r_arcsec": 2.574,
+                        "r_over_theta_e": 1.528,
+                        "tangential_deg": 11.7,
+                        "mirror_snr": -1.87
+                    },
+                    {
+                        "area_px": 59,
+                        "peak_snr": 10.99,
+                        "peak_snr_smoothed": 9.99,
+                        "r_arcsec": 0.925,
+                        "r_over_theta_e": 0.549,
+                        "tangential_deg": 35.9,
+                        "mirror_snr": 4.02
+                    },
+                    {
+                        "area_px": 28,
+                        "peak_snr": 6.15,
+                        "peak_snr_smoothed": 5.66,
+                        "r_arcsec": 1.635,
+                        "r_over_theta_e": 0.971,
+                        "tangential_deg": 7.2,
+                        "mirror_snr": -0.27
+                    },
+                    {
+                        "area_px": 15,
+                        "peak_snr": 5.1,
+                        "peak_snr_smoothed": 4.6,
+                        "r_arcsec": 1.843,
+                        "r_over_theta_e": 1.094,
+                        "tangential_deg": 17.5,
+                        "mirror_snr": -0.36
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.684,
+                "detector_band_offset_px": [
+                    -0.148,
+                    -0.605
+                ],
+                "detector_core_dipole": 3.84
+            }
+        },
+        "J1205+4910": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3196,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 860,
+                "n_added_px": 3196,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 254,
+                        "peak_snr": 15.54,
+                        "peak_snr_smoothed": 14.55,
+                        "r_arcsec": 1.008,
+                        "r_over_theta_e": 0.824,
+                        "tangential_deg": 2.4,
+                        "mirror_snr": 1.16
+                    },
+                    {
+                        "area_px": 198,
+                        "peak_snr": 17.44,
+                        "peak_snr_smoothed": 17.2,
+                        "r_arcsec": 1.594,
+                        "r_over_theta_e": 1.303,
+                        "tangential_deg": 3.5,
+                        "mirror_snr": 0.27
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.223,
+                "detector_band_offset_px": [
+                    -0.145,
+                    0.469
+                ],
+                "detector_core_dipole": 3.32
+            }
+        },
+        "J1213+6708": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3893,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 170,
+                "n_added_px": 3893,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 74,
+                        "peak_snr": 4.77,
+                        "peak_snr_smoothed": 4.98,
+                        "r_arcsec": 1.904,
+                        "r_over_theta_e": 1.344,
+                        "tangential_deg": 27.4,
+                        "mirror_snr": -0.61
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.416,
+                "detector_band_offset_px": [
+                    -0.034,
+                    0.026
+                ],
+                "detector_core_dipole": 10.6
+            }
+        },
+        "J1218+0830": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 5050,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 245,
+                "n_added_px": 5050,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 28,
+                        "peak_snr": 4.88,
+                        "peak_snr_smoothed": 5.11,
+                        "r_arcsec": 0.696,
+                        "r_over_theta_e": 0.48,
+                        "tangential_deg": 73.3,
+                        "mirror_snr": -1.9
+                    },
+                    {
+                        "area_px": 22,
+                        "peak_snr": 5.28,
+                        "peak_snr_smoothed": 5.15,
+                        "r_arcsec": 1.078,
+                        "r_over_theta_e": 0.743,
+                        "tangential_deg": 88.1,
+                        "mirror_snr": 2.08
+                    },
+                    {
+                        "area_px": 15,
+                        "peak_snr": 6.32,
+                        "peak_snr_smoothed": 5.26,
+                        "r_arcsec": 0.762,
+                        "r_over_theta_e": 0.525,
+                        "tangential_deg": 69.5,
+                        "mirror_snr": 0.39
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.45,
+                "detector_band_offset_px": [
+                    0.012,
+                    0.01
+                ],
+                "detector_core_dipole": 0.77
+            }
+        },
+        "J1250+0523": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 6323,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 646,
+                "n_added_px": 6323,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 181,
+                        "peak_snr": 13.46,
+                        "peak_snr_smoothed": 12.41,
+                        "r_arcsec": 1.294,
+                        "r_over_theta_e": 1.145,
+                        "tangential_deg": 73.2,
+                        "mirror_snr": 2.51
+                    },
+                    {
+                        "area_px": 155,
+                        "peak_snr": 10.13,
+                        "peak_snr_smoothed": 8.78,
+                        "r_arcsec": 1.329,
+                        "r_over_theta_e": 1.176,
+                        "tangential_deg": 20.6,
+                        "mirror_snr": 0.82
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.13,
+                "detector_band_offset_px": [
+                    0.2,
+                    0.3
+                ],
+                "detector_core_dipole": 4.33
+            }
+        },
+        "J1402+6321": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 4126,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 147,
+                "n_added_px": 4126,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 24,
+                        "peak_snr": 6.13,
+                        "peak_snr_smoothed": 5.36,
+                        "r_arcsec": 1.333,
+                        "r_over_theta_e": 0.99,
+                        "tangential_deg": 17.3,
+                        "mirror_snr": 0.78
+                    },
+                    {
+                        "area_px": 15,
+                        "peak_snr": 5.87,
+                        "peak_snr_smoothed": 5.12,
+                        "r_arcsec": 1.352,
+                        "r_over_theta_e": 1.004,
+                        "tangential_deg": 2.0,
+                        "mirror_snr": 2.03
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.347,
+                "detector_band_offset_px": [
+                    0.018,
+                    -0.054
+                ],
+                "detector_core_dipole": 0.46
+            }
+        },
+        "J1420+6019": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 2221,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 461,
+                "n_added_px": 2221,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 101,
+                        "peak_snr": 7.22,
+                        "peak_snr_smoothed": 7.57,
+                        "r_arcsec": 1.887,
+                        "r_over_theta_e": 1.817,
+                        "tangential_deg": 10.5,
+                        "mirror_snr": 1.62
+                    },
+                    {
+                        "area_px": 70,
+                        "peak_snr": 4.9,
+                        "peak_snr_smoothed": 6.45,
+                        "r_arcsec": 0.525,
+                        "r_over_theta_e": 0.505,
+                        "tangential_deg": 11.2,
+                        "mirror_snr": 0.45
+                    },
+                    {
+                        "area_px": 18,
+                        "peak_snr": 4.87,
+                        "peak_snr_smoothed": 4.85,
+                        "r_arcsec": 0.478,
+                        "r_over_theta_e": 0.46,
+                        "tangential_deg": 41.2,
+                        "mirror_snr": 3.46
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.039,
+                "detector_band_offset_px": [
+                    -0.008,
+                    0.085
+                ],
+                "detector_core_dipole": 0.72
+            }
+        },
+        "J1430+4105": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 8028,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 2920,
+                "n_added_px": 8028,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 1397,
+                        "peak_snr": 27.67,
+                        "peak_snr_smoothed": 30.18,
+                        "r_arcsec": 2.454,
+                        "r_over_theta_e": 1.615,
+                        "tangential_deg": 6.9,
+                        "mirror_snr": -1.42
+                    },
+                    {
+                        "area_px": 225,
+                        "peak_snr": 17.2,
+                        "peak_snr_smoothed": 17.68,
+                        "r_arcsec": 1.24,
+                        "r_over_theta_e": 0.816,
+                        "tangential_deg": 24.5,
+                        "mirror_snr": -1.07
+                    },
+                    {
+                        "area_px": 171,
+                        "peak_snr": 19.82,
+                        "peak_snr_smoothed": 21.3,
+                        "r_arcsec": 0.973,
+                        "r_over_theta_e": 0.641,
+                        "tangential_deg": 5.8,
+                        "mirror_snr": 1.25
+                    },
+                    {
+                        "area_px": 32,
+                        "peak_snr": 5.28,
+                        "peak_snr_smoothed": 5.13,
+                        "r_arcsec": 2.78,
+                        "r_over_theta_e": 1.829,
+                        "tangential_deg": 83.0,
+                        "mirror_snr": -0.35
+                    },
+                    {
+                        "area_px": 21,
+                        "peak_snr": 7.04,
+                        "peak_snr_smoothed": 6.14,
+                        "r_arcsec": 1.758,
+                        "r_over_theta_e": 1.157,
+                        "tangential_deg": 2.9,
+                        "mirror_snr": 2.42
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.52,
+                "detector_band_offset_px": [
+                    0.834,
+                    -0.261
+                ],
+                "detector_core_dipole": 1.95
+            }
+        },
+        "J1432+6317": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect",
+                "n_arc_px": 2596,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 130,
+                "n_added_px": 2596,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 50,
+                        "peak_snr": 15.68,
+                        "peak_snr_smoothed": 11.24,
+                        "r_arcsec": 1.859,
+                        "r_over_theta_e": 1.478,
+                        "tangential_deg": 17.9,
+                        "mirror_snr": -1.39
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.258,
+                "detector_band_offset_px": [
+                    0.212,
+                    0.147
+                ],
+                "detector_core_dipole": 3.68
+            }
+        },
+        "J1451-0239": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 2928,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 466,
+                "n_added_px": 2928,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 94,
+                        "peak_snr": 20.45,
+                        "peak_snr_smoothed": 19.45,
+                        "r_arcsec": 1.224,
+                        "r_over_theta_e": 1.177,
+                        "tangential_deg": 1.6,
+                        "mirror_snr": 2.47
+                    },
+                    {
+                        "area_px": 85,
+                        "peak_snr": 11.28,
+                        "peak_snr_smoothed": 10.46,
+                        "r_arcsec": 1.702,
+                        "r_over_theta_e": 1.637,
+                        "tangential_deg": 63.3,
+                        "mirror_snr": -0.06
+                    },
+                    {
+                        "area_px": 15,
+                        "peak_snr": 4.41,
+                        "peak_snr_smoothed": 4.35,
+                        "r_arcsec": 1.608,
+                        "r_over_theta_e": 1.546,
+                        "tangential_deg": 5.1,
+                        "mirror_snr": -1.59
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.04,
+                "detector_band_offset_px": [
+                    -0.204,
+                    -0.402
+                ],
+                "detector_core_dipole": 7.49
+            }
+        },
+        "J1525+3327": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 4195,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 708,
+                "n_added_px": 4195,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 143,
+                        "peak_snr": 7.02,
+                        "peak_snr_smoothed": 7.99,
+                        "r_arcsec": 2.326,
+                        "r_over_theta_e": 1.78,
+                        "tangential_deg": 39.4,
+                        "mirror_snr": 0.81
+                    },
+                    {
+                        "area_px": 35,
+                        "peak_snr": 7.14,
+                        "peak_snr_smoothed": 6.36,
+                        "r_arcsec": 1.69,
+                        "r_over_theta_e": 1.293,
+                        "tangential_deg": 27.6,
+                        "mirror_snr": 0.04
+                    },
+                    {
+                        "area_px": 35,
+                        "peak_snr": 4.81,
+                        "peak_snr_smoothed": 4.93,
+                        "r_arcsec": 0.767,
+                        "r_over_theta_e": 0.587,
+                        "tangential_deg": 39.8,
+                        "mirror_snr": -0.3
+                    },
+                    {
+                        "area_px": 25,
+                        "peak_snr": 4.08,
+                        "peak_snr_smoothed": 4.25,
+                        "r_arcsec": 1.97,
+                        "r_over_theta_e": 1.507,
+                        "tangential_deg": 7.9,
+                        "mirror_snr": 0.26
+                    },
+                    {
+                        "area_px": 21,
+                        "peak_snr": 5.38,
+                        "peak_snr_smoothed": 5.16,
+                        "r_arcsec": 1.693,
+                        "r_over_theta_e": 1.296,
+                        "tangential_deg": 69.0,
+                        "mirror_snr": -0.92
+                    },
+                    {
+                        "area_px": 18,
+                        "peak_snr": 5.03,
+                        "peak_snr_smoothed": 4.74,
+                        "r_arcsec": 1.899,
+                        "r_over_theta_e": 1.453,
+                        "tangential_deg": 17.4,
+                        "mirror_snr": -0.95
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.307,
+                "detector_band_offset_px": [
+                    -0.046,
+                    0.121
+                ],
+                "detector_core_dipole": 1.34
+            }
+        },
+        "J1627-0053": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3606,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 271,
+                "n_added_px": 3606,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 65,
+                        "peak_snr": 6.38,
+                        "peak_snr_smoothed": 6.08,
+                        "r_arcsec": 1.584,
+                        "r_over_theta_e": 1.289,
+                        "tangential_deg": 52.1,
+                        "mirror_snr": -0.85
+                    },
+                    {
+                        "area_px": 38,
+                        "peak_snr": 5.64,
+                        "peak_snr_smoothed": 5.53,
+                        "r_arcsec": 1.156,
+                        "r_over_theta_e": 0.941,
+                        "tangential_deg": 11.9,
+                        "mirror_snr": 2.32
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.229,
+                "detector_band_offset_px": [
+                    0.027,
+                    -0.015
+                ],
+                "detector_core_dipole": 1.13
+            }
+        },
+        "J1630+4520": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect+f814W arc region outlined)",
+                "bcfill": true,
+                "source": "edited_from_detect+f814W",
+                "n_arc_px": 7243,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect+f814W",
+                "proposal_px": 6857,
+                "n_added_px": 1018,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 130,
+                        "peak_snr": 9.09,
+                        "peak_snr_smoothed": 9.43,
+                        "r_arcsec": 2.342,
+                        "r_over_theta_e": 1.317,
+                        "tangential_deg": 40.6,
+                        "mirror_snr": -0.54
+                    },
+                    {
+                        "area_px": 114,
+                        "peak_snr": 6.85,
+                        "peak_snr_smoothed": 7.59,
+                        "r_arcsec": 1.361,
+                        "r_over_theta_e": 0.766,
+                        "tangential_deg": 78.8,
+                        "mirror_snr": 0.07
+                    },
+                    {
+                        "area_px": 69,
+                        "peak_snr": 6.22,
+                        "peak_snr_smoothed": 6.16,
+                        "r_arcsec": 2.138,
+                        "r_over_theta_e": 1.202,
+                        "tangential_deg": 13.1,
+                        "mirror_snr": -0.8
+                    },
+                    {
+                        "area_px": 65,
+                        "peak_snr": 9.11,
+                        "peak_snr_smoothed": 9.31,
+                        "r_arcsec": 2.167,
+                        "r_over_theta_e": 1.219,
+                        "tangential_deg": 20.4,
+                        "mirror_snr": -0.22
+                    },
+                    {
+                        "area_px": 26,
+                        "peak_snr": 5.77,
+                        "peak_snr_smoothed": 5.43,
+                        "r_arcsec": 1.799,
+                        "r_over_theta_e": 1.012,
+                        "tangential_deg": 3.6,
+                        "mirror_snr": -0.32
+                    },
+                    {
+                        "area_px": 21,
+                        "peak_snr": 4.27,
+                        "peak_snr_smoothed": 4.5,
+                        "r_arcsec": 1.505,
+                        "r_over_theta_e": 0.847,
+                        "tangential_deg": 1.7,
+                        "mirror_snr": -0.78
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.778,
+                "detector_band_offset_px": [
+                    -0.101,
+                    -0.088
+                ],
+                "detector_core_dipole": 1.6,
+                "proposal_px_by_source": {
+                    "detect": 993,
+                    "f814W": 6857
+                },
+                "proposal_overlap_px": 993
+            }
+        },
+        "J2238-0754": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3426,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 655,
+                "n_added_px": 3426,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 173,
+                        "peak_snr": 10.31,
+                        "peak_snr_smoothed": 10.63,
+                        "r_arcsec": 0.956,
+                        "r_over_theta_e": 0.752,
+                        "tangential_deg": 38.3,
+                        "mirror_snr": -0.91
+                    },
+                    {
+                        "area_px": 148,
+                        "peak_snr": 15.69,
+                        "peak_snr_smoothed": 15.62,
+                        "r_arcsec": 1.497,
+                        "r_over_theta_e": 1.177,
+                        "tangential_deg": 68.1,
+                        "mirror_snr": 1.3
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.271,
+                "detector_band_offset_px": [
+                    -0.069,
+                    0.098
+                ],
+                "detector_core_dipole": 1.63
+            }
+        },
+        "J2300+0022": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 3475,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 375,
+                "n_added_px": 3475,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 85,
+                        "peak_snr": 6.48,
+                        "peak_snr_smoothed": 6.75,
+                        "r_arcsec": 1.03,
+                        "r_over_theta_e": 0.834,
+                        "tangential_deg": 25.1,
+                        "mirror_snr": -0.42
+                    },
+                    {
+                        "area_px": 30,
+                        "peak_snr": 5.12,
+                        "peak_snr_smoothed": 5.25,
+                        "r_arcsec": 1.533,
+                        "r_over_theta_e": 1.241,
+                        "tangential_deg": 4.4,
+                        "mirror_snr": 0.62
+                    },
+                    {
+                        "area_px": 28,
+                        "peak_snr": 4.68,
+                        "peak_snr_smoothed": 5.13,
+                        "r_arcsec": 1.154,
+                        "r_over_theta_e": 0.934,
+                        "tangential_deg": 13.0,
+                        "mirror_snr": -0.63
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.236,
+                "detector_band_offset_px": [
+                    -0.026,
+                    -0.015
+                ],
+                "detector_core_dipole": 0.89
+            }
+        },
+        "J2303+1422": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 4386,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 227,
+                "n_added_px": 4386,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 54,
+                        "peak_snr": 7.87,
+                        "peak_snr_smoothed": 7.7,
+                        "r_arcsec": 2.018,
+                        "r_over_theta_e": 1.246,
+                        "tangential_deg": 29.8,
+                        "mirror_snr": -0.07
+                    },
+                    {
+                        "area_px": 29,
+                        "peak_snr": 4.18,
+                        "peak_snr_smoothed": 4.38,
+                        "r_arcsec": 1.068,
+                        "r_over_theta_e": 0.66,
+                        "tangential_deg": 29.9,
+                        "mirror_snr": 0.64
+                    }
+                ],
+                "detector_bands": "f555W-f814W",
+                "detector_theta_e_arcsec": 1.619,
+                "detector_band_offset_px": [
+                    -0.022,
+                    -0.114
+                ],
+                "detector_core_dipole": 0.77
+            }
+        },
+        "J2341+0000": {
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (detect arc region outlined)",
+                "bcfill": true,
+                "source": "drawn",
+                "n_arc_px": 5720,
+                "polarity": "saved True=excluded (al.Mask2D); ~mask = arc region",
+                "brush_width": 0.016667,
+                "brush_radius_px": 4,
+                "n_positions_shown": 0,
+                "subtract_radial": true,
+                "proposal_from": "detect",
+                "proposal_px": 827,
+                "n_added_px": 5720,
+                "n_erased_px": 0,
+                "detector_components": [
+                    {
+                        "area_px": 319,
+                        "peak_snr": 6.41,
+                        "peak_snr_smoothed": 6.98,
+                        "r_arcsec": 1.639,
+                        "r_over_theta_e": 1.135,
+                        "tangential_deg": 16.8,
+                        "mirror_snr": 2.08
+                    },
+                    {
+                        "area_px": 61,
+                        "peak_snr": 4.81,
+                        "peak_snr_smoothed": 4.77,
+                        "r_arcsec": 1.887,
+                        "r_over_theta_e": 1.307,
+                        "tangential_deg": 19.2,
+                        "mirror_snr": 4.69
+                    },
+                    {
+                        "area_px": 53,
+                        "peak_snr": 9.15,
+                        "peak_snr_smoothed": 7.59,
+                        "r_arcsec": 2.089,
+                        "r_over_theta_e": 1.446,
+                        "tangential_deg": 32.4,
+                        "mirror_snr": -0.97
+                    }
+                ],
+                "detector_bands": "f606W-f814W",
+                "detector_theta_e_arcsec": 1.444,
+                "detector_band_offset_px": [
+                    0.263,
+                    -0.267
+                ],
+                "detector_core_dipole": 1.11
+            }
+        }
+    }
+}
