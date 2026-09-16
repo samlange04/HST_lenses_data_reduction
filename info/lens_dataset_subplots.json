@@ -999,7 +999,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.148108,
+                "frac_masked": 0.153594,
                 "bcfill": true,
                 "output": "data/cutouts/slacs_gold/J1451-0239/f814W/cutout_cr_dataset.png"
             }
