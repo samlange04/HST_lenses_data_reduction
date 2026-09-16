@@ -36,7 +36,7 @@ ALREADY-MARKED POSITIONS ARE SHOWN. Where `make_positions.py` has recorded
 cutout_[cr_]positions.json for the band, each marked image is ringed in the display so the
 arc mask can be drawn around the same multiple images. --no-show-positions turns it off.
 
-YOU CORRECT A PROPOSAL, YOU DO NOT DRAW FROM SCRATCH (--propose-from, default 'detect').
+YOU CORRECT A PROPOSAL, YOU DO NOT DRAW FROM SCRATCH (--propose-from, default 'auto').
 `scripts/detect_arcs.py` finds the arcs automatically -- a PSF-matched colour difference
 against the deflector (the source is blue, the deflector is red), thresholded inside the
 measured Auger+2009 Einstein radius -- and its region is OUTLINED over both panels for review.
@@ -44,10 +44,21 @@ You then add with the green brush, erase with the red one, and on closing the GU
 [a]pply proposal+edits, keep only what you [d]rew, or [s]kip. It is the same review loop
 make_masks.py uses for cross-band mask proposals, and the same `confirm_proposal` code: the
 detector proposes, nothing is ever written unapproved, and a band left unapproved stays
-pending. --propose-from <band> proposes another band's existing arc mask instead (an arc seen
-in one filter is often absent in another, so that one really is a judgement), and
---propose-from none is the old blank canvas. --detect-* pass detector parameters through
-(--detect-snr is the one to reach for: lower it to loosen a lens that proposes too little).
+pending.
+
+SOURCES COMBINE BY UNION, so the second band of a lens starts from BOTH. 'auto' (the default)
+= the detector PLUS the highest-priority other band that already has an arc mask: the first
+band you draw gets the detector alone, and every band after it gets the detector plus the
+region you yourself reviewed, with the per-source breakdown printed (`detect 1333px + f814W
+2233px (overlap 1333px)`). They answer different questions and both belong on screen -- the
+detector sees what is blue in this lens now, your own mask carries a judgement it cannot make,
+and neither is authoritative, since an arc detected in one filter is often ABSENT in another
+and its usable extent changes with each band's depth and PSF. That is exactly why the union is
+a proposal, outlined for review and trimmed with the red brush, and never a broadcast. Takes
+an explicit comma-separated list too ('detect,f814W', 'f814W'), or 'none' for a blank canvas.
+Under --force the draw band's own mask joins the union, so refining a mask is not redrawing it.
+--detect-* pass detector parameters through (--detect-snr is the one to reach for: lower it to
+loosen a lens that proposes too little).
 
 Everything else -- ONE DRAW PER BAND by default (--broadcast opts into sharing the draw
 across the lens's bands by WCS reprojection), the band-priority order, --size tree routing,
@@ -61,6 +72,8 @@ Usage:
     uv run python scripts/make_arc_masks.py --sample slacs_gold             # best band per lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020               # one lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --filt f606W  # force the band
+    uv run python scripts/make_arc_masks.py --sample slacs_gold --filt f606W  # 2nd band sweep
+    uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from detect,f814W
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --detect-snr 3.0  # looser detect
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from none  # blank
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --no-subtract-radial --force
@@ -97,35 +110,21 @@ ARC_MASKS_JSON = os.path.join(ws_path, 'info', 'lens_arc_masks.json')
 ARC_SUFFIX = 'mask_arcs'          # cutout_[cr_]mask_arcs.fits, beside cutout_[cr_]mask.fits
 
 
-def find_arc_proposal(filt_dirs, prefixes, display_filt, display_hdr, lens, propose_from,
-                      detect_kw=None):
-    """Find an arc region to PROPOSE for the band about to be drawn, on that band's grid.
+def _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs, dst_shape, lens, source,
+                    detect_kw=None):
+    """Resolve ONE proposal source to (region, extra) on the draw band's grid, or (None, {}).
 
-    Returns (source_label, bool array, extra) or (None, None, {}) when there is nothing to
-    propose. Two sources, and they answer different questions:
-
-    'detect'  -- run the automatic detector (`detect_arcs.py`): a colour difference against
-                 the deflector, thresholded inside the measured Einstein radius. This is the
-                 one that turns arc masking from drawing into correcting. It is built on the
+    'detect'  -- run the automatic detector (`detect_arcs.py`): a colour difference against the
+                 deflector, thresholded inside the measured Einstein radius. Built on the
                  lens's RED band and reprojected here, so it lands on the same sky whichever
                  band is being drawn.
-    '<band>'  -- an arc mask already drawn for another band of this lens, reprojected. Note
-                 the caution that kept `--propose-from` out of this tool originally: an arc
-                 seen in one filter is often simply ABSENT in another, and its usable extent
-                 changes with each band's depth and PSF. Reviewing such a proposal is a real
-                 judgement, not a formality -- which is exactly why it is a proposal and not
-                 a broadcast.
-
-    The stored arc mask is inverted (True = excluded), so the ARC REGION is `~mask`; it is the
-    region, never the saved array, that gets reprojected -- outside-footprint pixels then
-    default to 'not arc', the safe side of the stamp edge.
+    '<band>'  -- an arc mask already drawn for another band of this lens, reprojected. The
+                 stored array is inverted (True = excluded), so the ARC REGION is `~mask`, and
+                 it is the region, never the saved array, that gets reprojected --
+                 outside-footprint pixels then default to 'not arc', the safe side of the
+                 stamp edge.
     """
-    if propose_from in (None, 'none'):
-        return None, None, {}
-    dst_wcs = WCS(display_hdr).celestial
-    dst_shape = (display_hdr['NAXIS2'], display_hdr['NAXIS1'])
-
-    if propose_from == 'detect':
+    if source == 'detect':
         region, components, maps = detect_arcs.propose(filt_dirs, prefixes, lens,
                                                        **(detect_kw or {}))
         extra = {'detector_components': components,
@@ -136,21 +135,91 @@ def find_arc_proposal(filt_dirs, prefixes, display_filt, display_hdr, lens, prop
         if maps['red_filt'] != display_filt:
             region = make_masks.reproject_mask_bool(
                 region, WCS(maps['hdr']).celestial, dst_wcs, dst_shape)
-        return 'detect', region, extra
+        return region, extra
 
-    cutout_dir = filt_dirs.get(propose_from)
-    if cutout_dir is None:
-        return None, None, {}
-    prefix = prefixes.get(propose_from)
+    cutout_dir = filt_dirs.get(source)
+    prefix = prefixes.get(source)
+    if cutout_dir is None or prefix is None:
+        return None, {}
     mask_path = os.path.join(cutout_dir, f'{prefix}_{ARC_SUFFIX}.fits')
-    if prefix is None or not os.path.exists(mask_path):
-        return None, None, {}
+    if not os.path.exists(mask_path):
+        return None, {}
     arc_region = ~np.asarray(fits.getdata(mask_path), dtype=bool)
-    if propose_from == display_filt:
-        return propose_from, arc_region, {}
+    if source == display_filt:
+        return arc_region, {}
     src_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
-    return propose_from, make_masks.reproject_mask_bool(
-        arc_region, WCS(src_hdr).celestial, dst_wcs, dst_shape), {}
+    return make_masks.reproject_mask_bool(arc_region, WCS(src_hdr).celestial,
+                                          dst_wcs, dst_shape), {}
+
+
+def resolve_arc_sources(filt_dirs, display_filt, propose_from, force=False):
+    """Expand `--propose-from` into an ordered, de-duplicated list of concrete sources.
+
+    'none'   -> []            (blank canvas)
+    'auto'   -> ['detect'] + the highest-priority OTHER band that already has an arc mask,
+                so the first band of a lens starts from the detector alone and every band
+                after it starts from the detector PLUS your own reviewed work. Under --force
+                the draw band's own existing arc mask comes first, so refining a mask is not
+                redrawing it -- the same rule make_masks.py uses.
+    explicit -> a comma-separated list, e.g. 'detect,f814W' or 'f814W' or 'f814W,detect'.
+    """
+    if propose_from in (None, 'none'):
+        return []
+    if propose_from != 'auto':
+        return [t.strip() for t in str(propose_from).split(',') if t.strip()]
+    others = sorted((f for f in filt_dirs if f != display_filt),
+                    key=lambda f: (make_masks._band_rank(f), f))
+    return (['detect'] + ([display_filt] if force else []) + others)
+
+
+def find_arc_proposal(filt_dirs, prefixes, display_filt, display_hdr, lens, propose_from,
+                      detect_kw=None, force=False):
+    """Find an arc region to PROPOSE for the band about to be drawn, on that band's grid.
+
+    Returns (source_label, bool array, extra) or (None, None, {}).
+
+    SOURCES COMBINE BY UNION, because they answer different questions and you want both on
+    screen at once. The detector sees what is blue in THIS lens right now; a mask you already
+    drew for another band carries a judgement it cannot make. Neither is authoritative: an arc
+    detected in one filter is often simply ABSENT in another, and its usable extent changes
+    with each band's depth and PSF -- which is exactly why the union is a proposal, outlined
+    for review and trimmed with the red brush, and never a broadcast.
+
+    With 'auto' (the default) the first band of a lens gets the detector alone, and every band
+    after it gets the detector plus your own reviewed region, with the per-source breakdown
+    printed so you can see which part came from where.
+    """
+    sources = resolve_arc_sources(filt_dirs, display_filt, propose_from, force=force)
+    if not sources:
+        return None, None, {}
+    dst_wcs = WCS(display_hdr).celestial
+    dst_shape = (display_hdr['NAXIS2'], display_hdr['NAXIS1'])
+
+    region = None
+    used, per_source, extra = [], {}, {}
+    for source in sources:
+        try:
+            part, part_extra = _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs,
+                                               dst_shape, lens, source, detect_kw)
+        except Exception as exc:        # one bad source must not cost the others
+            print(f"  NOTE: proposal source {source!r} unavailable for {lens} ({exc})")
+            continue
+        if part is None or not part.any():
+            continue
+        used.append(source)
+        per_source[source] = int(part.sum())
+        extra.update(part_extra)
+        region = part if region is None else (region | part)
+        # 'auto' takes the detector plus ONE inherited band -- the best one that actually has
+        # a mask. Stop as soon as an inherited source has contributed.
+        if propose_from == 'auto' and source != 'detect':
+            break
+    if region is None:
+        return None, None, {}
+    if len(used) > 1:
+        extra['proposal_px_by_source'] = per_source
+        extra['proposal_overlap_px'] = int(sum(per_source.values()) - region.sum())
+    return '+'.join(used), region, extra
 
 
 def load_positions(cutout_dir, prefix):
@@ -281,7 +350,8 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
     proposal_extra = {}
     try:
         proposal_from, proposal, proposal_extra = find_arc_proposal(
-            filt_dirs, prefixes, display_filt, display_hdr, lens, propose_from, detect_kw)
+            filt_dirs, prefixes, display_filt, display_hdr, lens, propose_from, detect_kw,
+            force=force)
     except Exception as exc:                  # a proposal is a convenience, never a blocker
         print(f"  NOTE: no proposal for {lens} ({exc}) -- drawing from scratch")
     if proposal is not None and not proposal.any():
@@ -291,8 +361,14 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
     if proposal is not None:
         where = '; '.join(f"r={c['r_over_theta_e']:.2f}th_E pk={c['peak_snr']:.0f}"
                           for c in proposal_extra.get('detector_components', [])[:4])
+        by_src = proposal_extra.get('proposal_px_by_source')
+        breakdown = ('  ' + ' + '.join(f'{k} {v}px' for k, v in by_src.items())
+                     + f"  (overlap {proposal_extra['proposal_overlap_px']}px)"
+                     if by_src else '')
         print(f"  reviewing the {proposal_from} arc proposal ({int(proposal.sum())}px"
               + (f"; {where}" if where else '') + ") -- edit it, then apply/reject")
+        if breakdown:
+            print(breakdown)
 
     prompt = [
         "  Scribbler GUI: paint ONLY the arcs / multiple images of the source.",
@@ -452,12 +528,16 @@ def main():
                         'inactive for a band with no positions file)')
     p.add_argument('--ring-radius', type=int, default=6,
                    help='radius in pixels of those position rings (default 6)')
-    p.add_argument('--propose-from', default='detect',
-                   help="where the arc region you review comes from: 'detect' (default) runs "
-                        'the automatic colour detector (scripts/detect_arcs.py) and outlines '
-                        "what it finds; a BAND name reprojects that band's existing arc mask; "
-                        "'none' draws on a blank canvas. You then add (green) / erase (red) "
-                        'and choose to apply, reject or skip on closing the GUI')
+    p.add_argument('--propose-from', default='auto',
+                   help="where the arc region you review comes from. 'auto' (default) = the "
+                        "automatic colour detector (scripts/detect_arcs.py) PLUS the "
+                        "highest-priority other band of this lens that already has an arc "
+                        "mask, UNIONed -- so the first band you draw starts from the detector "
+                        "alone and every band after it starts from the detector plus your own "
+                        "reviewed work. Also takes an explicit comma-separated list "
+                        "('detect,f814W', 'f814W'), a single band, or 'none' for a blank "
+                        'canvas. You then add (green) / erase (red) and choose to apply, '
+                        'reject or skip on closing the GUI')
     for name, val in detect_arcs.DEFAULTS.items():
         p.add_argument(f'--detect-{name.replace("_", "-")}', dest=f'detect_{name}',
                        type=type(val), default=val,

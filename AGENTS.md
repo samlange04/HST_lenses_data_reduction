@@ -1231,7 +1231,7 @@ measurement, or a source-plane analysis.
   over-painted stroke is trimmed rather than undone whole. Provenance in
   `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
   region over the radial-subtracted image.
-- **`--propose-from` IS now wired up, default `detect` (2026-09-15)** — the arc region you
+- **`--propose-from` IS now wired up, default `auto` (2026-09-15; union added 2026-09-16)** — the arc region you
   review comes from the automatic detector (`scripts/detect_arcs.py`, below), so arc masking
   is *correcting an outline*, not drawing one. The review loop and its code are
   `make_masks.py`'s: outline on every panel, green adds / red erases, and `confirm_proposal`
@@ -1244,6 +1244,19 @@ measurement, or a source-plane analysis.
   in another), which is why it is reviewed and never broadcast — and `--propose-from none` is
   the old blank canvas. `--broadcast` is mutually exclusive with it, as in `make_masks.py`.
   `--detect-*` pass parameters through; `--detect-snr` (default 3.5) is the one to reach for.
+- **Sources COMBINE BY UNION, which is what makes the second band cheap (2026-09-16).**
+  `auto` = the detector **plus** the highest-priority other band that already has an arc mask,
+  so the first band of a lens starts from the detector alone and every band after it starts
+  from the detector *and your own reviewed region*. Both belong on screen: the detector sees
+  what is blue in this lens now, your mask carries a judgement it cannot make, and neither is
+  authoritative — an arc detected in one filter is often absent in another, which is precisely
+  why the union is outlined for review and trimmed with the red brush rather than broadcast.
+  An explicit comma-separated list works too (`--propose-from detect,f814W`), `none` is the
+  blank canvas, and under `--force` the draw band's own mask joins the union so refining a mask
+  is not redrawing it. Provenance records `proposal_from` (`detect+f814W`),
+  `proposal_px_by_source` and `proposal_overlap_px`, and the breakdown is printed per lens.
+  Verified with a hand-edited mask, not just a round-trip: a 900px box added by hand on f814W
+  reappeared in the f606W proposal, and union = detect + inherited − overlap held exactly.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
   row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position ring lands on the
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
