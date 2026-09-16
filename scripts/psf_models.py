@@ -592,7 +592,8 @@ def _resample_centered(src, src_scale, out_scale, oversample, size,
     py, px = np.unravel_index(np.argmax(src), src.shape)
     win = 15
     y0, x0 = max(0, py - win // 2), max(0, px - win // 2)
-    cy, cx = centroid_com(src[y0:y0 + win, x0:x0 + win])
+    # centroid_com returns (x, y) -- column first (see make_psf.oversampled_to_kernel).
+    cx, cy = centroid_com(src[y0:y0 + win, x0:x0 + win])
     cx, cy = x0 + cx, y0 + cy
     if not (np.isfinite(cx) and np.isfinite(cy)):
         cx, cy = nx / 2.0, ny / 2.0

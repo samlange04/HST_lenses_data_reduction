@@ -232,7 +232,9 @@ def _render_from_array(P, ov, x, y, flux, S=_DET_STAMP):
     py, px = np.unravel_index(np.argmax(P), P.shape)
     w = 15
     y0, x0 = max(0, py - w // 2), max(0, px - w // 2)
-    cy, cx = centroid_com(P[y0:y0 + w, x0:x0 + w])
+    # centroid_com returns (x, y) -- column first; unpacking it (y, x) transposes the
+    # sub-pixel offset and mis-places the rendered star (see make_psf.oversampled_to_kernel).
+    cx, cy = centroid_com(P[y0:y0 + w, x0:x0 + w])
     cx, cy = x0 + cx, y0 + cy
     if not (np.isfinite(cx) and np.isfinite(cy)):
         cx, cy = nx / 2.0, ny / 2.0
@@ -409,7 +411,10 @@ def extract_kernel(out_sci, catalogue_coord, size):
     py2, px2 = np.unravel_index(np.argmax(sub), sub.shape)
     cw = 11
     yy0, xx0 = max(0, py2 - cw // 2), max(0, px2 - cw // 2)
-    cy, cx = centroid_com(sub[yy0:min(sub.shape[0], yy0 + cw),
+    # centroid_com returns (x, y) -- column first. Unpacking it as (y, x) transposed the
+    # recentring shift, which is why injected kernels came out up to 1.7px off their own
+    # array centre (and, convolved, translated the model image by that much).
+    cx, cy = centroid_com(sub[yy0:min(sub.shape[0], yy0 + cw),
                               xx0:min(sub.shape[1], xx0 + cw)])
     cy, cx = y0 + yy0 + cy, x0 + xx0 + cx
     if not (np.isfinite(cx) and np.isfinite(cy)):
