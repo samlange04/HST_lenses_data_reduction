@@ -1,0 +1,594 @@
+{
+ "J0008-0004": {
+  "theta_e_arcsec": 1.1591,
+  "RE_kpc": 6.59,
+  "zlens": 0.44,
+  "zsrc": 1.192,
+  "sigma_kms": 193,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0029-0055": {
+  "theta_e_arcsec": 0.9566,
+  "RE_kpc": 3.48,
+  "zlens": 0.227,
+  "zsrc": 0.931,
+  "sigma_kms": 229,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0037-0942": {
+  "theta_e_arcsec": 1.5303,
+  "RE_kpc": 4.95,
+  "zlens": 0.195,
+  "zsrc": 0.632,
+  "sigma_kms": 279,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0044+0113": {
+  "theta_e_arcsec": 0.7951,
+  "RE_kpc": 1.72,
+  "zlens": 0.12,
+  "zsrc": 0.197,
+  "sigma_kms": 266,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0109+1500": {
+  "theta_e_arcsec": 0.6944,
+  "RE_kpc": 3.05,
+  "zlens": 0.294,
+  "zsrc": 0.525,
+  "sigma_kms": 251,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0157-0056": {
+  "theta_e_arcsec": 0.7903,
+  "RE_kpc": 4.89,
+  "zlens": 0.513,
+  "zsrc": 0.924,
+  "sigma_kms": 295,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0216-0813": {
+  "theta_e_arcsec": 1.159,
+  "RE_kpc": 5.53,
+  "zlens": 0.332,
+  "zsrc": 0.523,
+  "sigma_kms": 333,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0252+0039": {
+  "theta_e_arcsec": 1.0367,
+  "RE_kpc": 4.4,
+  "zlens": 0.28,
+  "zsrc": 0.982,
+  "sigma_kms": 164,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0330-0020": {
+  "theta_e_arcsec": 1.1012,
+  "RE_kpc": 5.45,
+  "zlens": 0.351,
+  "zsrc": 1.071,
+  "sigma_kms": 212,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0405-0455": {
+  "theta_e_arcsec": 0.8007,
+  "RE_kpc": 1.14,
+  "zlens": 0.075,
+  "zsrc": 0.81,
+  "sigma_kms": 160,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0728+3835": {
+  "theta_e_arcsec": 1.2468,
+  "RE_kpc": 4.21,
+  "zlens": 0.206,
+  "zsrc": 0.688,
+  "sigma_kms": 214,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0737+3216": {
+  "theta_e_arcsec": 0.9968,
+  "RE_kpc": 4.66,
+  "zlens": 0.322,
+  "zsrc": 0.581,
+  "sigma_kms": 338,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0819+4534": {
+  "theta_e_arcsec": 0.8474,
+  "RE_kpc": 2.73,
+  "zlens": 0.194,
+  "zsrc": 0.446,
+  "sigma_kms": 225,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0822+2652": {
+  "theta_e_arcsec": 1.1694,
+  "RE_kpc": 4.45,
+  "zlens": 0.241,
+  "zsrc": 0.594,
+  "sigma_kms": 259,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0841+3824": {
+  "theta_e_arcsec": 1.4091,
+  "RE_kpc": 2.96,
+  "zlens": 0.116,
+  "zsrc": 0.657,
+  "sigma_kms": 225,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0903+4116": {
+  "theta_e_arcsec": 1.2887,
+  "RE_kpc": 7.23,
+  "zlens": 0.43,
+  "zsrc": 1.065,
+  "sigma_kms": 223,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0912+0029": {
+  "theta_e_arcsec": 1.6274,
+  "RE_kpc": 4.58,
+  "zlens": 0.164,
+  "zsrc": 0.324,
+  "sigma_kms": 326,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0935-0003": {
+  "theta_e_arcsec": 0.8672,
+  "RE_kpc": 4.26,
+  "zlens": 0.347,
+  "zsrc": 0.467,
+  "sigma_kms": 396,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0936+0913": {
+  "theta_e_arcsec": 1.0887,
+  "RE_kpc": 3.45,
+  "zlens": 0.19,
+  "zsrc": 0.588,
+  "sigma_kms": 243,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0946+1006": {
+  "theta_e_arcsec": 1.3839,
+  "RE_kpc": 4.95,
+  "zlens": 0.222,
+  "zsrc": 0.609,
+  "sigma_kms": 263,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0955+0101": {
+  "theta_e_arcsec": 0.9052,
+  "RE_kpc": 1.83,
+  "zlens": 0.111,
+  "zsrc": 0.316,
+  "sigma_kms": 192,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0956+5100": {
+  "theta_e_arcsec": 1.3271,
+  "RE_kpc": 5.05,
+  "zlens": 0.241,
+  "zsrc": 0.47,
+  "sigma_kms": 334,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0959+0410": {
+  "theta_e_arcsec": 0.9929,
+  "RE_kpc": 2.24,
+  "zlens": 0.126,
+  "zsrc": 0.535,
+  "sigma_kms": 197,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0959+4416": {
+  "theta_e_arcsec": 0.9606,
+  "RE_kpc": 3.61,
+  "zlens": 0.237,
+  "zsrc": 0.531,
+  "sigma_kms": 244,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1016+3859": {
+  "theta_e_arcsec": 1.0905,
+  "RE_kpc": 3.13,
+  "zlens": 0.168,
+  "zsrc": 0.439,
+  "sigma_kms": 247,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1020+1122": {
+  "theta_e_arcsec": 1.2003,
+  "RE_kpc": 5.12,
+  "zlens": 0.282,
+  "zsrc": 0.553,
+  "sigma_kms": 282,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1023+4230": {
+  "theta_e_arcsec": 1.4142,
+  "RE_kpc": 4.5,
+  "zlens": 0.191,
+  "zsrc": 0.696,
+  "sigma_kms": 242,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1029+0420": {
+  "theta_e_arcsec": 1.0056,
+  "RE_kpc": 1.92,
+  "zlens": 0.104,
+  "zsrc": 0.615,
+  "sigma_kms": 210,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1032+5322": {
+  "theta_e_arcsec": 1.0327,
+  "RE_kpc": 2.44,
+  "zlens": 0.133,
+  "zsrc": 0.329,
+  "sigma_kms": 296,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1100+5329": {
+  "theta_e_arcsec": 1.5176,
+  "RE_kpc": 7.02,
+  "zlens": 0.317,
+  "zsrc": 0.858,
+  "sigma_kms": 187,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1103+5322": {
+  "theta_e_arcsec": 1.0185,
+  "RE_kpc": 2.78,
+  "zlens": 0.158,
+  "zsrc": 0.735,
+  "sigma_kms": 196,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1106+5228": {
+  "theta_e_arcsec": 1.2314,
+  "RE_kpc": 2.17,
+  "zlens": 0.095,
+  "zsrc": 0.407,
+  "sigma_kms": 262,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1112+0826": {
+  "theta_e_arcsec": 1.4851,
+  "RE_kpc": 6.19,
+  "zlens": 0.273,
+  "zsrc": 0.629,
+  "sigma_kms": 320,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1134+6027": {
+  "theta_e_arcsec": 1.1024,
+  "RE_kpc": 2.93,
+  "zlens": 0.153,
+  "zsrc": 0.474,
+  "sigma_kms": 239,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1142+1001": {
+  "theta_e_arcsec": 0.9841,
+  "RE_kpc": 3.52,
+  "zlens": 0.222,
+  "zsrc": 0.504,
+  "sigma_kms": 221,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1143-0144": {
+  "theta_e_arcsec": 1.6842,
+  "RE_kpc": 3.27,
+  "zlens": 0.106,
+  "zsrc": 0.402,
+  "sigma_kms": 269,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1153+4612": {
+  "theta_e_arcsec": 1.0478,
+  "RE_kpc": 3.18,
+  "zlens": 0.18,
+  "zsrc": 0.875,
+  "sigma_kms": 226,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1204+0358": {
+  "theta_e_arcsec": 1.3076,
+  "RE_kpc": 3.68,
+  "zlens": 0.164,
+  "zsrc": 0.631,
+  "sigma_kms": 267,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1205+4910": {
+  "theta_e_arcsec": 1.2234,
+  "RE_kpc": 4.27,
+  "zlens": 0.215,
+  "zsrc": 0.481,
+  "sigma_kms": 281,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1213+6708": {
+  "theta_e_arcsec": 1.4164,
+  "RE_kpc": 3.13,
+  "zlens": 0.123,
+  "zsrc": 0.64,
+  "sigma_kms": 292,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1218+0830": {
+  "theta_e_arcsec": 1.4502,
+  "RE_kpc": 3.47,
+  "zlens": 0.135,
+  "zsrc": 0.717,
+  "sigma_kms": 219,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1250+0523": {
+  "theta_e_arcsec": 1.1302,
+  "RE_kpc": 4.18,
+  "zlens": 0.232,
+  "zsrc": 0.795,
+  "sigma_kms": 252,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1251-0208": {
+  "theta_e_arcsec": 0.8413,
+  "RE_kpc": 3.03,
+  "zlens": 0.224,
+  "zsrc": 0.784,
+  "sigma_kms": 233,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1306+0600": {
+  "theta_e_arcsec": 1.3165,
+  "RE_kpc": 3.87,
+  "zlens": 0.173,
+  "zsrc": 0.472,
+  "sigma_kms": 237,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1313+4615": {
+  "theta_e_arcsec": 1.3699,
+  "RE_kpc": 4.25,
+  "zlens": 0.185,
+  "zsrc": 0.514,
+  "sigma_kms": 263,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1318-0313": {
+  "theta_e_arcsec": 1.5843,
+  "RE_kpc": 6.01,
+  "zlens": 0.24,
+  "zsrc": 1.3,
+  "sigma_kms": 213,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1330-0148": {
+  "theta_e_arcsec": 0.8644,
+  "RE_kpc": 1.32,
+  "zlens": 0.081,
+  "zsrc": 0.711,
+  "sigma_kms": 185,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1402+6321": {
+  "theta_e_arcsec": 1.3466,
+  "RE_kpc": 4.53,
+  "zlens": 0.205,
+  "zsrc": 0.481,
+  "sigma_kms": 267,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1403+0006": {
+  "theta_e_arcsec": 0.8303,
+  "RE_kpc": 2.62,
+  "zlens": 0.189,
+  "zsrc": 0.473,
+  "sigma_kms": 213,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1416+5136": {
+  "theta_e_arcsec": 1.3681,
+  "RE_kpc": 6.08,
+  "zlens": 0.299,
+  "zsrc": 0.811,
+  "sigma_kms": 240,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1420+6019": {
+  "theta_e_arcsec": 1.0388,
+  "RE_kpc": 1.26,
+  "zlens": 0.063,
+  "zsrc": 0.535,
+  "sigma_kms": 205,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1430+4105": {
+  "theta_e_arcsec": 1.5195,
+  "RE_kpc": 6.53,
+  "zlens": 0.285,
+  "zsrc": 0.575,
+  "sigma_kms": 322,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1432+6317": {
+  "theta_e_arcsec": 1.258,
+  "RE_kpc": 2.78,
+  "zlens": 0.123,
+  "zsrc": 0.664,
+  "sigma_kms": 199,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1436-0000": {
+  "theta_e_arcsec": 1.1169,
+  "RE_kpc": 4.8,
+  "zlens": 0.285,
+  "zsrc": 0.805,
+  "sigma_kms": 224,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1443+0304": {
+  "theta_e_arcsec": 0.8117,
+  "RE_kpc": 1.93,
+  "zlens": 0.134,
+  "zsrc": 0.419,
+  "sigma_kms": 209,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1451-0239": {
+  "theta_e_arcsec": 1.0399,
+  "RE_kpc": 2.33,
+  "zlens": 0.125,
+  "zsrc": 0.52,
+  "sigma_kms": 223,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1525+3327": {
+  "theta_e_arcsec": 1.3068,
+  "RE_kpc": 6.55,
+  "zlens": 0.358,
+  "zsrc": 0.717,
+  "sigma_kms": 264,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1531-0105": {
+  "theta_e_arcsec": 1.7078,
+  "RE_kpc": 4.71,
+  "zlens": 0.16,
+  "zsrc": 0.744,
+  "sigma_kms": 279,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1538+5817": {
+  "theta_e_arcsec": 0.9952,
+  "RE_kpc": 2.5,
+  "zlens": 0.143,
+  "zsrc": 0.531,
+  "sigma_kms": 189,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1614+4522": {
+  "theta_e_arcsec": 0.8444,
+  "RE_kpc": 2.54,
+  "zlens": 0.178,
+  "zsrc": 0.811,
+  "sigma_kms": 182,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1621+3931": {
+  "theta_e_arcsec": 1.2902,
+  "RE_kpc": 4.97,
+  "zlens": 0.245,
+  "zsrc": 0.602,
+  "sigma_kms": 236,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1627-0053": {
+  "theta_e_arcsec": 1.2286,
+  "RE_kpc": 4.18,
+  "zlens": 0.208,
+  "zsrc": 0.524,
+  "sigma_kms": 290,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1630+4520": {
+  "theta_e_arcsec": 1.7777,
+  "RE_kpc": 6.91,
+  "zlens": 0.248,
+  "zsrc": 0.793,
+  "sigma_kms": 276,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1636+4707": {
+  "theta_e_arcsec": 1.0849,
+  "RE_kpc": 3.96,
+  "zlens": 0.228,
+  "zsrc": 0.675,
+  "sigma_kms": 231,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1644+2625": {
+  "theta_e_arcsec": 1.2671,
+  "RE_kpc": 3.07,
+  "zlens": 0.137,
+  "zsrc": 0.61,
+  "sigma_kms": 229,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1709+2324": {
+  "theta_e_arcsec": 1.0057,
+  "RE_kpc": 4.94,
+  "zlens": 0.347,
+  "zsrc": 0.719,
+  "sigma_kms": 286,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1719+2939": {
+  "theta_e_arcsec": 1.276,
+  "RE_kpc": 3.89,
+  "zlens": 0.181,
+  "zsrc": 0.578,
+  "sigma_kms": 286,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2238-0754": {
+  "theta_e_arcsec": 1.2713,
+  "RE_kpc": 3.08,
+  "zlens": 0.137,
+  "zsrc": 0.713,
+  "sigma_kms": 198,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2300+0022": {
+  "theta_e_arcsec": 1.2356,
+  "RE_kpc": 4.51,
+  "zlens": 0.228,
+  "zsrc": 0.463,
+  "sigma_kms": 279,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2303+1422": {
+  "theta_e_arcsec": 1.6192,
+  "RE_kpc": 4.35,
+  "zlens": 0.155,
+  "zsrc": 0.517,
+  "sigma_kms": 255,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2321-0939": {
+  "theta_e_arcsec": 1.5997,
+  "RE_kpc": 2.47,
+  "zlens": 0.082,
+  "zsrc": 0.532,
+  "sigma_kms": 249,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2341+0000": {
+  "theta_e_arcsec": 1.4443,
+  "RE_kpc": 4.5,
+  "zlens": 0.186,
+  "zsrc": 0.807,
+  "sigma_kms": 207,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2343-0030": {
+  "theta_e_arcsec": 1.5155,
+  "RE_kpc": 4.62,
+  "zlens": 0.181,
+  "zsrc": 0.463,
+  "sigma_kms": 269,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2347-0005": {
+  "theta_e_arcsec": 1.1072,
+  "RE_kpc": 6.1,
+  "zlens": 0.417,
+  "zsrc": 0.714,
+  "sigma_kms": 404,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ }
+}

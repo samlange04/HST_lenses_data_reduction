@@ -87,6 +87,22 @@ on `sys.platform == 'darwin'`, not architecture. Native arm64/Linux is an accept
 fully re-verified, change — spot-check a known product against a prior measurement if
 something looks numerically off.
 
+## Long batch runs: `find -newermt` is NOT a safe completion test (2026-09-16)
+
+Chaining batch stages on a "has stage 1 finished?" poll loop cost a **10-hour idle overnight**
+here, and the trap is entirely portable. On this Mac the interactive shell's `find` is a
+**function shimming `bfs`**, which parses `-newermt '2026-09-15T21:10:00'` as **local time**; a
+script gets `/usr/bin/find` (BSD), which parses the same string as **UTC**. The same command
+counted **90** files by hand and **44** inside the script, so a condition verified
+interactively could never be true where it actually ran — and the loop slept on, indefinitely.
+Two rules:
+- **Key a wait on the runner's own exit**, not on a reconstructed timestamp condition
+  (`cmd_a && cmd_b`, or wait on the PID). If a count is unavoidable, count files without a
+  time filter and compare against the expected total.
+- **A poll loop that can never satisfy its condition is indistinguishable from one still
+  working** — same silence, same live process. Any watcher on a long job must emit on failure
+  and timeout, not only on success, or "still running" will be the last thing you hear.
+
 ## macOS write-hang workaround (required — keep this wiring)
 
 On this Mac, AstroDrizzle's large buffered FITS writes hit a kernel lost-wakeup
@@ -751,8 +767,9 @@ rather than fresh draws (f606W 21 `edited_from_f814W` + 1 `drawn`; f160W 9 + 4).
 gap, `J0822+2652 f606W_v2`, is now drawn too** — the split-visit second visit is its own
 product directory and so needed its own draw, which is why it trailed the f606W sweep.
 **`slacs_other` f814W is now drawn as well (4/4)** — that sample's ACS band, and its only
-band with a bcfill reduction behind it. Its f606W (0/24) and f160W (0/6) are still open, as is all of
-`gallery` (0/33). Four per-lens notes:
+band with a bcfill reduction behind it. Its f606W (0/24) and f160W (0/6) are still open. **`gallery` f606W is now
+COMPLETE too (15/15, drawn 2026-09-14/15)** — its F814W/F438W (0/12) are still open. Per-lens
+notes follow, `slacs_gold`/`slacs_other` first, then `gallery`:
 - **J1451-0239 was pulled back from its brighter lensed image** (2026-09-04): masked pixels
   at `r < 2.0″` of the deflector and `r < 0.5″` of image A were cleared (8930 → 8531 px),
   because the drawn edge sat 0.16″ from image A's centroid and covered 18–25% of the pixels
@@ -843,6 +860,62 @@ band with a bcfill reduction behind it. Its f606W (0/24) and f160W (0/6) are sti
   fit both with the object-2 knots included and excluded and compare. **Do not treat the
   "companion galaxies" reading as settled**, and keep any mask outside **~1.6″** so it cannot
   touch the 1.37″ arc.
+
+- **`gallery`: every mask was audited against the PUBLISHED lens model (2026-09-15), and the
+  audit is cheap to repeat.** All 15 F606W masks were checked with three tests — (1) is the
+  object inside the image radii the Shu+2016 SIE model predicts, (2) is it tangentially
+  elongated, (3) does it share the lensed source's colour — see *BELLS GALLERY → published
+  lens models* below for where the model parameters come from. Result: **13 of 15 clean**; no
+  masked lensed image, and **no unmasked object out to 6″** anywhere in the sample (every
+  S/N>4, ≥6-px detection beyond 1.3× the outermost predicted image radius is masked on all 15
+  lenses). Two lenses needed the mask pulled back off an image; both were fixed the same day
+  — see the next two bullets.
+  *Method note that made the audit trustworthy:* centre on the **catalogue position**, not the
+  brightest smoothed peak — on J0201+3228, J0742+3341 and J0755+3445 a brighter neighbour
+  hijacks the peak and every radius comes out nonsense.
+- **`gallery` J2342-0120 f606W: the mask CLIPS the NE ring knot — pull it back.** The object
+  at the screen bottom (col 140, row 198; r = 1.88″ = 1.7 θ_E) is correctly masked: it is
+  **red** (F606W/F814W = 0.75 where all four ring knots read 1.8–2.8), radially rather than
+  tangentially elongated (11° from the radius vector against 75–86° for the knots), and
+  Shu+2016's own residual map leaves it unfitted. But its mask reaches to **0.15″ (1.1 PSF
+  FWHM) of the ring knot at col 143, row 176**, masking 21% of the pixels within 0.3″ of that
+  knot and **29% of its flux inside 0.5″** — worse than the documented J1451-0239 case.
+  **Fixed 2026-09-15** the same way (scripted, not redrawn): masked pixels within r < 0.5″ of
+  the knot centroid were cleared, **2818 → 2683 px**, nearest masked pixel **0.15″ → 0.50″**,
+  flux of the knot inside 0.5″ masked **27% → 0%**, at a cost of 3.7% of the contaminant's own
+  flux — it stays masked. Provenance is in `info/lens_masks.json` under `edited`.
+- **`gallery` J1116+0915 f606W: right call on the contaminant, but the mask sits 0.27″ from
+  the demagnified counter-image.** Of the two bright objects straddling the deflector, only
+  the one at **col 155, row 111 (r = 1.58″, screen TOP = sky South)** is lensed; the one at
+  **col 158, row 184 (r = 1.35″)** is a contaminant and is now masked — correctly: the model
+  predicts images at 0.47″ and 1.65–1.70″ only, a source imaged at 1.35″ would need a partner
+  at ~0.71″ only ~2× fainter (nothing is there), and Shu+2016's residual map leaves it
+  standing. **The third feature, col 150, row 163 (r = 0.50″, peak S/N 6.8), is the
+  demagnified counter-image — keep it.** The mask's nearest pixel was 0.27″ (2.0 PSF FWHM)
+  from it, masking 18% of the pixels within 0.5″ and 6.5% of its flux. **Fixed 2026-09-15**:
+  masked pixels within r < 0.5″ of col 150, row 163 cleared, **7599 → 7506 px**, nearest
+  masked pixel **0.27″ → 0.51″**, flux masked **7% → 0%**, costing 0.6% of the contaminant's.
+  It mattered more than the raw numbers suggest: that image's flux is the model's
+  magnification-ratio constraint.
+- **`gallery` J0918+5104 f606W: two real features near the quad — neither is a cosmic ray,
+  and neither should be masked (2026-09-15).** (i) The object at **col 185, row 106
+  (r = 2.25″)** is the **fourth image** of this cusp quad, not a CR: it is detected in three
+  independent filter stacks at the same sky position to 0.4 px (F606W 26.0, F814W 9.4, F438W
+  8.2 peak per-pixel S/N), is *broader* than the PSF (σ 0.076″ vs 0.055″ — CRs are sharper,
+  never broader), is tangentially elongated (b/a 0.41, 89° from the radius vector), and sits
+  at the radius the model predicts for image 4 (2.16″). (ii) The **diffuse patch ~0.9″ from
+  it, around col 163–170, row 92–100 (r ≈ 2.3″), is real but its nature is OPEN.** Real:
+  positive in **all four** input `flc` frames (145/111/236/182 e, 2.3–5.0σ each, no CR flags)
+  where a blank-sky control scatters about zero, and +7.9σ over the local systematic floor in
+  F606W. Open: its colour matches the arc (F606W/F814W ≈ 2.2 vs the 4th image's 2.9), but it
+  is elongated only **33° from radial** where a lensed feature at 1.5 θ_E should be
+  tangential, and de-lensing it puts its source **0.4″** from the real source — a separate
+  clump, whose required counter-image (col 163, row 173, μ = 0.9) would be 3× fainter than
+  the patch and so is undetectable either way. **Left unmasked deliberately**: fit it, look at
+  the residual, and mask only if the reconstruction cannot produce it.
+  *Reusable lesson:* **the per-exposure test settles cosmic-ray questions outright** — a CR
+  is in exactly one input frame, so measure the same aperture in each `flc` against a
+  blank-sky control in the same frames, instead of arguing from the drizzled stack.
   - **Two of my own claims here were wrong and are retracted**: an azimuthal-median model
     showed a "diffuse arc connecting the objects" that is mostly model residual (MGE removes
     most of it), and an apparent **"Einstein ring at r=0.83″, radius constant to 0.018″"** was
@@ -857,9 +930,34 @@ band with a bcfill reduction behind it. Its f606W (0/24) and f160W (0/6) are sti
 - **Orientation, which bit twice while working on this lens: on screen the stamps are NOT
     North-up-East-left.** The WCS is North-up in the usual sense (+column = **West**,
     +row = **North**), but the display puts row 0 at the top, so **North appears DOWN and East
-    appears RIGHT** — a 180° rotation from the convention. An object called "NE" at the GUI is
-    sky-SW. Quote sky offsets (ΔRA/ΔDec) rather than compass words when it matters, and derive
-    them from the WCS rather than from how the panel looks.
+    appears LEFT** — a *vertical flip* of the usual convention, **not** a 180° rotation.
+    (Re-verified 2026-09-15 on J0237-0641 f606W: stepping +1″ East moves −25.2 columns, so
+    East is the −column direction, i.e. screen LEFT. An earlier version of this bullet said
+    "East appears RIGHT / a 180° rotation", which contradicted its own "+column = West" and
+    was wrong.) Quote sky offsets (ΔRA/ΔDec), or **(column, row) pixels**, rather than compass
+    words, and derive them from the WCS rather than from how the panel looks.
+  - **Checked across the whole archive (2026-09-15): the orientation is uniform — there is no
+    lens or band that breaks the rule.** All **317** cutouts in `data/cutouts/` *and*
+    `data/cutouts_20arcsec/` (slacs_gold 180, slacs_other 71, gallery 66; ACS/WFC, WFPC2/PC,
+    WFC3/IR and WFC3/UVIS) have, from the CD matrix: **PA(+row) = 0.000000° (North),
+    PA(+col) = 270.000000° (West), axes orthogonal to 1e-6°, det(CD) < 0 everywhere**, and
+    **no SIP or distortion-lookup keywords at all**. Pixel scales are uniform per instrument
+    (ACS/WFC and WFPC2/PC 0.05″, WFC3/IR 0.06″, WFC3/UVIS 0.0396″). So `col = c0 − ΔRA/scale`,
+    `row = r0 + ΔDec/scale` is exact on every product, and East-left/North-down holds
+    everywhere on screen.
+  - **TRAP that faked a violation on first pass: `RADESYS` is MIXED across the archive.**
+    **61 products on 18 lenses are `FK5`** (J0216-0813, J0737+3216, J0912+0029, J0956+5100,
+    J0959+0410, J1134+6027, J1143-0144, J1205+4910, J1250+0523, J1402+6321, J1403+0006,
+    J1420+6019, J1538+5817, J1627-0053, J1630+4520, J2238-0754, J2300+0022, J2303+1422); the
+    other 256 are `ICRS`. Building an offset position as a bare `SkyCoord(ra, dec)` — which
+    defaults to **ICRS** — and feeding it to `world_to_pixel` on an FK5 header applies the
+    ICRS↔FK5 frame bias, a **constant ~0.03″ (0.5 px) shift**. Differenced against an
+    unshifted origin that reads as a **~1.5° rotation and a 2.6% scale error** that are not
+    there. It cost a full wrong answer here before the CD matrices settled it. **Take the
+    orientation from the CD matrix, and if you must build offset coordinates, build them in
+    the header's own frame** (`SkyCoord(..., frame=c.frame)`), or difference two positions
+    that both went through the same transform. The same bias matters for any cross-band or
+    cross-catalogue position comparison at the tens-of-mas level.
 
 **Where the arc should be: use the MEASURED Einstein radius, not an estimate.** Auger+2009
 (SLACS IX) modelled these systems and VizieR carries the result:
@@ -1097,6 +1195,8 @@ has it **on**.
 ```bash
 uv run python scripts/make_arc_masks.py --sample slacs_gold            # best band per lens
 uv run python scripts/make_arc_masks.py --lens J0330-0020 --force      # one lens, redraw
+uv run python scripts/make_arc_masks.py --lens J0330-0020 --detect-snr 3.0   # looser proposal
+uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from none  # blank canvas
 ```
 
 The second hand-drawn mask tool, and the **opposite polarity to `make_masks.py`**: you paint
@@ -1128,16 +1228,182 @@ measurement, or a source-plane analysis.
   reasoning as `make_masks.py`), band priority, `--size` routing, skip/`--force`
   — is `make_masks.py`'s, imported rather than re-implemented. It gets the **red erase brush**
   (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
-  over-painted stroke is trimmed rather than undone whole — but **not** `--propose-from`:
-  reviewing an inherited *arc* region is a different judgement (an arc detected in one filter
-  is often simply absent in another) and is not wired up. Provenance in
+  over-painted stroke is trimmed rather than undone whole. Provenance in
   `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
   region over the radial-subtracted image.
+- **`--propose-from` IS now wired up, default `detect` (2026-09-15)** — the arc region you
+  review comes from the automatic detector (`scripts/detect_arcs.py`, below), so arc masking
+  is *correcting an outline*, not drawing one. The review loop and its code are
+  `make_masks.py`'s: outline on every panel, green adds / red erases, and `confirm_proposal`
+  after the GUI closes — `[a]` apply proposal+edits, `[d]` keep only what you drew, `[s]` skip
+  and write nothing. Provenance gains `source` = `accepted_from_detect` / `edited_from_detect`
+  / `drawn`, `proposal_px`, `n_added_px`, `n_erased_px`, and the detector's own numbers
+  (`detector_bands`, `detector_theta_e_arcsec`, `detector_band_offset_px`, `detector_core_dipole`, per-component
+  radii and peak S/N). `--propose-from <band>` proposes another band's arc mask instead —
+  still the judgement call it always was (an arc detected in one filter is often simply absent
+  in another), which is why it is reviewed and never broadcast — and `--propose-from none` is
+  the old blank canvas. `--broadcast` is mutually exclusive with it, as in `make_masks.py`.
+  `--detect-*` pass parameters through; `--detect-snr` (default 3.5) is the one to reach for.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
   row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position ring lands on the
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
   `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
   outline needs `origin='upper'` or it is drawn vertically mirrored.
+
+## Automatic arc detection (`scripts/detect_arcs.py`)
+
+```bash
+uv run python scripts/detect_arcs.py --sample slacs_gold      # QC figures + summary, no products
+uv run python scripts/detect_arcs.py --lens J0330-0020 --snr 3.0   # tune one lens
+uv run python scripts/detect_arcs.py --fetch-theta-e          # refresh the Einstein-radius cache
+```
+
+Finds the arcs and hands the region to `make_arc_masks.py --propose-from detect` as a
+**proposal**. It writes no mask and no product of its own — QC figures and a summary JSON
+under `diagnostics/arc_detection/<sample>/` (untracked), plus a **contact sheet** of the whole
+sample on one page, which is how to judge a sweep before opening any GUI.
+
+**The discriminant is COLOUR, not brightness.** The deflector is a red early-type, the source a
+blue star-forming galaxy, so the detector builds a **blue-excess image** `be = B' - k·R'`:
+- `B'`, `R'` are the blue (f606W/f555W) and red (f814W) stamps **PSF-matched** by convolving
+  each with the *other* band's kernel, so both carry `PSF_R ⊛ PSF_B` and the difference is not
+  a sharp-minus-blurry dipole at every steep gradient.
+- **`k` is keyed on the red band's own BRIGHTNESS, not on radius** — the deflector's colour on
+  each isophote, measured as the median blue/red ratio in log-spaced brightness bins. Two
+  earlier versions failed and say why the third works: a single scalar `k` leaves the galaxy's
+  colour *gradient* behind as a broad disc exactly where the arcs are; per-**radius** binning
+  needs an isophote shape, and real ellipticals twist and grow discs, so fixed elliptical
+  annuli left signed lobes along the major axis (J0841+3824) and a noisy per-annulus ratio
+  printed **bullseye rings** round the core. Brightness bins assume no shape at all. They must
+  be **log-spaced**, not equal-population: quantile bins collapse the whole core into one bin
+  and leave a broad negative bowl over the middle of every lens, which is where the inner arcs
+  are. Because `k` is a measured ratio, the bands' different units (WFPC2 DN/s vs ACS e/s)
+  cancel and are never converted.
+- Candidates are kept only in an annulus around the **measured** Auger+2009 θ_E, cached in
+  `info/lens_einstein_radii.json` (`--fetch-theta-e`, from VizieR `J/ApJ/705/1099/lenses`,
+  `RE` kpc → arcsec on flat H0=70/Ωm=0.3; **all 38 `slacs_gold` lenses have a row**). The
+  same prior kills both classic false positives: the central residual inside, field galaxies
+  outside.
+- Components are judged on **peak per-pixel S/N and connected area**, never an aperture sum,
+  and detection runs on a 0.07″-smoothed map so a diffuse arc is not missed — the two traps
+  recorded above. A component must also be visible in the blue band on its own, so an
+  over-subtracted red patch cannot pose as a source.
+- **The mirror test, straight from this file's own rule that a real arc is never negative
+  opposite.** A centring or PSF mismatch is antisymmetric about the deflector; lensing is not —
+  opposite an arc lies a counter-image or empty sky, never a deficit. So a component whose
+  180° mirror reads below `MIRROR_DEFICIT_SNR` (−2σ) is dropped as the bright half of a dipole,
+  and `core_dipole` reports the antisymmetric fraction for the lens as a whole. It earns its
+  keep: it removes a component on 24 of 38 lenses, and what it removes is overwhelmingly
+  **inner (0.4–0.85 θ_E), RADIALLY elongated, with a −2 to −8σ hole opposite** — the dipole
+  signature, not an arc's.
+
+**The band astrometry is FINE, and a claim here that it was not is retracted (2026-09-15).**
+An earlier version of this section said WFPC2 f606W sits up to 2.2 px = 0.11″ off ACS f814W.
+**That was an artefact of the measurement, not a property of the data**, and the retraction is
+worth more than the claim was: the number came from a flux-weighted centroid in a small
+aperture, which in the blue band walks onto the arc, run on PSF-MATCHED frames, which are not
+the sky. Three independent measurements agree the tie from `align_wfpc2_to_acs.py` holds:
+- **cross-matched field sources** (43–175 per lens — the only check the deflector cannot bias,
+  and the one this repo already prescribes): median vector offset **0.002–0.026″ = 0.04–0.5 px**;
+- **deflector centroid by windowed centre-of-mass** (the estimator `align_wfpc2_to_acs.py`
+  itself uses): **0.05–0.42 px**, and *identical in the mosaic and in the cutout*, so
+  `make_cutouts.py` carries the WCS through correctly;
+- the detector's own per-lens diagnostic: median **0.31 px**, max 0.69 px.
+
+So **there is nothing to re-register**, and `detect_arcs.py` deliberately does not: it measures
+the offset, records it (`band_offset_px`), and flags anything over 0.8 px for
+`align_wfpc2_to_acs.py` — the tool that owns the WCS — rather than shifting pixels itself.
+Fitting a shift by minimising the colour residual was tried too and is worse than useless: with
+an imperfect PSF match a shift can always buy a smaller residual, so it ran to its limit on
+half the test lenses and did not reduce the dipole it was meant to remove. **Rule: a
+measurement that says the astrometry is broken is nearly always the estimator.** Check it
+against field sources before believing it, and never against a PSF-matched frame.
+
+**What WAS broken is the PSF kernels — and the cause was an x/y swap, fixed 2026-09-15.**
+`photutils.centroid_com` returns **(x, y), column first**. Four sites unpacked it as `(y, x)`:
+`make_psf.oversampled_to_kernel`, `psf_models._resample_centered`, and both centroid calls in
+`make_psf_inject.py` (`_render_from_array`, `extract_kernel`). Each then recentred by the
+**transposed** offset — shifting by `(dx, dy)` where it meant `(dy, dx)` — so every kernel kept
+an antisymmetric residual, `dy ≈ −dx`. Before the fix, over all 149 cutout PSFs repo-wide:
+median offset **0.33 px, max 1.73 px, 37 off by >0.5 px**, and `dy` vs `dx` anticorrelated at
+**−0.76** — that anticorrelation *is* the transposition's signature, and it is what identified
+the bug. `align_wfpc2_to_acs.py` had the same call **correct** (`cx, cy = centroid_com(d)`),
+which is why the astrometric ties were never affected.
+
+**Why it matters beyond the kernels: convolving with an off-centre kernel TRANSLATES the
+image by that offset.** It is what the fictitious 2.2″ band offset above was really made of (in
+a PSF kernel swap each band moves by the *other* band's kernel offset), and, far more
+importantly, **any fit that convolves a model with these kernels was shifted the same way** —
+1.7 px is 0.085″, which a lens model absorbs by moving the deflector, differently in each band.
+**All 154 PSF products were regenerated after the fix (2026-09-16)**, measured three ways
+(7×7 COM about the peak, whole-kernel flux centroid, quadratic core fit):
+
+| sample | n | before: median / max / >1px | after: median / max / >1px |
+|---|---|---|---|
+| `slacs_gold` | 90 | 0.308 / 1.616 / **4** | 0.285 / 0.682 / **0** |
+| `slacs_other` | 37 | 0.768 / 1.725 / **12** | **0.099** / 0.554 / **0** |
+| `gallery` | 27 | 0.287 / 0.984 / 0 | 0.239 / 0.394 / **0** |
+| **all** | **154** | 0.326 / 1.725 / **16** | 0.258 / 0.682 / **0** |
+
+`slacs_other` was the worst affected and gained the most (median 0.768 → 0.099 px). **The
+~0.26 px that remains is the measurement floor, not a residual error**: only **5 of 154**
+kernels exceed 0.3 px on all three estimators (worst 0.68 px), i.e. at that level the
+estimators disagree with each other about where an undersampled PSF's centre is.
+
+Knock-on effects of the rebuild, all checked: **70 injected-tier `psf_err` maps** rebuilt with
+`make_psf_err_injected.py` (`make_psf.py` only rewrites the empirical tier's, so skipping this
+leaves error maps describing the old off-centre kernel — no stale ones remain); **2 products
+changed tier**, both *to* `empirical` (`gallery/J0918+5104 f606W`, `slacs_other/J2302-0840
+f606W`), where the centred ePSF now passes the core-vs-outskirt quality gate; 3
+`slacs_other` f814W products still have **no** `psf_err` map, which is pre-existing (`no
+calibration for slacs_other:f814W`), not something the rebuild removed. Dataset QC subplots
+were regenerated too, since they embed the PSF. **Hand-drawn masks were NOT affected and did
+not need redrawing** — `make_masks.py`/`make_arc_masks.py` read only `_sci`/`_noise` and other
+masks, and a mask is read back as brush pixel positions. **`--bcfill` is likewise unaffected**:
+`make_psf.py` has no variant key and `make_psf_inject.py` stages from `data/drizzle_files/`, so
+every kernel comes from the standard tree, which is right — bcfill is an input-level
+dead-column repair drizzled onto the same output grid, not an optical or resampling change.
+
+**When a recentring step looks right but its product is not centred, check the coordinate
+order before anything else** — and note a symmetric test PSF cannot catch this, because a
+Gaussian centred on its own peak has equal x and y centroids inside the window: the test input
+must be asymmetric, or real.
+
+**One more data fact, silent and general:**
+- **A few noise maps flag zero-coverage pixels with `1e8`** — 12 products repo-wide, a handful
+  of pixels each (J0252+0039 f606W, J0728+3835 both bands, J0737+3216 f814W, J1451-0239 f814W,
+  and 5 in `slacs_other`). Squared and pushed through an FFT that one value **destroys the
+  whole frame**. Any convolution or smoothing of a noise map here must detect and heal them
+  first (`SENTINEL_FACTOR`).
+
+**What it achieves on `slacs_gold` (38/38 run, ~15 s for the sample), measured after the PSF
+kernel fix:** every lens gets a proposal; **27/38 have their largest component at 0.6–1.5 θ_E**,
+and the median lens has **100%** of its proposed area in that range — the proposal is the ring
+and little else. Median proposal 501 px = 1.25 arcsec². The PSF fix moved these: before it,
+25/38 on-ring and one lens (J0841+3824) proposed nothing at all.
+
+**Where it does NOT work, and why that is visible rather than hidden.** The method's one
+failure mode is a deflector subtraction leaving an antisymmetric residual, and `core_dipole`
+measures exactly that: median **1.43**, above 2 on **11 of 38** lenses. On those the inner
+region is model error, the mirror test correctly refuses to propose there, and **the inner
+images have to be drawn by hand**. Centring the PSF kernels cut this materially (median was
+1.80 and 16/38 exceeded 2 beforehand) — i.e. a good part of what looked like an irreducible
+subtraction artefact was the off-centre kernels. What remains is the last few tenths of a
+pixel of band mismatch plus genuine WFPC2 PSF error; a better f606W kernel would buy more here
+than any detector tuning. **This is a proposal generator, not a detector to be believed** —
+nothing is written without the GUI review.
+
+**The band-offset diagnostic must compare RAW against RAW.** It reads the regridded blue stamp
+against the red stamp on its own grid, *neither* PSF-matched. An earlier version compared the
+PSF-*matched* red against the raw blue and therefore measured the kernels as much as the sky —
+median 0.31 px, max 1.15 px. Like-for-like it reads **median 0.10 px, max 0.87 px**, and it
+tracks the independent field-source measurement (J1430+4105 is the worst lens by both: 0.87 px
+here, 0.68 px from 111 cross-matched field sources — still well under the f606W PSF, and
+flagged rather than corrected).
+
+**Other samples degrade gracefully, not silently:** a lens with no blue band or no measured
+θ_E is reported and skipped (`gallery` is f606W-only and is not in Auger+2009 — Shu+2016
+Table 2 has θ_E for all 15 if it is ever wanted; 4 of 24 `slacs_other` lenses run today).
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -1225,6 +1491,15 @@ flags. Precedence: instrument default < JSON < CLI. This replaces the notebook's
 NaN rectangles and manual star deletion.
 
 **The traps (all cost a silently-wrong PSF):**
+- **`photutils.centroid_com` returns (x, y) — COLUMN FIRST — and unpacking it `(y, x)` put
+  every kernel off its own centre (found and fixed 2026-09-15).** Four sites here did that and
+  so recentred by the transposed offset: `oversampled_to_kernel`, `psf_models._resample_centered`
+  and both centroid calls in `make_psf_inject.py`. The residual is antisymmetric (`dy ≈ −dx`),
+  it reached **1.73 px**, and an off-centre kernel **translates whatever it is convolved with**
+  — i.e. it shifts the model in every fit that uses it. Full account under *Automatic arc
+  detection*; the short version is that a centred-looking recentring step is worth testing with
+  an **asymmetric** input, since a symmetric one cannot fail. All PSF products were regenerated
+  after the fix.
 - **A 5σ DAO detection is not a PSF star.** On star-poor fields the only round detections are
   ~5σ noise blobs (measured peak-S/N 4–6 on J0252 F606W) that build a *pure-noise* ePSF which
   passes a naive "peak is centred" check. Gate on an **absolute peak-S/N floor** (`min_snr=30`)
@@ -1677,6 +1952,13 @@ Updated automatically by every run:
 - **`lens_exptime.json`** — `{sample: {lens: {key: seconds}}}` — from the CR-rejected
   drizzle header.
 
+Not written by a pipeline run, and the odd one out in `info/`:
+- **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
+  source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* (Auger+2009
+  via VizieR) and not a record of this repo's products: 74 SLACS lenses, whatever sample they
+  land in. Refreshed only on demand (`detect_arcs.py --fetch-theta-e`); tracked in git so the
+  detector runs offline. A lens with no row is one Auger+2009 did not model.
+
 No data for a filter → value `null`.
 
 - **The key is the product directory, not the filter.** Usually they coincide (`f606W`), but
@@ -1746,9 +2028,9 @@ to native drizzle WCS with a warning. PSF products exist (WFC3/UVIS is keyed in
 `make_psf.py`/`psf_models.py`; `run_psf_all.sh gallery` run 2026-08-01, 25/25 — see *PSF
 generation*). **F225W/F275W are confirmed
 unusable for lens science across the whole sample** (arc undetected, not just the deflector
-— see *BELLS GALLERY* below); **J1110+2808 is usable only in F606W** (its F814W/F438W show
-no arc despite ~2× the exposure of every other gallery lens, F275W is pure noise). No further
-reduction effort (PSF, tuning) on either — reduced correctly, just not lensing-useful.
+— see *BELLS GALLERY* below); **J1110+2808's F275W is pure noise, but its F814W/F438W DO show the lensed
+images** — the older "F606W only" claim was wrong and is corrected below. No further reduction
+effort on F225W/F275W anywhere — reduced correctly, just not lensing-useful.
 
 Caveat carried over from before both samples were reduced: `slacs_other`'s naming is
 settled — all lenses resolve under plain `SDSS{lens}%`, no `GAL-*` overrides needed
@@ -1906,16 +2188,65 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
     should be expected there.
 - **PSF support: WFC3/UVIS is wired in** (`make_psf.py`/`psf_models.py` key off `ACS/WFC`,
   `WFC3/IR`, `WFPC2`, and `WFC3/UVIS`), and `run_psf_all.sh gallery` has been run (2026-08-01,
-  excluding J1110+2808's F814W/F438W per the next bullet): 25/25 products ok, 18 empirical +
+  excluding J1110+2808's F814W/F438W — **that exclusion rests on a claim since retracted; those
+  two PSFs need building if the bands are used**, see the per-lens bullet): 25/25 products ok, 18 empirical +
   7 `inject_stdpsf` (no exact-filter WFC3/UVIS STDPSF grid substitution issue — UVIS uses the
   same ACS/WFC3 STDPSF machinery). See *PSF generation* above (F160W hybrid quality gate /
   `uvis_scatter_gate_validated`) for the empirical/model split rationale.
-- **Per-lens caveat: J1110+2808 is usable only in F606W.** Its F814W/F438W run ~2× the
-  exposure of every other gallery lens (and F275W 15768s, the deepest), yet a same-stretch S/N
-  comparison (2026-07-29) found the near-deflector knots visible in F606W simply absent in
-  F814W/F438W, and F275W pure noise. **Do not build PSFs or spend further effort on this lens's
-  F814W/F438W/F275W** — correctly reduced, just not lensing-useful; only F606W is. → memory:
-  j1110_2808_f606w_only
+- **Per-lens caveat: J1110+2808 — F275W is noise, but F814W and F438W DO detect the lensed
+  images. The 2026-07-29 "F606W only" verdict was wrong and is RETRACTED (re-measured
+  2026-09-14).** Its F814W/F438W run ~2× the exposure of every other gallery lens (and F275W
+  15768s, the deepest). The system is a double (published theta_E 0.98", images predicted at
+  0.73"/1.28"); the observed pair sits at 0.73" (col 142, row 136) and 1.23" (col 172, row 175).
+  Measured on the **elliptical-profile-subtracted** stamp, per-pixel S/N peaks and the count of
+  pixels above S/N 4 are: F606W 11.3 (23 px) and 13.8 (32 px); **F814W 5.5 (4 px) and 8.6
+  (12 px)**; **F438W 6.5 (6 px)** for the inner image, 2.9 (0 px) for the outer; F275W 2.1/2.0
+  (nothing). Against control apertures placed at the same radius with all real structure
+  excluded, the F814W detections are +6.3 and +7.4 sigma above the local systematic floor and
+  the F438W inner image +11.3. **Why the original check missed them:** it was a same-stretch
+  *visual* S/N comparison, and both images sit on the deflector envelope, where they are
+  invisible until the galaxy is subtracted. **Consequence:** F814W is usable for this lens
+  (positions, colours); its F814W/F438W PSFs were deliberately skipped and must be built before
+  the band is modelled.
+
+### Published lens models — every gallery lens has one (Shu et al. 2016, Table 2)
+
+**Before deciding whether a blob is a lensed image or a contaminant, solve the published
+model.** All 15 gallery lenses are grade-A in Shu et al. 2016, ApJ 833, 264 (*BELLS IV:
+Smooth Lens Models*), which fits an SIE (+shear where needed) to this same F606W imaging.
+**It is not on VizieR** — only Shu+2016a (`J/ApJ/824/86/table2`, the parent candidate list)
+is there. Get it from the paper:
+
+```bash
+curl -sL https://arxiv.org/pdf/1608.08707 -o /tmp/shu.pdf && pdftotext -layout /tmp/shu.pdf
+```
+
+Table 2 = lens parameters (`bSIE` = θ_E, q, PA east of north, centroid offset, shear γ/φ_γ,
+mean magnification µ); the second table labelled "TABLE 2" (source parameters, referenced in
+the text as Table 4) = per-component source offsets, q, n, R_eff, m_AB; Table 3 = per-lens
+notes (perturbers, quads, which systems need shear). θ_E in arcsec:
+
+| J0029+2544 | J0201+3228 | J0237-0641 | J0742+3341 | J0755+3445 | J0856+2010 | J0918+5104 | J1110+2808 |
+|---|---|---|---|---|---|---|---|
+| 1.34 | 1.70 | 0.65 | 1.22 | 2.05 (γ=0.24) | 0.98 | 1.60 (γ=0.18) | 0.98 |
+
+| J1110+3649 | J1116+0915 | J1141+2216 | J1201+4743 | J1226+5457 | J2228+1205 | J2342-0120 |
+|---|---|---|---|---|---|---|
+| 1.16 | 1.03 | 1.27 | 1.18 | 1.37 (γ=0.15) | 1.28 | 1.11 |
+
+**Use the predicted image RADII and the image COUNT; do not trust the predicted PAs.** Feed
+each source component through the SIE+shear lens equation and keep the radii — those are
+convention-free and they are what settles "is this thing too far out to be an image". The
+paper's ΔR.A. sign convention did **not** reproduce observed configurations consistently
+across lenses here, so a predicted position angle can come out mirrored. Validated against
+the data on three lenses: J0237-0641 predicts two images at 0.61/0.79″ and the stamp shows a
+pair at 0.56/0.74″ (166° apart, mean 0.65″ = θ_E exactly); J1110+2808 predicts 0.73/1.28″ and
+shows 0.73/1.23″; J0918+5104 predicts a quad spanning 1.16–2.16″ and its outermost observed
+image sits at 2.25″. **The paper's own figures are a second, independent check**: pages 8–12
+show data / lens-light-subtracted / model / **residual** per lens, and an object the authors
+did not treat as lensed is left standing in the residual panel — that is how J1116+0915's
+1.35″ object and J2342-0120's 1.88″ object were confirmed as contaminants. Render one with
+`pdftoppm -png -r 400 -f <page> -l <page> /tmp/shu.pdf out`.
 
 ### Gallery audit (2026-09-13) — the inherited ACS reasoning, checked
 
@@ -1982,9 +2313,9 @@ Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 e
 F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
 GALLERY actually has on MAST, not a pipeline gap. `run_cutouts_all.sh` was extended to glob
 the UV/blue bands (`f438W f275W f225W`) alongside the SLACS filters so it stays one runner
-for every sample. **F225W/F275W across every lens, and F814W/F438W/F275W specifically for
-J1110+2808, are not lensing-useful** (see bullets above) — treat only F606W (all 15 lenses)
-and F814W/F438W (the other 5 of the 6 lenses that have them) as science-ready, with the
+for every sample. **F225W/F275W across every lens are not lensing-useful** (see bullets
+above) — treat F606W (all 15 lenses) and F814W/F438W (**all 6** of the lenses that have them,
+J1110+2808 included — see its corrected per-lens bullet above) as science-ready, with the
 F438W qualification from the audit above: **arc yes, deflector no.**
 
 ## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
