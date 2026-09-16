@@ -1257,6 +1257,16 @@ measurement, or a source-plane analysis.
   `proposal_px_by_source` and `proposal_overlap_px`, and the breakdown is printed per lens.
   Verified with a hand-edited mask, not just a round-trip: a 900px box added by hand on f814W
   reappeared in the f606W proposal, and union = detect + inherited − overlap held exactly.
+- **The CONTAMINANT mask is outlined while you paint arcs (`--show-contaminants`, default on,
+  2026-09-16).** The thing most likely to be mistaken for a lensed image is a neighbour or
+  field source that has *already* been judged a contaminant on that very band, so
+  `cutout_[cr_]mask.fits` is drawn as a **dashed dark** boundary — which keeps three
+  annotations apart at a glance: arc proposal = solid WHITE outline, marked positions = solid
+  DARK rings, contaminants = DASHED DARK. The interior is deliberately not filled, the same
+  call recorded for `make_masks.py`: blanking hides the pixels you are judging. Display only
+  and verified so (722 display pixels changed, written arc region untouched), silently
+  inactive on a band with no contaminant mask. The detector already excludes those pixels, so
+  a proposal never lands on one — checked on J1020+1122, whose mask covers ~47% of the stamp.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
   row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position ring lands on the
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an

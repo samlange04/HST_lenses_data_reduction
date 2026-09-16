@@ -262,6 +262,48 @@ def ring_overlay(positions, ring_radius_px=6):
     return _overlay
 
 
+def contaminant_overlay(mask_bool):
+    """Return an `overlay(disp_array, pixel_scales)` that outlines the CONTAMINANT mask
+    (`cutout_[cr_]mask.fits`, what make_masks.py excludes) in the displayed array.
+
+    Why it is here: painting arcs and painting contaminants are opposite jobs, and the thing
+    most likely to be mistaken for a lensed image is a neighbour or field source that has
+    ALREADY been judged a contaminant on this very band. Showing that verdict while you paint
+    means you are not re-deciding it from memory.
+
+    DASHED and burned at the display MINIMUM, which keeps three annotations apart at a glance:
+    the arc proposal is a solid WHITE outline (display max), marked image positions are solid
+    DARK rings, and this is a DASHED DARK boundary. The interior is deliberately NOT filled --
+    the same call `make_masks.py` made and recorded: blanking a region hides the very pixels
+    you are judging it against. Display only; the Scribbler returns brush positions, so
+    nothing here can enter the saved mask.
+    """
+    def _overlay(disp_array, pixel_scales):
+        a = np.array(disp_array.native, dtype=float)
+        edge = make_masks.mask_boundary(np.asarray(mask_bool, dtype=bool))
+        if edge.shape == a.shape:
+            yy, xx = np.mgrid[0:a.shape[0], 0:a.shape[1]]
+            a[edge & (((yy + xx) % 3) != 0)] = float(a.min())    # dashed, not solid
+        return al.Array2D.no_mask(values=a, pixel_scales=pixel_scales).native
+    return _overlay
+
+
+def compose_overlays(*fns):
+    """Chain overlay callables in order; None entries are ignored. Returns None if none remain,
+    so draw_mask_gui's `overlay is not None` fast path is preserved."""
+    fns = [f for f in fns if f is not None]
+    if not fns:
+        return None
+    if len(fns) == 1:
+        return fns[0]
+
+    def _overlay(disp_array, pixel_scales):
+        for fn in fns:
+            disp_array = fn(disp_array, pixel_scales)
+        return disp_array
+    return _overlay
+
+
 def save_arc_qc_png(cutout_dir, prefix, arc_bool, pixel_scales, out_path, lens, filt,
                     stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
     """QC overlay: the arc region outlined over the band's own (radial-subtracted) image.
@@ -308,7 +350,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
                           broadcast, brush_radius, brush_width, display, stretch,
                           vmin_percent, vmax_percent, asinh_a, subtract_radial,
                           side_by_side, show_positions, ring_radius_px,
-                          propose_from='detect', detect_kw=None):
+                          propose_from='auto', detect_kw=None, show_contaminants=True):
     """Draw the arc mask once for one lens, on its best/forced band only unless
     `broadcast` is set (then also WCS-reprojected to the lens's other bands). Mirrors
     make_masks.process_lens_mask; differs only in polarity, product name, and the arc-specific
@@ -343,6 +385,21 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
     if positions:
         print(f"  {len(positions)} marked position(s) ringed in the display "
               f"(from {display_prefix}_positions.json)")
+    contaminants = None
+    if show_contaminants:
+        cont_path = os.path.join(display_dir, f'{display_prefix}_mask.fits')
+        if os.path.exists(cont_path):
+            contaminants = np.asarray(fits.getdata(cont_path), dtype=bool)
+            if contaminants.any():
+                print(f"  {int(contaminants.sum())}px contaminant-masked on this band "
+                      f"(dashed dark outline; make_masks.py's verdict, and the detector "
+                      f"already excluded them)")
+                overlay = compose_overlays(overlay, contaminant_overlay(contaminants))
+            else:
+                contaminants = None
+        else:
+            print(f"  NOTE: no {display_prefix}_mask.fits on this band -- no contaminant "
+                  f"outline to show (draw one with make_masks.py first if you want it)")
 
     display_hdr = fits.getheader(os.path.join(display_dir, f'{display_prefix}_sci.fits'))
     prefixes = {f: make_masks.find_prefix(d, drizzle_pass) for f, d in filt_dirs.items()}
@@ -528,6 +585,11 @@ def main():
                         'inactive for a band with no positions file)')
     p.add_argument('--ring-radius', type=int, default=6,
                    help='radius in pixels of those position rings (default 6)')
+    p.add_argument('--show-contaminants', action=argparse.BooleanOptionalAction, default=True,
+                   help="outline this band's CONTAMINANT mask (cutout_[cr_]mask.fits, what "
+                        'make_masks.py excludes) as a dashed dark boundary, so a neighbour '
+                        'already judged a contaminant is not mistaken for a lensed image '
+                        '(default on; display only, silently inactive where no mask exists)')
     p.add_argument('--propose-from', default='auto',
                    help="where the arc region you review comes from. 'auto' (default) = the "
                         "automatic colour detector (scripts/detect_arcs.py) PLUS the "
@@ -570,7 +632,8 @@ def main():
                                  a.display, a.stretch, a.vmin_percent, a.vmax_percent,
                                  a.asinh_a, a.subtract_radial, a.side_by_side,
                                  a.show_positions, a.ring_radius,
-                                 propose_from=a.propose_from, detect_kw=detect_kw):
+                                 propose_from=a.propose_from, detect_kw=detect_kw,
+                                 show_contaminants=a.show_contaminants):
             made += 1
         else:
             skipped += 1
