@@ -442,7 +442,12 @@ def oversampled_to_kernel(epsf_data, oversample, kernel_size):
     py, px = np.unravel_index(np.argmax(arr), arr.shape)
     win = max(oversample * 5, 9)
     y0, x0 = max(0, py - win // 2), max(0, px - win // 2)
-    cy0, cx0 = centroid_com(arr[y0:y0 + win, x0:x0 + win])
+    # photutils centroid_com returns (x, y) -- COLUMN first. Unpacking it as (y, x) transposes
+    # the sub-pixel offset, so the crop below recentres by (dx, dy) instead of (dy, dx) and
+    # leaves the kernel off its own array centre by an antisymmetric residual (dy = -dx).
+    # That was the bug behind kernels sitting up to 1.7px off centre; measured repo-wide the
+    # residual offsets were anticorrelated at -0.76, which is that transposition's signature.
+    cx0, cy0 = centroid_com(arr[y0:y0 + win, x0:x0 + win])
     cx, cy = x0 + cx0, y0 + cy0
     if not (np.isfinite(cx) and np.isfinite(cy)):
         cx, cy = float(px), float(py)
