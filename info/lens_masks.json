@@ -1,6 +1,21 @@
 {
     "gallery": {
         "J0029+2544": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 3159,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 2853,
+                "n_added_px": 3159,
+                "n_erased_px": 0
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -11,6 +26,21 @@
                 "n_excluded_px": 2880,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 2853,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 2853,
+                "n_added_px": 0,
+                "n_erased_px": 0
             }
         },
         "J0201+3228": {
@@ -44,6 +74,21 @@
             }
         },
         "J0742+3341": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 19837,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 18786,
+                "n_added_px": 1428,
+                "n_erased_px": 0
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -54,9 +99,39 @@
                 "n_excluded_px": 19108,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 18561,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 18786,
+                "n_added_px": 0,
+                "n_erased_px": 765
             }
         },
         "J0755+3445": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 16889,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 17778,
+                "n_added_px": 0,
+                "n_erased_px": 2245
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -67,6 +142,21 @@
                 "n_excluded_px": 17931,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 18960,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 17931,
+                "n_added_px": 1413,
+                "n_erased_px": 1186
             }
         },
         "J0856+2010": {
@@ -83,6 +173,21 @@
             }
         },
         "J0918+5104": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 2836,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 3977,
+                "n_added_px": 1216,
+                "n_erased_px": 4770
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -94,9 +199,39 @@
                 "brush_width": 0.019802,
                 "brush_radius_px": 6,
                 "note": "2026-09-15: two real features near the quad are deliberately LEFT UNMASKED. (1) col 185, row 106 (r=2.25\", 1.4 theta_E) is the FOURTH IMAGE of this cusp quad, not a cosmic ray: detected in F606W/F814W/F438W at the same sky position to 0.4 px (peak per-pixel S/N 26.0/9.4/8.2), broader than the PSF (sigma 0.076\" vs 0.055\"; CRs are sharper), tangentially elongated (b/a 0.41, 89 deg from radial), and at the radius the Shu+2016 model predicts for image 4 (2.16\"). (2) The diffuse patch ~0.9\" from it (col 163-170, row 92-100, r~2.3\") is REAL but its nature is OPEN: positive in all four input flc frames (145/111/236/182 e, 2.3-5.0 sigma each, no CR flags) where a blank-sky control scatters about zero, +7.9 sigma over the local floor in F606W, colour like the arc (F606W/F814W ~2.2 vs 2.9 for image 4) -- but elongated only 33 deg from radial, and de-lensing it puts its source 0.4\" from the real source. Its required counter-image (col 163, row 173, mu=0.9) is 3x fainter than the patch, so its absence proves nothing. Fit with it in, inspect the residual, mask only if the reconstruction cannot produce it."
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 3695,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 3977,
+                "n_added_px": 517,
+                "n_erased_px": 1787
             }
         },
         "J1110+2808": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 4525,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 4509,
+                "n_added_px": 206,
+                "n_erased_px": 201
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -107,6 +242,21 @@
                 "n_excluded_px": 4530,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 6173,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 4530,
+                "n_added_px": 2242,
+                "n_erased_px": 756
             }
         },
         "J1110+3649": {
@@ -192,6 +342,21 @@
             }
         },
         "J2342-0120": {
+            "f438W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 3389,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 2694,
+                "n_added_px": 1026,
+                "n_erased_px": 0
+            },
             "f606W": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -205,6 +370,21 @@
                 "proposal_from": "f606W",
                 "proposal_px": 2683,
                 "n_added_px": 239,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 3290,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 2705,
+                "n_added_px": 585,
                 "n_erased_px": 0
             }
         }
