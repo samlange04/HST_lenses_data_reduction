@@ -758,15 +758,19 @@
                 "bcfill": true
             },
             "f814W": {
-                "brush_radius_px": 6,
-                "brush_width": 0.025,
-                "display": "S/N, radial-subtracted + as-observed",
-                "drizzle_pass": "cr",
-                "n_excluded_px": 4248,
-                "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "source": "drawn",
-                "bcfill": true
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
+                "bcfill": true,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 4376,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 4248,
+                "n_added_px": 128,
+                "n_erased_px": 0
             }
         },
         "J0959+0410": {
