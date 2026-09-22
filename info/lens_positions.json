@@ -2829,56 +2829,6 @@
                 ]
             }
         },
-        "J1538+5817": {
-            "f814W": {
-                "n_positions": 3,
-                "positions_arcsec": [
-                    [
-                        0.775,
-                        -0.525
-                    ],
-                    [
-                        0.075,
-                        1.025
-                    ],
-                    [
-                        -0.925,
-                        0.325
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 1.87,
-                "snap_moved_px_mean": 1.28,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": null,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 674.23,
-                        "deflector_tie_mas": 675.8,
-                        "deflector_tie_px": 13.516
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
         "J1621+3931": {
             "f606W": {
                 "n_positions": 2,

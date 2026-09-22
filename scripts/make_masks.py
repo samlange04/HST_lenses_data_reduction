@@ -303,9 +303,27 @@ def find_prefix(cutout_dir, drizzle_pass='auto'):
     return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
-def discover_targets(root, sample, lens=None, filt=None):
+def gitignored(paths):
+    """Delegates to cutout_paths.gitignored -- see there for why it lives in that module."""
+    return cutout_paths.gitignored(paths, ws_path)
+
+
+def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
     """Yield (lens, filt, cutout_dir) per band with a cutout under `root` -- the dir both
     scribbled on and written to -- sorted for a reproducible run order.
+
+    GITIGNORED CUTOUT DIRS ARE SKIPPED (2026-09-22, and this is the guard the repo was
+    missing). A band whose directory is gitignored is, by construction, not a science
+    product -- the three 420 s SLACS SNAP f814W diagnostics (J1134+6027, J1403+0006,
+    J1538+5817) are the reason the rule exists. Before this, the sweep tools happily offered
+    them, and a hand-drawn mask or a set of hand-marked positions would be written into a
+    directory git refuses to store: non-regenerable work that no clone would ever see. It
+    already happened -- J1538+5817's image positions were MARKED on its SNAP f814W band and
+    broadcast from there to f606W across a 688 mas (13.8 px) band misregistration, and both
+    had to be deleted on 2026-09-22.
+
+    `include_ignored=True` opts back in, for deliberately working on a diagnostic product.
+    The skip is announced, never silent, so a short target list is explicable.
     """
     found = {}
     pattern = os.path.join(root, sample, lens or '*', filt or '*')
@@ -315,6 +333,15 @@ def discover_targets(root, sample, lens=None, filt=None):
         this_filt = os.path.basename(cutout_dir)
         this_lens = os.path.basename(os.path.dirname(cutout_dir))
         found[(this_lens, this_filt)] = cutout_dir
+    if not include_ignored:
+        ignored = gitignored(list(found.values()))
+        skipped = sorted(k for k, v in found.items() if os.path.abspath(v) in ignored)
+        for key in skipped:
+            del found[key]
+        if skipped:
+            print(f"  skipping {len(skipped)} gitignored band(s), not science products: "
+                  + ', '.join(f'{l}/{f}' for l, f in skipped)
+                  + "  (--include-ignored to use them anyway)")
     for key in sorted(found):
         yield key[0], key[1], found[key]
 
@@ -880,6 +907,12 @@ def main():
                         '{prefix}_dataset.png QC subplot (scripts/make_dataset_subplots.py) '
                         'so it shows the mask just drawn rather than the previous one '
                         '(default on; best-effort -- a failure never costs the mask)')
+    p.add_argument('--include-ignored', action='store_true', default=False,
+                   help='also offer bands whose cutout directory is GITIGNORED. Off by '
+                        'default: such a band is not a science product (the three 420 s '
+                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-drawn '
+                        'work written there is non-regenerable and invisible to every clone. '
+                        'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()
 
     # --broadcast writes one draw to every band unseen; --propose-from reviews another band's
@@ -895,7 +928,8 @@ def main():
     # discover_targets yields per (lens, filt); regroup to filt -> cutout_dir per lens so we
     # know every band of a lens (filt=None: consider all bands; pick_display_filt picks one).
     lens_filts = {}
-    for lens, filt, cutout_dir in discover_targets(root, a.sample, a.lens, None):
+    for lens, filt, cutout_dir in discover_targets(root, a.sample, a.lens, None,
+                                                   include_ignored=a.include_ignored):
         lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:

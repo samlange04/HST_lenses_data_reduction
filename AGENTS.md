@@ -745,6 +745,39 @@ cutout's science image, writes `cutout_[cr_]mask.fits`, and records provenance p
 lens, filt) in `info/lens_masks.json`. A lens that already has a mask is skipped (`--force`
 to redraw), so a long GUI session across a sample is resumable.
 
+**GITIGNORED BANDS ARE SKIPPED BY EVERY SWEEP (`--include-ignored` opts back in, 2026-09-22).**
+`make_masks.discover_targets` — the single discovery used by `make_masks.py`,
+`make_arc_masks.py`, `make_positions.py` and `detect_arcs.py`, with a matching guard in
+`make_dataset_subplots.py` — now drops any cutout directory that `.gitignore` excludes, and
+says so rather than shortening the list silently. **A gitignored band is by construction not a
+science product**, so hand-drawn work written there is non-regenerable *and* invisible to every
+clone. Today that means exactly the three **420 s SLACS SNAP f814W diagnostics**
+(`slacs_other` J1134+6027, J1403+0006, J1538+5817) and nothing else — measured across all three
+samples: `slacs_gold` 90→90 bands, `gallery` 33→33, `slacs_other` 37→34.
+
+**The guard exists because it already went wrong.** J1538+5817's image positions were **marked
+on its SNAP f814W band** and broadcast from there to f606W across a **688 mas (13.8 px)** band
+misregistration — eight times the worst tie documented anywhere in this file (J0029-0055 f160W,
+84 mas). Both copies were deleted 2026-09-22 and the lens dropped from
+`info/lens_positions.json`; it is now unmarked and should be re-marked on f606W, the 4400 s
+band with the visible ring. Nothing else was affected: no mask, arc mask or positions file
+lives on any of the three SNAP bands (checked), and J1538+5817's f606W arc mask is `source:
+drawn` with `proposal_from: None`, so no detector proposal was built off the SNAP frame either.
+
+- **Implementation.** `cutout_paths.gitignored(paths)` — one batched `git check-ignore --stdin`
+  call, not one per directory (a few hundred cutout dirs makes per-dir subprocesses the
+  dominant cost). It lives in `cutout_paths` rather than `make_masks` because
+  `make_dataset_subplots` needs it too and `make_masks` already imports *that* module — putting
+  it in either would be an import cycle. **Any git failure returns the empty set**, so the
+  guard can only narrow a run when it works and can never block one when it cannot; note
+  `git check-ignore` exits **1** for "nothing matched", which is a normal answer, so only
+  exit >1 counts as failure.
+- **Consequence for `detect_arcs.py`:** those three lenses lose their red band, so the detector
+  now reports `SKIPPED -- need a red and a blue band, have ['f606W']` instead of building a
+  colour from a 420 s frame. That is the behaviour this file already asked for in prose
+  (*"Do not quote F814W colours for this lens"* — J1538+5817, where the SNAP's own elliptical
+  model puts a ring image at S/N −17.7). Verified to exit 0, not crash.
+
 **Closing the GUI without painting writes NOTHING** — no FITS, no JSON entry — so the lens
 stays pending and the next run re-offers it. An all-False mask would be a legitimate "exclude
 nothing" mask, and that is exactly the ambiguity to avoid: an absent file means "not drawn
