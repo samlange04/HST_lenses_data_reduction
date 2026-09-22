@@ -4,8 +4,25 @@ Correct the WFPC2 F606W absolute astrometry to the GAIA frame.
 
 WFPC2 SLACS frames carry only a GSC 2.4.0 (`GSC240`) astrometric solution, which has
 ~0.3-1" absolute error. ACS (F814W) and WFC3/IR (F160W) carry GAIA eDR3 / GSC242
-solutions accurate to <0.02" and agree with each other to ~0.01". So the WFPC2 F606W
-mosaic sits ~0.5-0.9" off from the other bands (measured 0.66" on J0252+0039).
+solutions accurate to <0.02". So the WFPC2 F606W mosaic sits ~0.5-0.9" off from the
+other bands (measured 0.66" on J0252+0039).
+
+**F160W does NOT agree with F814W to ~0.01" -- this file used to say so, and that claim
+is why F160W was never tied (measured 2026-09-17, all 19 f160W bands, deflector centroid
+in each band compared as SKY coordinates):**
+    f160W carrying FIT_REL_GAIAeDR3 (n=2)  : 9-12 mas   (0.16-0.20 f160W px)  <- the claim
+    f160W carrying FIT_REL_GSC242   (n=14) : median 32 mas, up to 94 mas
+    f160W carrying HSC30            (n=3)  : 3.5-84 mas
+**9 of the 19 sit over half an f160W pixel from their reference band**, worst
+J1636+4707 94 mas (1.57 px) and J0029-0055 84 mas (1.40 px) -- the latter confirmed
+against an independent FIELD SOURCE (2.06 px), so it is the astrometry and not a
+colour-dependent deflector centroid. The ~0.01" agreement holds only when the f160W
+itself carries a GAIA fit, which most SLACS F160W does not. Tie those with
+`--target f160W --ref f814W`; see AGENTS.md for the priority list and what must be
+regenerated afterwards.
+
+Note WCSNAME is stale after this script runs: it shifts CRVAL and does not rename the
+solution, so a corrected band still advertises its original (bad) WCSNAME.
 
 This script registers each F606W mosaic to its ACS F814W counterpart using the
 deflector as the tie point: it measures the deflector light-centroid (iterative
