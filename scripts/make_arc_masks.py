@@ -33,8 +33,11 @@ quadrupole residual; an arc partly self-subtracts at its own radius). Pass
 --no-subtract-radial to draw against the raw image.
 
 ALREADY-MARKED POSITIONS ARE SHOWN. Where `make_positions.py` has recorded
-cutout_[cr_]positions.json for the band, each marked image is ringed in the display so the
-arc mask can be drawn around the same multiple images. --no-show-positions turns it off.
+cutout_[cr_]positions.json for the band, each marked image is marked with a dark CROSS in
+the display so the arc mask can be drawn around the same multiple images. A cross, not a
+ring: the other two annotations here are closed boundaries (solid white arc proposal, dashed
+dark contaminant mask), and a third closed shape read as one more region masked OUT.
+--no-show-positions turns it off.
 
 YOU CORRECT A PROPOSAL, YOU DO NOT DRAW FROM SCRATCH (--propose-from, default 'auto').
 `scripts/detect_arcs.py` finds the arcs automatically -- a PSF-matched colour difference
@@ -108,6 +111,13 @@ import detect_arcs
 ARC_MASKS_JSON = os.path.join(ws_path, 'info', 'lens_arc_masks.json')
 
 ARC_SUFFIX = 'mask_arcs'          # cutout_[cr_]mask_arcs.fits, beside cutout_[cr_]mask.fits
+
+# Geometry of the position crosses (see cross_overlay): 3 px-thick arms starting 2 px out, so
+# the marked pixel itself is never covered and the marker is about as many display pixels as
+# the 6 px ring it replaced (~50 vs ~38) -- a cross made of hairlines reads as fainter than a
+# ring of the same radius, and it has to survive being drawn over a bright arc.
+_CROSS_HALF_WIDTH_PX = 1.0
+_CROSS_GAP_PX = 2.0
 
 
 def _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs, dst_shape, lens, source,
@@ -231,17 +241,28 @@ def load_positions(cutout_dir, prefix):
     try:
         return [(float(p[0]), float(p[1])) for p in al.from_json(file_path=path)]
     except Exception as exc:                       # a hand-edited/partial file must not block
-        print(f"  NOTE: could not read {os.path.basename(path)} ({exc}); no position rings")
+        print(f"  NOTE: could not read {os.path.basename(path)} ({exc}); no position crosses")
         return []
 
 
-def ring_overlay(positions, ring_radius_px=6):
+def cross_overlay(positions, cross_size_px=6):
     """Return an `overlay(disp_array, pixel_scales)` callable for make_masks.draw_mask_gui
-    that rings each marked image position in the DISPLAYED array.
+    that marks each `make_positions.py` image with a CROSS in the DISPLAYED array.
 
-    Rings are burned in at the display MINIMUM (dark), which reads clearly against both the
-    mid-tone background and the bright arcs of a radial-subtracted image -- a maximum-valued
-    ring would be indistinguishable from arc flux, which is the one thing it must not hide.
+    A CROSS, NOT A RING (2026-09-21). Every other annotation on this GUI is a closed
+    boundary -- the arc proposal is a solid white outline and the contaminant mask is a
+    dashed dark one -- so a dark ring read as a third small closed region, i.e. as something
+    masked out, which is the opposite of what a marked image means. Four open ticks cannot be
+    read as an enclosed area at all, so the annotations no longer have to be told apart by
+    line style alone.
+
+    Burned in at the display MINIMUM (dark), as the ring was: dark reads clearly against both
+    the mid-tone background and the bright arcs of a radial-subtracted image, where a
+    maximum-valued marker would be indistinguishable from arc flux -- the one thing it must
+    not hide. The arms stop short of the centre (`_CROSS_GAP_PX`) for the same reason the
+    contaminant outline is not filled: the marked pixel is the one you are judging, so the
+    marker points at it rather than covering it.
+
     Display only: the Scribbler returns brush positions, so this cannot enter the mask.
     """
     def _overlay(disp_array, pixel_scales):
@@ -249,15 +270,19 @@ def ring_overlay(positions, ring_radius_px=6):
         n_y, n_x = a.shape
         cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
         yy, xx = np.mgrid[0:n_y, 0:n_x]
+        dark = float(a.min())
         for (y_as, x_as) in positions:
             # arcsec -> pixel. +x arcsec is +column, but +y arcsec is -ROW: autoarray's
             # native grid puts row 0 at the TOP (+y), verified against
             # al.Grid2D.uniform(...).native[0, 0] == (+5.975, -5.975) for a 240px/0.05"
-            # stamp. Getting this sign wrong silently rings the mirror image of each
+            # stamp. Getting this sign wrong silently marks the mirror image of each
             # position -- it lands plausibly near the lens and on nothing.
             py, px = cy - y_as / pixel_scales, cx + x_as / pixel_scales
-            r = np.hypot(yy - py, xx - px)
-            a[(r >= ring_radius_px - 0.8) & (r <= ring_radius_px + 0.8)] = float(a.min())
+            dy, dx = np.abs(yy - py), np.abs(xx - px)
+            arm = float(cross_size_px)
+            vertical = (dx <= _CROSS_HALF_WIDTH_PX) & (dy >= _CROSS_GAP_PX) & (dy <= arm)
+            horizontal = (dy <= _CROSS_HALF_WIDTH_PX) & (dx >= _CROSS_GAP_PX) & (dx <= arm)
+            a[vertical | horizontal] = dark
         return al.Array2D.no_mask(values=a, pixel_scales=pixel_scales).native
     return _overlay
 
@@ -272,8 +297,8 @@ def contaminant_overlay(mask_bool):
     means you are not re-deciding it from memory.
 
     DASHED and burned at the display MINIMUM, which keeps three annotations apart at a glance:
-    the arc proposal is a solid WHITE outline (display max), marked image positions are solid
-    DARK rings, and this is a DASHED DARK boundary. The interior is deliberately NOT filled --
+    the arc proposal is a solid WHITE outline (display max), marked image positions are DARK
+    CROSSES, and this is a DASHED DARK boundary. The interior is deliberately NOT filled --
     the same call `make_masks.py` made and recorded: blanking a region hides the very pixels
     you are judging it against. Display only; the Scribbler returns brush positions, so
     nothing here can enter the saved mask.
@@ -349,12 +374,12 @@ def write_arc_mask(arc_bool, pixel_scales, path):
 def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                           broadcast, brush_radius, brush_width, display, stretch,
                           vmin_percent, vmax_percent, asinh_a, subtract_radial,
-                          side_by_side, show_positions, ring_radius_px,
+                          side_by_side, show_positions, cross_size_px,
                           propose_from='auto', detect_kw=None, show_contaminants=True):
     """Draw the arc mask once for one lens, on its best/forced band only unless
     `broadcast` is set (then also WCS-reprojected to the lens's other bands). Mirrors
     make_masks.process_lens_mask; differs only in polarity, product name, and the arc-specific
-    display (radial subtraction + position rings). Returns True if a mask was written.
+    display (radial subtraction + position crosses). Returns True if a mask was written.
 
     `propose_from` ('detect' by default) starts the draw from a REVIEWED PROPOSAL rather than
     a blank canvas: the proposed arc region is outlined on every panel, you correct it with
@@ -381,9 +406,9 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
         return False
 
     positions = load_positions(display_dir, display_prefix) if show_positions else []
-    overlay = ring_overlay(positions, ring_radius_px) if positions else None
+    overlay = cross_overlay(positions, cross_size_px) if positions else None
     if positions:
-        print(f"  {len(positions)} marked position(s) ringed in the display "
+        print(f"  {len(positions)} marked position(s) crossed in the display "
               f"(from {display_prefix}_positions.json)")
     contaminants = None
     if show_contaminants:
@@ -580,11 +605,11 @@ def main():
                         'one is where their real extent against the galaxy envelope is '
                         '(default on)')
     p.add_argument('--show-positions', action=argparse.BooleanOptionalAction, default=True,
-                   help='ring the images already marked by make_positions.py in the display, '
-                        'as a guide for where the multiple images are (default on; silently '
-                        'inactive for a band with no positions file)')
-    p.add_argument('--ring-radius', type=int, default=6,
-                   help='radius in pixels of those position rings (default 6)')
+                   help='mark the images already marked by make_positions.py with a dark '
+                        'cross in the display, as a guide for where the multiple images are '
+                        '(default on; silently inactive for a band with no positions file)')
+    p.add_argument('--cross-size', type=int, default=6,
+                   help='arm length in pixels of those position crosses (default 6)')
     p.add_argument('--show-contaminants', action=argparse.BooleanOptionalAction, default=True,
                    help="outline this band's CONTAMINANT mask (cutout_[cr_]mask.fits, what "
                         'make_masks.py excludes) as a dashed dark boundary, so a neighbour '
@@ -638,7 +663,7 @@ def main():
                                  a.force, a.broadcast, a.brush_radius, a.brush_width,
                                  a.display, a.stretch, a.vmin_percent, a.vmax_percent,
                                  a.asinh_a, a.subtract_radial, a.side_by_side,
-                                 a.show_positions, a.ring_radius,
+                                 a.show_positions, a.cross_size,
                                  propose_from=a.propose_from, detect_kw=detect_kw,
                                  show_contaminants=a.show_contaminants):
             made += 1
