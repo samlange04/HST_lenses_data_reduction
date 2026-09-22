@@ -122,6 +122,87 @@ _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False
                      'before drizzling, writing to the parallel data/drizzled_bcfill/ tree; '
                      'removes the dead-column noise stripe (see AGENTS.md / '
                      'scripts/bolton_investigations)')
+# Cosmic-ray fill (--crfill). The SAME mechanic as --bcfill, applied to LACosmic's own DQ
+# 4096 flags instead of the dead-column bits: interpolate SCI+ERR across each flagged pixel
+# and un-flag it, so the drizzle weights it like any other and the CR leaves no weight/noise
+# residue. Products land in the parallel data/drizzled_crfill/ tree (data/drizzled_bcfill_crfill/
+# with both), so nothing standard is overwritten.
+#
+# READ THIS BEFORE USING IT. --bcfill and --crfill are NOT the same trade, and the difference
+# is the whole argument (AGENTS.md, *Bad-column fill* / *DO NOT --bcfill A COSMIC RAY*):
+#   - a DEAD COLUMN is flagged at the same detector position in EVERY frame, so no dither
+#     recovers it; interpolation is the only way to make the weight uniform, and it competes
+#     with having nothing at all.
+#   - a COSMIC RAY hits ONE frame at a random position, and the other frames already cover
+#     that sky properly. Filling it adds NO information -- it only makes the weight map claim
+#     N frames where N-1 exist, so the noise map goes optimistic by ~sqrt(N/(N-1)) (15% for
+#     the usual 4-frame ACS visit) exactly where the track ran. On J1213+6708 and J1250+0523
+#     that track crosses the Einstein ring, i.e. the pixels whose noise the likelihood is most
+#     sensitive to.
+# Measured cost of NOT filling, on those two lenses: a +9% to +11% noise ridge along the track,
+# with the cosmic ray itself cleanly removed from the science image either way. So this flag
+# buys a cosmetically uniform noise map and pays for it with a knowingly wrong one. It exists
+# so that trade can be MEASURED rather than argued; it is not the science default and there is
+# no campaign behind it. The honest alternative, if a track is genuinely intolerable, is to
+# drop the affected exposure -- that keeps the noise map true and costs real exposure time.
+_p.add_argument('--crfill', action=argparse.BooleanOptionalAction, default=False,
+                help='interpolate LACosmic-flagged cosmic rays (DQ 4096) in SCI+ERR and '
+                     'un-flag them before drizzling, writing to the parallel '
+                     'data/drizzled_crfill/ tree. Removes the CR weight/noise residue at the '
+                     'cost of a noise map that is optimistic by ~sqrt(N/(N-1)) there -- see '
+                     'the block comment above and AGENTS.md before using it. Requires --cr '
+                     'with --cr-method lacosmic.')
+# --crfill-radius makes the fill TARGETED instead of frame-wide, which is the difference
+# between a repair and a blanket. Plain --crfill fills every LACosmic flag in every frame
+# (~1.4% of all pixels on a typical ACS visit), so the noise map goes optimistic wherever ANY
+# cosmic ray landed, not just on the track that crosses the science region. With a radius,
+# only CR tracks that reach within that angular distance of the lens are filled and everything
+# else keeps its honest weight deficit.
+#
+# The selection is by CONNECTED COMPONENT, not by pixel: a track that reaches into the region
+# is filled ALONG ITS WHOLE LENGTH. Clipping a track at the circle instead would leave it half
+# filled and half flagged, i.e. a step in the weight map partway along the track -- a worse
+# artifact than the ridge being removed.
+_p.add_argument('--crfill-radius', type=float, default=None, metavar='ARCSEC',
+                help='with --crfill, fill ONLY the cosmic-ray tracks that come within this '
+                     'many arcsec of the lens (whole connected tracks, not clipped at the '
+                     'circle). Default: no radius, i.e. fill every CR in every frame. Needs a '
+                     'lens with coordinates in info/slacs_coords.py.')
+# --crfill-min-area targets the STREAK rather than an aperture. --crfill-radius alone still
+# fills every little CR hit that happens to land near the lens (193 tracks on J1213+6708, 283
+# on J1250+0523 -- almost all of them a few px each), when the thing actually worth repairing
+# is the one long track crossing the science region. A track's PIXEL COUNT separates them
+# cleanly: ordinary CR hits on ACS are <20 px, the J1213 streak is ~400 px in its own frame.
+# Combine the two and the selection is "the big track(s) that reach the lens", which is the
+# smallest edit that fixes the defect the user can see.
+_p.add_argument('--crfill-min-area', type=int, default=0, metavar='PX',
+                help='with --crfill, fill only cosmic-ray tracks of at least this many pixels '
+                     '(per frame, per chip). Default 0 = every track. Use with '
+                     '--crfill-radius to target one streak instead of an aperture-full of CR '
+                     'hits; the run prints every track it keeps so the choice is auditable.')
+# --crfill-n-tracks: "fill the N biggest streaks". Ranked GLOBALLY across every frame and
+# chip, not N-per-frame, because the thing being counted is streaks visible in the stamp and
+# they generally sit in different exposures (J1250+0523 has four on the ring, and they are not
+# all in one frame). Applied after --crfill-radius and --crfill-min-area, so the usual recipe
+# is "the N biggest tracks that reach the lens". Needs a first pass over the frames to rank
+# them, which is why it is a separate flag rather than a tweak to min-area.
+_p.add_argument('--crfill-n-tracks', type=int, default=0, metavar='N',
+                help='with --crfill, fill only the N LARGEST cosmic-ray tracks that pass the '
+                     'other cuts, ranked across all frames and chips together. Default 0 = no '
+                     'limit. "--crfill-radius 3 --crfill-n-tracks 4" = the four biggest '
+                     'streaks near the lens, wherever they live.')
+# Frame exclusion. The third option on the cosmic-ray menu is "drop the affected exposure",
+# and this is how you build that product to compare against. Rootnames, comma-separated
+# (j9op28baq), matched against the FLC filename. The excluded frames never reach the work
+# directory, so every later stage -- bestrefs, alignment, LACosmic, both drizzle passes and
+# the provenance JSONs -- sees a short visit, which is exactly what a real frame drop is.
+# Lands in its own '_drop' variant tree so it can never be mistaken for the science product.
+_p.add_argument('--exclude-frames', default=None, metavar='ROOTNAME[,ROOTNAME...]',
+                help='drop these exposures from the drizzle entirely (rootnames, '
+                     'comma-separated). Products go to the parallel data/drizzled[_...]_drop/ '
+                     'tree. This is the "drop the CR-affected exposure" option -- it costs '
+                     'sqrt(N/(N-1)) noise over the WHOLE stamp, so build it to compare, not '
+                     'by default.')
 # Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
 _p.add_argument('--lacosmic-sigclip', type=float, default=None)
@@ -161,6 +242,21 @@ ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # eroded a real arc knot (masked in all frames -> weight-0 noise hole).
 _cr_ovr = info_json.entry(
     os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+# --crfill has nothing to act on unless LACosmic actually wrote DQ 4096 this run: driz_cr
+# writes that bit during the drizzle (too late to fill), and --no-cr writes it never. Fail
+# loudly rather than silently producing a 'crfill' tree that is just the standard reduction
+# under a different name.
+if _a.crfill_radius is not None and not _a.crfill:
+    _p.error('--crfill-radius has no effect without --crfill')
+if _a.crfill_min_area and not _a.crfill:
+    _p.error('--crfill-min-area has no effect without --crfill')
+if _a.crfill_n_tracks and not _a.crfill:
+    _p.error('--crfill-n-tracks has no effect without --crfill')
+_excluded = [r.strip() for r in (_a.exclude_frames or '').split(',') if r.strip()]
+if _a.crfill and not (_a.cr and _a.cr_method == 'lacosmic'):
+    _p.error('--crfill requires --cr with --cr-method lacosmic (it fills the DQ 4096 flags '
+             'LACosmic writes pre-drizzle; driz_cr writes them during the drizzle, and '
+             '--no-cr not at all)')
 if _a.lacosmic_sigclip is None:
     _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
 if _a.lacosmic_objlim is None:
@@ -174,7 +270,8 @@ if _cr_ovr:
 # working dir are variant-suffixed so bcfill and the standard reduction never collide --
 # in particular the work dir must stay separate, or a bcfill run's filled FLCs would be
 # what a later PSF-injection re-drizzle of the *standard* product reads back.
-_variant    = 'bcfill' if _a.bcfill else ''
+_variant    = '_'.join([t for t, on in (('bcfill', _a.bcfill), ('crfill', _a.crfill),
+                                       ('drop', bool(_excluded))) if on])
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(cutout_paths.drizzled_root(ws_path, _variant), sample, lens, filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
@@ -273,6 +370,190 @@ def fill_bad_columns(files):
             h.flush()
     print(f'  bcfill: interpolated + un-flagged {total} bad-column px across '
           f'{len(files)} frame(s)')
+
+# ── Cosmic-ray fill (--crfill) ─────────────────────────────────────────────────
+# The sibling of fill_bad_columns, run on LACosmic's DQ 4096 flags instead of the dead-column
+# bits. Why it is a DIFFERENT trade from bcfill -- and why it is opt-in, undefaulted and
+# uncampaigned -- is argued at the --crfill flag above; do not read this as an endorsement.
+#
+# Interpolation differs from bcfill's in one way that matters. A dead column is narrow in
+# every ROW it crosses, so bcfill's row-wise interpolation always spans a few pixels. A cosmic
+# ray is an arbitrary blob at an arbitrary angle: a near-horizontal track is narrow in every
+# COLUMN and enormous in every row, and interpolating it row-wise would smear a real gradient
+# across tens of pixels. So each flagged pixel is filled along whichever axis its own gap is
+# SHORTER, and the per-frame maximum gap actually used is printed -- if that number is large,
+# the fill is guessing and the frame is a candidate for dropping instead.
+_CRFILL_BIT = 4096
+
+
+def _interp_axis(arr, bad, axis):
+    """Linear interpolation across `bad` along one axis. Returns (filled, gap) where gap is
+    the number of contiguous bad pixels that pixel sat in (np.inf where it could not be
+    filled -- fewer than 2 good anchors on that line)."""
+    a = arr if axis == 1 else arr.T
+    b = bad if axis == 1 else bad.T
+    out = a.astype(np.float32, copy=True)
+    gap = np.full(b.shape, np.inf, dtype=np.float32)
+    for i in np.where(b.any(axis=1))[0]:
+        row = b[i]
+        xg = np.where(~row)[0]
+        xb = np.where(row)[0]
+        if len(xg) < 2:
+            continue
+        out[i, xb] = np.interp(xb, xg, a[i, xg])
+        # contiguous-run length for each bad pixel on this line
+        brk = np.r_[0, np.where(np.diff(xb) != 1)[0] + 1, len(xb)]
+        for lo, hi in zip(brk[:-1], brk[1:]):
+            gap[i, xb[lo:hi]] = hi - lo
+    return (out, gap) if axis == 1 else (out.T, gap.T)
+
+
+def _select_tracks(bad, hdul, sci_ext, lens_coord, radius_arcsec, min_area,
+                   with_ids=False, only_ids=None):
+    """Restrict a CR mask to the connected tracks worth filling.
+
+    Two independent cuts, both applied to WHOLE tracks and never clipped mid-track (a track
+    half filled and half flagged puts a step in the weight map partway along it, which is a
+    worse artifact than the ridge being removed):
+
+      radius_arcsec -- the track reaches within this distance of the lens. Targets a REGION.
+      min_area      -- the track is at least this many pixels. Targets the STREAK: ordinary
+                       ACS cosmic-ray hits are <20 px, a long track is hundreds, so the pixel
+                       count separates 'the thing you can see in the noise map' from the
+                       couple of hundred incidental hits that share the aperture with it.
+
+    Returns (mask, kept_info, n_total) where kept_info lists (area, r_arcsec) per kept track
+    so the selection can be printed and audited. A chip that does not contain the lens keeps
+    nothing under a radius cut, which is the right answer."""
+    from scipy.ndimage import label as _label
+    lab, n_tracks = _label(bad, np.ones((3, 3)))
+    if n_tracks == 0:
+        return bad, [], 0
+    areas = np.bincount(lab.ravel())
+    keep = set(np.nonzero(areas >= max(min_area, 1))[0].tolist()) - {0}
+    w = WCS(hdul[sci_ext].header, hdul)
+    x0, y0 = w.all_world2pix(lens_coord.ra.deg, lens_coord.dec.deg, 0) if lens_coord is not None else (np.nan, np.nan)
+    # arcsec -> detector px from this chip's own CD matrix, not an assumed 0.05"
+    scale = np.sqrt(np.abs(np.linalg.det(w.pixel_scale_matrix))) * 3600.0
+    yy, xx = np.mgrid[0:bad.shape[0], 0:bad.shape[1]]
+    dist = np.hypot(yy - y0, xx - x0) * scale
+    if radius_arcsec is not None:
+        near_ids = set(np.unique(lab[(dist <= radius_arcsec) & bad]).tolist()) - {0}
+        keep &= near_ids
+    if only_ids is not None:
+        keep &= set(only_ids)
+    if not keep:
+        return np.zeros_like(bad), [], n_tracks
+    keep_arr = np.fromiter(sorted(keep), dtype=int)
+    mask = np.isin(lab, keep_arr)
+    if with_ids:
+        info = [(int(i), int(areas[i]), float(dist[lab == i].min())) for i in keep_arr]
+    else:
+        info = [(int(areas[i]), float(dist[lab == i].min())) for i in keep_arr]
+    return mask, info, n_tracks
+
+
+def _rank_tracks(files, lens_coord, radius_arcsec, min_area, n_tracks):
+    """First pass for --crfill-n-tracks: enumerate every candidate track in every frame and
+    chip, rank them by area ACROSS ALL OF THEM, and return {(basename, ext): {label ids}} for
+    the N biggest. Ranking globally is the point -- the streaks you can count in the stamp
+    generally sit in different exposures, so 'the 4 biggest' must not mean '4 per frame'."""
+    from scipy.ndimage import label as _label
+    cand = []
+    for fname in files:
+        with fits.open(fname) as h:
+            for sci_e, _, dq_e in [(1, 2, 3), (4, 5, 6)]:
+                bad = (h[dq_e].data & _CRFILL_BIT) > 0
+                if not bad.any():
+                    continue
+                sel, info, _ = _select_tracks(bad, h, sci_e, lens_coord,
+                                              radius_arcsec, min_area, with_ids=True)
+                for lab_id, area, dist in info:
+                    cand.append((area, dist, os.path.basename(fname), sci_e, lab_id))
+    cand.sort(key=lambda t: -t[0])
+    keep = {}
+    for area, dist, base, ext, lab_id in cand[:max(n_tracks, 0)]:
+        keep.setdefault((base, ext), set()).add(lab_id)
+    return keep, len(cand)
+
+
+def fill_cosmic_rays(files, lens_coord=None, radius_arcsec=None, min_area=0, n_tracks=0):
+    """In-place per FLC: interpolate SCI+ERR across DQ 4096 and clear that bit.
+
+    Each pixel is filled along the axis with the shorter contiguous gap, so a track at any
+    angle is crossed the narrow way. Pixels with no usable anchors on either axis are LEFT
+    FLAGGED -- an unfillable pixel keeps the honest weight deficit rather than getting a
+    fabricated value.
+
+    `radius_arcsec` and `min_area` narrow what is filled -- a region and a streak-size cut
+    respectively, see _select_tracks. With neither, every cosmic ray in every frame is filled,
+    which is ~1.4% of all pixels and almost never what you want.
+    """
+    targeted = radius_arcsec is not None or min_area > 0 or n_tracks > 0
+    only = None
+    if n_tracks:
+        only, n_cand = _rank_tracks(files, lens_coord, radius_arcsec, min_area, n_tracks)
+        print(f'  crfill: ranking {n_cand} candidate track(s) across all frames/chips, '
+              f'keeping the {min(n_tracks, n_cand)} largest')
+    total = filled = 0
+    worst = 0
+    all_tracks = 0
+    kept = []
+    per_frame = {}
+    for fname in files:
+        with fits.open(fname, mode='update') as h:
+            for sci_e, err_e, dq_e in [(1, 2, 3), (4, 5, 6)]:          # both WFC chips
+                sci, err, dq = h[sci_e].data, h[err_e].data, h[dq_e].data
+                bad = (dq & _CRFILL_BIT) > 0
+                total += int(bad.sum())
+                if not bad.any():
+                    continue
+                if targeted:
+                    ids = None if only is None else only.get((os.path.basename(fname), sci_e), set())
+                    bad, info, nt = _select_tracks(bad, h, sci_e, lens_coord,
+                                                   radius_arcsec, min_area, only_ids=ids)
+                    kept += [(os.path.basename(fname), sci_e) + t for t in info]
+                    all_tracks += nt
+                    if not bad.any():
+                        continue
+                s_row, g_row = _interp_axis(sci, bad, 1)
+                s_col, g_col = _interp_axis(sci, bad, 0)
+                e_row, _     = _interp_axis(err, bad, 1)
+                e_col, _     = _interp_axis(err, bad, 0)
+                use_row = bad & (g_row <= g_col) & np.isfinite(g_row)
+                use_col = bad & (g_col <  g_row) & np.isfinite(g_col)
+                sci[use_row] = s_row[use_row];  sci[use_col] = s_col[use_col]
+                err[use_row] = e_row[use_row];  err[use_col] = e_col[use_col]
+                done = use_row | use_col
+                filled += int(done.sum())
+                per_frame[fname] = per_frame.get(fname, 0) + int(done.sum())
+                if done.any():
+                    worst = max(worst, int(np.minimum(g_row, g_col)[done].max()))
+                # only un-flag what was actually filled
+                dq[done] &= ~_CRFILL_BIT
+                h[dq_e].data = dq
+            h.flush()
+    if targeted:
+        crit = []
+        if radius_arcsec is not None:
+            crit.append(f'reach within {radius_arcsec:g}" of the lens')
+        if min_area:
+            crit.append(f'are >= {min_area} px')
+        if n_tracks:
+            crit.append(f'are among the {n_tracks} largest')
+        print(f'  crfill: TARGETED -- kept {len(kept)} of {all_tracks} CR tracks '
+              f'(tracks that {" and ".join(crit)}; whole tracks, never clipped)')
+        for fn, ext, area, r in sorted(kept, key=lambda t: -t[2])[:10]:
+            print(f'      {fn} chip{(ext + 2) // 3}: {area:5d} px track, '
+                  f'closest approach {r:.2f}" to the lens')
+        if len(kept) > 10:
+            print(f'      ... and {len(kept) - 10} smaller track(s)')
+        for fn in files:
+            print(f'      {os.path.basename(fn)}: {per_frame.get(fn, 0)} px filled')
+    print(f'  crfill: interpolated + un-flagged {filled} of {total} CR px across '
+          f'{len(files)} frame(s); widest gap crossed {worst} px')
+    print('  NOTE: filled pixels carry no independent information -- the noise map on them is '
+          'now optimistic by ~sqrt(N/(N-1)). See --crfill in this script and AGENTS.md.')
 
 # ── Subprocess mode: run only the no-CR drizzle pass with pre-aligned files ───
 # Launched by the main process after the CR pass to get a clean memory slate.
@@ -483,6 +764,9 @@ os.environ['jref']            = os.path.join(
 # the header, not the _obs_ids set, so it also catches already-cached files from
 # before this check existed without requiring a re-download.
 for f in glob.glob(os.path.join(data_path, '*flc.fits')):
+    if any(root in os.path.basename(f) for root in _excluded):
+        print(f'  EXCLUDING {os.path.basename(f)} from the drizzle (--exclude-frames)')
+        continue
     if fits.getheader(f)['EXPTIME'] <= MIN_EXPTIME:
         print(f'  excluding {os.path.basename(f)} from drizzle input: '
               f"EXPTIME={fits.getheader(f)['EXPTIME']}s <= {MIN_EXPTIME:.0f}s")
@@ -628,6 +912,14 @@ if do_cr:
     if _a.cr_method == 'lacosmic':
         print('\n=== LACosmic CR masking ===')
         run_lacosmic(flc_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+        # --crfill goes HERE: after the flags exist, before anything drizzles them away.
+        if _a.crfill:
+            print('\n=== crfill: filling LACosmic cosmic rays (DQ 4096) pre-drizzle ===')
+            if _a.crfill_radius is not None and _lc is None:
+                raise SystemExit('--crfill-radius needs the lens coordinate, and this lens is '
+                                 'not in info/slacs_coords.py')
+            fill_cosmic_rays(flc_files, lens_coord=_lc, radius_arcsec=_a.crfill_radius,
+                             min_area=_a.crfill_min_area, n_tracks=_a.crfill_n_tracks)
         print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')
         astrodrizzle.AstroDrizzle(flc_files,
                                    output='acs_wfc_flc_cr',
@@ -677,9 +969,11 @@ if do_cr:
             [sys.executable, os.path.abspath(__file__),
              '--lens', lens, '--filt', filt, '--sample', sample,
              '--wht-type', _a.wht_type, '--_subprocess']
-            # bcfill only affects which work dir the subprocess reads (the FLCs there are
-            # already filled); pass the flag so it resolves data/drizzle_files_bcfill/.
-            + (['--bcfill'] if _a.bcfill else []),
+            # bcfill/crfill only affect which work dir the subprocess reads (the FLCs there
+            # are already filled); pass the flags so it resolves the right
+            # data/drizzle_files[_bcfill][_crfill]/ tree.
+            + (['--bcfill'] if _a.bcfill else [])
+            + (['--crfill'] if _a.crfill else []),
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
         )
         sys.stdout.write(_result.stdout)
@@ -738,10 +1032,15 @@ for fname in _copy:
 
 # Record the bad-column fill in the product header so a stamp cut from data/drizzled_bcfill/
 # is self-identifying, not distinguishable only by which tree it came out of.
-if _a.bcfill:
+if _a.bcfill or _a.crfill or _excluded:
     for fname in _copy:
         with fits.open(os.path.join(output_path, fname), mode='update') as _h:
-            _h[0].header['BCFILL'] = (True, 'ACS bad columns (DQ 4|128) interpolated pre-drizzle')
+            if _a.bcfill:
+                _h[0].header['BCFILL'] = (True, 'ACS bad columns (DQ 4|128) interpolated pre-drizzle')
+            if _a.crfill:
+                _h[0].header['CRFILL'] = (True, 'LACosmic CRs (DQ 4096) interpolated pre-drizzle')
+            if _excluded:
+                _h[0].header['DROPFRMS'] = (','.join(_excluded), 'exposures excluded (--exclude-frames)')
             _h.flush()
 
 # ── Plots ──────────────────────────────────────────────────────────────────────

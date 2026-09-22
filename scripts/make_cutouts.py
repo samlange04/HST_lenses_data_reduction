@@ -438,15 +438,31 @@ def main():
                         'supersedes standard for the bands it covers -- and carries BCFILL=T '
                         'from the drizzled header. Removes the ACS dead-column noise stripe; '
                         'see AGENTS.md / scripts/bolton_investigations. ACS/WFPC2 bands only.')
+    p.add_argument('--crfill', action='store_true', default=False,
+                   help='cut from the cosmic-ray-filled re-drizzle '
+                        '(data/drizzled_crfill/, or data/drizzled_bcfill_crfill/ with '
+                        '--bcfill, produced by drizzle_acs_wfc.py --crfill). Lands in the '
+                        'SAME cutout dir and carries CRFILL=T from the drizzled header. '
+                        'NOT a science default: it removes a cosmic ray\'s weight/noise '
+                        'residue by fabricating those pixels, which makes the noise map '
+                        'optimistic exactly where the track ran -- read --crfill in '
+                        'drizzle_acs_wfc.py and AGENTS.md before using it.')
+    p.add_argument('--drop', action='store_true', default=False,
+                   help='cut from the frame-dropped re-drizzle (the ..._drop/ tree produced '
+                        'by drizzle_acs_wfc.py --exclude-frames). A comparison product: it '
+                        'has fewer exposures than the science stamp, so it is noisier '
+                        'EVERYWHERE. Which frames were dropped is in the DROPFRMS header '
+                        'card. Cut it to --output, not over the science tree.')
     p.add_argument('--force', action='store_true', default=False,
-                   help='overwrite an existing bcfill stamp with a standard (non---bcfill) '
-                        'cut. Refused without this -- see the check below.')
+                   help='overwrite an existing bcfill/crfill stamp with a cut that does not '
+                        'carry that reduction. Refused without this -- see the check below.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
                         'data/cutouts[_<size>arcsec]/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
-    variant = 'bcfill' if a.bcfill else ''
+    variant = '_'.join([t for t, on in (('bcfill', a.bcfill), ('crfill', a.crfill),
+                                       ('drop', a.drop)) if on])
     drizzled_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
                                 a.sample, a.lens, a.filt)
     output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size),
@@ -459,14 +475,20 @@ def main():
     # different reduction. Nothing downstream would notice, so refuse it here instead. The
     # provenance is read from the stamp's own BCFILL card, which it inherits from the
     # drizzled product (drizzle_acs_wfc.py / drizzle_wfpc2_wf3.py stamp it).
-    if not a.bcfill and not a.force:
+    # CRFILL is guarded the same way and for a stronger reason: a crfill stamp differs from
+    # the standard one ONLY in the noise map (and only along one track), so overwriting one
+    # with the other -- in either direction -- is invisible in the science image.
+    if not a.force:
+        _asked = {'BCFILL': a.bcfill, 'CRFILL': a.crfill}
         for existing in sorted(glob.glob(os.path.join(output_dir, 'cutout*_sci.fits'))):
-            if fits.getheader(existing).get('BCFILL', False):
-                sys.exit(
-                    f"{a.lens} {a.filt}: {os.path.basename(existing)} is a bcfill stamp "
-                    f"(BCFILL=T) and a standard cut would overwrite it.\n"
-                    f"  Re-cut it with --bcfill, or pass --force to deliberately replace "
-                    f"the bcfill product with the standard reduction.")
+            _hdr = fits.getheader(existing)
+            for _card, _want in _asked.items():
+                if _hdr.get(_card, False) and not _want:
+                    sys.exit(
+                        f"{a.lens} {a.filt}: {os.path.basename(existing)} is a {_card.lower()} "
+                        f"stamp ({_card}=T) and this cut would overwrite it.\n"
+                        f"  Re-cut it with --{_card.lower()}, or pass --force to deliberately "
+                        f"replace it with the reduction you asked for.")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -652,6 +674,8 @@ def main():
                      a.filt, {
         'size_arcsec': a.size,
         'bcfill': bool(a.bcfill),
+        'crfill': bool(a.crfill),
+        'dropped_frames': bool(a.drop),
         'drizzle_pass': drizzle_pass,
         'center_source': peak_src,
         'offset_arcsec': round(offset, 4),
