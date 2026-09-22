@@ -255,7 +255,31 @@ data/
   mosaics_<S>arcsec/<sample>/             ← QC mosaics of the <S>" stamps
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
+
+diagnostics/                            ← QC + investigation figures, GITIGNORED IN FULL
+  arc_detection/<sample>/               ← the only subfolder a script writes (detect_arcs.py)
+  masks/                                ← is the contaminant-mask boundary right?
+  feature_vetting/                      ← is this feature lensed?
+  cr_defects/                           ← instrumental: CRs, LACosmic scans, dead columns
+  gui/                                  ← screenshots of the interactive tools
 ```
+
+Nothing under `diagnostics/` survives a clone, so every figure there must be regenerable and
+the **conclusions belong in this file, not in the pixels** — never cite a figure without the
+AGENTS.md note that goes with it. It was a flat listing until **2026-09-21**; the per-file
+convention `<lens>_<filt>_<topic>.png` is unchanged, and `diagnostics/README.md` restates the
+split for anyone browsing the folder directly.
+
+**What goes in which `diagnostics/` subfolder.** `arc_detection/` is the only one a script
+owns — `detect_arcs.py` writes it (`--out-dir` defaults to `arc_detection/<sample>/`), so leave
+its layout alone. The other four are for hand analysis and split **by the question asked**, not
+by lens: `masks/` = *is the contaminant-mask boundary in the right place* (mask checks,
+proposals, pull-backs); `feature_vetting/` = *is this feature lensed* (colour against the
+deflector, counter-image searches, shear/elongation, diffuse-arc and galaxy-model residuals);
+`cr_defects/` = *instrumental, not astrophysical* (cosmic-ray tracks and their weight/noise
+residue, LACosmic scans, dead columns, per-frame drizzle comparisons); `gui/` = screenshots of
+the interactive tools. A figure that answers two questions goes with the question it was made
+to answer, and any AGENTS.md note that cites it names the full path.
 
 ## Instrument-specific scripts
 
@@ -561,6 +585,31 @@ variance** correct but says nothing about the **off-diagonal covariance**: on J1
 sky the empirical pixel RMS was ~1.47× the ERR-map prediction (pixfrac 0.8; pixfrac 1.0
 shrinks but doesn't remove it).
 
+**Measured 2026-09-21, and the ratio above needs checking.** On blank sky (r > 4.5″, masked
+pixels excluded) the empirical per-pixel rms comes out **BELOW** the noise map, by the amount
+the drizzle correlation predicts — which is the opposite direction to the "1.47× the ERR-map
+prediction" quoted above. Two independent estimators agree exactly (a 25 px local-median
+subtraction, and a lag-8 px pair-difference that is immune to the correlation), and the deficit
+tracks the **`CASR`** factor `make_cutouts.py` already stamps in each noise header:
+
+| band / detector | measured 1/(emp÷map) | `CASR` in the header | adjacent-pixel corr |
+|---|---|---|---|
+| F606W WFPC2/PC | **2.45** | 2.39 | 0.58 |
+| F555W ACS/WFC | 1.31 | 1.50 | 0.24 |
+| F814W ACS/WFC | 1.35 | 1.50 | 0.24 |
+| F606W WFC3/UVIS | 1.20 | 1.30 | 0.17 |
+| F814W WFC3/UVIS | 1.12 | 1.30 | 0.16 |
+
+So **the noise maps are behaving as designed** — `1/sqrt(WHT)` is the uncorrelated-equivalent
+σ, and a blank-sky pixel rms reads low by ~R because drizzle smooths. Practical consequences:
+(a) **do not "correct" a noise map because blank sky looks quiet** — that is the expected
+signature, not an error; (b) the analytic `CASR` is ~10–13% high against the measurement for
+ACS and UVIS and spot-on for WFPC2; (c) **WFPC2 F606W is by far the most correlated band**
+(R≈2.4, neighbouring pixels 58% correlated), which is worth remembering before quoting a
+per-pixel S/N on a WFPC2-only lens like J1403+0006. **Open item:** reconcile the 1.47×
+sentence above with these numbers — it may have been measured against a different predictor,
+but as written it points the correction the wrong way.
+
 **Modelling implication:** a per-pixel independent-Gaussian likelihood (diagonal covariance)
 does not bias the best-fit but mis-estimates *uncertainties/evidence*, worse in the
 oversampled F606W/F160W than in native-scale F814W. The residual correlation factor is
@@ -619,6 +668,346 @@ option 3).
   comparison figures (`redrizzle[_wfpc2]_*bcfill_compare.png`) were deleted with
   `diagnostics/bolton_test_outputs/` on 2026-09-13; rerun the scripts, or read them out of git
   history, to see them again.
+
+**DO NOT `--bcfill` A COSMIC RAY — the two defects are opposites (asked and measured
+2026-09-21, J1213+6708 and J1250+0523 f814W).** A dead column is flagged at the *same detector
+position in every frame*, so no dither recovers it and interpolation is the only way to make
+the weight uniform; a cosmic ray hits *one frame at a random position*, and the other frames
+cover that sky perfectly well. Filling a CR track would therefore add **no information at
+all** — it would only make the weight map claim 4 frames where 3 exist, leaving the noise
+optimistic by √(4/3) ≈ 15% along the track. Both tracks here run through the Einstein ring,
+which is exactly where an optimistic noise map biases the likelihood, so the trade is worse
+than the cosmetic one bcfill already documents. What LACosmic left behind was measured and is
+small and *honest*:
+- **J1213+6708 f814W**: one frame of four (`j9op28baq`) carries a ~12″ track at image PA 74.5°
+  passing **0.68″ from the deflector**. Residual noise ridge ~3 px wide: **+11% inside
+  r < 1.8″** (noise/local 1.152 on-track vs 1.039 off), ~+1% median further out.
+- **J1250+0523 f814W**: a fatter, shorter bar, **2.1″ × 0.6″ at r = 0.87–1.71″** (i.e. across
+  the ring, screen up-right), **+9%** noise (1.112 vs 1.019), weight loss 19% median / 45%
+  peak.
+- **Both were cleanly REMOVED from the science image** — there is nothing to mask. On-track
+  radial-subtracted flux matches off-track (J1250 +0.69σ vs +0.62σ control; J1213 has *fewer*
+  >3σ pixels on-track than off, 4.3% vs 5.4%), and **neither feature exists in the lens's
+  other band** (J1213 f606W and J1250 f555W read on-track = off-track in every statistic),
+  which is the cheap band test that proves a per-exposure event rather than sky.
+- **The discriminator to reuse**: with `final_wht_type=ERR` a CR pixel already carries a huge
+  ERR and so contributes almost no weight, which is why rejecting it costs only ~10% and why
+  `wht_cr/wht_nocr` under-reads the defect. Compare **noise / local-median** on the two bands
+  of the same lens — source structure appears in both, a CR only in one. Figures:
+  `diagnostics/cr_defects/J1213+6708_f814W_cr_streak.png`, `J1250+0523_defect_zoom.png`,
+  `*_single_frames.png` (the per-frame drizzles, where the offending exposure is obvious).
+- Caveat on the per-frame `*_single_sci.fits` in `data/drizzle_files/`: they are **not
+  mutually registered** in this repo's work dirs (the galaxy lands tens of px apart between
+  frames), so use them to identify *which exposure* carries a CR, never to measure *where*.
+
+### `--crfill` — the CR-fill, wired up 2026-09-21 so the trade can be measured
+
+`drizzle_acs_wfc.py --crfill` and `make_cutouts.py --crfill`. **Same mechanic as `--bcfill`,
+different DQ bit and a different trade.** After `run_lacosmic` writes DQ 4096 and before
+anything drizzles, `fill_cosmic_rays()` interpolates SCI *and* ERR across each flagged pixel
+and clears the bit, so the drizzle weights it like any other and the track leaves no
+weight/noise residue. Products go to `data/drizzled_crfill/`, or
+`data/drizzled_bcfill_crfill/` with both (the `_variant` tag composes), and carry
+**`CRFILL=True`** in the header exactly as bcfill carries `BCFILL`.
+
+**STREAK-REPAIRED PRODUCTS ARE NOW THE STANDARD ON TWO BANDS (2026-09-22, user's call), and
+`info/lens_crfill.json` is the list.** Read that file before using either stamp; it records the
+exact command, the tracks kept (frame, chip, area, closest approach), pixels filled, the ridge
+before and after, and what moved downstream.
+
+| sample / lens / band | tracks | px filled | ridge | astrometry moved? |
+|---|---|---|---|---|
+| `slacs_gold` **J1213+6708 f814W** | 1 of 220,590 | **210** of 941,414 | **+11.0% → +1.6%** | **YES — 180 mas** |
+| `slacs_gold` **J1250+0523 f814W** | 4 of 258,884 | **256** of 1,113,026 | **+9.2% → +1.9%** | no (1 mas) |
+
+- **What you are getting.** The cosmic-ray weight/noise ridge across the science region is
+  gone, and **the filled pixels' noise is optimistic by √(4/3) = 1.155** — 210 px on J1213,
+  256 px on J1250, and nothing else. That confinement is measured, not assumed: a raw
+  subtraction against a zero-fill null on an identical grid changed **392 px of 57,600**, all
+  on the track. Nothing else in either stamp moved, and neither arc is touched (net flux
+  +0.1%).
+- **Settings differ per lens, on evidence.** J1213 needed one track (a single track already
+  matched a frame-wide fill there, +2.4% vs +2.3%); J1250 needed four, because three smaller
+  tracks also sit on its ring and one track only reached +2.8% against +1.4% frame-wide.
+  **Do not copy one lens's flags to the other** — count the streaks in the noise map first.
+- **J1213+6708 also changed ASTROMETRY, and that is the bigger deal.** It is the `--align
+  tweakreg` lens, so the re-drizzle lands **180 mas (3.6 px)** from the archived product; the
+  measured content shift was +1.47 rows, +0.01 cols. Its `cutout_cr_mask.fits` and
+  `cutout_cr_mask_arcs.fits` were **shifted by the integer (+1, 0) and NOT redrawn**, leaving
+  a **0.47 px residual** (`MASKSHFT` / `MASKSHRS` header cards). That lens has no positions
+  file, so nothing else needed re-deriving — but any *future* f814W-proposed mask on it starts
+  from a mask that is half a pixel off.
+- **J1250+0523 cost nothing**: `CRPIX` is identical to the archived stamp, so its contaminant
+  mask, arc mask and `cutout_cr_positions.json` all stay valid unchanged.
+- Rebuilt on both: `cutout_cr_dataset.png`, `cutout_cr_mask_arcs.png`, and
+  `data/mosaics/slacs_gold/`. Figure: `diagnostics/cr_defects/as_is_vs_streak_repaired_snr.png`.
+- **The superseded products are the plain bcfill stamps from the 2026-08-13 campaign.** They
+  are recoverable by re-running the same drizzle without `--crfill` — except on J1213+6708,
+  where a re-run does **not** reproduce the archived astrometry (see the re-drizzle trap).
+
+**`--crfill` is otherwise wired up, not adopted.** There is no campaign behind it, nothing downstream cuts
+`--crfill` by default, and the argument against it is directly above: a CR hits one frame at
+a random position, so filling it adds no information and only makes the weight map claim N
+frames where N−1 exist. **Use it to compare against the other two options, which are
+"drop the affected exposure" (honest noise, real exposure lost) and "keep as-is" (a +9–11%
+noise ridge that is correct).**
+
+- **Guarded**: `--crfill` without `--cr --cr-method lacosmic` is a hard error, because
+  `driz_cr` writes 4096 *during* the drizzle (too late to fill) and `--no-cr` never writes it
+  — otherwise you would get a `crfill` tree that is just the standard reduction renamed.
+- **The interpolation is NOT bcfill's.** A dead column is narrow in every *row* it crosses, so
+  bcfill interpolates row-wise, always. A cosmic ray is an arbitrary blob at an arbitrary
+  angle: a near-horizontal track is narrow in every *column* and enormous in every row, and
+  filling it row-wise would smear a real gradient across tens of pixels. So **each pixel is
+  filled along whichever axis its own contiguous gap is shorter**, and the run prints the
+  **widest gap actually crossed** — if that is large the fill is guessing, and the frame is a
+  candidate for dropping instead. Unit-tested on synthetic vertical/horizontal/diagonal tracks:
+  exact on a linear ramp, correct axis chosen in each case.
+- **A pixel with no usable anchors on either axis is LEFT FLAGGED**, not fabricated — it keeps
+  the honest weight deficit — and the count is printed.
+- **`make_cutouts.py` guards both cards in both directions now.** A `crfill` stamp differs
+  from the standard one *only in the noise map, along one track*, so overwriting either way is
+  invisible in the science image. Cutting without `--crfill` over a `CRFILL=T` stamp (or
+  without `--bcfill` over `BCFILL=T`) is refused unless `--force`. `info/lens_cutout_qc.json`
+  gains a `crfill` key beside `bcfill`.
+
+**MEASURED on J1213+6708 f814W (2026-09-21), the three options side by side.** Ran
+`--bcfill --crfill`, cut a stamp from it and compared against the tracked stamp in each one's
+own geometry (the re-drizzle lands on a slightly different grid — see the trap below), on the
+same physical line and the same lens centre:
+
+**All four options built and measured, both lenses (2026-09-21).** Figure:
+`diagnostics/cr_defects/cr_options_snr_fourway.png` — S/N side by side, common stretch per row.
+
+| | NDRIZIM | EXPTIME | defect ridge | **median S/N inside 2″** | stamp median noise | noise map true? |
+|---|---|---|---|---|---|---|
+| **J1213+6708 f814W** | | | | | | |
+| as-is | 8 | 2240 s | **+11.0%** | **32.95** | 0.009360 | **yes** |
+| frame drop (`j9op28baq`) | 6 | 1680 s | +1.3% | **28.83 (−12.5%)** | 0.010828 (+15.7%) | yes |
+| crfill frame-wide | 8 | 2240 s | +2.3% | 33.32 | 0.009286 (−0.8%) | no, **everywhere** |
+| crfill streak-targeted | 8 | 2240 s | +2.4% | 33.20 | **0.009351 (unchanged)** | no, on 210 px |
+| **J1250+0523 f814W** | | | | | | |
+| as-is | 8 | 2232 s | **+9.2%** | **21.70** | 0.008934 | **yes** |
+| frame drop (`j9c713d0q`) | 6 | 1674 s | +1.2% | **19.18 (−11.6%)** | 0.010226 (+14.5%) | yes |
+| crfill frame-wide | 8 | 2232 s | +1.4% | 22.33 | 0.008858 (−0.9%) | no, **everywhere** |
+| crfill streak-targeted | 8 | 2232 s | +2.8% | 22.26 | **0.008934 (unchanged)** | no, on 194 px |
+
+**Does `--crfill` change anything outside the track? NO — proved by direct subtraction
+(2026-09-21).** The honest test is to subtract one product from the other and check the
+difference is confined to the fill. Done on J1213+6708 f814W between two **fresh** runs of the
+crfill path that differ *only* in what was filled — a zero-fill null (`--crfill-radius 0.001`,
+0 px) and the streak-targeted run (210 px). They share a grid exactly (CRPIX identical), so
+this is a raw subtraction with **no resampling**:
+
+| | on the CR track | off the track |
+|---|---|---|
+| pixels whose SCI changed at all | 212 | 180 |
+| max SCI change | 3.19σ | 3.30σ |
+| max noise change | 14.1% | 14.8% |
+
+**392 px of 57,600 changed, and they form ONE connected region sitting on the track** (331 px
+at r = 0.88″, >0.5% noise change; the "off track" 180 px are the fill spilling just outside a
+3 px-wide definition of the track, not a second region). The deflector moves **1 mas**. The arc
+is untouched: **net flux +0.1%**, peak S/N identical.
+
+**The earlier "the arc looks dimmer under crfill" was MY comparison artefact, now retracted.**
+It came from comparing fresh products against the *archived* stamp, which on this lens sits
+180 mas away (see the re-drizzle trap above) — through nearest-neighbour resampling, which
+smears a compact feature. Against a fresh reference the four options read:
+
+| variant | arc net flux | arc peak S/N | deflector moves |
+|---|---|---|---|
+| **fresh reference (0 px filled)** | +0.0% | 32.3 | — |
+| crfill streak-targeted | **+0.1%** | 32.3 | 1 mas |
+| crfill frame-wide | **+0.2%** | 32.3 | 2 mas |
+| frame drop | **−4.8%** | 21.7 | 44 mas |
+| *archived stamp* | *+43.2%* | *106.8* | *180 mas* |
+
+Only the frame drop touches the arc, and the archived row is the outlier for the astrometric
+reason above, not a reduction reason. Figure:
+`diagnostics/cr_defects/cr_options_snr_fourway.png` (bottom-right panels are the raw
+subtraction: blank everywhere except the track).
+
+**Does any of this touch the ARC? No — checked on J1213+6708, and the arc is real.** Asked
+because the arc looks very faint against the deflector in every variant. It does, and that is
+astrophysics: on the **elliptical-isophote** residual (b/a 0.91, PA 111°) the arc is **366 px at
+r = 1.85″ = 1.30 θ_E, peak 13.0σ**, tangential (84° from radial, b/a 0.49), while the deflector
+peaks in the hundreds — a linear S/N stretch set by the galaxy cannot show both. Three things
+make it a detection rather than a residual, and the third is the one that matters:
+1. it clears the model-error floor by **4.6×** in F814W (floor 2.82× the photon noise) and
+   **3.3×** in F606W (floor 1.84×);
+2. it is tangential in **both** bands (84°, 86°) at the same radius (1.30, 1.27 θ_E) and the
+   same sky position to 0.15″ — and F606W is WFPC2, sharing **no exposures** with ACS;
+3. **it is NOT mirror-symmetric** — 13.0σ against **+1.0σ** at its mirror. A galaxy-model
+   residual (dipole or quadrupole) *is* symmetric under 180° rotation, so cross-band agreement
+   alone would prove nothing (both bands share the same galaxy and the same model error);
+   the asymmetry is what rules the artefact out.
+   **There is also a counter-image candidate**: 24 px at **0.68 θ_E**, 8.9σ, tangential 80°,
+   on the opposite side (image PA 305° against the arc's 147°) — a double, marginally above
+   the floor, worth confirming with a real galaxy model.
+**Do not use the circular radial median on this lens**: it manufactures a quadrupole whose
+lobes sit near both features. Figure:
+`diagnostics/cr_defects/J1213+6708_f814W_arc_vs_cr_options.png`.
+**Across the four options the arc survives every one; only the frame drop dims it** — arc
+integrated S/N **106σ → 94σ (−12%)**, exactly the exposure it threw away. Caveat on comparing
+against the as-is stamp here: this is the `--align tweakreg` lens, and a fresh drizzle recentres
+differently (0.354″ vs 0.479″), which is worth ~±10% on an integrated number. Compare the fresh
+products with each other.
+
+**What the two right-hand columns settle.** The **frame drop is the only option that costs real
+signal** — ~12% of the median S/N inside 2″, over the whole stamp, to remove a ridge on 0.3–0.4%
+of it. Both CR-fills keep the S/N. The difference between them is the *stamp median noise*: the
+frame-wide fill pulls it down ~0.9% across the whole stamp (that number **is** the collateral —
+a global lie in the noise map), while the **streak-targeted fill leaves it bit-for-bit at the
+as-is value** and confines the optimism to the ~200 px it actually filled. Streak-targeting is
+therefore the only version of `--crfill` worth running.
+
+(J1250+0523's defect is the 2.1″×0.6″ bar at r = 0.87–1.71″, 247 px = 0.43% of the stamp;
+J1213's is a ~12″ track passing 0.68″ from the deflector, 171 px inside 1.8″.)
+
+Read the table this way. **`--crfill` works** — it removes 75–85% of the ridge on both lenses.
+But it converts a *correct* +10% ridge on 0.3–0.4% of the stamp into an *incorrect* −13% one:
+after filling, the true noise on those pixels is still √(4/3) = 1.155× what the map says. And
+dropping the exposure costs **+15.5% over the whole stamp** to remove ~+10% on 0.4% of it — the
+worst of the three on both lenses. **So "keep as-is" remains the recommendation**, now on
+measured grounds rather than argued ones; `--crfill` exists for the case where a track is so
+bad it dominates a fit, and that case has not appeared yet.
+Figure: `diagnostics/cr_defects/crfill_before_after.png`.
+
+**`--crfill-radius ARCSEC` makes the fill TARGETED (2026-09-21, at the user's suggestion), and
+it is what you want.** Plain `--crfill` fills *every* LACosmic flag in every frame — ~1.4% of
+all pixels — so the noise map goes optimistic wherever any cosmic ray landed, not just on the
+track crossing the science region. With a radius, only the tracks that reach within that
+distance of the lens are filled. **Measured on J1213+6708 f814W, `--crfill-radius 4`:**
+
+| | frame-wide `--crfill` | `--crfill-radius 4` |
+|---|---|---|
+| pixels filled | **941,414** (100%) | **989** (0.1%) |
+| CR tracks filled | 220,590 | 193 |
+| track ridge, r<1.8″ | +10.4% → **+2.7%** | +10.4% → **+2.7%** |
+| ridge at 1.8–6″ | +1.1% → +0.2% | +1.1% → +0.2% |
+| CR speckle left **outside** 4″ (% px with noise/local > 1.05) | 7.1% → **4.1%** (erased) | 7.1% → **8.4%** (untouched) |
+
+**Identical repair, 1/950th of the collateral.** Figure:
+`diagnostics/cr_defects/crfill_targeted_vs_framewide.png`. The per-frame breakdown also names
+the culprit for free — `j9op28baq` contributed 411 px against 180/190/208 for the other three.
+**Selection is by connected component, never clipped at the circle**: a track that reaches into
+the region is filled along its whole length, because a track half filled and half flagged would
+put a step in the weight map partway along it — a worse artifact than the ridge being removed.
+`--crfill-radius` without `--crfill` is an error, and it needs the lens in
+`info/slacs_coords.py`.
+
+**`--crfill-min-area PX` targets the STREAK instead of an aperture (2026-09-21).** A radius
+alone still fills every incidental CR hit that happens to share the aperture — 193 tracks on
+J1213+6708, 283 on J1250+0523, almost all a few pixels each — when the thing worth repairing is
+the one long track you can see in the noise map. Pixel count separates them cleanly: ordinary
+ACS hits are <20 px, a long track is hundreds. **`--crfill-radius 5 --crfill-min-area 50` on
+J1250+0523 f814W selected exactly ONE track of 258,884** — 194 px in `j9c713d0q` chip 2,
+closest approach 1.02″ — i.e. it found the bar, named the exposure that carries it, and filled
+**194 px instead of 1,113,026**. The run prints every track it keeps (area, chip, closest
+approach) so the selection is auditable rather than trusted.
+
+| targeting | J1213+6708 px filled | J1250+0523 px filled | tracks kept |
+|---|---|---|---|
+| none (frame-wide) | 941,414 | 1,113,026 | all (220,590 / 258,884) |
+| `--crfill-radius 4` | 989 | 1,377 | 193 / 283 |
+| `--crfill-radius 5 --crfill-min-area 50` | **210** | **194** | **1 each** |
+
+On both lenses that single track is in a single exposure — `j9op28baq` (J1213, closest approach
+1.17″) and `j9c713d0q` (J1250, 1.02″) — so the selection also **identifies the exposure to drop**
+if you would rather take that option. `--crfill-min-area` alone (no radius) is legitimate too:
+it fills every long track in the frame and leaves the pinprick hits alone.
+
+**`--crfill-n-tracks N` — "fill the N biggest streaks" (2026-09-21), and J1250+0523 needs it.**
+A size threshold is awkward to pick per lens; a count is not. `N` is ranked **globally across
+every frame and chip**, not N-per-frame, because the streaks you can count in a stamp generally
+sit in *different exposures*. It needs a first pass over the frames to rank them, which is why
+it is its own flag.
+
+**It found what the eye found on J1250+0523: FOUR cosmic-ray tracks on the ring, not one.**
+`--crfill-radius 2 --crfill-n-tracks 4` ranked 56 candidates and kept four, from **two**
+exposures — `j9c713d0q` chip 2 (the 194 px bar, 1.02″) and `j9c713cuq` chip 2 (31, 17 and 14 px
+at 0.72, 0.76 and 0.89″). **256 px filled of 1,113,026.** The three small ones are why the
+single-track fill only got the ridge to +2.8%:
+
+| J1250+0523 f814W | px filled | tracks | bar ridge |
+|---|---|---|---|
+| as-is | 0 | — | **+9.2%** |
+| `--crfill-min-area 50` | 194 | 1 | +2.8% |
+| `--crfill-radius 2 --crfill-n-tracks 4` | **256** | **4** | **+1.9%** |
+| frame-wide | 1,113,026 | all | +1.4% |
+
+Four tracks at 256 px get within 0.5% of what a million-pixel blanket fill achieves. Figure:
+`diagnostics/cr_defects/J1250+0523_f814W_crfill_n_tracks.png`.
+
+**Did the ranking pick the ones a human would? On this lens, yes — checked, don't assume.**
+The user named four from `diagnostics/cr_defects/J1250+0523_f814W_cr_inventory.png`: the bar,
+the two inside θ_E, and the extended feature by #5. Verified against the *stamp's* noise map
+(the fraction by which each pixel's noise dropped), which is what the eye actually judges:
+
+| inventory # | stamp position | r | noise drop | repaired? |
+|---|---|---|---|---|
+| #1 (the bar) | col 135, row 100 | 1.25″ | 13.8% | **yes** |
+| #7 | col 126, row 105 | 0.79″ | 12.2% | **yes** |
+| #6 | col 137, row 113 | 0.93″ | 14.9% | **yes** |
+| #5 | col 119, row 142 | 1.13″ | 6.4% | **yes** |
+
+All four. But **size-rank is a proxy for "what you can see", not the same thing**, and the two
+can part company: the ranking sorts *native-frame* track pixel counts in individual exposures,
+while prominence in the stamp depends on where the track lands (a small track on the bright
+ring outranks a bigger one in blank sky) and on how the four exposures combine. Here #6 was
+not even a separate repaired region — it merged with the bar's footprint in the stamp. **So
+treat the count as a convenience, not an oracle**: the run prints every track it keeps (area,
+chip, closest approach) precisely so you can check the list against the inventory figure before
+accepting the product. If a lens ever needs a specific set that ranking will not produce, the
+right primitive is naming positions, not a bigger N — that has not been built, because it has
+not been needed.
+
+**`--exclude-frames ROOTNAME[,...]` builds the frame-drop product (2026-09-21)**, so the third
+option is measurable rather than hypothetical. The named exposures never reach the work
+directory, so bestrefs, alignment, LACosmic, both drizzle passes and the provenance JSONs all
+see a genuinely short visit — which is what a real frame drop is. Products land in a `_drop`
+variant tree (`data/drizzled_bcfill_drop/…`) and carry **`DROPFRMS`** in the header;
+`make_cutouts.py --drop` cuts from it. J1213+6708 f814W went **NDRIZIM 8 → 6, EXPTIME 2240 →
+1680 s**, which is the cost in one line.
+
+**A region-targeted FRAME DROP, though, is not a third option — it is what we already have.**
+"Drop that exposure only where the cosmic ray is" *is* flagging that frame's CR pixels and
+letting the drizzle weight them out, which is exactly what LACosmic + `final_bits` already do;
+the +10.4% ridge **is** its cost, already paid and already honest. The only knob a "targeted
+drop" could add is dropping a *larger* region of that frame, which is strictly worse: excluding
+one of four frames everywhere inside 4″ would put **+15.5% on every pixel inside 4″** against
+today's +10.4% on the 171 px of the track. So the real menu is two items, not three —
+keep the honest ridge, or fill it with `--crfill --crfill-radius` and accept a noise map that
+is √(N/(N−1)) optimistic on the track.
+
+**TRAP found doing this: `make_cutouts.py` writes `info/lens_cutout_qc.json` even with
+`--output` pointing somewhere else.** A scratch cut therefore overwrites the tracked stamp's
+provenance (here `weight_uniformity` 0.315083 → 0.314273, `offset_arcsec` 0.4794 → 0.3537, and
+a spurious `crfill: true`) while the tracked stamp itself is untouched — so the JSON silently
+starts describing a file that is not in the tree. Restored by hand. **Either pass `--output`
+only when you are willing to fix the JSON afterwards, or fix the script to skip the
+`info_json.update` when `--output` is set.**
+
+**Second trap, and it is worse than "not bit-identical": A RE-DRIZZLE OF J1213+6708 f814W
+LANDS 180 mas (3.6 px) AWAY FROM THE ARCHIVED PRODUCT.** Measured 2026-09-21 by centroiding the
+deflector in each stamp and comparing *sky* positions, not pixels. This is the one lens with
+`--align tweakreg` (`ALIGN_OVERRIDES`), so TweakReg re-solving the alignment is the obvious
+suspect; the drizzle grid shifts sub-pixel with it, so the two stamps are not even related by
+an integer shift. Consequences, all of which bit me before I caught it:
+- **Any comparison of a fresh product against an archived stamp on a tweakreg lens is
+  confounded at the 3–4 px level**, and nearest-neighbour resampling onto the archived grid
+  then makes compact features (an arc, say) look systematically fainter. That is a comparison
+  artefact, not a reduction difference.
+- **A fresh reference is mandatory.** Re-run the pipeline with the *same* flags plus a no-op
+  (`--crfill --crfill-radius 0.001` fills 0 px and is a perfect null), cut that, and compare
+  everything against it. Two runs of the crfill path then share a grid **exactly** (CRPIX
+  identical to 0.000000) and can be differenced with no resampling at all.
+- **`--sample`-wide re-drizzles will not reproduce archived stamps on this lens**, so do not
+  treat a diff against it as a regression.
+- Beware the skip: `drizzle_acs_wfc.py` prints *"drizzled products already exist, skipping"*
+  and exits 0. A "control re-run" that silently skipped will look perfectly reproducible
+  because it is the same file. **Check the log says it actually drizzled.**
 
 **`run_acs_all.sh` and `run_wfpc2_wf3.sh` are `--bcfill`-aware** — pass `--bcfill` as a
 second arg (after the optional sample) and it threads through the *drizzle* stages into the
@@ -847,7 +1236,7 @@ notes follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   caustic, singly imaged and sheared ~20%. That is self-checking: the observed ellipticity
   implies **θ_E ≈ 1.3–1.4″** (SIS, γ = θ_E/2r), and the faint f606W knots at **r = 1.4–1.8″**
   — the *real* lensed features, invisible in f814W — sit at that same radius. (Three-band and
-  mask-check figures were written to the now-untracked `diagnostics/`; regenerate rather than
+  mask-check figures were written to the now-untracked `diagnostics/feature_vetting/`; regenerate rather than
   expect them in a clone.)
   **Generalise the method, not the verdict**: tangential elongation alone does not make an
   arc, and colour-relative-to-the-deflector plus a counter-image search is the cheap test.
@@ -893,6 +1282,82 @@ notes follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   fit both with the object-2 knots included and excluded and compare. **Do not treat the
   "companion galaxies" reading as settled**, and keep any mask outside **~1.6″** so it cannot
   touch the 1.37″ arc.
+
+- **`slacs_other` f606W, three masks re-checked against the Auger+2009 θ_E (2026-09-21):
+  J1134+6027, J1251-0208, J1403+0006. All three are CLEAR OF THE RING — 0% masked inside
+  1.2 θ_E on every one — and only J1403 needs anything.** Figures:
+  `diagnostics/masks/<lens>_f606W_mask_check_2026-09-21.png` (mask boundary + θ_E and 1.5 θ_E
+  circles over as-observed / radial-subtracted / 0.3″-smoothed panels).
+  - **J1134+6027 (θ_E 1.10″) — clean, nothing to do.** 9252 px (16% of stamp), nearest masked
+    pixel **1.60″ = 1.45 θ_E**. **No unmasked S/N>4, ≥6 px detection anywhere out to 6″**: the
+    one bright thing near the lens, a galaxy at **2.14″ = 1.94 θ_E, peak S/N 89**, is masked
+    and has **no counter-image** (mirror S/N −0.6). No arc is detected at θ_E, and what the
+    0.3″-smoothed panel shows there is a **quadrupole** (positive at PA 20–80° *and* 220–300°,
+    negative at 100–180° *and* 320–20°) — i.e. the ellipticity residual the radial subtraction
+    always leaves, not lensed emission. Do not mistake it for an arc.
+  - **J1251-0208 (θ_E 0.84″) — clean, and the mask is nowhere near the ring.** 10419 px (18%),
+    nearest masked pixel **2.85″ = 3.39 θ_E**; 0% masked inside 2 θ_E. The **arc is intact and
+    unmasked**: col 118 row 144, **r = 1.23″ = 1.46 θ_E, 384 px, peak S/N 21, tangential
+    (72° from radial), b/a 0.53, mirror S/N −0.5**. There IS unmasked S/N>4 material at
+    r = 3.3–4.3″ (the biggest 472 px at 3.61″), which the `gallery` audit rule would have
+    masked — but **the deflector here is a SPIRAL**, and the 0.3″-smoothed panel resolves that
+    material into a two-armed pattern centred on the deflector, not field objects. Leaving it
+    is right; the consequence is that **this lens's light model has to cope with spiral
+    structure**, which an elliptical Sérsic will not.
+  - **J1403+0006 (θ_E 0.83″) — FIXED 2026-09-21; the mask now stops at 1.00″ = 1.20 θ_E.**
+    Re-analysed on an **elliptical-isophote** model of the deflector (b/a 0.89, PA 151° image, fitted with the mask *and* the neighbour excluded),
+    not the circular radial median — which matters, see the retraction below. Figure:
+    `diagnostics/masks/J1403+0006_f606W_neighbour_tradeoff.png`.
+    - **This lens has ONE science band.** f606W is WFPC2/WF3, 4400 s; the f814W beside it is
+      the untracked 420 s SNAP diagnostic (→ memory: `j1403-f814w-recentre-box`). So there is
+      **no colour test available here**, and any argument that needs one cannot be made.
+    - **The neighbour**: centroid **r = 1.82″ = 2.19 θ_E**, σ_major 0.66″ (**5.2× the PSF**,
+      which is σ 0.128″/FWHM 0.301″), ~1100 px, peak S/N 15. A resolved galaxy, not a knot.
+    - **The 1.20″ inner edge cut straight through it**, leaving **427 px of its halo inside
+      the fit region** — 3.45% of the deflector's flux inside 1″, brightest leftover pixel
+      **11.5σ**. This is the *mirror image* of the J1451/J2342/J1116 problem: there a mask
+      clipped a lensed image, here a mask stopped in the middle of a **contaminant**.
+      **The fix applied**: added 308 px — the neighbour's own **1σ isophote between 1.00″ and
+      2.0″** — so 3123 → 3431 px. Nothing was cleared and the hand-drawn **outer** boundary is
+      untouched; the edit is scripted, recorded in `info/lens_masks.json` and in the FITS header
+      (`MASKEDIT`, `MASKEDDT`, `MASKEDPX`, `MASKEDRI`), and reversible with `git checkout`.
+      `cutout_cr_dataset.png` was rebuilt (`make_dataset_subplots --force`) and the mosaics
+      re-run, per the chain above.
+
+      | inner floor | added | left inside 2″ | brightest leftover | % of deflector <1″ | cost 0.8–1.3 θ_E | cost 0.8–1.5 θ_E |
+      |---|---|---|---|---|---|---|
+      | 1.20″ (was) | — | 427 px | 11.5σ | 3.45% | 0.0% | 2.8% |
+      | 1.10″ | +237 | 190 px | 10.7σ | 1.83% | 0.0% | 8.6% |
+      | **1.00″ (applied)** | **+308** | **119 px** | **9.1σ** | **0.88%** | **6.4%** | **13.7%** |
+      | 0.90″ | +358 | 69 px | 4.5σ | 0.38% | 11.8% | 17.3% |
+
+      **Why 1.00″ and not 1.10″ or 0.90″.** The stopping criterion is the *systematics floor*,
+      not the pixel count: this lens is galaxy-model-limited at 3.2× the photon noise (below),
+      so nothing under ~10σ is believable anyway. 1.00″ is the loosest floor that pushes the
+      brightest leftover under that floor (9.1σ); 1.10″ leaves it at 10.7σ, still above it, and
+      0.90″ buys little more while reaching 1.10 θ_E — closer to the ring than any other mask
+      in this repo (J1134 stops at 1.45 θ_E). The 6.4% it costs is **entirely in image
+      PA 150–300°** (≈23% of the three sectors 180–270°, 0% in every other sector) — the only
+      direction the neighbour reaches in. Figure:
+      `diagnostics/masks/J1403+0006_f606W_mask_yours_vs_mine.png`. To move the edge, re-run the
+      same script with a different floor; the table above is the price list.
+    - **RETRACTED: the "blue tangential knot at 0.99 θ_E" reported on 2026-09-20 is not a
+      feature.** It is at r = 0.77″, image PA 181°, **0.22″ from the neighbour's 1σ isophote**,
+      and on the elliptical model it reads **+2.9σ against a 3.4σ model-error rms at that
+      radius** — i.e. below the systematics. It was an artefact of **circular** radial-median
+      subtraction on a lens with a bright overlapping neighbour, and its "4.8× bluer than the
+      deflector" rested on a 2.2σ f814W measurement in the 420 s SNAP. *Generalise this*: on a
+      lens with a close bright neighbour, `radial_median_subtract` is a finding aid that
+      manufactures features at the neighbour's azimuth — fit an elliptical model before
+      believing anything it shows inside ~2 θ_E.
+    - **"No arc is detected here" STANDS, and now for a measured reason.** Inside 1.2″ the
+      residual scatter is **3.2× the photon noise** — the image is *galaxy-model-limited, not
+      noise-limited* (rms/noise by radius: 3.9 at 0.3–0.6″, 3.1 at 0.6–0.9″, 3.6 at 0.9–1.2″,
+      falling to 0.9 by 3–4″). A feature therefore needs **≳10σ** to be a 3σ excess over model
+      error, and the brightest thing in the 0.6–1.3 θ_E annulus outside the neighbour is
+      **8.7σ**. Not a detection — and not a non-detection either: **this data cannot settle it**.
+      What would: a second band (there is none), or a real Sérsic/MGE deflector fit rather
+      than an isophote model.
 
 - **`gallery`: every mask was audited against the PUBLISHED lens model (2026-09-15), and the
   audit is cheap to repeat.** All 15 F606W masks were checked with three tests — (1) is the
@@ -992,8 +1457,9 @@ notes follow, `slacs_gold`/`slacs_other` first, then `gallery`:
     that both went through the same transform. The same bias matters for any cross-band or
     cross-catalogue position comparison at the tens-of-mas level.
 
-**Where the arc should be: use the MEASURED Einstein radius, not an estimate.** Auger+2009
-(SLACS IX) modelled these systems and VizieR carries the result:
+**Where the arc should be: use the MEASURED Einstein radius, not an estimate.** For SLACS,
+Auger+2009 (SLACS IX) modelled these systems and VizieR carries the result (for `gallery` it is
+Shu+2016 Table 2, hand-entered — see *Tracking JSONs*):
 `J/ApJ/705/1099/lenses`, keyed on `SDSS` (e.g. `J1416+5136`), column **`RE` — the Einstein
 radius in kpc**, alongside `zlens`, `zsrc`, `sigma`, `MType`. Convert with
 θ_E["] = RE[kpc] / D_A(z_lens)[kpc] × 206265. **A lens appearing in that table has a
@@ -1017,8 +1483,39 @@ Measured values for the lenses worked on here, against what image analysis found
 three it confirmed, independently of colour or counter-image searches, that the eye-catching
 objects sit well outside θ_E. Two cautions: an *extended* source arcs outside θ_E (J1251 at
 1.45×), so treat θ_E as a floor not an exact locus; and a σ-based SIS estimate is a poor
-substitute where the table has no row — against these measurements it ran low by factors of
-1.05, 1.11, 1.39 and 1.43, too scattered to correct with a single scaling.
+substitute where the table has no row — **measured over all 89 rows, θ_E/θ_SIS has median
+1.11 with a 16–84% range of 0.84–1.40** (worst: J1110+3649 0.25, J1100+5329 2.63), so the SIS
+runs ~10% low *on average* and is useless per-lens. **Any note claiming a fixed correction —
+e.g. "the SIS runs 30–40% low" — is wrong and is being corrected where it appears.**
+
+**AUDIT of `info/lens_einstein_radii.json` (2026-09-21) — the file itself is NOT stale.**
+Three checks, all clean, so do not re-derive it:
+1. **Fresh against the source.** Re-fetched `J/ApJ/705/1099/lenses` from VizieR and diffed:
+   **0 differences** across all 74 Auger rows and every field (`theta_e_arcsec`, `RE_kpc`,
+   `zlens`, `zsrc`, `sigma_kms`); the 15 Shu rows were correctly left alone by the merge.
+2. **Internally consistent.** All 74 Auger rows reproduce θ_E from `RE_kpc` on flat
+   H0=70/**Ωm=0.3** to <0.6 mas, and all 15 Shu rows reproduce `RE_kpc` from θ_E on flat
+   H0=70/**Ωm=0.274** to <15 pc. The two cosmologies are deliberate and opposite in direction
+   (SLACS kpc native, gallery arcsec native) — do not "fix" one to match the other.
+3. **Complete** for every lens with cutouts, bar the three already documented
+   (`J1259+6134`, `J2141-0001`, `J2302-0840`).
+   Also checked: all **54** `detector_theta_e_arcsec` values recorded in
+   `info/lens_arc_masks.json` still match the catalogue exactly, so no arc proposal was built
+   on a stale radius.
+
+**What WAS stale was θ_E quoted OUTSIDE the catalogue, in two hand-written mask notes** — both
+now carry a dated `CORRECTION` in `info/lens_masks.json`:
+- **J1403+0006 f606W**: reasoned from SIS 0.75″ + a 30–40% correction to "expect the arc near
+  ~1.0″". Measured θ_E is **0.83″** (the SIS was 11% low, not 30–40%), so the mask's 1.20″
+  edge is **1.45 θ_E**. See the per-lens note above.
+- **J1016+3859 f814W**: "the implied shear gives θ_E ~1.3–1.4″, matching the faint f606W knots
+  at r = 1.4–1.8″". Measured θ_E is **1.09″**, so the shear inference ran **24% high** and
+  those knots are at 1.3–1.65 θ_E, not at θ_E. The verdict on object A is unaffected (it rests
+  on the counter-image null and the colour), but the 1.3–1.4″ is not this lens's θ_E.
+
+**The lesson both share: a θ_E *inferred* from shear or from σ is not a measurement.** Look the
+lens up in `info/lens_einstein_radii.json` first, and only fall back to an estimate if it has
+no row — the catalogue has been there since 2026-09-17 and both notes predate it.
 
 **Two ways of looking that have each produced a WRONG mask verdict here. Both are easy to
 repeat, so check against them before recommending anything.**
@@ -1174,7 +1671,99 @@ build a positions likelihood penalty (`al.PositionsLH`) that rejects mass models
 images too far apart in the source plane — plus a `cutout_[cr_]positions.png` QC overlay per
 band. Provenance per (sample, lens, marked-filt) in `info/lens_positions.json`.
 
-**One mark per lens, then broadcast to every band.** Image positions are band-**independent**
+**The broadcast goes THROUGH SKY, not by copying arcsec (fixed 2026-09-17).** The old
+transfer wrote the same `(y, x)` into every band on the reasoning below — which is *nearly*
+true and not exactly true. Measured on the 12 f160W pairs, the stamps' **tangent points differ
+by 21–56 mas**, so the same arcsec offset is a different sky position in each band, up to a
+whole f160W pixel. `reproject_positions` now does pixel → world → pixel per band, which
+removes that term exactly for any pixel scale, stamp size or tangent point (verified: identity
+within a band, exact round-trip, and the correction equals the independently measured
+tangent-point offset). Applied to the 34 already-marked lenses with
+`make_positions.py --rebroadcast`, which re-derives every non-marked band from the marked
+band's own JSON without reopening the GUI — the clicks were fine, the transfer was not.
+Corrections landed at **12–71 mas (0.25–1.41 px)**.
+
+**F160W IS NOW TIED to each lens's reference band (done 2026-09-17/18).**
+`align_wfpc2_to_acs.py` ties WFPC2 F606W to ACS; F160W was left trusting the delivered MAST
+WCS because that script's docstring asserted ACS and WFC3/IR "agree with each other to
+~0.01"". They do not, unless the f160W itself carries a GAIA fit, which most SLACS F160W does
+not — so **10 of the 19 f160W bands were shifted onto their lens's reference band**:
+
+| | |
+|---|---|
+| gold, ref f814W | J0029-0055 72 mas, J1430+4105 83, J1029+0420 51, J1023+4230 49, J1020+1122 35, J1032+5322 34, J0903+4116 21 |
+| other, ref f606W | J1636+4707 98 mas; J1251-0208 and J1134+6027 measured 0 (already tied) |
+
+Cutout-level tie across **all 19 f160W bands is now median 0.01 px (0.7 mas)**, from a
+pre-alignment median of 8.6 mas. The one remaining outlier is **J1134+6027 at 46 mas
+(0.77 px), and only against its own f814W — which is the untracked 420s SNAP diagnostic**,
+not a science product; its f160W↔f606W tie, the one every tracked product on that lens uses,
+is 0.
+
+**MEASURE THE TIE WITH `align_wfpc2_to_acs.stable_centroid`, NOT A FIXED-BOX CENTROID.** A
+plain flux centroid in a 0.6″ box is pulled by the lensed ring and by the broad IR PSF, and
+over-reported these ties by tens of mas — it called J1251-0208 65 mas and J1134+6027 45 mas
+when the ring-robust iterative centroid puts both at 0, and it under-called J1032+5322 (0.42
+vs 0.56 px). The iterative windowed centroid re-centres each pass and converges independently
+of the starting guess; it is the estimator the alignment itself uses, so it is the one that
+says whether alignment is needed.
+
+**Re-cutting after an alignment is an EXACT INTEGER PIXEL TRANSLATION of the stamp — verified
+0.00e+00 max difference over ~39,800 overlapping pixels on all 8 re-cuts.** The WCS is
+corrected continuously but the cut snaps to whole mosaic pixels, so a 0.35–1.63 px astrometric
+correction produces a 0–2 px stamp shift, and **the two do not match**. Consequences:
+- **Anything already drawn on that stamp must move by the ARRAY shift, not by a WCS
+  reprojection.** `reproject_mask_bool` is the wrong tool here — it assumes only the grid
+  changed, whereas re-cutting moved the astrometry *and* the cut window. On J1636+4707 it
+  would have shifted the mask 1.63 px when the pixels had not moved at all, and on
+  J1430+4105 it disagreed in sign. The 8 f160W contaminant masks were shifted by the
+  cross-correlation integer instead (`MASKSHFT` header card records it).
+- Positions were re-derived with `make_positions.py --rebroadcast` (f160W moved 14–52 mas).
+- **`make_cutouts.py` does NOT write `cutout_dataset.png` — `make_masks.py` does**, so a
+  re-cut (or any mask edited outside the GUI) leaves that QC subplot showing the OLD stamp
+  and the OLD mask position, silently. Rebuild it explicitly:
+  `make_dataset_subplots.py --lens <L> --filt f160W --force`.
+- **`data/mosaics/` is tracked and is built from the cutouts**, so the per-sample QC grids go
+  stale too: `make_mosaics.py --sample <sample>`.
+
+  **The full chain after an alignment is: align → `make_cutouts` → mask shift →
+  `make_dataset_subplots --force` → `make_mosaics` → `make_positions --rebroadcast`.**
+  Skipping either of the middle two leaves a tracked PNG that disagrees with the FITS beside
+  it, which is exactly the kind of quiet inconsistency this file exists to prevent.
+- `GSC240FX=True` in the drizzled header marks a corrected band. `WCSNAME` does **not** —
+  the script shifts CRVAL without renaming, so a corrected band still advertises its original
+  solution.
+
+Re-run the alignment safely at any time: it is idempotent (re-measures and applies ~0).
+
+**What the broadcast CANNOT fix: a misregistered band.** Separately from the tangent point,
+the same physical deflector sits at different sky coords in different bands' WCS — 9–84 mas
+across the f160W pairs. That is an astrometry problem upstream, not a broadcast problem, so
+`process_lens` measures the deflector tie per band and **warns** (`deflector_tie_mas` /
+`deflector_tie_px` in the provenance) rather than absorbing it. Worst cases, all f160W:
+**J0029-0055 84 mas (1.40 px)**, J1023+4230 51, J1029+0420 51 — J0029-0055 confirmed against
+an independent **field source** (2.06 f160W px), which is the check `detect_arcs` already tells
+you to run before believing a band tie. Do not re-mark these; the clicks are right and the
+pixels are shifted. The `f555W`/`f606W` ties are tight (median 0.13–0.14 px), so this is an
+f160W problem.
+
+**One mark per lens, then broadcast to every band.**
+
+**Four `slacs_gold` marks were DELETED at the user's request (2026-09-21): J0912+0029,
+J1142+1001, J1143-0144, J2300+0022.** Both the per-band `cutout_cr_positions.json`/`.png` (8
+JSONs, 8 PNGs across f814W plus f555W/f606W) and the `info/lens_positions.json` entries are
+gone; `slacs_gold` is 33 → 29 marked lenses. **They were never committed**, so unlike the
+2026-09-03 mask deletion there is nothing to recover from git history — re-marking is a
+fresh `make_positions.py` GUI session. Each was a 2-image (double) mark, and three of the
+four (all but J0912+0029) still carried `search_box_size: 5`, i.e. they predate the
+2026-09-17 drop to 2 that exists precisely because a 5 px box lets a click move ~0.25″ onto
+the deflector envelope or a neighbouring knot. Re-mark under the current default.
+
+**`--search-box-size` default is 2, not 5 (2026-09-17).** 5 let a click move up to ~0.25″ on
+ACS — far enough to land on the deflector envelope or a neighbouring knot instead of the image
+you aimed at. Each click prints the distance the snap moved it, and `snap_moved_px_max` /
+`snap_moved_px_mean` are recorded per lens. Note `al.Clicker`'s box is `range(p-n, p+n)`, i.e.
+2n wide and half a pixel off-centre — upstream behaviour, unchanged here. Image positions are band-**independent**
 sky coordinates: every band is cut about the same shared centre (`--center-band f814W`) and
 pinned to the same output WCS (`final_rot=0`, tangent point at the lens), so a position in
 **arcsec** relative to the stamp centre is identical in every band — even where pixel scales
@@ -1189,6 +1778,50 @@ a marked image is a sky coordinate that is literally the same number in every ba
 no per-band judgement to preserve. Trees/skip/`--size` behave as in `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the
 samples (all three by default). These hand-marked positions are non-regenerable, so like the
 masks they live in the git-tracked `data/cutouts/` tree.
+
+**Of the two files per band, only the JSON is a product: the PNG is gitignored
+(2026-09-17).** `cutout_[cr_]positions.json` is the hand-marked work and is tracked like a
+mask; `cutout_[cr_]positions.png` is a QC *view* of that JSON, one per band (~160), and is
+rebuilt from the JSON plus the sci stamp with **no GUI and no re-clicking**:
+
+```bash
+uv run python scripts/make_positions.py --sample slacs_gold --overlays-only
+```
+
+That flag exists so the ignore rule is honest — without it "regenerable" would have meant
+re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
+GUI wrote. Note this is the **one** ignored PNG under `data/cutouts/`: `cutout_cr.png`,
+`_dataset.png` and `_mask_arcs.png` are all still tracked, so do not generalise the rule.
+
+**Two panels by default, and the band's contaminants blanked (2026-09-17).** The GUI shows
+the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
+single subtracted panel, and the pair is only meaningful with `--subtract-radial`), because
+each answers a different question: the subtracted panel is where an image buried in the galaxy
+envelope shows up at all, the as-observed panel is where you judge whether that blob is really
+there or is a subtraction artefact. **Double-click either — they are the same sky.**
+- **Unlike `make_masks.py`, the panels are real matplotlib AXES, not an hstacked array**, and
+  that is the whole reason no folding is needed here. The Scribbler reads one array back, so
+  there the panels must be composited and the scribble folded up afterwards
+  (`make_masks.fold_panels`). `al.Clicker` reads only `event.xdata/ydata`, so giving each panel
+  its own axes over the *same* arcsec extent means a click already carries panel-local sky
+  coordinates and is forwarded untouched. Verified: the same click on the left panel, the right
+  panel, and the old single-panel GUI all snap to identical positions.
+- **`--hide-masked` (default ON) blanks what `cutout_[cr_]mask.fits` already calls a
+  contaminant**, outlines it, and drops it from *both* the stretch percentiles and the radial
+  profile. Three reasons, not one: a neighbour bright enough to be masked owns the colour
+  scale, invites a mis-click as a lensed image, and — the non-obvious one — drags up the
+  per-radius median so the subtraction stamps a **dark ring clean across the arcs at its own
+  radius**. Silently inactive on a band with no mask.
+- **This is the one place a display lever can reach the saved product, so it is checked rather
+  than trusted.** The snap runs on true flux, so a click at the edge of a blanked region can
+  still land inside it; `process_lens` tests every saved position against the mask and prints a
+  per-position WARNING naming the offender, with `n_positions_on_contaminant` in the
+  provenance. Note this is the OPPOSITE call to `make_arc_masks.py`, which *outlines* the
+  contaminant mask without filling it — there you are judging those very pixels, here they are
+  the one region whose verdict is already in.
+- `make_masks.radial_median_subtract` gained an optional `exclude=` for this; the default
+  reproduces the unexcluded profile **exactly** (verified byte-identical), so `make_masks.py`
+  and `make_arc_masks.py` are untouched.
 
 **Three display-only levers make the arcs visible under the deflector light** (added
 2026-09-03). The deflector sets the colour scale on its own, so on most lenses the images
@@ -1249,8 +1882,20 @@ measurement, or a source-plane analysis.
   scribble, by contrast, is saved verbatim.
 - **`--subtract-radial` is ON by default here** (the arcs are the subject and are usually
   invisible under the galaxy envelope), and images already marked by `make_positions.py` are
-  **ringed in the display** as a drawing guide (`--no-show-positions` off; silently inactive
-  where no positions file exists). Both are display-only.
+  **marked with a dark CROSS in the display** as a drawing guide (`--no-show-positions` off,
+  `--cross-size` for the arm length; silently inactive where no positions file exists). Both
+  are display-only.
+  - **Crosses, not rings (2026-09-21, user's call).** Every other annotation on this GUI is a
+    *closed boundary* — the arc proposal is a solid white outline and the contaminant mask a
+    dashed dark one — so a dark ring read as a third small closed region, i.e. as one more
+    thing masked OUT, which is the opposite of what a marked image means. Four open ticks
+    cannot be read as an enclosed area at all, so the three annotations no longer have to be
+    told apart by line style alone. The arms stop 2 px short of the centre for the reason the
+    contaminant outline is not filled: the marked pixel is the one you are judging, so the
+    marker points at it rather than covering it (verified: centre pixel untouched on all four
+    J1250+0523 positions). Kept ~3 px thick so it is about as many display pixels as the 6 px
+    ring it replaced (~50 vs ~38) — a cross of hairlines reads fainter than a ring of the same
+    radius, and it has to survive being drawn over a bright arc.
 - Refuses to write an empty draw — an empty arc region would mask out the whole stamp.
 - **Where `--broadcast` is used, it reprojects the ARC REGION, not the saved array.**
   Outside-footprint pixels
@@ -1294,17 +1939,26 @@ measurement, or a source-plane analysis.
   2026-09-16).** The thing most likely to be mistaken for a lensed image is a neighbour or
   field source that has *already* been judged a contaminant on that very band, so
   `cutout_[cr_]mask.fits` is drawn as a **dashed dark** boundary — which keeps three
-  annotations apart at a glance: arc proposal = solid WHITE outline, marked positions = solid
-  DARK rings, contaminants = DASHED DARK. The interior is deliberately not filled, the same
+  annotations apart at a glance: arc proposal = solid WHITE outline, marked positions = DARK
+  CROSSES (rings until 2026-09-21, see above), contaminants = DASHED DARK. The interior is deliberately not filled, the same
   call recorded for `make_masks.py`: blanking hides the pixels you are judging. Display only
   and verified so (722 display pixels changed, written arc region untouched), silently
   inactive on a band with no contaminant mask. The detector already excludes those pixels, so
   a proposal never lands on one — checked on J1020+1122, whose mask covers ~47% of the stamp.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
-  row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position ring lands on the
+  row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position marker lands on the
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
   `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
   outline needs `origin='upper'` or it is drawn vertically mirrored.
+- **`slacs_gold` f606W arc masks are PARKED OUT OF GIT (2026-09-21, user's call).** Its f814W
+  arc masks (38/38) are committed; the 10 f606W ones drawn so far are held out by a
+  `.gitignore` rule on `data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.{fits,png}` —
+  the only `_mask_arcs` files under `data/cutouts/` that are ignored (gallery's and
+  `slacs_other`'s f606W, and `slacs_gold`'s own f814W, are all tracked, so do not generalise
+  the rule). **Nothing was deleted**: the files stay on disk beside the sci they were drawn
+  on and their provenance stays in `info/lens_arc_masks.json`, so `make_arc_masks.py` still
+  counts those 10 bands done and skips them (`--force` to redraw) — the rule governs git, not
+  the campaign. Delete the two lines to commit them.
 
 ## Automatic arc detection (`scripts/detect_arcs.py`)
 
@@ -1335,11 +1989,12 @@ blue star-forming galaxy, so the detector builds a **blue-excess image** `be = B
   and leave a broad negative bowl over the middle of every lens, which is where the inner arcs
   are. Because `k` is a measured ratio, the bands' different units (WFPC2 DN/s vs ACS e/s)
   cancel and are never converted.
-- Candidates are kept only in an annulus around the **measured** Auger+2009 θ_E, cached in
-  `info/lens_einstein_radii.json` (`--fetch-theta-e`, from VizieR `J/ApJ/705/1099/lenses`,
-  `RE` kpc → arcsec on flat H0=70/Ωm=0.3; **all 38 `slacs_gold` lenses have a row**). The
-  same prior kills both classic false positives: the central residual inside, field galaxies
-  outside.
+- Candidates are kept only in an annulus around the **measured** θ_E, cached in
+  `info/lens_einstein_radii.json` (see *Tracking JSONs* for the two catalogues and their
+  differing cosmologies). **All 38 `slacs_gold` and all 15 `gallery` lenses have a row**;
+  `slacs_other` is missing three. The same prior kills both classic false positives: the
+  central residual inside, field galaxies outside. **No row → `propose()` raises**, so a
+  missing θ_E takes the whole sample's `--propose-from detect` down rather than degrading.
 - Components are judged on **peak per-pixel S/N and connected area**, never an aperture sum,
   and detection runs on a 0.07″-smoothed map so a diffuse arc is not missed — the two traps
   recorded above. A component must also be visible in the blue band on its own, so an
@@ -2008,12 +2663,42 @@ Updated automatically by every run:
 - **`lens_exptime.json`** — `{sample: {lens: {key: seconds}}}` — from the CR-rejected
   drizzle header.
 
+- **`lens_crfill.json`** — `{sample: {lens: {band: {...}}}}` — **the list of bands whose
+  science stamp is a STREAK-REPAIRED (`--crfill`) product**, written by hand when one is
+  promoted, not by a run. Two entries so far (J1213+6708 and J1250+0523 f814W, 2026-09-22).
+  Each records the drizzle and cutout commands verbatim, the selection flags, every track
+  kept (frame, chip, area, closest approach), pixels filled against pixels flagged, the
+  noise ridge before and after, the √(N/(N−1)) noise caveat, whether the astrometry moved
+  and what was shifted downstream. **Check it before trusting a per-pixel noise value on
+  those bands** — the stamp's own `CRFILL=T` card says *that* it is filled, this file says
+  *where* and *how much*. Keep it in step by hand: nothing validates it against the headers.
+
 Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
-  source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* (Auger+2009
-  via VizieR) and not a record of this repo's products: 74 SLACS lenses, whatever sample they
-  land in. Refreshed only on demand (`detect_arcs.py --fetch-theta-e`); tracked in git so the
-  detector runs offline. A lens with no row is one Auger+2009 did not model.
+  source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* and not a
+  record of this repo's products: a lens lands here whatever sample it sits in. **89 rows from
+  two papers, and the `source` field is the only thing that says which** — read it before
+  pooling or comparing them:
+  - **74 SLACS** from Auger+2009 (SLACS IX) via VizieR, `RE` kpc → arcsec on flat
+    H0=70/**Ωm=0.3**. Refreshed on demand (`detect_arcs.py --fetch-theta-e`).
+  - **15 gallery** from **Shu+2016 (BELLS GALLERY IV, ApJ 833, 264) Table 2** `bSIE`
+    (Sérsic foreground subtraction), z/σ from its Table 1, **entered by hand 2026-09-17** —
+    that paper is **not on VizieR** (only Shu+2016a, the parent candidate list, is), so
+    `--fetch-theta-e` can never supply them. `RE_kpc` is *derived* here, on Shu's own flat
+    H0=70/**Ωm=0.274**, the reverse of the SLACS rows where kpc is native and arcsec derived.
+    The join was made on the full SDSS names already in `info/gallery_coords.py`, not by hand
+    — Table 2 also lists **J0918+4518**, one digit from gallery's **J0918+5104**, and both are
+    grade-A. Values validated end-to-end: every detected gallery component lands at
+    0.64–1.37 θ_E, and the dashed θ_E circle traces the arcs on all 6 contact-sheet panels.
+  - **`--fetch-theta-e` MERGES, and must keep doing so.** It used to write the fetched table
+    wholesale, which would now silently delete all 15 gallery rows and take
+    `--propose-from detect` down on that whole sample — the failure would surface only as
+    "no measured Einstein radius" much later. Rows the catalogue does not carry are kept; a
+    fetched row wins over a hand-entered one of the same name.
+
+  Tracked in git so the detector runs offline. A lens with no row is one neither paper
+  modelled: **`J1259+6134`, `J2141-0001`, `J2302-0840`** in `slacs_other` (of which only the
+  last two have cutouts at all).
 
 No data for a filter → value `null`.
 
