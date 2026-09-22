@@ -15,19 +15,22 @@ re-litigate it"; the slug names the note, not a file in this repo.
 > verify against source — argparse defaults, what the runner actually passes, tracking
 > JSONs vs what's on disk.
 
-> **One science tree, 2026-09-14.** `data/cutouts_bcfill/` and `data/mosaics_bcfill/` were
-> merged into `data/cutouts/` and `data/mosaics/`: bcfill supersedes the standard stamp in
-> place for the 105 ACS/WFPC2 bands it covers, so there is now exactly **one science stamp
-> per (sample, lens, filter)** — sci, noise, psf, mask and the QC PNGs all in one dir, with
-> nothing to choose and no second copy to keep in step. Which reduction a stamp is comes from
-> its `BCFILL` header card and the matching `bcfill` key in the `info/` tracking JSONs, never
-> from its path. The variant axis survives only at the drizzle layer
-> (`data/drizzled[_bcfill]/`), which is gitignored. Consequences: `--variant` is gone from
-> `make_masks.py`, `make_arc_masks.py`, `make_positions.py` and `make_dataset_subplots.py`;
-> `make_mosaics.py` has no `--bcfill`; `cutout_paths.psf_cutout_dir()` now asserts only
-> size-independence; `info/lens_cutout_qc_bcfill.json` was merged away. **`make_cutouts.py`
-> gained the guard that replaces the old tree separation** — a standard cut refuses to
-> overwrite a `BCFILL=T` stamp without `--force`.
+> **bcfill reverted; the standard drizzle is the modelling input (2026-09-22).** The
+> bad-column fill only removes the *honest* coverage stripe from the noise map (see the
+> decision under *Bad-column fill*), so `main` now carries the **standard** stamps for all
+> 105 ACS/WFPC2 bands that had been bcfill, and the bcfill products live on the **`bcfill`
+> branch** for collaborators. To make that split safe, **the stamp filename now carries the
+> reduction**: `cutout_[cr_]{sci,noise}.fits` is standard, `cutout_cr_bcfill_sci.fits` /
+> `cutout_cr_bcfill_crfill_sci.fits` are variants (`cutout_paths.stamp_name`). Masks, arc
+> masks, positions and PSFs keep the bare `cutout_[cr_]` prefix — they describe the grid,
+> which is identical across reductions — so a mask commit on `main` cherry-picks onto
+> `bcfill` without dragging a stamp along, and a merge that lands two reductions in one dir
+> makes every reader raise `AmbiguousStampError` instead of silently picking one. Readers
+> resolve stamps through `cutout_paths.find_stamp` / `find_prefix`, never by spelling the
+> name; `make_cutouts.py` refuses to put a second reduction beside an existing one unless
+> `--force` (which then removes the other's sci/noise/png). The `info/lens_cutout_qc.json`
+> record gained `stamp` (the filename) and `variant`. The 2026-09-14 "one science tree"
+> merge otherwise stands: one dir per band, no `cutouts_bcfill/` tree.
 >
 > **Bolton-interpolation investigation → bcfill productionized.**
 > `scripts/bolton_investigations/` (+ `README.md`) holds the standalone exploratory scripts for
@@ -642,17 +645,15 @@ option 3).
 - **A parallel tree at the DRIZZLE layer only, keyed via `cutout_paths.py`'s `variant` axis**
   (orthogonal to `--size`): `data/drizzled_bcfill/`, work dir `data/drizzle_files_bcfill/`.
   Both gitignored (big mosaics / scratch); the standard drizzle is never touched.
-  **`make_cutouts.py --bcfill` then cuts from that tree into the SAME `data/cutouts/`
-  stamp** (2026-09-14) — bcfill supersedes standard for the bands it covers, so there is one
-  science stamp per (sample, lens, filter) and no `cutouts_bcfill`/`mosaics_bcfill` to keep
-  in step. Which reduction a stamp is comes from its **`BCFILL` header card** (inherited from
-  the drizzled product) and the matching `bcfill` key in `info/lens_cutout_qc.json`, not from
-  its path. `make_mosaics.py` likewise has no `--bcfill`: one cutout tree, one set of QC grids.
-  - **The guard that replaces the old parallel tree** lives in `make_cutouts.py`: a standard
-    (non-`--bcfill`) cut **refuses to overwrite a stamp whose header says `BCFILL=T`** unless
-    `--force`. Re-cutting a band and forgetting `--bcfill` would otherwise be a silent
-    downgrade — same filenames, same geometry, the dead-column noise stripe back in the
-    science image and the hand-drawn mask beside it now describing a different reduction.
+  **`make_cutouts.py --bcfill` cuts from that tree into the SAME `data/cutouts/` band dir
+  under a TAGGED name** (`cutout_cr_bcfill_{sci,noise}.fits`, `cutout_cr_bcfill.png`;
+  2026-09-22, replacing the 2026-09-14 header-only scheme). The header still carries
+  **`BCFILL=T`** and `info/lens_cutout_qc.json` still records `bcfill`, but the name is what
+  keeps the two reductions apart across branches. One stamp per band is enforced at the cut:
+  a `--bcfill` cut into a dir holding a standard stamp (or vice versa) is **refused unless
+  `--force`**, which then removes the other reduction's sci/noise/png. Every reader goes
+  through `cutout_paths.find_stamp`, so `make_mosaics.py`, `make_masks.py` etc. need no
+  `--bcfill` flag and work unchanged on either branch.
 - **NOT for WFC3/IR F160W** — an IR array has **no bad columns** (verified on J0822: 0
   columns >50% dropped vs 57 for WF3); its noise-map dots are quadrupled hot-pixel replicas,
   a different, already-correct artifact AGENTS.md warns against altering. `--bcfill` exists
@@ -668,6 +669,46 @@ option 3).
   comparison figures (`redrizzle[_wfpc2]_*bcfill_compare.png`) were deleted with
   `diagnostics/bolton_test_outputs/` on 2026-09-13; rerun the scripts, or read them out of git
   history, to see them again.
+
+**DECIDED 2026-09-22: `--bcfill` is NOT the modelling input. `main` carries the standard
+stamps; the bcfill products live on the `bcfill` branch.** The reasoning, checked against
+source, not memory:
+
+- The fit's likelihood (`PyAutoArray/autoarray/fit/fit_util.py`) is
+  `log L = -0.5 * [ sum((data-model)^2/sigma^2) + sum(log(2*pi*sigma^2)) ]`. Each pixel's
+  residual is weighted by 1/sigma^2; the normalization term depends on sigma only, so it
+  shifts absolute log L between reductions but leaves delta-log-L between ladder rungs on
+  one dataset unchanged. Nothing in the fit *needs* a uniform noise map.
+- The standard (non-bcfill) drizzle already has a stripe-free **science** image — the
+  dithered good frames fill every affected pixel — and an **honest** noise stripe (1.1-1.4x,
+  the sqrt(N/N_eff) coverage penalty). bcfill barely changes the science (median |delta|
+  ~1.8e-6 e/s on J1023) and only removes the stripe from the noise map, making those pixels
+  ~13% optimistic, i.e. over-weighted by ~1.3x in chi^2, on ~5-6% of a cutout, sometimes
+  through the ring/core. That is a bias in the wrong direction for a fit; the stripe "looking
+  worse" is the map being correct.
+- Conclusion: **the standard drizzle stamp is the more correct modelling input; bcfill is
+  cosmetic and not needed downstream.** Before the revert `info/lens_cutout_qc.json`
+  recorded bcfill=True on f814W 42/48, f606W 47/62 (+1 v2), f555W 16/16; F160W and UV bands
+  were always standard.
+- **What was done.** (1) Stamp names now carry the reduction (see the top-of-file note and
+  `cutout_paths.py`), so the two branches cannot silently swap stamps. (2) The `bcfill`
+  branch was cut from `main` with the 105 bcfill stamps renamed to their tagged names and
+  pushed; it is the collaborators' copy. (3) On `main` the same 105 bands were re-cut from
+  `data/drizzled/` (standard, `--force`), mosaics and dataset subplots rebuilt. Geometry is
+  identical (same drizzle call, same grid) so every mask and positions file carried over —
+  verified by comparing `CRPIX`/`CRVAL` of each new stamp against the bcfill one, not
+  assumed. (4) The two `--crfill` bands (J1213+6708, J1250+0523 f814W) were `bcfill_crfill`;
+  see *`--crfill`* below for what replaced them.
+- **Moving mask work between branches:** `git cherry-pick` the mask commit, never `git
+  merge` — a merge would also carry the other branch's stamps across (they would then sit
+  beside this branch's under a different name, and every reader stops with
+  `AmbiguousStampError` until one is removed). A cherry-picked commit that also rebuilt the
+  QC PNGs renders the other reduction's stamp underneath; regenerate them on the branch.
+- Alternative that keeps bcfill's image with an honest noise map, if ever wanted: inflate
+  the noise by the per-pixel sqrt(WHT_filled/WHT_baseline) correction above, which
+  reproduces the standard stripe anyway. The modelling repo's data-prep docs should say the
+  fits read the standard (`main`) stamps.
+- Not changed by this: the cosmic-ray reasoning below (same physics, same direction).
 
 **DO NOT `--bcfill` A COSMIC RAY — the two defects are opposites (asked and measured
 2026-09-21, J1213+6708 and J1250+0523 f814W).** A dead column is flagged at the *same detector
@@ -708,7 +749,8 @@ anything drizzles, `fill_cosmic_rays()` interpolates SCI *and* ERR across each f
 and clears the bit, so the drizzle weights it like any other and the track leaves no
 weight/noise residue. Products go to `data/drizzled_crfill/`, or
 `data/drizzled_bcfill_crfill/` with both (the `_variant` tag composes), and carry
-**`CRFILL=True`** in the header exactly as bcfill carries `BCFILL`.
+**`CRFILL=True`** in the header exactly as bcfill carries `BCFILL`; the cut stamp is tagged
+the same way (`cutout_cr_crfill_sci.fits`, `cutout_cr_bcfill_crfill_sci.fits`).
 
 **STREAK-REPAIRED PRODUCTS ARE NOW THE STANDARD ON TWO BANDS (2026-09-22, user's call), and
 `info/lens_crfill.json` is the list.** Read that file before using either stamp; it records the

@@ -15,13 +15,12 @@
 # <sample> <size>), and carry no masks of their own since make_masks.py targets the
 # default (12") tree.
 #
-# There is ONE stamp per (sample, lens, filter) in there (2026-09-14): the bad-column-filled
-# reduction (--bcfill) supersedes the standard one in place for the ACS/WFPC2 bands it
-# covers, rather than in the parallel data/cutouts_bcfill/ + data/mosaics_bcfill/ trees it
-# used to occupy. Which reduction a stamp is comes from its BCFILL header card and the
-# matching `bcfill` key in info/lens_cutout_qc.json, not from its path. The drizzle layer
-# still has both (data/drizzled[_bcfill]/, data/drizzle_files[_bcfill]/) and all of it stays
-# ignored by the data/* rule.
+# There is ONE stamp per (sample, lens, filter) in there, and its filename says which
+# reduction it is (2026-09-22): cutout_[cr_]{sci,noise}.fits is the standard drizzle (what
+# main carries, and what the fits use); a variant cut is tagged, cutout_cr_bcfill_sci.fits
+# (the bcfill branch). Masks/positions/PSFs are untagged and shared. The drizzle layer keeps
+# every reduction (data/drizzled[_bcfill][_crfill]/, data/drizzle_files*/), all ignored by
+# the data/* rule.
 data/*
 !data/cutouts/
 !data/mosaics/

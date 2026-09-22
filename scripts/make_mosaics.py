@@ -73,11 +73,12 @@ CBAR_TICK_MIN_FONTSIZE = 8
 
 
 def find_cutout_pair(filt_dir):
-    """Return (sci_path, noise_path) for a cutout dir, preferring the CR pass."""
-    for prefix in ('cutout_cr', 'cutout'):
-        sci = os.path.join(filt_dir, f'{prefix}_sci.fits')
-        noise = os.path.join(filt_dir, f'{prefix}_noise.fits')
-        if os.path.exists(sci) and os.path.exists(noise):
+    """Return (sci_path, noise_path) for a cutout dir, preferring the CR pass. Whichever
+    reduction the band carries (the names are variant-tagged, cutout_paths.find_stamp)."""
+    for prefix in cutout_paths.PREFIXES:
+        sci = cutout_paths.find_stamp(filt_dir, prefix, 'sci')
+        noise = cutout_paths.find_stamp(filt_dir, prefix, 'noise')
+        if sci is not None and noise is not None:
             return sci, noise
     return None, None
 

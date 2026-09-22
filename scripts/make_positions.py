@@ -148,8 +148,8 @@ def deflector_sky(cutout_dir, prefix):
     band by the same amount, however it is computed.
     """
     from scipy import ndimage
-    hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
-    sci = np.asarray(fits.getdata(os.path.join(cutout_dir, f'{prefix}_sci.fits')), float)
+    hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
+    sci = np.asarray(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'sci')), float)
     ps = make_masks.pixel_scale_from_header(hdr)
     n_y, n_x = sci.shape
     cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
@@ -349,7 +349,7 @@ def rebuild_overlays(lens, filt_dirs, drizzle_pass, stretch, vmin_percent,
             continue
         grid = al.from_json(file_path=json_path)
         positions = [(float(y), float(x)) for (y, x) in np.asarray(grid)]
-        sci_path = os.path.join(cutout_dir, f'{prefix}_sci.fits')
+        sci_path = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
         ps = make_masks.pixel_scale_from_header(fits.getheader(sci_path))
         sci_native = al.Array2D.from_fits(file_path=sci_path, pixel_scales=ps).native
         out_png = os.path.join(cutout_dir, f'{prefix}_positions.png')
@@ -397,7 +397,7 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
         return 0
     positions = [(float(y), float(x))
                  for (y, x) in np.asarray(al.from_json(file_path=marked_json))]
-    marked_hdr = fits.getheader(os.path.join(marked_dir, f'{marked_prefix}_sci.fits'))
+    marked_hdr = fits.getheader(cutout_paths.find_stamp(marked_dir, marked_prefix, 'sci'))
     print(f"\n{lens}: re-deriving {len(positions)} position(s) from {marked_filt}")
     n = 0
     for filt in sorted(filt_dirs):
@@ -407,7 +407,7 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_sci = os.path.join(cutout_dir, f'{prefix}_sci.fits')
+        band_sci = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
         band_hdr = fits.getheader(band_sci)
         band_ps = make_masks.pixel_scale_from_header(band_hdr)
         new = reproject_positions(positions, marked_hdr, band_hdr)
@@ -458,7 +458,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         print(f"{lens}: positions already exist ({display_filt}), skipping (--force to re-mark)")
         return False
 
-    sci_path = os.path.join(display_dir, f'{display_prefix}_sci.fits')
+    sci_path = cutout_paths.find_stamp(display_dir, display_prefix, 'sci')
     with fits.open(sci_path) as hdul:
         sci_hdr = hdul[0].header
     pixel_scales = make_masks.pixel_scale_from_header(sci_hdr)
@@ -547,7 +547,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_sci = os.path.join(cutout_dir, f'{prefix}_sci.fits')
+        band_sci = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
         band_hdr = fits.getheader(band_sci)
         band_ps = make_masks.pixel_scale_from_header(band_hdr)
         if filt == display_filt:
