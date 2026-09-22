@@ -61,10 +61,12 @@ inner region is subtraction error and the detector proposes nothing there: those
 have to be drawn by hand.
 
 WHERE IT LOOKS IS SET BY THE MEASURED EINSTEIN RADIUS. Candidates are kept only in an annulus
-around the Auger+2009 (SLACS IX) theta_E for that lens -- `info/lens_einstein_radii.json`,
-built from VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e`. Every slacs_gold lens has a
-measured value, and a lens in that table has a successful published lens model, so the arc is
-known to exist and roughly where. This is the cheapest prior available and it kills the two
+around the published theta_E for that lens -- `info/lens_einstein_radii.json`, which holds two
+catalogues distinguished by each row's `source`: Auger+2009 (SLACS IX) for the SLACS lenses,
+fetched from VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e`, and Shu+2016 (BELLS GALLERY IV)
+Table 2 for the 15 gallery lenses, entered by hand because that paper is not on VizieR. Every
+slacs_gold and gallery lens has a measured value, and a lens in either table has a successful
+published lens model, so the arc is known to exist and roughly where. This is the cheapest prior available and it kills the two
 classic false positives at once: the deflector's central residual (inside the annulus) and
 unrelated field galaxies (outside it).
 
@@ -152,6 +154,12 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
     The catalogue column `RE` is in kpc, so it is converted with the angular diameter
     distance to the lens: theta_E["] = RE[kpc] / D_A(z_lens)[kpc] * 206265, on the flat
     (H0=70, Om=0.3) cosmology the paper assumes. Writes `info/lens_einstein_radii.json`.
+
+    **MERGES, never replaces.** Auger+2009 covers SLACS only, so the gallery rows come from
+    Shu+2016 and were entered by hand; a wholesale write here would silently delete them and
+    take `--propose-from detect` down on all 15 gallery lenses. Rows this catalogue does not
+    carry are kept as they are, and a fetched row replaces a hand-entered one of the same
+    name (the catalogue is authoritative for the lenses it does cover).
     """
     import urllib.request
     from astropy.cosmology import FlatLambdaCDM
@@ -175,15 +183,25 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
             'zsrc': float(zs) if zs else None, 'sigma_kms': int(sig) if sig else None,
             'source': 'Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses',
         }
+    merged = {}
+    if os.path.exists(THETA_E_JSON):
+        with open(THETA_E_JSON) as fh:
+            merged = json.load(fh)
+    kept = sorted(set(merged) - set(out))
+    merged.update(out)
     with open(THETA_E_JSON, 'w') as fh:
-        json.dump(dict(sorted(out.items())), fh, indent=1)
+        json.dump(dict(sorted(merged.items())), fh, indent=1)
         fh.write('\n')
-    print(f"wrote {THETA_E_JSON}: {len(out)} lenses with a measured Einstein radius")
+    print(f"wrote {THETA_E_JSON}: {len(out)} lenses from the catalogue, "
+          f"{len(kept)} kept from other sources, {len(merged)} total")
+    if kept:
+        srcs = sorted({merged[k].get('source', '?').split(',')[0] for k in kept})
+        print(f"  kept: {', '.join(srcs)}")
     if sample_lenses:
-        missing = [l for l in sample_lenses if l not in out]
+        missing = [l for l in sample_lenses if l not in merged]
         print(f"  of the {len(sample_lenses)} requested, {len(missing)} have no row"
               + (f": {', '.join(missing)}" if missing else ''))
-    return out
+    return merged
 
 
 def theta_e_table():
@@ -719,7 +737,9 @@ def main():
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto', help="cutout pass, as make_masks.py (default auto)")
     p.add_argument('--fetch-theta-e', action='store_true',
-                   help='refresh info/lens_einstein_radii.json from VizieR and exit')
+                   help='merge the VizieR Auger+2009 rows into '
+                        'info/lens_einstein_radii.json and exit (hand-entered rows '
+                        'from other papers, e.g. the gallery Shu+2016 ones, are kept)')
     p.add_argument('--out-dir', default=None,
                    help='where the QC figures go (default diagnostics/arc_detection/<sample>/)')
     p.add_argument('--no-figures', action='store_true', help='summary JSON only')
