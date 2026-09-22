@@ -604,6 +604,12 @@ def main():
         p.add_argument(f'--detect-{name.replace("_", "-")}', dest=f'detect_{name}',
                        type=type(val), default=val,
                        help=f'detector parameter passed through to detect_arcs (default {val})')
+    p.add_argument('--include-ignored', action='store_true', default=False,
+                   help='also offer bands whose cutout directory is GITIGNORED. Off by '
+                        'default: such a band is not a science product (the three 420 s '
+                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-drawn '
+                        'work written there is non-regenerable and invisible to every clone. '
+                        'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()
 
     # Same rule as make_masks.py: --broadcast writes one draw to every band unseen, which is
@@ -617,7 +623,8 @@ def main():
     root = cutout_paths.cutouts_root(ws_path, a.size)
 
     lens_filts = {}
-    for lens, filt, cutout_dir in make_masks.discover_targets(root, a.sample, a.lens, None):
+    for lens, filt, cutout_dir in make_masks.discover_targets(
+            root, a.sample, a.lens, None, include_ignored=a.include_ignored):
         lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:

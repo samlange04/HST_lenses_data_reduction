@@ -114,3 +114,31 @@ def psf_cutout_dir(ws_path, sample, lens, filt):
     read here, and make_dataset_subplots.py resolves the psf component through it.
     """
     return cutout_dir(ws_path, sample, lens, filt)
+
+
+def gitignored(paths, ws_path=None):
+    """The subset of `paths` that .gitignore excludes, as a set of absolute paths.
+
+    Lives here because BOTH make_masks and make_dataset_subplots need it and make_masks
+    already imports make_dataset_subplots -- putting it in either would be a cycle.
+
+    One batched `git check-ignore --stdin` call rather than one per directory: there are a
+    few hundred cutout dirs and a subprocess each would dominate the run. Any failure --
+    git missing, not a repository, an unexpected exit code -- returns the EMPTY set, i.e.
+    "nothing is ignored", so the guard can only ever make a run narrower when it works and
+    never blocks one when it cannot. (`git check-ignore` exits 1 for "nothing matched",
+    which is a normal answer, not an error; only >1 is a real failure.)
+    """
+    import subprocess
+    paths = [os.path.abspath(p) for p in paths]
+    if not paths:
+        return set()
+    root = ws_path or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        proc = subprocess.run(['git', '-C', root, 'check-ignore', '--stdin'],
+                              input='\n'.join(paths), capture_output=True, text=True)
+    except (OSError, ValueError):
+        return set()
+    if proc.returncode > 1:
+        return set()
+    return {os.path.abspath(line) for line in proc.stdout.splitlines() if line.strip()}

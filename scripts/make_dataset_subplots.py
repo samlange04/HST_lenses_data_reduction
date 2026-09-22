@@ -134,14 +134,19 @@ def find_prefix(cutout_dir, drizzle_pass='auto'):
     return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
-def discover_targets(root, sample, lens=None, filt=None):
+def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
     """Yield (lens, filt, cutout_dir) for every band with a cutout under `root`, sorted for
     a reproducible run order.
     """
     pattern = os.path.join(root, sample, lens or '*', filt or '*')
     found = {}
-    for cutout_dir in sorted(glob.glob(pattern)):
-        if not os.path.isdir(cutout_dir):
+    # Gitignored cutout dirs are not science products -- see make_masks.discover_targets.
+    # This tool only writes a QC PNG, so the cost of touching one is small, but a subplot of
+    # a diagnostic band in a tracked-looking place is still a lie; skip them the same way.
+    candidates = [d for d in sorted(glob.glob(pattern)) if os.path.isdir(d)]
+    ignored = set() if include_ignored else cutout_paths.gitignored(candidates)
+    for cutout_dir in candidates:
+        if os.path.abspath(cutout_dir) in ignored:
             continue
         if find_prefix(cutout_dir, 'auto') is None:
             continue

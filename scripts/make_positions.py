@@ -339,6 +339,14 @@ def main():
                         'quadrupole residual (the deflector is elliptical, not circular) '
                         'and treat it as a finding aid, not photometry. Display only -- pass '
                         '--no-subtract-radial to click on the raw image instead')
+    p.add_argument('--include-ignored', action='store_true', default=False,
+                   help='also offer bands whose cutout directory is GITIGNORED. Off by '
+                        'default: such a band is not a science product (the three 420 s '
+                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-marked '
+                        'positions written there are non-regenerable and invisible to every '
+                        'clone. This guard exists because it already happened -- J1538+5817 '
+                        'was MARKED on its SNAP f814W band and broadcast from there across a '
+                        '688 mas (13.8 px) misregistration; both copies were deleted 2026-09-22.')
     a = p.parse_args()
 
     root = cutout_paths.cutouts_root(ws_path, a.size)
@@ -347,7 +355,8 @@ def main():
     # mark once and broadcast across the lens's bands.
     lens_filts = {}
     for lens, filt, cutout_dir in make_masks.discover_targets(
-            root, a.sample, a.lens, None):    # filt=None: consider all bands, pick best below
+            root, a.sample, a.lens, None,     # filt=None: consider all bands, pick best below
+            include_ignored=a.include_ignored):
         lens_filts.setdefault(lens, {})[filt] = cutout_dir
 
     if not lens_filts:
