@@ -227,7 +227,7 @@ def stretched_display(data_native, pixel_scales, stretch='asinh',
     return al.Array2D.no_mask(values=disp, pixel_scales=pixel_scales).native
 
 
-def radial_median_subtract(data_native):
+def radial_median_subtract(data_native, exclude=None):
     """Subtract the azimuthally-averaged (median) radial profile about the stamp centre.
 
     A DISPLAY transform for finding lensed arcs: the deflector is a smooth, near-circular
@@ -238,15 +238,25 @@ def radial_median_subtract(data_native):
     ellipticity leaves a quadrupole residual, and the arcs themselves bias the median at
     their own radius (self-subtraction), so the result is a finding aid only -- never a
     photometric product. Clicks snap on the untouched flux array regardless.
+
+    `exclude` (bool array, True = ignore) drops those pixels from the per-radius MEDIAN
+    while still subtracting the profile everywhere. Same reasoning as the self-subtraction
+    caveat above, applied to a region already known to be junk: a bright contaminant left in
+    the ring statistics drags that radius' median up and stamps a dark annulus clean across
+    the panel -- through the arcs, at the one radius where they live. A ring left with no
+    usable pixel keeps profile 0, so it is passed through rather than blanked. Default None
+    reproduces the unexcluded profile exactly.
     """
     a = np.asarray(data_native, dtype=float)
     n_y, n_x = a.shape
     yy, xx = np.mgrid[0:n_y, 0:n_x]
     r_bin = np.hypot(yy - (n_y - 1) / 2.0, xx - (n_x - 1) / 2.0).astype(int)
+    usable = np.isfinite(a)
+    if exclude is not None:
+        usable &= ~np.asarray(exclude, dtype=bool)
     prof = np.zeros(r_bin.max() + 1)
     for i in range(prof.size):
-        ring = a[r_bin == i]
-        ring = ring[np.isfinite(ring)]
+        ring = a[(r_bin == i) & usable]
         if ring.size:
             prof[i] = np.median(ring)
     return a - prof[r_bin]

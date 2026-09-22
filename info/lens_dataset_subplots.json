@@ -331,7 +331,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.07685,
+                "frac_masked": 0.0761,
                 "bcfill": false,
                 "output": "data/cutouts/slacs_gold/J0029-0055/f160W/cutout_dataset.png"
             },
@@ -751,7 +751,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.459,
+                "frac_masked": 0.454,
                 "bcfill": false,
                 "output": "data/cutouts/slacs_gold/J1020+1122/f160W/cutout_dataset.png"
             },
@@ -783,7 +783,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.0382,
+                "frac_masked": 0.0369,
                 "bcfill": false,
                 "output": "data/cutouts/slacs_gold/J1023+4230/f160W/cutout_dataset.png"
             },
@@ -1055,7 +1055,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.05865,
+                "frac_masked": 0.0576,
                 "bcfill": false,
                 "output": "data/cutouts/slacs_gold/J1430+4105/f160W/cutout_dataset.png"
             },
@@ -1523,7 +1523,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.054219,
+                "frac_masked": 0.059566,
                 "bcfill": true,
                 "output": "data/cutouts/slacs_other/J1403+0006/f606W/cutout_cr_dataset.png"
             }
@@ -1545,7 +1545,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.006997,
+                "frac_masked": 0.021528,
                 "bcfill": true,
                 "output": "data/cutouts/slacs_other/J1416+5136/f814W/cutout_cr_dataset.png"
             }
