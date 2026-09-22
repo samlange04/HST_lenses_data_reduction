@@ -1,0 +1,102 @@
+{
+    "slacs_gold": {
+        "J1213+6708": {
+            "f814W": {
+                "astrometry_changed": true,
+                "astrometry_note": "this is the --align tweakreg lens: the re-drizzle lands 180 mas (3.6 px) from the archived product on the sky. Measured content shift +1.47 rows, +0.01 cols; cutout_cr_mask.fits and cutout_cr_mask_arcs.fits were shifted by the integer (+1,0) and NOT redrawn, leaving a 0.47 px residual (MASKSHFT / MASKSHRS header cards). Positions: none on this lens.",
+                "command": "uv run python scripts/drizzle_acs_wfc.py --lens J1213+6708 --filt f814W --sample slacs_gold --bcfill --crfill --crfill-radius 5 --crfill-min-area 50",
+                "cut_command": "uv run python scripts/make_cutouts.py --lens J1213+6708 --filt f814W --sample slacs_gold --bcfill --crfill",
+                "date": "2026-09-22",
+                "defect": "thin diagonal track, image PA 74.5 deg, passing 0.68\" from the deflector",
+                "downstream_rebuilt": [
+                    "cutout_cr_dataset.png",
+                    "cutout_cr_mask_arcs.png",
+                    "data/mosaics/slacs_gold/*"
+                ],
+                "noise_map_caveat": "the 210 filled px claim 4 frames where 3 exist: their noise is optimistic by sqrt(4/3) = 1.155. Everything else in the stamp is untouched (verified by raw subtraction against a zero-fill null on the same grid: 392 px of 57600 changed, all on the track).",
+                "px_filled": 210,
+                "px_flagged_total": 941414,
+                "px_left_unfillable": 0,
+                "ridge_after_pct": 1.6,
+                "ridge_before_pct": 11.0,
+                "ridge_frame_wide_pct": 2.3,
+                "selection": {
+                    "radius_arcsec": 5.0,
+                    "min_area_px": 50,
+                    "n_tracks": null
+                },
+                "superseded_product": "bcfill, no CR fill (archived stamp, 2026-08-13 campaign)",
+                "tracks": [
+                    {
+                        "frame": "j9op28baq",
+                        "chip": 2,
+                        "area_px": 210,
+                        "closest_approach_arcsec": 1.17
+                    }
+                ],
+                "tracks_kept": 1,
+                "tracks_total": 220590,
+                "why_this_setting": "one track already matches what a frame-wide fill achieves on this lens (+2.4% vs +2.3% when first measured), so a single track is the complete repair; a larger N buys nothing",
+                "widest_gap_px": 3
+            }
+        },
+        "J1250+0523": {
+            "f814W": {
+                "astrometry_changed": false,
+                "astrometry_note": "CRPIX identical to the archived stamp (deflector moves 1 mas), so the contaminant mask, arc mask and cutout_cr_positions.json all stay valid unchanged - nothing was shifted",
+                "command": "uv run python scripts/drizzle_acs_wfc.py --lens J1250+0523 --filt f814W --sample slacs_gold --bcfill --crfill --crfill-radius 2 --crfill-n-tracks 4",
+                "cut_command": "uv run python scripts/make_cutouts.py --lens J1250+0523 --filt f814W --sample slacs_gold --bcfill --crfill",
+                "date": "2026-09-22",
+                "defect": "2.1\" x 0.6\" bar at r = 0.87-1.71\" across the ring, plus three smaller tracks at 0.72-0.89\" - FOUR cosmic rays on the ring, in TWO exposures",
+                "downstream_rebuilt": [
+                    "cutout_cr_dataset.png",
+                    "cutout_cr_mask_arcs.png",
+                    "data/mosaics/slacs_gold/*"
+                ],
+                "noise_map_caveat": "the 256 filled px claim 4 frames where 3 exist: their noise is optimistic by sqrt(4/3) = 1.155. Nothing else in the stamp changed.",
+                "px_filled": 256,
+                "px_flagged_total": 1113026,
+                "px_left_unfillable": 0,
+                "ridge_after_pct": 1.9,
+                "ridge_before_pct": 9.2,
+                "ridge_frame_wide_pct": 1.4,
+                "selection": {
+                    "radius_arcsec": 2.0,
+                    "min_area_px": 0,
+                    "n_tracks": 4
+                },
+                "superseded_product": "bcfill, no CR fill (archived stamp, 2026-08-13 campaign)",
+                "tracks": [
+                    {
+                        "frame": "j9c713d0q",
+                        "chip": 2,
+                        "area_px": 194,
+                        "closest_approach_arcsec": 1.02
+                    },
+                    {
+                        "frame": "j9c713cuq",
+                        "chip": 2,
+                        "area_px": 31,
+                        "closest_approach_arcsec": 0.72
+                    },
+                    {
+                        "frame": "j9c713cuq",
+                        "chip": 2,
+                        "area_px": 17,
+                        "closest_approach_arcsec": 0.76
+                    },
+                    {
+                        "frame": "j9c713cuq",
+                        "chip": 2,
+                        "area_px": 14,
+                        "closest_approach_arcsec": 0.89
+                    }
+                ],
+                "tracks_kept": 4,
+                "tracks_total": 258884,
+                "why_this_setting": "one track only reached +2.8% here against +1.4% frame-wide, because three smaller tracks also sit on the ring; 4 tracks at 256 px gets within 0.5% of a 1.1-million-pixel blanket fill. The four were confirmed by eye against diagnostics/cr_defects/J1250+0523_f814W_cr_inventory.png",
+                "widest_gap_px": 7
+            }
+        }
+    }
+}

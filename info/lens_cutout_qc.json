@@ -562,18 +562,18 @@
         "J0029-0055": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.257,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.228044,
+                "weight_uniformity": 0.227979,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -940,18 +940,18 @@
         "J0903+4116": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.1278,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.19306,
+                "weight_uniformity": 0.192875,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1177,18 +1177,18 @@
         "J1020+1122": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.0386,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.222953,
+                "weight_uniformity": 0.223131,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1224,18 +1224,18 @@
         "J1023+4230": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.0505,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.24958,
+                "weight_uniformity": 0.249583,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1271,18 +1271,18 @@
         "J1029+0420": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.0701,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.306513,
+                "weight_uniformity": 0.306428,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1318,6 +1318,7 @@
         "J1032+5322": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.299,
@@ -1328,8 +1329,7 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1476,18 +1476,20 @@
             },
             "f814W": {
                 "size_arcsec": 12.0,
+                "bcfill": true,
+                "crfill": true,
+                "dropped_frames": false,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
-                "offset_arcsec": 0.4794,
+                "offset_arcsec": 0.3537,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.315083,
+                "weight_uniformity": 0.318252,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5,
-                "bcfill": true
+                "casertano_r_analytic": 1.5
             }
         },
         "J1218+0830": {
@@ -1540,18 +1542,20 @@
             },
             "f814W": {
                 "size_arcsec": 12.0,
+                "bcfill": true,
+                "crfill": true,
+                "dropped_frames": false,
                 "drizzle_pass": "cr",
                 "center_source": "this band",
                 "offset_arcsec": 0.088,
                 "noise_k": 1.0,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.227565,
+                "weight_uniformity": 0.226729,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5,
-                "bcfill": true
+                "casertano_r_analytic": 1.5
             }
         },
         "J1402+6321": {
@@ -1621,18 +1625,18 @@
         "J1430+4105": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "f814W",
                 "offset_arcsec": 0.1077,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
-                "weight_uniformity": 0.27938,
+                "weight_uniformity": 0.279497,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2433,9 +2437,10 @@
         "J1636+4707": {
             "f160W": {
                 "size_arcsec": 12.0,
+                "bcfill": false,
                 "drizzle_pass": "nocrrej",
                 "center_source": "this band",
-                "offset_arcsec": 0.2103,
+                "offset_arcsec": 0.2406,
                 "noise_k": 599.232,
                 "corr_factor": 1.0,
                 "weight_uniformity": 0.240532,
@@ -2443,8 +2448,7 @@
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "casertano_r_analytic": 2.5324
             },
             "f606W": {
                 "size_arcsec": 12.0,
