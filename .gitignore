@@ -25,6 +25,29 @@
 data/*
 !data/cutouts/
 !data/mosaics/
+# ── Positions QC overlays ──────────────────────────────────────────────────────
+# scripts/make_positions.py writes TWO files per band: cutout_[cr_]positions.json, the
+# hand-marked image positions themselves -- non-regenerable manual work, tracked like the
+# masks -- and cutout_[cr_]positions.png, a QC view OF that JSON. Only the JSON is a
+# product. The PNG is one per band (~160 of them) and is rebuilt from the JSON + the sci
+# stamp with no GUI and no re-clicking:
+#     uv run python scripts/make_positions.py --sample <sample> --overlays-only
+# so it is regenerable in the sense this file cares about, and stays out of history.
+# NOTE this is the one PNG under data/cutouts/ that is ignored -- cutout_cr.png,
+# _dataset.png and _mask_arcs.png are all still tracked.
+data/cutouts/**/*_positions.png
+
+# ── slacs_gold f606W arc masks: parked, not abandoned (2026-09-21) ─────────────
+# The slacs_gold f814W arc masks (38/38) are committed; its f606W ones (10 so far) are
+# held OUT of git for now at the user's request. Nothing is deleted: the .fits and .png
+# stay on disk beside the sci they were drawn on and their provenance stays in
+# info/lens_arc_masks.json, so make_arc_masks.py still counts them done and skips them
+# (--force to redraw). Drop these two lines to commit them.
+# NOTE this is the ONLY _mask_arcs file under data/cutouts/ that is ignored -- gallery's
+# and slacs_other's f606W arc masks, and slacs_gold's own f814W ones, are all tracked.
+data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.fits
+data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.png
+
 # ...and neither is the per-size QC provenance for an untracked size, which would
 # otherwise be a tracked file describing products nobody else has on disk. The default
 # (12") info/lens_cutout_qc.json is tracked as an ordinary info/ file, untouched by this
