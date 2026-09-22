@@ -1821,7 +1821,7 @@
                 "n_added_px": 512,
                 "n_erased_px": 0,
                 "n_excluded_px": 7954,
-                "note": "2026-09-13: the compact red object 3.68\" from the deflector is NOT an arc and is masked. It is tangentially elongated (b/a 0.70, major axis 89 deg from radial), which is why it reads as one, but that is weak shear, not strong lensing: no counter-image anywhere at 2.5-5.5\", and it is ~3x REDDER than the deflector (f160W/f814W) where a lensed SLACS source would be bluer. The implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\" that are the real lensed features. See diagnostics/J1016+3859_f814W_arc_test.png. A second sheared galaxy, object B, sits at r=3.94\" (sky NW) and is masked in f606W but NOT here, though it is detected in f814W at S/N ~5; see the f606W note.",
+                "note": "2026-09-13: the compact red object 3.68\" from the deflector is NOT an arc and is masked. It is tangentially elongated (b/a 0.70, major axis 89 deg from radial), which is why it reads as one, but that is weak shear, not strong lensing: no counter-image anywhere at 2.5-5.5\", and it is ~3x REDDER than the deflector (f160W/f814W) where a lensed SLACS source would be bluer. The implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\" that are the real lensed features. See diagnostics/feature_vetting/J1016+3859_f814W_arc_test.png. A second sheared galaxy, object B, sits at r=3.94\" (sky NW) and is masked in f606W but NOT here, though it is detected in f814W at S/N ~5; see the f606W note. || CORRECTION 2026-09-21: 'the implied shear gives theta_E ~1.3-1.4\", matching the faint f606W knots at r=1.4-1.8\"' predates info/lens_einstein_radii.json. Auger+2009 MEASURES theta_E = 1.0905\", so the shear inference ran 24% HIGH and the f606W knots sit at 1.3-1.65 theta_E, not at theta_E. The verdict on object A is unaffected -- it rests on the counter-image null and the colour, not on the shear number -- but do not quote the 1.3-1.4\" as this lens's Einstein radius.",
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
                 "proposal_from": "f814W",
@@ -1992,20 +1992,20 @@
         },
         "J1403+0006": {
             "f606W": {
+                "bcfill": true,
                 "brush_radius_px": 6,
                 "brush_width": 0.025,
                 "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
                 "drizzle_pass": "cr",
-                "edited": "2026-09-14: pulled back off the expected arc radius -- cleared masked pixels within 1.2\" of the deflector (3147 -> 3123 px). Bolton 2008 gives sigma=213+/-17 km/s, z_l=0.1888, z_s=0.4730 -> SIS theta_E=0.75\", and that estimator runs ~30-40% low against rings measured in this repo, so the arc is expected near ~1.0\". The mask previously reached 1.06\", i.e. onto that radius. No arc is actually detected here (no blue excess anywhere in f606W/f814W) and the masked companion at r=1.77\" is ~1.8x theta_E, so it is very unlikely to be the lensed source -- this is precautionary clearance, not a correction.",
+                "edited": "2026-09-14: pulled back off the expected arc radius -- cleared masked pixels within 1.2\" of the deflector (3147 -> 3123 px). Bolton 2008 gives sigma=213+/-17 km/s, z_l=0.1888, z_s=0.4730 -> SIS theta_E=0.75\", and that estimator runs ~30-40% low against rings measured in this repo, so the arc is expected near ~1.0\". The mask previously reached 1.06\", i.e. onto that radius. No arc is actually detected here (no blue excess anywhere in f606W/f814W) and the masked companion at r=1.77\" is ~1.8x theta_E, so it is very unlikely to be the lensed source -- this is precautionary clearance, not a correction. || CORRECTION 2026-09-21: the theta_E reasoning above is superseded. Auger+2009 gives a MEASURED theta_E = 0.8303\" (info/lens_einstein_radii.json), so the SIS 0.75\" was only 11% low here, not the 30-40% assumed, and the arc is expected at 0.83\", not ~1.0\". The mask's 1.20\" inner edge is therefore 1.45 theta_E. The '~1.8x theta_E companion at 1.77\"' is the same neighbour, re-measured on an elliptical-isophote model as r=1.82\" = 2.19 theta_E, sigma_major 0.66\" (5.2x the PSF), ~1100 px, peak S/N 15. Its halo crosses the 1.20\" edge, so 221 px / 1.23 e-/s of it is left INSIDE the fit region. Trade-off measured over the 0.8-1.3 theta_E annulus: inner edge 1.20\" leaves 221 px and masks 0% of the annulus; 1.00\" leaves 81 px for 5.6%; 0.90\" leaves 36 px for 10.5%; masking the neighbour outright leaves 0 px for 14.5%. 'No arc is actually detected here' STANDS, but for a measured reason: inside 1.2\" the residual scatter is 3.2x the photon noise (galaxy-model-limited, not noise-limited), so a feature needs >~10 sigma to be a 3-sigma excess over model error and the brightest thing in the annulus outside the neighbour is 8.7 sigma. See diagnostics/masks/J1403+0006_f606W_neighbour_tradeoff.png. || 2026-09-21: ADDED 308 px -- the neighbour's own 1-sigma isophote between r=1.00\" (1.20 theta_E) and r=2.0\", which the 2026-09-14 radial pull-back to 1.20\" had left unmasked. 3123 -> 3431 px; nothing was cleared and the hand-drawn OUTER boundary is untouched. Why: that pull-back cut a circular arc straight through the neighbour (r=1.82\"=2.19 theta_E, 5.2x the PSF, ~1100 px, peak S/N 15), leaving 427 px of its halo inside the fit region -- 3.45% of the deflector's flux inside 1\", brightest leftover pixel 11.5 sigma. After the edit: 119 px, 0.88%, brightest 9.1 sigma, which is below the ~10 sigma floor the galaxy-model error sets on this lens (residual scatter inside 1.2\" is 3.2x the photon noise). Cost: 6.4% of the 0.8-1.3 theta_E annulus and 13.7% of 0.8-1.5 theta_E, ALL of it in image PA 180-270 deg (~23% of those three 30-deg sectors, 0% in every other sector) -- the only direction the neighbour reaches in. Nearest masked pixel 1.15\" -> 1.00\" = 1.20 theta_E, still clear of the ring. Alternatives measured, if a looser or tighter edge is wanted: floor 1.10\" (+237 px, 190 left, 10.7 sigma, 0% of the 0.8-1.3 annulus) or 0.90\" (+358 px, 69 left, 4.5 sigma, 11.8%). Reversible: git checkout the mask. See diagnostics/masks/J1403+0006_f606W_mask_yours_vs_mine.png.",
                 "n_added_px": 342,
                 "n_erased_px": 0,
-                "n_excluded_px": 3123,
+                "n_excluded_px": 3431,
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
                 "proposal_from": "f606W",
                 "proposal_px": 2897,
-                "source": "edited_from_f606W",
-                "bcfill": true
+                "source": "edited_from_f606W"
             }
         },
         "J1416+5136": {
@@ -2028,12 +2028,16 @@
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed",
-                "source": "drawn",
-                "n_excluded_px": 403,
+                "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
+                "bcfill": true,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 1240,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "bcfill": true
+                "proposal_from": "f606W",
+                "proposal_px": 1228,
+                "n_added_px": 112,
+                "n_erased_px": 0
             }
         },
         "J1436-0000": {
