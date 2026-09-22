@@ -300,17 +300,10 @@ def pixel_scale_from_header(hdr):
 
 
 def find_prefix(cutout_dir, drizzle_pass='auto'):
-    """Pick 'cutout_cr' or 'cutout', mirroring make_cutouts.py's --pass auto logic: prefer
-    the CR-rejected pass, fall back to no-CR (e.g. F160W, which has no CR pass). Returns
-    None if the requested pass has no sci file in this cutout_dir.
-    """
-    has_cr = os.path.exists(os.path.join(cutout_dir, 'cutout_cr_sci.fits'))
-    has_nocr = os.path.exists(os.path.join(cutout_dir, 'cutout_sci.fits'))
-    if drizzle_pass == 'cr':
-        return 'cutout_cr' if has_cr else None
-    if drizzle_pass == 'nocrrej':
-        return 'cutout' if has_nocr else None
-    return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
+    """Delegates to cutout_paths.find_prefix: 'cutout_cr' or 'cutout' for this band, whichever
+    reduction (standard / bcfill / ...) its stamp is from -- the stamp names are variant-
+    tagged, so this is the one place that knows how to find them."""
+    return cutout_paths.find_prefix(cutout_dir, drizzle_pass)
 
 
 def gitignored(paths):
@@ -367,13 +360,13 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
     noise map is missing.
     """
     sci = al.Array2D.from_fits(
-        file_path=os.path.join(display_dir, f'{prefix}_sci.fits'),
+        file_path=cutout_paths.find_stamp(display_dir, prefix, 'sci'),
         pixel_scales=pixel_scales).native
     if display == 'sci':
         return sci, 'signal'
-    noise_path = os.path.join(display_dir, f'{prefix}_noise.fits')
-    if not os.path.exists(noise_path):
-        print(f"  NOTE: no {prefix}_noise.fits -- displaying signal instead of S/N")
+    noise_path = cutout_paths.find_stamp(display_dir, prefix, 'noise')
+    if noise_path is None:
+        print(f"  NOTE: no {prefix}[_<variant>]_noise.fits -- displaying signal instead of S/N")
         return sci, 'signal'
     noise = np.asarray(al.Array2D.from_fits(
         file_path=noise_path, pixel_scales=pixel_scales).native, dtype=float)
@@ -475,7 +468,7 @@ def find_proposal_mask(filt_dirs, display_filt, display_hdr, drizzle_pass, propo
                 return cand, src_bool                 # same grid -- no reprojection needed
             # The mask FITS is a bare array (aplt.fits_array), so its band's sci header
             # carries the WCS -- exactly as the --broadcast path resolves the target grid.
-            src_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+            src_hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
             return cand, reproject_mask_bool(src_bool, WCS(src_hdr).celestial,
                                              dst_wcs, dst_shape)
     return None, None
@@ -575,7 +568,7 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     kept -- al.Mask2D's own convention, so the scribbled array IS the mask, no inversion;
     opposite polarity to autolens_workspace's mask.py, which scribbles the region to keep).
     """
-    sci_path = os.path.join(display_dir, f'{display_prefix}_sci.fits')
+    sci_path = cutout_paths.find_stamp(display_dir, display_prefix, 'sci')
     with fits.open(sci_path) as hdul:
         sci_hdr = hdul[0].header
     pixel_scales = pixel_scale_from_header(sci_hdr)
@@ -733,7 +726,7 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
         print(f"{lens}: mask already exists ({display_filt}), skipping (--force to redraw)")
         return False
 
-    display_hdr = fits.getheader(os.path.join(display_dir, f'{display_prefix}_sci.fits'))
+    display_hdr = fits.getheader(cutout_paths.find_stamp(display_dir, display_prefix, 'sci'))
     proposal_from, proposal = find_proposal_mask(
         filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from, force=force)
     if proposal is not None:
@@ -792,7 +785,7 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
         prefix = find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+        band_hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
         band_ps = pixel_scale_from_header(band_hdr)
         is_draw = (cutout_dir == display_dir)
         if is_draw:

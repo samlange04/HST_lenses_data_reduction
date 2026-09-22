@@ -121,17 +121,10 @@ def pixel_scale_from_header(hdr):
 
 
 def find_prefix(cutout_dir, drizzle_pass='auto'):
-    """Pick 'cutout_cr' or 'cutout', mirroring make_cutouts.py / make_masks.py --pass logic:
-    prefer the CR-rejected pass, fall back to no-CR (e.g. F160W, no CR pass). Returns None
-    if the requested pass has no sci file here.
-    """
-    has_cr = os.path.exists(os.path.join(cutout_dir, 'cutout_cr_sci.fits'))
-    has_nocr = os.path.exists(os.path.join(cutout_dir, 'cutout_sci.fits'))
-    if drizzle_pass == 'cr':
-        return 'cutout_cr' if has_cr else None
-    if drizzle_pass == 'nocrrej':
-        return 'cutout' if has_nocr else None
-    return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
+    """Delegates to cutout_paths.find_prefix: 'cutout_cr' or 'cutout' for this band, whichever
+    reduction (standard / bcfill / ...) its stamp is from -- the stamp names are variant-
+    tagged, so this is the one place that knows how to find them."""
+    return cutout_paths.find_prefix(cutout_dir, drizzle_pass)
 
 
 def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
@@ -174,8 +167,12 @@ def resolve_components(cutout_dir, drizzle_pass, psf_dir=None):
     resolved, missing = {}, []
     for comp in COMPONENTS:
         src_dir = psf_dir if (comp == 'psf' and psf_dir is not None) else cutout_dir
-        path = os.path.join(src_dir, f'{prefix}_{comp}.fits')
-        if os.path.exists(path):
+        if comp in cutout_paths.STAMP_KINDS:
+            # sci/noise carry the reduction tag in their name; psf/mask do not (same grid).
+            path = cutout_paths.find_stamp(src_dir, prefix, comp)
+        else:
+            path = os.path.join(src_dir, f'{prefix}_{comp}.fits')
+        if path is not None and os.path.exists(path):
             resolved[comp] = path
         else:
             missing.append(comp)

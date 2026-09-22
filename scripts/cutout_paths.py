@@ -14,29 +14,42 @@ derived here rather than in each script:
 Keying the tree on --size itself, rather than on an independent --output flag the caller
 has to remember to set, is deliberate: `make_cutouts.py --size 20` on its own then cannot
 silently clobber the 12" product set. That is exactly the class of quietly-wrong-product
-failure AGENTS.md warns about, and the cutout FITS names (cutout_[cr_]{sci,noise}.fits)
+failure AGENTS.md warns about, and the cutout FITS names (cutout_[cr_][<variant>_]{sci,noise}.fits)
 carry no size in them, so a clobbered stamp is indistinguishable from a correct one on
 inspection. An explicit --output still wins, for one-off work.
 
-**One stamp per (sample, lens, filt) -- the bcfill/standard split is a drizzle-layer axis
-only** (2026-09-14). `variant` ('bcfill') keys a whole alternate *reduction*: the ACS/WFPC2
-bad-column-filled re-drizzle (drizzle_acs_wfc.py --bcfill; see AGENTS.md, *Bad-column
-fill*). The mosaics it produces genuinely differ, so `drizzled_root` is variant-keyed:
+**One stamp per (sample, lens, filt), and the stamp's filename says which reduction it is**
+(2026-09-22). `variant` ('bcfill', 'crfill', 'bcfill_crfill', 'drop', ...) keys a whole
+alternate *reduction* at the drizzle layer (drizzle_acs_wfc.py --bcfill / --crfill; see
+AGENTS.md, *Bad-column fill*), so `drizzled_root` is variant-keyed:
 
     standard   data/drizzled/          work dir data/drizzle_files/
     bcfill     data/drizzled_bcfill/   work dir data/drizzle_files_bcfill/
 
-But the *cutouts* are not. bcfill supersedes standard for the bands it covers -- its stamps
-are what the masks were drawn on and what the fits read -- so cutting a band with --bcfill
-replaces that band's stamp in the one tree rather than starting a parallel one. There is
-therefore exactly one science stamp per band, no priority-tree search to resolve, and the
-four products a fit consumes (sci, noise, psf, mask) always sit together by construction.
-Which reduction a stamp came from is read from its **BCFILL header card** (and mirrored in
-the `bcfill` key of info/lens_cutout_qc.json), not from its path.
+The cutouts stay in ONE tree, but a stamp cut from a variant drizzle carries that variant
+in its NAME, not just in a header card:
 
-The guard that replaces the old parallel tree lives in make_cutouts.py: a standard cut
-refuses to overwrite a stamp whose header says BCFILL=True unless --force, so re-cutting a
-band without remembering --bcfill cannot silently downgrade it.
+    standard      cutout_cr_sci.fits           cutout_cr_noise.fits           cutout_cr.png
+    bcfill        cutout_cr_bcfill_sci.fits    cutout_cr_bcfill_noise.fits    cutout_cr_bcfill.png
+    bcfill+crfill cutout_cr_bcfill_crfill_sci.fits  ...
+
+Only the sci/noise stamps and their 3-panel PNG are tagged. The mask, arc-mask, positions
+and PSF files keep the bare `cutout_[cr_]` prefix: they describe the band's *grid*, which
+is identical across reductions (same drizzle call, same output WCS), so they are shared by
+every reduction of that band and can be moved between branches on their own.
+
+Why the tag is in the name and not only in the header (it used to be header-only,
+2026-09-14..22): the repo's `main` branch carries the standard stamps and the `bcfill`
+branch carries the bcfill ones. With one shared filename, merging or cherry-picking
+between those branches silently replaced one reduction's bytes with the other's -- no
+conflict, no error, and nothing downstream could tell. With distinct names a merge can at
+worst put BOTH stamps in one dir, and `find_stamp` below then refuses to pick, which is
+the loud failure we want.
+
+The invariant is still ONE stamp per band: make_cutouts.py refuses to write a second
+variant beside an existing one unless --force, and with --force it removes the other.
+Every reader resolves the stamp through `find_stamp(cutout_dir, prefix, kind)` rather than
+spelling the filename, so a reader never has to know which reduction a band carries.
 
 The PSF products (cutout_[cr_]psf*.fits) are NOT size-keyed and are not duplicated into a
 size tree: the kernel is trimmed by amplitude (AGENTS.md, *PSF generation*), so it is a
@@ -59,6 +72,112 @@ def size_tag(size):
 def variant_tag(variant):
     """'' for the standard reduction, else '_<variant>' (e.g. '_bcfill')."""
     return f'_{variant}' if variant else ''
+
+
+# The reduction axes a drizzle/cut can be run with, in the order their tags compose:
+# --bcfill --crfill gives 'bcfill_crfill' (and data/drizzled_bcfill_crfill/), never
+# 'crfill_bcfill'. make_cutouts.py builds its variant from this; find_stamp parses with it.
+VARIANT_COMPONENTS = ('bcfill', 'crfill', 'drop')
+STAMP_KINDS = ('sci', 'noise')
+PREFIXES = ('cutout_cr', 'cutout')     # CR-rejected pass first: the preferred one
+
+
+def variant_from_flags(**flags):
+    """'bcfill_crfill' from bcfill=True, crfill=True, drop=False -- the canonical join."""
+    unknown = set(flags) - set(VARIANT_COMPONENTS)
+    if unknown:
+        raise ValueError(f'unknown variant component(s) {sorted(unknown)}')
+    return '_'.join(c for c in VARIANT_COMPONENTS if flags.get(c))
+
+
+def _is_variant(tag):
+    """True if `tag` is a canonical composition of VARIANT_COMPONENTS ('' included)."""
+    if tag == '':
+        return True
+    parts = tag.split('_')
+    order = [VARIANT_COMPONENTS.index(x) for x in parts if x in VARIANT_COMPONENTS]
+    return len(order) == len(parts) and order == sorted(order) and len(set(parts)) == len(parts)
+
+
+def stamp_name(prefix, kind, variant=''):
+    """'cutout_cr_bcfill_sci.fits' -- the tagged stamp filename. `kind` is 'sci' or
+    'noise'; the 3-panel QC PNG is stamp_png_name."""
+    return f'{prefix}{variant_tag(variant)}_{kind}.fits'
+
+
+def stamp_png_name(prefix, variant=''):
+    return f'{prefix}{variant_tag(variant)}.png'
+
+
+class AmbiguousStampError(RuntimeError):
+    """More than one reduction's stamp sits in a cutout dir -- see the module docstring."""
+
+
+def list_stamps(cutout_dir, prefix, kind='sci'):
+    """Every `{prefix}[_<variant>]_<kind>.fits` in cutout_dir, as {variant: path}.
+
+    Matches on the canonical variant grammar, so 'cutout' does not swallow 'cutout_cr_*'
+    and a stray file with an unknown middle is not mistaken for a stamp.
+    """
+    import glob
+    found = {}
+    for path in glob.glob(os.path.join(cutout_dir, f'{prefix}*_{kind}.fits')):
+        base = os.path.basename(path)
+        middle = base[len(prefix):-len(f'_{kind}.fits')]
+        if middle == '':
+            found[''] = path
+        elif middle.startswith('_') and _is_variant(middle[1:]):
+            found[middle[1:]] = path
+    return found
+
+
+def find_stamp(cutout_dir, prefix, kind='sci', variant=None):
+    """The one `{prefix}[_<variant>]_<kind>.fits` in cutout_dir, or None if there is none.
+
+    With `variant=None` (the normal case) the band must carry exactly ONE reduction's
+    stamp; two or more raise AmbiguousStampError naming them, because choosing silently is
+    precisely the failure the tagged names exist to prevent. Pass `variant` to ask for a
+    specific one (returns None if absent).
+    """
+    stamps = list_stamps(cutout_dir, prefix, kind)
+    if variant is not None:
+        return stamps.get(variant)
+    if len(stamps) > 1:
+        names = ', '.join(os.path.basename(p) for _, p in sorted(stamps.items()))
+        raise AmbiguousStampError(
+            f'{cutout_dir}: {len(stamps)} {prefix}_{kind} stamps from different reductions '
+            f'({names}). One stamp per band: remove the one that does not belong '
+            f'(or re-cut with --force), then re-run.')
+    return next(iter(stamps.values()), None)
+
+
+def stamp_variant(path):
+    """'bcfill' from '.../cutout_cr_bcfill_sci.fits', '' for an untagged stamp."""
+    base = os.path.basename(path)
+    for prefix in PREFIXES:
+        for kind in STAMP_KINDS:
+            if base.startswith(prefix) and base.endswith(f'_{kind}.fits'):
+                middle = base[len(prefix):-len(f'_{kind}.fits')]
+                if middle == '':
+                    return ''
+                if middle.startswith('_') and _is_variant(middle[1:]):
+                    return middle[1:]
+    raise ValueError(f'{base} is not a stamp filename')
+
+
+def find_prefix(cutout_dir, drizzle_pass='auto'):
+    """Pick 'cutout_cr' or 'cutout' for this band, mirroring make_cutouts.py --pass auto:
+    prefer the CR-rejected pass, fall back to no-CR (F160W has no CR pass). Returns None
+    if the requested pass has no sci stamp here, whichever reduction it is from. Raises
+    AmbiguousStampError if a pass has stamps from two reductions (find_stamp).
+    """
+    has_cr = find_stamp(cutout_dir, 'cutout_cr', 'sci') is not None
+    has_nocr = find_stamp(cutout_dir, 'cutout', 'sci') is not None
+    if drizzle_pass == 'cr':
+        return 'cutout_cr' if has_cr else None
+    if drizzle_pass == 'nocrrej':
+        return 'cutout' if has_nocr else None
+    return 'cutout_cr' if has_cr else ('cutout' if has_nocr else None)
 
 
 def drizzled_root(ws_path, variant=''):

@@ -237,9 +237,9 @@ def _sentinel_free(noise):
 
 def load_band(cutout_dir, prefix):
     """sci / variance / valid / psf / header for one band's cutout, PSF normalised to unit sum."""
-    sci = fits.getdata(os.path.join(cutout_dir, f'{prefix}_sci.fits')).astype(float)
-    hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
-    var, valid = _sentinel_free(fits.getdata(os.path.join(cutout_dir, f'{prefix}_noise.fits')))
+    sci = fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'sci')).astype(float)
+    hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
+    var, valid = _sentinel_free(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'noise')))
     psf = centre_kernel(fits.getdata(os.path.join(cutout_dir, f'{prefix}_psf.fits')))
     mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
     cmask = (np.asarray(fits.getdata(mask_path), dtype=bool) if os.path.exists(mask_path)

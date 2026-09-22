@@ -157,7 +157,7 @@ def _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs, dst_shape, lens,
     arc_region = ~np.asarray(fits.getdata(mask_path), dtype=bool)
     if source == display_filt:
         return arc_region, {}
-    src_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+    src_hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
     return make_masks.reproject_mask_bool(arc_region, WCS(src_hdr).celestial,
                                           dst_wcs, dst_shape), {}
 
@@ -426,7 +426,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
             print(f"  NOTE: no {display_prefix}_mask.fits on this band -- no contaminant "
                   f"outline to show (draw one with make_masks.py first if you want it)")
 
-    display_hdr = fits.getheader(os.path.join(display_dir, f'{display_prefix}_sci.fits'))
+    display_hdr = fits.getheader(cutout_paths.find_stamp(display_dir, display_prefix, 'sci'))
     prefixes = {f: make_masks.find_prefix(d, drizzle_pass) for f, d in filt_dirs.items()}
     proposal_from = proposal = None
     proposal_extra = {}
@@ -500,7 +500,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
         prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_hdr = fits.getheader(os.path.join(cutout_dir, f'{prefix}_sci.fits'))
+        band_hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
         band_ps = make_masks.pixel_scale_from_header(band_hdr)
         is_draw = (cutout_dir == display_dir)
         # Reproject the ARC REGION, never the inverted array: outside-footprint pixels then

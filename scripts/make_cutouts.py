@@ -10,8 +10,11 @@ cutout and re-cuts so the stamp is exactly centred on the lens galaxy.
 The noise map is derived from the drizzle weight map as 1/sqrt(weight), with
 zero-weight pixels mapped to a large value so they are excluded from any fit.
 
-Writes cutout_sci.fits, cutout_noise.fits and a 3-panel cutout.png
-(signal / noise / signal-to-noise) for visual inspection.
+Writes cutout_[cr_]sci.fits, cutout_[cr_]noise.fits and a 3-panel cutout_[cr].png
+(signal / noise / signal-to-noise) for visual inspection. A cut from a variant drizzle
+(--bcfill / --crfill / --drop) tags the variant into those three names --
+cutout_cr_bcfill_sci.fits etc. -- so two reductions of one band can never share a
+filename; see cutout_paths.py. The mask/positions/PSF files are NOT tagged (same grid).
 
 Stamps are 12" square by default. A different --size writes to a parallel tree
 (data/cutouts_<size>arcsec/) so the standard-size products are never overwritten; see
@@ -434,15 +437,19 @@ def main():
     p.add_argument('--bcfill', action='store_true', default=False,
                    help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
                         'produced by drizzle_acs_wfc.py --bcfill) instead of data/drizzled/. '
-                        'The stamp lands in the SAME cutout dir either way -- bcfill '
-                        'supersedes standard for the bands it covers -- and carries BCFILL=T '
-                        'from the drizzled header. Removes the ACS dead-column noise stripe; '
-                        'see AGENTS.md / scripts/bolton_investigations. ACS/WFPC2 bands only.')
+                        'Lands in the SAME cutout dir under a TAGGED name '
+                        '(cutout_[cr_]bcfill_{sci,noise}.fits, cutout_paths.py) and carries '
+                        'BCFILL=T from the drizzled header. Removes the ACS dead-column '
+                        'noise stripe from the NOISE map, which is cosmetic: the stripe is '
+                        'the honest coverage penalty, so this is NOT the modelling input '
+                        '(decided 2026-09-22; the bcfill stamps live on the bcfill branch). '
+                        'See AGENTS.md *Bad-column fill*. ACS/WFPC2 bands only.')
     p.add_argument('--crfill', action='store_true', default=False,
                    help='cut from the cosmic-ray-filled re-drizzle '
                         '(data/drizzled_crfill/, or data/drizzled_bcfill_crfill/ with '
                         '--bcfill, produced by drizzle_acs_wfc.py --crfill). Lands in the '
-                        'SAME cutout dir and carries CRFILL=T from the drizzled header. '
+                        'SAME cutout dir under a TAGGED name (cutout_[cr_][bcfill_]crfill_*) '
+                        'and carries CRFILL=T from the drizzled header. '
                         'NOT a science default: it removes a cosmic ray\'s weight/noise '
                         'residue by fabricating those pixels, which makes the noise map '
                         'optimistic exactly where the track ran -- read --crfill in '
@@ -454,41 +461,57 @@ def main():
                         'EVERYWHERE. Which frames were dropped is in the DROPFRMS header '
                         'card. Cut it to --output, not over the science tree.')
     p.add_argument('--force', action='store_true', default=False,
-                   help='overwrite an existing bcfill/crfill stamp with a cut that does not '
-                        'carry that reduction. Refused without this -- see the check below.')
+                   help='replace a stamp from another reduction (its sci/noise/png are '
+                        'removed so the band keeps exactly one stamp), or overwrite a '
+                        'legacy untagged bcfill/crfill stamp. Refused without this -- see '
+                        'the checks below.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
                         'data/cutouts[_<size>arcsec]/<sample>/<lens>/<filt>')
     a = p.parse_args()
 
-    variant = '_'.join([t for t, on in (('bcfill', a.bcfill), ('crfill', a.crfill),
-                                       ('drop', a.drop)) if on])
+    variant = cutout_paths.variant_from_flags(bcfill=a.bcfill, crfill=a.crfill, drop=a.drop)
     drizzled_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
                                 a.sample, a.lens, a.filt)
     output_dir = a.output or os.path.join(cutout_paths.cutouts_root(ws_path, a.size),
                                           a.sample, a.lens, a.filt)
 
-    # There is ONE stamp per band (cutout_paths.py): --bcfill picks which reduction it is
-    # cut from, not a parallel tree. That makes re-cutting a band without remembering
-    # --bcfill a silent downgrade -- same filenames, same geometry, a dead-column noise
-    # stripe back in the science image and the hand-drawn mask beside it now describing a
-    # different reduction. Nothing downstream would notice, so refuse it here instead. The
-    # provenance is read from the stamp's own BCFILL card, which it inherits from the
-    # drizzled product (drizzle_acs_wfc.py / drizzle_wfpc2_wf3.py stamp it).
-    # CRFILL is guarded the same way and for a stronger reason: a crfill stamp differs from
-    # the standard one ONLY in the noise map (and only along one track), so overwriting one
-    # with the other -- in either direction -- is invisible in the science image.
+    # There is ONE stamp per band (cutout_paths.py), and a variant cut (--bcfill/--crfill/
+    # --drop) writes a variant-TAGGED name (cutout_cr_bcfill_sci.fits), so a different
+    # reduction can never silently overwrite this one -- but it could sit BESIDE it, and
+    # then every reader's find_stamp() refuses to choose. Keep the tree unambiguous at the
+    # source: refuse to add a second reduction's stamp to a dir that already holds another,
+    # unless --force, in which case the other reduction's sci/noise/png are removed (and
+    # said so) rather than left to trip every downstream script.
+    #
+    # Legacy check, same spirit: until 2026-09-22 bcfill/crfill stamps carried the bare
+    # name and were distinguished only by their BCFILL/CRFILL header cards, so a stamp
+    # under the name this cut is about to write may still be one of those. Refuse to
+    # overwrite it without --force too.
     if not a.force:
+        for _prefix in cutout_paths.PREFIXES:
+            _others = {v: p for v, p in cutout_paths.list_stamps(output_dir, _prefix).items()
+                       if v != variant}
+            if _others:
+                _names = ', '.join(os.path.basename(p) for p in _others.values())
+                sys.exit(
+                    f"{a.lens} {a.filt}: this dir already holds a stamp from another "
+                    f"reduction ({_names}); this cut would add a "
+                    f"'{variant or 'standard'}' stamp beside it and leave the band "
+                    f"ambiguous.\n  Pass --force to replace it with the reduction you "
+                    f"asked for (the other's sci/noise/png are deleted).")
         _asked = {'BCFILL': a.bcfill, 'CRFILL': a.crfill}
         for existing in sorted(glob.glob(os.path.join(output_dir, 'cutout*_sci.fits'))):
+            if cutout_paths.stamp_variant(existing) != variant:
+                continue
             _hdr = fits.getheader(existing)
             for _card, _want in _asked.items():
                 if _hdr.get(_card, False) and not _want:
                     sys.exit(
-                        f"{a.lens} {a.filt}: {os.path.basename(existing)} is a {_card.lower()} "
-                        f"stamp ({_card}=T) and this cut would overwrite it.\n"
-                        f"  Re-cut it with --{_card.lower()}, or pass --force to deliberately "
-                        f"replace it with the reduction you asked for.")
+                        f"{a.lens} {a.filt}: {os.path.basename(existing)} is a legacy "
+                        f"untagged {_card.lower()} stamp ({_card}=T) and this cut would "
+                        f"overwrite it.\n  Re-cut it with --{_card.lower()}, or pass "
+                        f"--force to deliberately replace it with the reduction you asked for.")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -503,6 +526,19 @@ def main():
     # Distinct output names by pass so the two never clobber and can be compared in the
     # same directory: cutout_cr_* for CR, cutout_* for no-CR.
     prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
+
+    # --force: the one-stamp-per-band invariant is kept by removing the OTHER reduction's
+    # products for this pass before writing ours (the guard above already refused without
+    # --force). Other-pass stamps are left alone: cutout_* and cutout_cr_* coexist by design.
+    for _v, _sci in cutout_paths.list_stamps(output_dir, prefix).items():
+        if _v == variant:
+            continue
+        for _victim in (_sci, os.path.join(output_dir, cutout_paths.stamp_name(prefix, 'noise', _v)),
+                        os.path.join(output_dir, cutout_paths.stamp_png_name(prefix, _v))):
+            if os.path.exists(_victim):
+                os.remove(_victim)
+                print(f"  --force: removed {os.path.basename(_victim)} "
+                      f"('{_v or 'standard'}' reduction, superseded by '{variant or 'standard'}')")
 
     sci_file, wht_file = find_products(drizzled_dir, drizzle_pass)
     print(f"{a.lens} {a.filt}  [{drizzle_pass} pass]")
@@ -656,13 +692,13 @@ def main():
     for hdr in (sci_hdr, noise_hdr):
         hdr['CUTSIZE'] = (a.size, 'requested cutout size (arcsec, square)')
 
-    write_cutout(sci_cutout.data, sci_cutout.wcs, sci_hdr,
-                 os.path.join(output_dir, f'{prefix}_sci.fits'))
+    sci_out = os.path.join(output_dir, cutout_paths.stamp_name(prefix, 'sci', variant))
+    write_cutout(sci_cutout.data, sci_cutout.wcs, sci_hdr, sci_out)
     write_cutout(noise_data, wht_cutout.wcs, noise_hdr,
-                 os.path.join(output_dir, f'{prefix}_noise.fits'))
+                 os.path.join(output_dir, cutout_paths.stamp_name(prefix, 'noise', variant)))
 
     plot_cutouts(sci_cutout.data, noise_data,
-                 os.path.join(output_dir, f'{prefix}.png'),
+                 os.path.join(output_dir, cutout_paths.stamp_png_name(prefix, variant)),
                  title=f"{a.lens}  {a.filt}  [{drizzle_pass}]  ({a.size:g}\" cutout, "
                        f"recentred {offset:.2f}\" from catalogue)")
 
@@ -673,6 +709,8 @@ def main():
     info_json.update(cutout_paths.qc_json_path(ws_path, a.size), a.sample, a.lens,
                      a.filt, {
         'size_arcsec': a.size,
+        'stamp': os.path.basename(sci_out),
+        'variant': variant,
         'bcfill': bool(a.bcfill),
         'crfill': bool(a.crfill),
         'dropped_frames': bool(a.drop),

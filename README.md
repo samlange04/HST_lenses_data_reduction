@@ -93,16 +93,21 @@ data/
   drizzle_files/<sample>/<lens>/<filter>/ AstroDrizzle working dir (logs, shift files, PNGs)
   drizzled[_bcfill]/<sample>/<lens>/<filter>/  final mosaics (_cr_ / _nocrrej_, sci + wht)
   cutouts/<sample>/<lens>/<filter>/       THE science tree -- one stamp per band:
-                                          cutout_[cr_]{sci,noise,psf,mask}.fits + PNGs
+                                          cutout_[cr_]{sci,noise}.fits (standard drizzle;
+                                          a variant cut is tagged: cutout_cr_bcfill_sci.fits)
+                                          + cutout_[cr_]{psf,mask,...}.fits (shared) + PNGs
   mosaics/<sample>/                       QC grids tiling those stamps
   reference_files/                        CRDS cache (auto-downloaded once)
   run_logs/                               per-lens batch-runner logs
 
 Everything under data/ is gitignored except cutouts/ and mosaics/ -- the small, final
-science products, and the only place a hand-drawn (non-regenerable) mask lives. The
-bad-column-filled reduction (--bcfill) is a separate tree only at the drizzle layer; its
-stamps supersede the standard ones inside the one cutouts/ tree, tagged BCFILL in the
-header rather than by path. See AGENTS.md and scripts/cutout_paths.py.
+science products, and the only place a hand-drawn (non-regenerable) mask lives. `main`
+carries the standard-drizzle stamps, which are the modelling input (2026-09-22). The
+bad-column-filled reduction (--bcfill) lives on the `bcfill` branch, where the same bands
+carry `cutout_cr_bcfill_{sci,noise}.fits` instead: the reduction is in the stamp's NAME
+(and its BCFILL header card), so the two branches can never silently swap stamps, while
+the masks/positions keep one name and cherry-pick cleanly between them. See AGENTS.md
+and scripts/cutout_paths.py.
 info/
   lens_samples.json     single source of truth for sample membership + MAST quirks
   wfpc2_alignment.json  per-lens WFPC2 align mode (mast) and split-visit handling
