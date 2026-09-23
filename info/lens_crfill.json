@@ -37,7 +37,9 @@
                 "tracks_kept": 1,
                 "tracks_total": 220590,
                 "why_this_setting": "one track already matches what a frame-wide fill achieves on this lens (+2.4% vs +2.3% when first measured), so a single track is the complete repair; a larger N buys nothing",
-                "widest_gap_px": 3
+                "widest_gap_px": 3,
+                "on_main": false,
+                "branch_note": "2026-09-22: main reverted to the standard drizzle (no bcfill, no crfill); this streak-repaired product is cutout_cr_bcfill_crfill_* on the bcfill branch. On main the band is the plain archived-astrometry stamp and, for J1213+6708, the pre-shift masks (MASKSHFT undone by restoring the c0566ef^ files)."
             }
         },
         "J1250+0523": {
@@ -95,7 +97,9 @@
                 "tracks_kept": 4,
                 "tracks_total": 258884,
                 "why_this_setting": "one track only reached +2.8% here against +1.4% frame-wide, because three smaller tracks also sit on the ring; 4 tracks at 256 px gets within 0.5% of a 1.1-million-pixel blanket fill. The four were confirmed by eye against diagnostics/cr_defects/J1250+0523_f814W_cr_inventory.png",
-                "widest_gap_px": 7
+                "widest_gap_px": 7,
+                "on_main": false,
+                "branch_note": "2026-09-22: main reverted to the standard drizzle (no bcfill, no crfill); this streak-repaired product is cutout_cr_bcfill_crfill_* on the bcfill branch. On main the band is the plain archived-astrometry stamp and, for J1213+6708, the pre-shift masks (MASKSHFT undone by restoring the c0566ef^ files)."
             }
         }
     }

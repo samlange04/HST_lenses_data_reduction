@@ -101,7 +101,12 @@ def build_group(cutouts_dir, precedence):
     for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
         lens = os.path.basename(lens_dir)
         for filt in precedence:
-            sci, noise = find_cutout_pair(os.path.join(lens_dir, filt))
+            band_dir = os.path.join(lens_dir, filt)
+            # Gitignored band dirs (slacs_other's SNAP f814W diagnostics) are not products
+            # and must not appear in a tracked mosaic -- same guard as every other sweep.
+            if cutout_paths.gitignored([band_dir], ws_path):
+                continue
+            sci, noise = find_cutout_pair(band_dir)
             if sci is None:
                 continue
             if len(precedence) > 1:

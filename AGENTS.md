@@ -690,15 +690,50 @@ source, not memory:
   cosmetic and not needed downstream.** Before the revert `info/lens_cutout_qc.json`
   recorded bcfill=True on f814W 42/48, f606W 47/62 (+1 v2), f555W 16/16; F160W and UV bands
   were always standard.
-- **What was done.** (1) Stamp names now carry the reduction (see the top-of-file note and
-  `cutout_paths.py`), so the two branches cannot silently swap stamps. (2) The `bcfill`
-  branch was cut from `main` with the 105 bcfill stamps renamed to their tagged names and
-  pushed; it is the collaborators' copy. (3) On `main` the same 105 bands were re-cut from
-  `data/drizzled/` (standard, `--force`), mosaics and dataset subplots rebuilt. Geometry is
-  identical (same drizzle call, same grid) so every mask and positions file carried over —
-  verified by comparing `CRPIX`/`CRVAL` of each new stamp against the bcfill one, not
-  assumed. (4) The two `--crfill` bands (J1213+6708, J1250+0523 f814W) were `bcfill_crfill`;
-  see *`--crfill`* below for what replaced them.
+- **What was done (2026-09-22/23).** (1) Stamp names now carry the reduction (see the
+  top-of-file note and `cutout_paths.py`), so the two branches cannot silently swap stamps.
+  (2) The `bcfill` branch was cut from `main` with the 105 bcfill stamps renamed to their
+  tagged names and pushed; it is the collaborators' copy. (3) On `main` the same 105 bands
+  were re-cut standard, mosaics and dataset subplots rebuilt. **`main` carries neither
+  bcfill nor crfill** (user's call): J1213+6708 and J1250+0523 f814W are the plain
+  archived-astrometry stamps again, and J1213's masks are the pre-shift `c0566ef^` files
+  (no `MASKSHFT`). The `bcfill_crfill` products live only on the branch.
+- **"Same grid" was NOT true on disk, and it took three fixes to make it true.** The
+  geometry check (old bcfill stamp vs new standard stamp, `CRPIX`/`CRVAL` and a pixel
+  diff) failed on 39/105 bands the first time:
+  - *Recentring.* Peak-finding on the standard mosaic landed a pixel or two from where it
+    landed on the filled one (the fill changed the brightest pixel; on J1403+0006 and
+    J1538+5817 f606W it jumped to the neighbour, 24-37 px). Fix: **`make_cutouts.py
+    --center-from <old stamp>`** (new) cuts on the sky centre of an existing stamp's
+    central pixel, skipping peak-finding. Every one of the 105 bands was re-cut with it,
+    reading the old stamp out of the `bcfill` branch.
+  - *Stale standard mosaics.* **`data/drizzled/` is gitignored and nobody had re-run it
+    since July**: 17 WFPC2 F606W mosaics (10 slacs_gold, 7 slacs_other) were 2026-07-27..29
+    products on a different output frame from the 2026-08-13 bcfill campaign (CRVAL up to
+    0.6", grid off by 3-4 px, ~1-2% flux offsets everywhere). Re-drizzled with the current
+    `drizzle_wfpc2_wf3.py --align mast` (split visits as the runner passes them) + tie; the
+    result reproduces the bcfill grid to 0.000". The July products were moved to the
+    scratchpad, not deleted. **Trap:** a campaign run only in a variant tree leaves the
+    standard tree describing an older pipeline; check mtimes before trusting it.
+  - *A tie that should not happen.* `align_wfpc2_to_acs.py` tied J1403+0006 f606W to its
+    f814W, which is the gitignored 420 s SNAP diagnostic (not a science product; the bcfill
+    tree had no f814W so it was never tied there). Undone by hand (CRVAL restored,
+    `GSC240FX`/`ASTROREF` removed). J1134+6027 and J1538+5817 keep their untied July
+    mosaics, which already matched.
+  - Final state: all 105 stamps have `CRPIX`/`CRVAL` equal to the bcfill stamp's to
+    <1e-3 px, headers carry no `BCFILL`/`CRFILL`, and the pixel diff is confined to the
+    filled stripe (median 2.8% of pixels, the coverage-stripe fraction). Masks, arc masks
+    and positions were not touched.
+  - *PSFs.* `make_psf.py` only ever read `data/drizzled/`, so no kernel was built from a
+    filled mosaic and the 88 other bands' PSFs are untouched. The 17 re-drizzled F606W
+    bands are `inject_wfpc2_psfdb` kernels drizzled through `data/drizzle_files/`, which
+    the re-drizzle rebuilt, so their kernels were re-injected (peaks moved 10-25% either
+    way, FWHM still 4.1-5.1 px like the untouched WFPC2 bands), their injected error
+    maps rebuilt (7 changed, 39 byte-identical), and their `cutout_cr_dataset.png`
+    regenerated. `make_mosaics.py` and `make_psf_mosaics.py` now skip gitignored band
+    dirs like every other sweep (the slacs_other f814W grids had been tiling the three
+    SNAP diagnostics); the PSF mosaics had not been regenerated since 2026-08-04, before
+    the kernel-centring fix, so every one changed.
 - **Moving mask work between branches:** `git cherry-pick` the mask commit, never `git
   merge` — a merge would also carry the other branch's stamps across (they would then sit
   beside this branch's under a different name, and every reader stops with
@@ -752,8 +787,11 @@ weight/noise residue. Products go to `data/drizzled_crfill/`, or
 **`CRFILL=True`** in the header exactly as bcfill carries `BCFILL`; the cut stamp is tagged
 the same way (`cutout_cr_crfill_sci.fits`, `cutout_cr_bcfill_crfill_sci.fits`).
 
-**STREAK-REPAIRED PRODUCTS ARE NOW THE STANDARD ON TWO BANDS (2026-09-22, user's call), and
-`info/lens_crfill.json` is the list.** Read that file before using either stamp; it records the
+**STREAK-REPAIRED PRODUCTS WERE THE STANDARD ON TWO BANDS FOR ONE DAY (2026-09-22) and now
+live only on the `bcfill` branch as `cutout_cr_bcfill_crfill_*`; `main` carries the plain
+standard stamps (user's call, 2026-09-22 evening, with the bcfill revert).**
+`info/lens_crfill.json` is still the list (each record now says `on_main: false`). Read that
+file before using either branch stamp; it records the
 exact command, the tracks kept (frame, chip, area, closest approach), pixels filled, the ridge
 before and after, and what moved downstream.
 
