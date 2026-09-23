@@ -418,6 +418,15 @@ def main():
     p.add_argument('--center-self', action='store_true', default=False,
                    help='recentre each band on its own brightest pixel (old behaviour), '
                         'not on the shared --center-band centre')
+    p.add_argument('--center-from', default=None, metavar='STAMP.fits',
+                   help='skip peak-finding and centre this cut on the sky position of the '
+                        'central pixel of an EXISTING stamp (any cutout_*_sci.fits, e.g. '
+                        'one read out of git). Use it to re-cut a band from a different '
+                        'reduction onto the SAME grid so the hand-drawn masks/positions '
+                        'beside it stay pixel-for-pixel valid: peak-finding on a different '
+                        'mosaic can land a pixel (or a neighbour) away, which a mask cannot '
+                        'tell you. The grid is identical only if the two mosaics share a '
+                        'WCS -- check CRPIX/CRVAL afterwards, do not assume.')
     p.add_argument('--corr-factor', type=float, default=1.0,
                    help='multiply the noise map by this factor to absorb drizzle '
                         'correlated noise (default 1.0 = off, leaving a pure per-pixel '
@@ -578,8 +587,16 @@ def main():
         peak_dir, peak_src = center_dir, a.center_band
 
     try:
-        peak_coord, cen_used = find_peak_coord(peak_dir, catalogue_coord,
-                                               a.size, a.box, a.median_size)
+        if a.center_from:
+            # The centre make_cutout used for that stamp is its central pixel (Cutout2D
+            # centres the box on `position`), so read it back through the stamp's own WCS.
+            _ch = fits.getheader(a.center_from)
+            _cw = WCS(_ch).celestial
+            peak_coord = _cw.pixel_to_world((_ch['NAXIS1'] - 1) / 2.0, (_ch['NAXIS2'] - 1) / 2.0)
+            cen_used, peak_src = a.center_from, f'stamp {os.path.basename(a.center_from)}'
+        else:
+            peak_coord, cen_used = find_peak_coord(peak_dir, catalogue_coord,
+                                                   a.size, a.box, a.median_size)
     except NoOverlapError:
         px, py = wcs.world_to_pixel(catalogue_coord)
         raise SystemExit(
@@ -716,6 +733,7 @@ def main():
         'dropped_frames': bool(a.drop),
         'drizzle_pass': drizzle_pass,
         'center_source': peak_src,
+        'center_from': (os.path.relpath(a.center_from, ws_path) if a.center_from else None),
         'offset_arcsec': round(offset, 4),
         'noise_k': units_k,
         'corr_factor': a.corr_factor,

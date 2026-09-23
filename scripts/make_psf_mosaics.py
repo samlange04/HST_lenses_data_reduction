@@ -89,7 +89,13 @@ def build_group(sample, precedence):
                      if os.path.isdir(d)})
     for lens in lenses:
         for filt in precedence:
-            path = find_psf_path(cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt))
+            band_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
+            # A gitignored band dir (e.g. the slacs_other SNAP f814W diagnostics) is not a
+            # product: a tracked mosaic must not tile it (AGENTS.md: skip ignored bands in
+            # every sweep). Same guard as make_masks.discover_targets.
+            if cutout_paths.gitignored([band_dir], ws_path):
+                continue
+            path = find_psf_path(band_dir)
             if path is None:
                 continue
             with fits.open(path) as hdul:
