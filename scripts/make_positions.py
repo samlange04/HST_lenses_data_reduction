@@ -422,7 +422,7 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
                          os.path.join(cutout_dir, f'{prefix}_positions.png'),
                          stretch=stretch, vmin_percent=vmin_percent,
                          vmax_percent=vmax_percent, asinh_a=asinh_a, vmax_value=vmax_value)
-        moved = ('' if old is None or len(old) != len(new) else
+        moved = ('' if old is None or len(old) != len(new) or not new else
                  f"  moved {1000*max(np.hypot(a-c, b-d) for (a, b), (c, d) in zip(new, old)):.1f} mas"
                  f" ({max(np.hypot(a-c, b-d) for (a, b), (c, d) in zip(new, old))/band_ps:.2f} px)")
         print(f"  {filt}: rewritten{moved}")
