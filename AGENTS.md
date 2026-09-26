@@ -1107,16 +1107,17 @@ Measured values for the lenses worked on here, against what image analysis found
 three it confirmed, independently of colour or counter-image searches, that the eye-catching
 objects sit well outside θ_E. Two cautions: an *extended* source arcs outside θ_E (J1251 at
 1.45×), so treat θ_E as a floor not an exact locus; and a σ-based SIS estimate is a poor
-substitute where the table has no row — **measured over all 89 rows, θ_E/θ_SIS has median
+substitute where the table has no row — **measured over all 89 rows with a θ_E, θ_E/θ_SIS has median
 1.11 with a 16–84% range of 0.84–1.40** (worst: J1110+3649 0.25, J1100+5329 2.63), so the SIS
 runs ~10% low *on average* and is useless per-lens. **Any note claiming a fixed correction —
 e.g. "the SIS runs 30–40% low" — is wrong and is being corrected where it appears.**
 
 **`info/lens_einstein_radii.json` was audited 2026-09-21 and is not stale — don't re-derive
-it**: 0 differences against a fresh VizieR fetch of all 74 Auger rows; every row reproduces its
-θ_E↔`RE_kpc` conversion on its own cosmology (SLACS Ωm=0.3, gallery Ωm=0.274 — deliberate, do
-not "fix" one to match the other); complete bar `J1259+6134`, `J2141-0001`, `J2302-0840`; and
-every `detector_theta_e_arcsec` in `info/lens_arc_masks.json` matches it.
+it**: 0 differences against a fresh VizieR fetch of all 74 Auger rows with an `RE`; every row
+reproduces its θ_E↔`RE_kpc` conversion on its own cosmology (SLACS Ωm=0.3, gallery Ωm=0.274 —
+deliberate, do not "fix" one to match the other); and every `detector_theta_e_arcsec` in
+`info/lens_arc_masks.json` matches it. Since 2026-09-26 it also carries the 11 Auger rows with
+**no `RE`** (redshifts and σ only, `theta_e_arcsec: null`) — see *Tracking JSONs*.
 
 **A θ_E *inferred* from shear or from σ is not a measurement.** Two hand-written mask notes
 did that before the catalogue existed (J1403+0006 f606W, J1016+3859 f814W) and both were wrong;
@@ -2159,11 +2160,16 @@ Written by hand:
 Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
   source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* and not a
-  record of this repo's products: a lens lands here whatever sample it sits in. **89 rows from
+  record of this repo's products: a lens lands here whatever sample it sits in. **100 rows from
   two papers, and the `source` field is the only thing that says which** — read it before
   pooling or comparing them:
-  - **74 SLACS** from Auger+2009 (SLACS IX) via VizieR, `RE` kpc → arcsec on flat
-    H0=70/**Ωm=0.3**. Refreshed on demand (`detect_arcs.py --fetch-theta-e`).
+  - **85 SLACS** from Auger+2009 (SLACS IX) via VizieR, `RE` kpc → arcsec on flat
+    H0=70/**Ωm=0.3**. Refreshed on demand (`detect_arcs.py --fetch-theta-e`). **11 of them
+    have no `RE`** — Auger has no lens model for them — so `theta_e_arcsec`/`RE_kpc` are
+    `null`, but `zlens`/`zsrc`/`sigma_kms` are real. Until 2026-09-26 the fetch **dropped these
+    rows whole**, redshifts included; they are kept now because the modelling project
+    (`HST_lensing_mass_light:hpc/data/stage_data.py`) reads its redshifts from this file.
+    **Every reader of θ_E must allow `null`** (`theta_e_table()` → `propose()` refuses by name).
   - **15 gallery** from **Shu+2016 (BELLS GALLERY IV, ApJ 833, 264) Table 2** `bSIE`
     (Sérsic foreground subtraction), z/σ from its Table 1, **entered by hand 2026-09-17** —
     that paper is **not on VizieR** (only Shu+2016a, the parent candidate list, is), so
@@ -2179,9 +2185,9 @@ Not written by a pipeline run, and the odd one out in `info/`:
     "no measured Einstein radius" much later. Rows the catalogue does not carry are kept; a
     fetched row wins over a hand-entered one of the same name.
 
-  Tracked in git so the detector runs offline. A lens with no row is one neither paper
-  modelled: **`J1259+6134`, `J2141-0001`, `J2302-0840`** in `slacs_other` (of which only the
-  last two have cutouts at all).
+  Tracked in git so the detector runs offline. Every lens in the three samples has a row and
+  redshifts. Three `slacs_other` lenses have **no θ_E** (no Auger lens model):
+  **`J1259+6134`, `J2141-0001`, `J2302-0840`** (only the last two have cutouts at all).
 
 No data for a filter → value `null`.
 

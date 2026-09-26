@@ -135,6 +135,14 @@
   "sigma_kms": 272,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
  },
+ "J0808+4706": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.219,
+  "zsrc": 1.025,
+  "sigma_kms": 236,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J0819+4534": {
   "theta_e_arcsec": 0.8474,
   "RE_kpc": 2.73,
@@ -277,6 +285,14 @@
   "zlens": 0.104,
   "zsrc": 0.615,
   "sigma_kms": 210,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1029+6115": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.157,
+  "zsrc": 0.251,
+  "sigma_kms": 228,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
  "J1032+5322": {
@@ -439,6 +455,14 @@
   "sigma_kms": 252,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1250-0135": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.087,
+  "zsrc": 0.353,
+  "sigma_kms": 246,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J1251-0208": {
   "theta_e_arcsec": 0.8413,
   "RE_kpc": 3.03,
@@ -447,12 +471,28 @@
   "sigma_kms": 233,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1259+6134": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.233,
+  "zsrc": 0.449,
+  "sigma_kms": 253,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J1306+0600": {
   "theta_e_arcsec": 1.3165,
   "RE_kpc": 3.87,
   "zlens": 0.173,
   "zsrc": 0.472,
   "sigma_kms": 237,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1313+0506": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.144,
+  "zsrc": 0.339,
+  "sigma_kms": 221,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
  "J1313+4615": {
@@ -469,6 +509,14 @@
   "zlens": 0.24,
   "zsrc": 1.3,
   "sigma_kms": 213,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1319+1504": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.154,
+  "zsrc": 0.606,
+  "sigma_kms": 235,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
  "J1330-0148": {
@@ -527,6 +575,14 @@
   "sigma_kms": 199,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1436+3640": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.185,
+  "zsrc": 0.758,
+  "sigma_kms": 281,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J1436-0000": {
   "theta_e_arcsec": 1.1169,
   "RE_kpc": 4.8,
@@ -583,6 +639,14 @@
   "sigma_kms": 182,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1618+4353": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.199,
+  "zsrc": 0.666,
+  "sigma_kms": 292,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J1621+3931": {
   "theta_e_arcsec": 1.2902,
   "RE_kpc": 4.97,
@@ -631,12 +695,28 @@
   "sigma_kms": 286,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1718+6424": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.09,
+  "zsrc": 0.737,
+  "sigma_kms": 273,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
  "J1719+2939": {
   "theta_e_arcsec": 1.276,
   "RE_kpc": 3.89,
   "zlens": 0.181,
   "zsrc": 0.578,
   "sigma_kms": 286,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2141-0001": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.138,
+  "zsrc": 0.713,
+  "sigma_kms": 181,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
  "J2228+1205": {
@@ -661,6 +741,14 @@
   "zlens": 0.228,
   "zsrc": 0.463,
   "sigma_kms": 279,
+  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2302-0840": {
+  "theta_e_arcsec": null,
+  "RE_kpc": null,
+  "zlens": 0.09,
+  "zsrc": 0.222,
+  "sigma_kms": 237,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
  "J2303+1422": {

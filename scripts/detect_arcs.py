@@ -173,13 +173,20 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
         if not line.startswith('J'):
             continue
         cols = [c.strip() for c in line.split('\t')]
-        if len(cols) < 5 or not cols[4] or not cols[1]:
+        if len(cols) < 5 or not cols[1]:
             continue
         name, zl, zs, sig, re_kpc = cols[:5]
-        d_a = cos.angular_diameter_distance(float(zl)).to('kpc').value
+        # A row with no RE is a lens Auger+2009 has no lens model for, but its redshifts and
+        # sigma are still real and downstream modelling reads them from here, so keep it with
+        # a null theta_E (theta_e_table()/propose() then refuse it by name) -- skipping the row
+        # silently threw away the redshifts of 11 lenses.
+        theta_e = None
+        if re_kpc:
+            d_a = cos.angular_diameter_distance(float(zl)).to('kpc').value
+            theta_e = round(float(re_kpc) / d_a * 206265.0, 4)
         out[name] = {
-            'theta_e_arcsec': round(float(re_kpc) / d_a * 206265.0, 4),
-            'RE_kpc': float(re_kpc), 'zlens': float(zl),
+            'theta_e_arcsec': theta_e,
+            'RE_kpc': float(re_kpc) if re_kpc else None, 'zlens': float(zl),
             'zsrc': float(zs) if zs else None, 'sigma_kms': int(sig) if sig else None,
             'source': 'Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses',
         }
@@ -198,8 +205,8 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
         srcs = sorted({merged[k].get('source', '?').split(',')[0] for k in kept})
         print(f"  kept: {', '.join(srcs)}")
     if sample_lenses:
-        missing = [l for l in sample_lenses if l not in merged]
-        print(f"  of the {len(sample_lenses)} requested, {len(missing)} have no row"
+        missing = [l for l in sample_lenses if (merged.get(l) or {}).get('theta_e_arcsec') is None]
+        print(f"  of the {len(sample_lenses)} requested, {len(missing)} have no theta_E"
               + (f": {', '.join(missing)}" if missing else ''))
     return merged
 
