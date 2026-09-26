@@ -888,6 +888,24 @@
                 ]
             }
         },
+        "J0157-0056": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J0216-0813": {
             "f814W": {
                 "n_positions": 2,
@@ -1204,6 +1222,28 @@
                 ]
             }
         },
+        "J0841+3824": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "cutout"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J0903+4116": {
             "f814W": {
                 "n_positions": 2,
@@ -1253,6 +1293,46 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0912+0029": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J0936+0913": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "cutout"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
                     }
                 ]
             }
@@ -1626,6 +1706,42 @@
                 ]
             }
         },
+        "J1142+1001": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J1143-0144": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J1205+4910": {
             "f814W": {
                 "n_positions": 3,
@@ -1672,6 +1788,24 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1213+6708": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
                     }
                 ]
             }
@@ -1772,6 +1906,24 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1402+6321": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
                     }
                 ]
             }
@@ -2175,6 +2327,24 @@
                 ]
             }
         },
+        "J2300+0022": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J2303+1422": {
             "f814W": {
                 "n_positions": 3,
@@ -2437,6 +2607,50 @@
                 ]
             }
         },
+        "J0959+4416": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "cutout"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J1016+3859": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "cutout"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J1100+5329": {
             "f606W": {
                 "n_positions": 3,
@@ -2558,6 +2772,24 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1134+6027": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "cutout"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
                     }
                 ]
             }
@@ -2712,6 +2944,38 @@
                 ]
             }
         },
+        "J1403+0006": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J1416+5136": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J1436-0000": {
             "f606W": {
                 "n_positions": 2,
@@ -2829,6 +3093,45 @@
                 ]
             }
         },
+        "J1538+5817": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.975,
+                        0.275
+                    ],
+                    [
+                        0.775,
+                        -0.525
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.46,
+                "snap_moved_px_mean": 2.16,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 438,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
         "J1621+3931": {
             "f606W": {
                 "n_positions": 2,
@@ -2914,6 +3217,20 @@
                 ]
             }
         },
+        "J2141-0001": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
         "J2302-0840": {
             "f606W": {
                 "n_positions": 2,
@@ -2949,6 +3266,20 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2321-0939": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
                     }
                 ]
             }

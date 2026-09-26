@@ -120,6 +120,13 @@ def ensemble_err(psf_dir, sample, lens, filt):
     src = os.path.join(psf_dir, 'psf_kernel_analytic_err.fits')
     if not os.path.isfile(src):
         return None, None
+    hdr = fits.getheader(src)
+    if hdr.get('PSFINJ', False) or hdr.get('PSFERR') not in ('bootstrap', 'jackknife'):
+        # Not an analytic ensemble: a map written by THIS script for an earlier injected
+        # kernel that got moved aside under the analytic name. Broadening it again
+        # mislabelled 21 products as ensemble lower bounds (fixed 2026-09-26). Refuse it.
+        raise ValueError(f'{src} is not an analytic ensemble map (PSFERR={hdr.get("PSFERR")}, '
+                         f'PSFINJ={hdr.get("PSFINJ")}) -- remove it and rebuild')
     err = np.asarray(fits.getdata(src), dtype=float)
     box, n_frames = drizzle_box(sample, lens, filt)
     out = np.clip(psf_models.drop_convolve_box(err, box), 0.0, None)
