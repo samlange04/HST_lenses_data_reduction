@@ -119,12 +119,12 @@
         "J0029-0055": {
             "f160W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 3.6413,
+                "fwhm_pix": 3.6401,
                 "kernel_size": 41,
-                "cutout_kernel_size": 29,
+                "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.00021,
-                "wing_scatter": 0.000575,
+                "pedestal_frac": 0.000184,
+                "wing_scatter": 0.000524,
                 "n_frames": 4
             },
             "f606W": {
@@ -187,12 +187,12 @@
         "J0728+3835": {
             "f160W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 3.9306,
+                "fwhm_pix": 3.9308,
                 "kernel_size": 41,
                 "cutout_kernel_size": 29,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000213,
-                "wing_scatter": 0.000638,
+                "pedestal_frac": 0.000205,
+                "wing_scatter": 0.000626,
                 "n_frames": 4
             },
             "f606W": {
@@ -463,12 +463,12 @@
         "J1430+4105": {
             "f160W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 3.6621,
+                "fwhm_pix": 3.6608,
                 "kernel_size": 41,
-                "cutout_kernel_size": 29,
+                "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000233,
-                "wing_scatter": 0.000649,
+                "pedestal_frac": 0.000192,
+                "wing_scatter": 0.000524,
                 "n_frames": 4
             },
             "f606W": {
@@ -571,12 +571,12 @@
         "J0959+4416": {
             "f160W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 3.6651,
+                "fwhm_pix": 3.6673,
                 "kernel_size": 41,
-                "cutout_kernel_size": 29,
+                "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.00021,
-                "wing_scatter": 0.000599,
+                "pedestal_frac": 0.000198,
+                "wing_scatter": 0.000567,
                 "n_frames": 4
             },
             "f606W": {
@@ -688,16 +688,6 @@
                 "pedestal_frac": 0.000863,
                 "wing_scatter": 0.000676,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 2.2148,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1153+4612": {
@@ -766,16 +756,6 @@
                 "pedestal_frac": 0.001075,
                 "wing_scatter": 0.000621,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 2.1848,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1416+5136": {
@@ -836,16 +816,6 @@
                 "pedestal_frac": 0.000757,
                 "wing_scatter": 0.000683,
                 "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 1.9511,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1621+3931": {
@@ -863,12 +833,12 @@
         "J1636+4707": {
             "f160W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 3.6814,
+                "fwhm_pix": 3.6798,
                 "kernel_size": 41,
                 "cutout_kernel_size": 27,
                 "trim_threshold": 0.001,
-                "pedestal_frac": 0.000193,
-                "wing_scatter": 0.000541,
+                "pedestal_frac": 0.000186,
+                "wing_scatter": 0.000538,
                 "n_frames": 4
             },
             "f606W": {
