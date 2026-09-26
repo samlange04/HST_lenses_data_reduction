@@ -457,6 +457,13 @@ def _promote(psf_dir, cutouts_dir, prefix):
     would describe the just-superseded analytic kernel, not the injected one that replaces
     it. The injected kernel has no uncertainty estimate of its own yet, so after promotion
     there is deliberately no canonical psf_kernel_err.fits -- not a wrong one.
+
+    Only a map WITHOUT `PSFINJ=True` is analytic. One carrying it was written by
+    make_psf_err_injected.py for a previous injected kernel (STDPSF builds write no error
+    map of their own, so on a rebuild that stale map is what sits under the canonical
+    name); it describes neither kernel, so it is removed, not moved -- moving it once
+    passed a calibrated map off as an analytic ensemble, which make_psf_err_injected.py
+    then broadened a second time (2026-09-16, 21 products).
     """
     canonical_kernel = os.path.join(psf_dir, 'psf_kernel.fits')
     analytic_kernel = os.path.join(psf_dir, 'psf_kernel_analytic.fits')
@@ -471,13 +478,17 @@ def _promote(psf_dir, cutouts_dir, prefix):
             cut = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
             if os.path.isfile(cut):
                 shutil.move(cut, os.path.join(cutouts_dir, f'{prefix}_psf_analytic.fits'))
-            kernel_err = os.path.join(psf_dir, 'psf_kernel_err.fits')
-            if os.path.isfile(kernel_err):
-                shutil.move(kernel_err, os.path.join(psf_dir, 'psf_kernel_analytic_err.fits'))
-            cut_err = os.path.join(cutouts_dir, f'{prefix}_psf_err.fits')
-            if os.path.isfile(cut_err):
-                shutil.move(cut_err,
-                           os.path.join(cutouts_dir, f'{prefix}_psf_analytic_err.fits'))
+            for err, analytic_err in (
+                    (os.path.join(psf_dir, 'psf_kernel_err.fits'),
+                     os.path.join(psf_dir, 'psf_kernel_analytic_err.fits')),
+                    (os.path.join(cutouts_dir, f'{prefix}_psf_err.fits'),
+                     os.path.join(cutouts_dir, f'{prefix}_psf_analytic_err.fits'))):
+                if not os.path.isfile(err):
+                    continue
+                if fits.getheader(err).get('PSFINJ', False):
+                    os.remove(err)            # stale injected-kernel map: see docstring
+                else:
+                    shutil.move(err, analytic_err)
 
 
 def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,

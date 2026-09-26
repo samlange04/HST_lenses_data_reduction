@@ -146,12 +146,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 3,
-                "psf_err_frac": 0.01875694,
-                "psf_err_frac_core": 0.0169624,
-                "psf_err_frac_wing": 0.00800622,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.404",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02011001,
+                "psf_err_frac_core": 0.01849236,
+                "psf_err_frac_wing": 0.00790224,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "empirical",
@@ -332,12 +332,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 4,
-                "psf_err_frac": 0.03681442,
-                "psf_err_frac_core": 0.03644884,
-                "psf_err_frac_wing": 0.00517529,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.350",
-                "err_lower_bound": true
+                "psf_err_frac": 0.03977491,
+                "psf_err_frac_core": 0.03918723,
+                "psf_err_frac_wing": 0.00681206,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         },
         "J1141+2216": {
@@ -350,12 +350,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 4,
-                "psf_err_frac": 0.03681442,
-                "psf_err_frac_core": 0.03644884,
-                "psf_err_frac_wing": 0.00517529,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.350",
-                "err_lower_bound": true
+                "psf_err_frac": 0.03977491,
+                "psf_err_frac_core": 0.03918723,
+                "psf_err_frac_wing": 0.00681206,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         },
         "J1201+4743": {
@@ -422,12 +422,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 3,
-                "psf_err_frac": 0.01875694,
-                "psf_err_frac_core": 0.0169624,
-                "psf_err_frac_wing": 0.00800622,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.404",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02011001,
+                "psf_err_frac_core": 0.01849236,
+                "psf_err_frac_wing": 0.00790224,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_stdpsf",
@@ -438,12 +438,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 4,
-                "psf_err_frac": 0.03681442,
-                "psf_err_frac_core": 0.03644884,
-                "psf_err_frac_wing": 0.00517529,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.350",
-                "err_lower_bound": true
+                "psf_err_frac": 0.03977491,
+                "psf_err_frac_core": 0.03918723,
+                "psf_err_frac_wing": 0.00681206,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             },
             "f814W": {
                 "method": "inject_stdpsf",
@@ -454,12 +454,12 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 3,
-                "psf_err_frac": 0.02408404,
-                "psf_err_frac_core": 0.0230768,
-                "psf_err_frac_wing": 0.00689219,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.404",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02416216,
+                "psf_err_frac_core": 0.02318369,
+                "psf_err_frac_wing": 0.00680635,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/analytic",
+                "err_lower_bound": false
             }
         }
     },
@@ -626,12 +626,12 @@
                 "pedestal_frac": 0.000211,
                 "wing_scatter": 0.000599,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -794,12 +794,12 @@
                 "pedestal_frac": 0.000209,
                 "wing_scatter": 0.000599,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -860,12 +860,12 @@
                 "pedestal_frac": 0.000207,
                 "wing_scatter": 0.000583,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -910,12 +910,12 @@
                 "pedestal_frac": 0.000209,
                 "wing_scatter": 0.00058,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -995,12 +995,12 @@
                 "pedestal_frac": 0.000168,
                 "wing_scatter": 0.000486,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1045,12 +1045,12 @@
                 "pedestal_frac": 0.000211,
                 "wing_scatter": 0.000594,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1163,12 +1163,12 @@
                 "pedestal_frac": 0.00021,
                 "wing_scatter": 0.000562,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1213,12 +1213,12 @@
                 "pedestal_frac": 0.000189,
                 "wing_scatter": 0.000559,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1263,12 +1263,12 @@
                 "pedestal_frac": 0.000206,
                 "wing_scatter": 0.000606,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1313,12 +1313,12 @@
                 "pedestal_frac": 0.000201,
                 "wing_scatter": 0.000559,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -2118,12 +2118,12 @@
                 "pedestal_frac": 0.000196,
                 "wing_scatter": 0.000552,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -2150,9 +2150,9 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 2,
-                "psf_err_frac": 0.00054547,
-                "psf_err_frac_core": 0.0005096,
-                "psf_err_frac_wing": 0.00019453,
+                "psf_err_frac": 0.00053928,
+                "psf_err_frac_core": 0.00050587,
+                "psf_err_frac_wing": 0.00018688,
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.707",
                 "err_lower_bound": true
@@ -2222,12 +2222,12 @@
                 "pedestal_frac": 0.000195,
                 "wing_scatter": 0.000562,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -2244,16 +2244,6 @@
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 2.2148,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1153+4612": {
@@ -2266,12 +2256,12 @@
                 "pedestal_frac": 0.000216,
                 "wing_scatter": 0.000595,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -2334,12 +2324,12 @@
                 "pedestal_frac": 0.000205,
                 "wing_scatter": 0.000608,
                 "n_frames": 4,
-                "psf_err_frac": 0.03530612,
-                "psf_err_frac_core": 0.03223677,
-                "psf_err_frac_wing": 0.01439836,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=1.069",
-                "err_lower_bound": true
+                "psf_err_frac": 0.02367698,
+                "psf_err_frac_core": 0.02181627,
+                "psf_err_frac_wing": 0.00920054,
+                "err_method": "calibrated_vs_empirical",
+                "err_source": "empirical_calibration/injected",
+                "err_lower_bound": false
             },
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -2374,16 +2364,6 @@
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 2.1848,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1416+5136": {
@@ -2490,16 +2470,6 @@
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
-            },
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 1.9511,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 1
             }
         },
         "J1621+3931": {
