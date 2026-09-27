@@ -98,8 +98,10 @@ def weight_to_sigma_scale(sci_hdr):
         F814W (ACS, K=1)          ratio 1.04 at 0.24", 1.24 at 1.44"  -> correct
         F160W (WFC3/IR, uncorr.)  ratio 477 at 0.24",  725 at 1.44"   -> ~700x low
 
-    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the only thing left is
-    the same drizzle correlated-noise factor ACS shows independently (1.24). The
+    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the residual is a 1.44"
+    block ratio the same size as ACS's (1.24) -- correlated noise plus long-range sky
+    structure, not a units error. (A 1.44" block ratio is NOT the --corr-factor value;
+    see AGENTS.md *Drizzle correlated noise*.) The
     `D001WTSC = 1/scale**4` term does *not* enter: it cancels against the finer
     output grid, which is why ACS (native scale, WTSC 1.0) and WFC3/IR (WTSC 20.9)
     share one formula.
@@ -213,13 +215,12 @@ def casertano_r(pixfrac, scale_ratio):
     output-to-native pixel `scale_ratio` (s) alone.
 
     This is a closed-form CROSS-CHECK against the empirically-measured correlation factors
-    in AGENTS.md's *Drizzle correlated noise* section (~1.24 ACS F814W, ~1.17 F160W, ~1.5-1.6
-    gallery UVIS -- each from a blank-sky block-sum test on a handful of lenses, not derived
-    from pixfrac/scale). It is reported alongside --corr-factor for comparison, not used to
+    in AGENTS.md's *Drizzle correlated noise* section (1.18 ACS F814W, 1.07 WFPC2 F606W,
+    1.05 F160W, 1.18-1.26 visible UVIS -- the blank-sky ACF over the drizzle kernel,
+    measured over every stamp 2026-09-26, not derived from pixfrac/scale). It is reported alongside --corr-factor for comparison, not used to
     set it automatically: r is the *variance*-reduction factor of a single, idealised drizzle
     drop and does not capture the geometric-distortion or dither-pattern effects the empirical
-    measurements do (e.g. it does not explain why UVIS runs higher than native-scale ACS
-    despite both being at native scale). Smaller p reduces correlation (R -> 1 in the
+    measurements do (ACS: analytic 1.5 vs measured 1.18; WFPC2: 2.39 vs 1.07). Smaller p reduces correlation (R -> 1 in the
     interlacing limit); p=1 at s=1 is shift-and-add (R=1.5). Returns None for an out-of-range
     input rather than raising, since it's an informational cross-check, not a hard gate.
     """
@@ -432,8 +433,9 @@ def main():
                         'correlated noise (default 1.0 = off, leaving a pure per-pixel '
                         'sigma). Drizzling correlates neighbouring output pixels, so a '
                         'diagonal-covariance likelihood such as PyAutoLens understates '
-                        'integrated-flux uncertainties by ~1.24 (ACS F814W) and ~1.17 '
-                        '(WFC3/IR F160W), measured by a blank-sky block-sum test. Set '
+                        'the noise of anything spanning the drizzle kernel, by 1.18 '
+                        '(ACS F814W), 1.17 (F555W), 1.07 (WFPC2 F606W), 1.05 (F160W) and '
+                        '1.18-1.26 (visible UVIS), measured 2026-09-26. Set '
                         'this per band to correct that; leave at 1.0 if the covariance '
                         'is handled at the modelling stage instead.')
     p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
