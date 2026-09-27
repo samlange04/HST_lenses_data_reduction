@@ -66,6 +66,11 @@ FINAL_SCALE = 0.0396
 # below it the gains shrink and hole risk grows. Native-scale regime, so this is the
 # opposite lever from the oversampled F606W/F160W bands (which chose pixfrac 1.0).
 # → memory: drizzle_correlated_noise. User-settled 2026-07-28.
+# 2026-09-27: that "integrated inflation" was a ratio against the empirical per-pixel rms,
+# which falls with pixfrac by construction. Against the noise map the 8x8 block ratio is
+# flat (J1110: 1.389 at 1.0, 1.397 at 0.7) -- at native scale pixfrac only trades per-pixel
+# noise for covariance. 0.7 is kept, but it is not a correlated-noise fix; see AGENTS.md
+# *Output pixel scales*.
 FINAL_PIXFRAC = 0.7
 
 # DQ bits treated as GOOD so they are not drizzled out (and not mistaken for CRs by
