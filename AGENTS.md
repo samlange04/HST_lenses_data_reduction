@@ -570,6 +570,24 @@ convention (see *Drizzle correlated noise* below).
   low-correlation noise map for the likelihood, not the sharpest PSF (which PyAutoLens fits
   explicitly). pixfrac 1.0 drops adjacent-pixel noise correlation markedly at a small PSF
   cost. ACS F814W/F555W keep the default pixfrac (native 0.05″, no oversampling).
+- **At native scale, pixfrac moves noise between the diagonal and the neighbours — it does
+  not change the correlated-noise penalty** (scan 2026-09-27: the LACosmic CR pass
+  re-drizzled at pixfrac 1.0/0.8/0.7/0.6 with everything else identical; the production
+  pixfrac reproduced the committed stamps to ≤5e-6). ACS F814W on 5 lenses (2–5 exposures)
+  and WFC3/UVIS on 4 gallery lenses (3–12 exposures): going 1.0 → 0.6 cuts the neighbour
+  correlation C(1) by 10–25% but raises the per-pixel variance ratio C(0) by the same amount,
+  so the integrated factor R² = ΣC over the drizzle kernel — what a diagonal likelihood
+  needs — is flat to ≤0.01 (J0008-0004: C(0) 0.56→0.79, C(1) 0.155→0.117, R² 1.355→1.356).
+  The noise summed over a patch is fixed by the input exposures; pixfrac only decides
+  whether it appears as per-pixel noise or as covariance. Everything else moves little:
+  weight uniformity 1–10% worse, deflector peak ±1–3%, sky σ unchanged, no zero-weight holes
+  even at 0.6 with 2 exposures. **So ACS stays at pixfrac 1.0, and a smaller pixfrac is not
+  a correlated-noise fix at native scale.** Judge a pixfrac by the noise-map-relative
+  factor — never by lag-1 correlation, or by a ratio against the empirical per-pixel rms;
+  both improve as pixfrac shrinks while the noise a fit sees stays the same. The same
+  scan also showed the step in R from a ±1 to a ±2 px window (~0.1) is identical at every
+  pixfrac, including 0.6, where a drop cannot reach 2 px: that part of the correlation is
+  already in the input frames or the sky, not drizzle overlap.
 - **F555W needs no new script** — `drizzle_acs_wfc.py` is filter-agnostic. The 16 F555W
   lenses are exactly the 16 without WFPC2 F606W (props 10494/10798).
 
@@ -2425,7 +2443,13 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   on J1110+3649 F606W trading correlated noise against weight-map uniformity) — the
   opposite lever from the oversampled F606W (WFPC2)/F160W bands, which chose `pixfrac=1.0`
   to *reduce* correlation; UVIS is already at native scale, where a smaller drop shrinks
-  the input footprint instead of opening coverage holes. Residual correlation is higher
+  the input footprint instead of opening coverage holes. **But the scan that chose 0.7 scored
+  the wrong quantity:** its "integrated inflation" (1.81 → 1.58, 1.0 → 0.7) matches a ratio
+  against the empirical per-pixel rms, which falls with pixfrac by construction. Re-measured
+  2026-09-27 against the noise map, J1110's 8×8 block ratio is 1.389 at pixfrac 1.0 and
+  1.397 at 0.7: no gain, and weight uniformity is slightly worse (0.096 → 0.103). Left at
+  0.7, since a re-drizzle would buy only that uniformity, but it is not a correlated-noise
+  fix (see *Output pixel scales*). Residual correlation is higher
   than native ACS at the kernel scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
   "~1.5–1.6" was a 1.4″ block sum dominated by long-range sky structure). `make_cutouts.py`
   applies the measured factor by default — see *Drizzle correlated noise*. → memory:
