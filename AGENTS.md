@@ -624,8 +624,11 @@ out *above* 1, and the excess is in the input frames, not the drizzle:
   (18–34% in variance), essentially white: measured directly on FLC frames in detector
   coordinates (ACS J0008 f814W chips: rms/ERR 1.09/1.10 at 47 e⁻ sky; UVIS f606W 1.09–1.10 at
   29 e⁻, f814W 1.16 at 19 e⁻, f275W 1.11–1.14 at 0.3 e⁻). Isotropic in ACS, slightly
-  y-preferring in UVIS; the cause is in the ERR model and is not identified (not obviously
-  CTE-trail noise). WFPC2 (IVM built from each frame's *own* measured sky noise) and WFC3/IR
+  y-preferring in UVIS. **Not the CTE correction** (checked 2026-09-27 against the FLT
+  frames from MAST, same chips and regions: FLT rms/ERR is 1.06–1.09 ACS, 1.10–1.20 UVIS,
+  i.e. the deficit is already there; PCTECORR leaves ERR untouched and changes the SCI noise
+  by +1.5% ACS / −1 to −3% UVIS while *removing* the y-trail correlation, 0.13–0.19 → 0.03 in
+  f275W). It is the ERR model itself; a re-drizzle cannot change it. WFPC2 (IVM built from each frame's *own* measured sky noise) and WFC3/IR
   (separately calibrated ERR) do not carry this deficit.
 - **A few-% additive correlation from faint unmasked structure** (galaxies below the 3σ
   mask, sky/flat residuals): ~0.02–0.04 per lag in the frames, decaying slowly over ~10 px,
