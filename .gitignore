@@ -93,3 +93,6 @@ __pycache__/
 # the image. Untracked from 2026-09-14; the five previously-committed PNGs remain in git
 # history.
 diagnostics/
+# laptop-only literature notes and analysis scripts (local/literature/, local/scripts/),
+# as in the sibling projects
+/local/

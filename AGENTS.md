@@ -570,45 +570,77 @@ convention (see *Drizzle correlated noise* below).
   low-correlation noise map for the likelihood, not the sharpest PSF (which PyAutoLens fits
   explicitly). pixfrac 1.0 drops adjacent-pixel noise correlation markedly at a small PSF
   cost. ACS F814W/F555W keep the default pixfrac (native 0.05″, no oversampling).
-- **At native scale, pixfrac moves noise between the diagonal and the neighbours — it does
-  not change the correlated-noise penalty** (scan 2026-09-27: the LACosmic CR pass
-  re-drizzled at pixfrac 1.0/0.8/0.7/0.6 with everything else identical; the production
-  pixfrac reproduced the committed stamps to ≤5e-6). ACS F814W on 5 lenses (2–5 exposures)
-  and WFC3/UVIS on 4 gallery lenses (3–12 exposures): going 1.0 → 0.6 cuts the neighbour
-  correlation C(1) by 10–25% but raises the per-pixel variance ratio C(0) by the same amount,
-  so the integrated factor R² = ΣC over the drizzle kernel — what a diagonal likelihood
-  needs — is flat to ≤0.01 (J0008-0004: C(0) 0.56→0.79, C(1) 0.155→0.117, R² 1.355→1.356).
-  The noise summed over a patch is fixed by the input exposures; pixfrac only decides
-  whether it appears as per-pixel noise or as covariance. Everything else moves little:
-  weight uniformity 1–10% worse, deflector peak ±1–3%, sky σ unchanged, no zero-weight holes
-  even at 0.6 with 2 exposures. **So ACS stays at pixfrac 1.0, and a smaller pixfrac is not
-  a correlated-noise fix at native scale.** Judge a pixfrac by the noise-map-relative
-  factor — never by lag-1 correlation, or by a ratio against the empirical per-pixel rms;
-  both improve as pixfrac shrinks while the noise a fit sees stays the same. The same
-  scan also showed the step in R from a ±1 to a ±2 px window (~0.1) is identical at every
-  pixfrac, including 0.6, where a drop cannot reach 2 px: that part of the correlation is
-  already in the input frames or the sky, not drizzle overlap.
+- **Pixfrac cannot change the noise a fit sees, only where it sits** (scan 2026-09-27; the
+  LACosmic CR pass re-drizzled at pixfrac 1.0/0.8/0.7/0.6, everything else identical; the
+  production pixfrac reproduced the committed stamps to ≤5e-6). Drizzle conserves noise
+  exactly — a smaller drop lowers the neighbour correlation and raises the per-pixel variance
+  by the same amount (Monte Carlo: ΣC = 1.006 at pixfrac 1, 0.982 at 0.6) — so the
+  noise-map-relative factor is flat: ACS F814W on 5 lenses (2–5 exposures) 1.0 → 0.6 moves
+  C(1) 0.155→0.117, C(0) 0.56→0.79, R² 1.355→1.356 (J0008-0004); WFC3/UVIS on 4 gallery
+  lenses (3–12 exposures) 1.292→1.293, 1.191→1.191, 1.221→1.218, 1.202→1.199. Everything
+  else moves little: weight uniformity 1–13% worse, deflector peak ±1–5%, sky σ unchanged, no
+  zero-weight holes even at 0.6 with 2 exposures. **So ACS stays at pixfrac 1.0, and a smaller
+  pixfrac is not a correlated-noise fix at native scale** — it only adds less box-blur to the
+  PSF (which PyAutoLens fits from the same drizzled stars anyway) at the cost of a
+  position-dependent effective kernel. Judge a pixfrac by the noise-map-relative factor —
+  never by lag-1 correlation, or by a ratio against the empirical per-pixel rms (Casertano's
+  quantity); both improve as pixfrac shrinks by construction. The same scan showed the
+  ±1→±2 px step in R (~0.1) is identical at every pixfrac, including 0.6 where a drop cannot
+  reach 2 px: it is structure in the input frames, not drizzle (see *Drizzle correlated
+  noise*).
 - **F555W needs no new script** — `drizzle_acs_wfc.py` is filter-agnostic. The 16 F555W
   lenses are exactly the 16 without WFPC2 F606W (props 10494/10798).
 
 ## Drizzle correlated noise (matters for strong-lens modelling)
 
 Drizzling correlates adjacent output pixels (each output pixel is a weighted sum of
-overlapping input pixels; neighbours share input pixels, so their noise is covariant).
-`final_wht_type=ERR` makes `1/sqrt(WHT)` the **uncorrelated-equivalent σ**, and it says
-nothing about the off-diagonal covariance. A diagonal-covariance likelihood (PyAutoLens)
-therefore gets the noise of anything spanning the drizzle kernel wrong. **Every standard
-stamp's noise map now carries a measured correction** (`NOISECOR`, since 2026-09-26; before
-that every stamp was uncorrected at 1.0).
+overlapping input pixels; neighbours share input pixels, so their noise is covariant). What
+that does and does not require of the noise map was settled 2026-09-27, after a first
+version of this section (2026-09-26) attributed the measured correction to drizzle. It is
+not drizzle. Full derivation and every measurement: `local/literature/drizzle_noise.md`.
+
+**Drizzle conserves noise; the ERR-weighted map is already correct on any patch the size
+of the drop or larger.** Drizzle takes variance out of each output pixel and puts it into
+the neighbours, and the two exactly cancel in a sum: for pure white input noise the
+σ-normalised autocorrelation C(d) has C(0) < 1, positive neighbours, and ΣC = 1.00 over the
+drop width (Monte Carlo, 4 random-dither frames: C(0) 0.440, C(1) 0.112, ΣC 1.006 at
+pixfrac 1; 0.652 / 0.074 / 0.982 at pixfrac 0.6). So **for drizzle alone the right
+`--corr-factor` is 1.0**, and the per-pixel blank-sky rms reading *below* the map (by
+√C(0): 0.75 ACS, 0.42 WFPC2, 0.37 F160W) is the expected redistribution, not an error —
+**do not "correct" a noise map because blank sky looks quiet**. Casertano et al. 2000's
+R = 1/r (r = 1 − p/3s per axis, C(0) = r² in 2D) is exactly 1/√C(0): it is the factor by
+which √N × the *measured per-pixel rms* of a drizzled image understates an N-pixel
+aperture's noise — the correction for anyone who estimates σ from the image itself (Bolton's
+SLACS reductions do), **not** a correction to the ERR map. `make_cutouts.py` stamps it as
+`CASR`; it predicts the measured 1/√C(0) to ~5% (WFPC2 2.39 vs 2.36; ACS 1.50 vs 1.49 once
+the ERR deficit below is divided out; across the ACS pixfrac scan 1.50/1.30/1.25 predicted
+vs 1.55/1.36/1.31 measured).
+
+**What the stamps' noise maps do get wrong — and what the factor corrects.** Measured over
+all 157 stamps (`scripts/measure_corr_factor.py`, raw results and plots in
+`diagnostics/corr_factor/`, gitignored, ~10 min to regenerate), ΣC over the drop window comes
+out *above* 1, and the excess is in the input frames, not the drizzle:
+- **The ACS and WFC3/UVIS `ERR` arrays understate the per-pixel noise by ~9–16% in rms**
+  (18–34% in variance), essentially white: measured directly on FLC frames in detector
+  coordinates (ACS J0008 f814W chips: rms/ERR 1.09/1.10 at 47 e⁻ sky; UVIS f606W 1.09–1.10 at
+  29 e⁻, f814W 1.16 at 19 e⁻, f275W 1.11–1.14 at 0.3 e⁻). Isotropic in ACS, slightly
+  y-preferring in UVIS; the cause is in the ERR model and is not identified (not obviously
+  CTE-trail noise). WFPC2 (IVM built from each frame's *own* measured sky noise) and WFC3/IR
+  (separately calibrated ERR) do not carry this deficit.
+- **A few-% additive correlation from faint unmasked structure** (galaxies below the 3σ
+  mask, sky/flat residuals): ~0.02–0.04 per lag in the frames, decaying slowly over ~10 px,
+  isotropic. This is the ACF "floor", the ±1→±2 px step, and why a block-sum ratio never
+  plateaus (ACS F814W: 1.1 at 0.25″, 1.3 at 0.5″, ~2 at 1.5″).
+The accounting closes: ACS J0008 = 1.24 (white) × 1.00 (drizzle) + 8 lags × ~0.015
+(structure) ≈ 1.36 = the measured ΣC of 1.355.
 
 **The factors: `info/noise_corr_factors.json`, applied by default by `make_cutouts.py`**
-(precedence 1.0 < JSON < explicit `--corr-factor`; keyed by instrument/detector then filter,
-because F606W and F814W each occur on two instruments; `NOISECRS` = `json`/`cli`/`none` says
-which applied). Measured by `scripts/measure_corr_factor.py` over all 157 stamps (raw
-results and the block-ratio plot in `diagnostics/corr_factor/`, gitignored — re-run to
-regenerate, ~10 min):
+(precedence 1.0 < JSON per instrument/filter < its `_lens_overrides` < explicit
+`--corr-factor`; keyed by instrument/detector then filter, because F606W and F814W each occur
+on two instruments; `NOISECRS` = `json`/`lens`/`cli`/`none` says which applied). **Every
+standard stamp's noise map carries it** (`NOISECOR`, since 2026-09-26):
 
-| band / detector | kernel window | **factor** | per-pixel C(0) | Casertano `CASR` |
+| band / detector | drop window | **factor** | C(0) | `CASR` = 1/√C(0)_drizzle |
 |---|---|---|---|---|
 | F814W ACS/WFC | ±1 px | **1.18** | 0.57 | 1.50 |
 | F555W ACS/WFC | ±1 px | **1.17** | 0.57 | 1.50 |
@@ -616,50 +648,39 @@ regenerate, ~10 min):
 | F160W WFC3/IR | ±2 px | **1.05** | 0.14 | 2.53 |
 | F438W / F606W / F814W WFC3/UVIS | ±1 px | **1.24 / 1.18 / 1.26** | 0.72–0.84 | 1.30 |
 | F275W / F225W WFC3/UVIS | ±1 px | **1.38 / 1.37** | 0.92–0.95 | 1.30 |
+| J1143-0144 F814W (per-lens) | ±1 px | **1.38** | 0.68 | 1.50 |
 
-**What the number is, and why it's defined this way — the trap is that there is no
-scale-free "correlation factor".** The blank-sky block-sum ratio (empirical ÷ noise-map
-scatter of N×N block sums) **never plateaus**: ACS F814W reads 0.73 per pixel, 1.10 at
-0.25″, 1.28 at 0.5″, 1.6 at 1″, ~2 at 1.5″, and every band behaves the same way
-(`diagnostics/corr_factor/block_ratio_vs_scale.png`). The ACF of the σ-normalised sky shows
-why. It has two parts: the **drizzle kernel**, confined to lag ≲ pixfrac × native/output px,
-and a weak **long-range floor** (~0.003–0.01 σ² per lag, decaying slowly past 15 px: faint
-galaxy wings, sky and flat residuals) that keeps adding up over a large window. That floor
-is environment-dependent: lenses agree to ±0.02–0.05 at ≤0.5″ but fan out beyond 1″, and
-shift with the source-mask threshold. A uniform rescale can only represent the kernel, so
-the factor is `sqrt(Σ C(d))` over the window |dx|,|dy| ≤ round(pixfrac × native/output)
-(±1 px ACS/UVIS, ±2 px WFPC2/F160W), after subtracting the floor (mean C at Chebyshev lags
-7–12) and a 51 px median high-pass, with a 3σ source mask, taking the median over lenses. The
-lens-to-lens spread is within measurement error, so it's **one factor per
-instrument/filter, not per lens**. Floored at 1.0 (never shrinks the map); F160W sits at
-1.05 (0.99 with a 1.5σ mask). Chosen by the user 2026-09-26 over matching a block scale.
+The factor is `sqrt(Σ C(d))` over |dx|,|dy| ≤ round(pixfrac × native/output) — the
+*smallest* window over which drizzle's redistribution has summed back to 1, so it measures
+the excess with the least structure mixed in (a smaller window reads low because of the
+redistribution: that is why 0.25″ block values for WFPC2/F160W came out below 1) — after
+subtracting the far floor (mean C at Chebyshev lags 7–12) and a 51 px median high-pass,
+3σ source mask, median over lenses. Lens-to-lens spread is within measurement error
+(ACS 16–84%: 1.15–1.22) except **J1143-0144 F814W (1.38)**, whose chip 2 carries a flat
++0.3 correlation to lag 6 and beyond (large-scale structure in the frame: scattered light or a
+flat feature). Floored at 1.0. Because the dominant term is white, the applied factor
+corrects the map at **every** scale for that part; only the structure term remains
+scale-dependent. Definition chosen by the user 2026-09-26 (as "the drizzle-kernel ACF"),
+retained 2026-09-27 with the corrected justification.
 
 Consequences:
-- **A blank-sky per-pixel rms reads *below* the map** (C(0) above = (emp/map)²), most of all
-  in WFPC2 and F160W, the oversampled bands. That is the expected signature of drizzle
-  smoothing, not an error — **do not "correct" a noise map because blank sky looks quiet**.
-  (An old claim here that the empirical rms was "1.47× the ERR-map prediction" pointed the
-  wrong way. The old factors ~1.24 ACS / 1.17 F160W came from a 1.44″ block sum on one lens,
-  where the long-range floor already dominates; ~1.6 UVIS matches the UVIS pixfrac scan's
-  8×8 ratio against the empirical per-pixel rms (not the noise map); ~1.1 F606W has no
-  recorded measurement. All four are superseded.)
-- **The analytic `CASR` is a poor predictor** — it models one idealised drop, not
-  multi-exposure dither averaging: 1.50 vs 1.18 measured on ACS, 2.39 vs 1.07 on WFPC2.
-- **Large-scale excess noise is not in the noise map and cannot be.** On 1–2″ scales the
-  true scatter is still 1.3–2× the corrected map. It is real, but a diagonal rescale sized
-  for it would overstate the noise ~1.5× at the pixel scale. If a fit's residuals on arc
+- **A diagonal likelihood is right for patches ≥ the drop and over-penalises single-pixel
+  residuals by 1/C(0)** — 1.6× ACS, ~2× UVIS, 2.5× WFPC2, 2.8× F160W in χ² — irreducibly.
+  Sum-correct is the right side to be on for arcs; a stray CR or hot pixel costs more than it
+  should.
+- **Structure noise on 1–2″ scales is still 1.3–2× the corrected map** and cannot be
+  represented by a uniform rescale without overstating the pixel scale. If residuals on arc
   scales look over-significant, this is a candidate.
-- **UV bands (F275W/F225W) carry unexplained extra short-range noise:** their per-pixel C(0)
-  stays ~0.93 where drizzle should pull it down (the visible UVIS bands, same geometry, read
-  0.72–0.84). At near-zero sky, read-noise-level terms not in ERR (unflagged warm pixels,
-  CTE-correction noise) are the likely cause — untested, because these bands are unusable for
-  lens science anyway.
+- **The old numbers are superseded**: ~1.24 ACS / ~1.17 F160W (1.44″ block sums on one lens,
+  floor-dominated), ~1.6 UVIS (the pixfrac scan's ratio against the empirical rms), ~1.1
+  F606W (no recorded measurement), and "empirical rms 1.47× the ERR map" (wrong direction).
 - The noise-map change **moves S/N-based thresholds** (`detect_arcs.py` reads the noise map).
   Arc masks and positions made before 2026-09-26 were drawn on uncorrected S/N and were not
   redone; they are hand-checked products, and a ≤26% S/N change doesn't move them materially.
 - **Re-measure after any re-drizzle that changes pixfrac, scale, or dither handling**
-  (`uv run python scripts/measure_corr_factor.py`, ~10 min).
-  It prints the per-band medians; copy them into the JSON by hand.
+  (`uv run python scripts/measure_corr_factor.py`, ~10 min; it prints the per-band medians;
+  copy them into the JSON by hand). A pixfrac change alone will not move them (see *Output
+  pixel scales*), but the check is cheap.
 
 Prefer native-scale F814W where a clean per-pixel noise model matters most.
 
@@ -800,13 +821,14 @@ noise FITS (from the weight map), and a 3-panel PNG.
     on the **cutout's** own weight-map region (not the full mosaic, which mixes coverage
     tiers across the whole union footprint). `<=0.2` is the accepted threshold; stamped as
     `WHTUNIF`/`WHTUNIFL` in `cutout_[cr_]noise.fits`'s header.
-  - **Analytic Casertano R** (`casertano_r(pixfrac, scale_ratio)`): a closed-form
-    correlated-noise factor from `D001PIXF`/`D001ISCL`/`D001SCAL` alone (verified against
-    the textbook values: R=1.5 at p=1,s=1; 1.364 at p=0.8,s=1; 1.25 at p=0.6,s=1), reported
-    as a **cross-check** next to `--corr-factor`, not a source of truth for it — it doesn't
-    capture geometric distortion or real dither-pattern effects, so it can (and does, e.g.
-    ACS: analytic 1.5 vs the measured 1.18 in *Drizzle correlated noise* above)
-    disagree with the measured factor. Stamped as `CASR`.
+  - **Analytic Casertano R** (`casertano_r(pixfrac, scale_ratio)`): the closed-form
+    R = 1/r from `D001PIXF`/`D001ISCL`/`D001SCAL` alone (verified against the textbook
+    values: R=1.5 at p=1,s=1; 1.364 at p=0.8,s=1; 1.25 at p=0.6,s=1). It is 1/√C(0) for pure
+    drizzle: the factor by which √N × the image's own per-pixel rms understates an aperture's
+    noise. It is **not** comparable to `--corr-factor` (which is relative to the ERR map,
+    already sum-correct for drizzle); the right check is against the measured 1/√C(0), which
+    it predicts to ~5% (WFPC2 2.39 vs 2.36; ACS 1.50 vs 1.49 with the ERR deficit divided
+    out) — see *Drizzle correlated noise*. Stamped as `CASR`.
   - Both diagnostics, plus the recentring offset, drizzle pass, centring source, and a
     **`bcfill` flag naming the reduction the stamp was cut from** (mirroring its `BCFILL`
     header card), are recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` —
@@ -2203,10 +2225,11 @@ Written by hand:
   caveat. Read it before trusting a per-pixel noise value on those branch stamps.
 - **`lens_cr_params.json`**, **`psf_stars.json`** — per-lens overrides (see *Cosmic-ray
   rejection*, *PSF generation*).
-- **`noise_corr_factors.json`** — `{instrument/detector: {filter: factor}}`, **not nested by
-  sample or lens**: the drizzle correlated-noise factor `make_cutouts.py` applies by default.
-  Values are copied in from `measure_corr_factor.py`'s printed summary (see *Drizzle
-  correlated noise*); its `_method` key records how they were measured.
+- **`noise_corr_factors.json`** — `{instrument/detector: {filter: factor}}` plus
+  `_lens_overrides: {sample: {lens: {filter: factor}}}` (one entry: J1143-0144 f814W): the
+  noise-map inflation `make_cutouts.py` applies by default — an ERR deficit plus faint
+  structure, not drizzle. Values are copied in from `measure_corr_factor.py`'s printed
+  summary (see *Drizzle correlated noise*); its `_method` key records how they were measured.
 
 Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
@@ -2441,22 +2464,22 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   every product drizzled so far. No cross-band tie like `align_wfpc2_to_acs.py` is needed:
   a lens's bands share one field, so any absolute offset is common across them and they
   co-register with each other. → memory: gallery_uvis_idctab_only_wcs
-- **Native pixel scale, `pixfrac=0.7`** (`FINAL_SCALE=0.0396`, chosen from a pixfrac scan
-  on J1110+3649 F606W trading correlated noise against weight-map uniformity) — the
-  opposite lever from the oversampled F606W (WFPC2)/F160W bands, which chose `pixfrac=1.0`
-  to *reduce* correlation; UVIS is already at native scale, where a smaller drop shrinks
-  the input footprint instead of opening coverage holes. **But the scan that chose 0.7 scored
-  the wrong quantity:** its "integrated inflation" (1.81 → 1.58, 1.0 → 0.7) matches a ratio
-  against the empirical per-pixel rms, which falls with pixfrac by construction. Re-measured
-  2026-09-27 against the noise map, J1110's 8×8 block ratio is 1.389 at pixfrac 1.0 and
-  1.397 at 0.7: no gain, and weight uniformity is slightly worse (0.096 → 0.103). Left at
-  0.7, since a re-drizzle would buy only that uniformity, but it is not a correlated-noise
-  fix (see *Output pixel scales*). Residual correlation is higher
-  than native ACS at the kernel scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
-  "~1.5–1.6" matches the pixfrac scan's 8×8 "integrated inflation" (1.58 at pixfrac 0.7), a ratio
-  against the empirical per-pixel rms rather than the noise map). `make_cutouts.py`
-  applies the measured factor by default — see *Drizzle correlated noise*. → memory:
-  gallery_uvis_pixfrac
+- **Native pixel scale, `pixfrac=0.7`** (`FINAL_SCALE=0.0396`; 0.7 chosen 2026-07-28 from a
+  pixfrac scan on J1110+3649 F606W that scored the wrong quantity — its "integrated
+  inflation" 1.81 → 1.58 was a ratio against the empirical per-pixel rms, which falls with
+  pixfrac by construction). **Re-scanned 2026-09-27 against the noise map on four gallery
+  lenses: 1.0 → 0.7 buys nothing** — drop-window factor flat (1.292→1.293, 1.191→1.191,
+  1.221→1.218, 1.202→1.199), sky σ unchanged, weight uniformity 3–13% worse (0.096→0.103,
+  0.121→0.137, 0.135→0.148, 0.186→0.192), deflector peak/flux +1–2% on three lenses and −5%
+  on the fourth (a centring-sensitive proxy, not a signal). The only real effect of a
+  sub-pixel drop at native scale is less box-blur in the PSF, which PyAutoLens fits from the
+  same drizzled stars anyway, while 3–4 dithers with a sub-pixel drop make the effective kernel
+  vary with position. **Not warranted; reverting to 1.0 is the better-justified default**
+  (user, 2026-09-27) — a reduction change (33 gallery drizzles + stamps + PSF builds, on every
+  branch), not yet done. Excess noise is only slightly
+  above native ACS at the drop scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
+  "~1.5–1.6" was that same rms-relative scan number). `make_cutouts.py` applies the measured
+  factor by default — see *Drizzle correlated noise*. → memory: gallery_uvis_pixfrac
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).

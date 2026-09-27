@@ -67,10 +67,12 @@ FINAL_SCALE = 0.0396
 # opposite lever from the oversampled F606W/F160W bands (which chose pixfrac 1.0).
 # → memory: drizzle_correlated_noise. User-settled 2026-07-28.
 # 2026-09-27: that "integrated inflation" was a ratio against the empirical per-pixel rms,
-# which falls with pixfrac by construction. Against the noise map the 8x8 block ratio is
-# flat (J1110: 1.389 at 1.0, 1.397 at 0.7) -- at native scale pixfrac only trades per-pixel
-# noise for covariance. 0.7 is kept, but it is not a correlated-noise fix; see AGENTS.md
-# *Output pixel scales*.
+# which falls with pixfrac by construction (it is Casertano's rms-relative R). Drizzle
+# conserves noise, so against the noise map nothing moves: on four gallery lenses 1.0->0.7
+# leaves the drop-window factor flat (1.292->1.293, 1.191->1.191, 1.221->1.218,
+# 1.202->1.199) and the 8x8 block ratio flat (J1110 1.389->1.397), while weight uniformity
+# gets 3-13% worse. 0.7 is NOT warranted; the user intends to revert to 1.0 (a reduction
+# change: gallery drizzles + stamps + PSF builds). See AGENTS.md *BELLS GALLERY*.
 FINAL_PIXFRAC = 0.7
 
 # DQ bits treated as GOOD so they are not drizzled out (and not mistaken for CRs by

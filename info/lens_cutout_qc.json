@@ -1731,14 +1731,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1143-0144_f814W.fits",
                 "offset_arcsec": 0.064,
                 "noise_k": 1.0,
-                "corr_factor": 1.18,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.325203,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
                 "casertano_r_analytic": 1.5,
-                "corr_factor_source": "json"
+                "corr_factor_source": "lens"
             }
         },
         "J1205+4910": {

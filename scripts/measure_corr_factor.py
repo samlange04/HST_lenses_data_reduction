@@ -1,14 +1,18 @@
 """
-Measure the drizzle correlated-noise factor for every cutout -> info/noise_corr_factors.json.
+Measure the noise-map inflation factor for every cutout -> info/noise_corr_factors.json.
 
-Drizzling correlates neighbouring output pixels, so a diagonal-covariance likelihood fed
-the `1/sqrt(WHT)` noise map (the uncorrelated-equivalent sigma) mis-states the noise of
-anything spanning the drizzle kernel. This measures, per stamp, on blank sky in its own
-mosaic:
+Drizzle correlates neighbouring output pixels but conserves noise: for white input noise
+the sigma-normalised ACF has C(0) < 1, positive neighbours, and sum C = 1 over the drop
+width, so 1/sqrt(WHT) is already right for any patch >= the drop and drizzle itself needs
+no factor. What the measured sum C > 1 catches is upstream of drizzle: an ERR-array deficit
+(~10% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. See
+AGENTS.md *Drizzle correlated noise* and local/literature/drizzle_noise.md. This measures,
+per stamp, on blank sky in its own mosaic:
 
   * the ACF of the sigma-normalised sky (acf_ratio) -- THE factor: sqrt(sum C) over the
-    drizzle-kernel window |dx|,|dy| <= round(pixfrac * native/output) px, less the
-    long-range floor. This is what make_cutouts.py applies.
+    drop window |dx|,|dy| <= round(pixfrac * native/output) px (the smallest window over
+    which drizzle's redistribution has summed back to 1), less the far floor. This is what
+    make_cutouts.py applies.
   * the blank-sky block-sum ratio at 0.05-2" (block_ratio) -- a diagnostic only. It never
     plateaus: past the kernel a weak, environment-dependent long-range floor (faint
     wings, sky/flat residuals) keeps adding up, so it has no single right answer. See
@@ -95,16 +99,17 @@ HIPASS = 51                               # px median filter removed before the 
 
 
 def acf_ratio(img, var, usable):
-    """Drizzle correlated-noise factor from the sigma-normalised blank-sky ACF.
+    """Noise-map inflation factor from the sigma-normalised blank-sky ACF.
 
     C(d) = <u(x) u(x+d)> with u = (sky - local median) / sigma_map, so C(0) is the
     per-pixel (emp/map)^2 and the integrated factor over a window |dx|,|dy| <= L is
-    R(L) = sqrt(sum C). The ACF has two parts (measured on J0841+3824): the drizzle
-    kernel, gone by lag ~2 native px, and a weak long-range floor (~0.01-0.05 per lag
-    from faint sources / sky and flat residuals) that never stops adding up -- which is
-    why a block-sum ratio does not plateau. The floor is the mean C over the
-    FLOOR_LAGS annulus; R_sub(L) subtracts it from every lag in the window, and
-    plateaus once L covers the kernel. R_sub is the --corr-factor quantity."""
+    R(L) = sqrt(sum C). Three parts: drizzle redistribution (C(0) < 1, neighbours > 0,
+    summing to exactly 1 by the drop width -- Casertano's R is 1/sqrt of its C(0)); a white
+    ERR deficit that scales every lag alike; and a weak long-range floor (~0.01-0.05 per
+    lag from faint sources / sky and flat residuals) that never stops adding up -- which is
+    why a block-sum ratio does not plateau. The floor is the mean C over the FLOOR_LAGS
+    annulus; R_sub(L) subtracts it from every lag in the window. R_sub at the drop window
+    is the --corr-factor quantity."""
     from numpy.fft import rfft2, irfft2
     filled = np.where(usable, img, np.median(img[usable]))
     u = np.where(usable, (img - ndimage.median_filter(filled, size=HIPASS)) /
