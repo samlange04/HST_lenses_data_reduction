@@ -2413,8 +2413,12 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   1.397 at 0.7: no gain, and weight uniformity is slightly worse (0.096 → 0.103). Left at
   0.7, since a re-drizzle would buy only that uniformity, but it is not a correlated-noise
   fix (see *Output pixel scales*). Residual correlation is higher
-  than native ACS (~1.5–1.6× integrated vs ~1.24) — use `make_cutouts.py --corr-factor
-  ~1.6` for a diagonal-covariance likelihood. → memory: gallery_uvis_pixfrac
+  than native ACS, but only slightly at the drizzle-kernel scale (measured 2026-09-26 over
+  every stamp: 1.18–1.26 visible UVIS vs 1.17–1.18 ACS; F275W/F225W ~1.37). The old
+  "~1.5–1.6×" was a ~1.4″ block sum, where long-range sky structure dominates. For a
+  diagonal-covariance likelihood use `make_cutouts.py --corr-factor` with the band's value
+  (F438W 1.24, F606W 1.18, F814W 1.26); the `corr-factor` branch applies these by default.
+  → memory: gallery_uvis_pixfrac
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
