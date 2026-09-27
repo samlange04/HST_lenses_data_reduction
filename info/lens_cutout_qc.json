@@ -7,14 +7,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2674,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.128132,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -22,14 +23,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2674,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.149282,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -37,14 +39,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2674,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.136288,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -52,14 +55,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.2674,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.147876,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0201+3228": {
@@ -69,14 +73,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1962,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.160331,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0237-0641": {
@@ -86,14 +91,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1618,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.114178,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0742+3341": {
@@ -103,14 +109,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2892,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.143074,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -118,14 +125,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2892,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.149987,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -133,14 +141,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2892,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.192233,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -148,14 +157,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.2892,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.194396,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0755+3445": {
@@ -165,14 +175,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0965,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.117454,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -180,14 +191,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0965,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.152098,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -195,14 +207,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0965,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.155868,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -210,14 +223,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.0965,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.187618,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0856+2010": {
@@ -227,14 +241,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1246,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.117661,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J0918+5104": {
@@ -244,14 +259,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2222,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.131099,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -259,14 +275,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2222,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.156293,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -274,14 +291,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.2222,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.134347,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -289,14 +307,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.2222,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.16882,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1110+2808": {
@@ -306,14 +325,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1619,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.38,
                 "weight_uniformity": 0.114658,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -321,14 +341,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1619,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.142386,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -336,14 +357,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1619,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.122595,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -351,14 +373,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1619,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.160158,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1110+3649": {
@@ -368,14 +391,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.595,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.102589,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1116+0915": {
@@ -385,14 +409,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.2569,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.118024,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1141+2216": {
@@ -402,14 +427,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1149,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.122947,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1201+4743": {
@@ -419,14 +445,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1904,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.131649,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J1226+5457": {
@@ -436,14 +463,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.311,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.142721,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J2228+1205": {
@@ -453,14 +481,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1412,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.11507,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         },
         "J2342-0120": {
@@ -470,14 +499,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1449,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.37,
                 "weight_uniformity": 0.124445,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f438W": {
                 "size_arcsec": 12.0,
@@ -485,14 +515,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1449,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.24,
                 "weight_uniformity": 0.137102,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -500,14 +531,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1449,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.103987,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -515,14 +547,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.1449,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.26,
                 "weight_uniformity": 0.125251,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 0.7,
                 "scale_ratio": 0.999495,
                 "casertano_r_analytic": 1.3045,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             }
         }
     },
@@ -540,13 +573,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0008-0004_f606W.fits",
                 "offset_arcsec": 0.014,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.079731,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -560,13 +594,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0008-0004_f814W.fits",
                 "offset_arcsec": 0.0369,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.131225,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0029-0055": {
@@ -577,13 +612,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.257,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.227979,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -597,13 +633,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0029-0055_f606W.fits",
                 "offset_arcsec": 0.2499,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.165194,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -617,13 +654,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0029-0055_f814W.fits",
                 "offset_arcsec": 0.2429,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.186212,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0157-0056": {
@@ -639,13 +677,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0157-0056_f606W.fits",
                 "offset_arcsec": 0.0257,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.090441,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -659,13 +698,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0157-0056_f814W.fits",
                 "offset_arcsec": 0.0271,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.130419,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0216-0813": {
@@ -681,13 +721,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0216-0813_f555W.fits",
                 "offset_arcsec": 0.1021,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.121495,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -701,13 +742,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0216-0813_f814W.fits",
                 "offset_arcsec": 0.1204,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.192349,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0252+0039": {
@@ -717,14 +759,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1001,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.183844,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -738,13 +781,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0252+0039_f606W.fits",
                 "offset_arcsec": 0.0884,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.143217,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -758,13 +802,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0252+0039_f814W.fits",
                 "offset_arcsec": 0.1224,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.162784,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0330-0020": {
@@ -780,13 +825,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0330-0020_f606W.fits",
                 "offset_arcsec": 0.1164,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.137326,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -800,13 +846,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0330-0020_f814W.fits",
                 "offset_arcsec": 0.1736,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.153234,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0728+3835": {
@@ -816,14 +863,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1996,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.263303,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -837,13 +885,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0728+3835_f606W.fits",
                 "offset_arcsec": 0.2196,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.198158,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -857,13 +906,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0728+3835_f814W.fits",
                 "offset_arcsec": 0.2231,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.210184,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0737+3216": {
@@ -879,13 +929,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0737+3216_f555W.fits",
                 "offset_arcsec": 0.0624,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.134185,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -899,13 +950,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0737+3216_f814W.fits",
                 "offset_arcsec": 0.0193,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.199486,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0822+2652": {
@@ -915,14 +967,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0199,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.204506,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -936,13 +989,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0822+2652_f606W.fits",
                 "offset_arcsec": 0.0168,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.178991,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f606W_v2": {
                 "size_arcsec": 12.0,
@@ -956,13 +1010,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0822+2652_f606W_v2.fits",
                 "offset_arcsec": 0.0064,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.187223,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -976,13 +1031,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0822+2652_f814W.fits",
                 "offset_arcsec": 0.0545,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.201941,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0841+3824": {
@@ -992,14 +1048,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0502,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.32768,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1013,13 +1070,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0841+3824_f606W.fits",
                 "offset_arcsec": 0.0346,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.291426,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1033,13 +1091,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0841+3824_f814W.fits",
                 "offset_arcsec": 0.0856,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.291916,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0903+4116": {
@@ -1050,13 +1109,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1278,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.192875,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1070,13 +1130,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0903+4116_f606W.fits",
                 "offset_arcsec": 0.1477,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.123123,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1090,13 +1151,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0903+4116_f814W.fits",
                 "offset_arcsec": 0.1601,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.146833,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0912+0029": {
@@ -1112,13 +1174,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0912+0029_f555W.fits",
                 "offset_arcsec": 0.0183,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.223814,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1132,13 +1195,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0912+0029_f814W.fits",
                 "offset_arcsec": 0.0599,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.320605,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0936+0913": {
@@ -1149,13 +1213,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0975,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.286521,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1169,13 +1234,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0936+0913_f606W.fits",
                 "offset_arcsec": 0.0952,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.213581,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1189,13 +1255,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0936+0913_f814W.fits",
                 "offset_arcsec": 0.1285,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.223056,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0946+1006": {
@@ -1205,14 +1272,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1092,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.243797,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1226,13 +1294,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0946+1006_f606W.fits",
                 "offset_arcsec": 0.131,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.173715,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1246,13 +1315,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0946+1006_f814W.fits",
                 "offset_arcsec": 0.1434,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.173531,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0956+5100": {
@@ -1268,13 +1338,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0956+5100_f555W.fits",
                 "offset_arcsec": 0.2611,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.176776,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1288,13 +1359,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0956+5100_f814W.fits",
                 "offset_arcsec": 0.2459,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.250604,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J0959+0410": {
@@ -1310,13 +1382,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0959+0410_f555W.fits",
                 "offset_arcsec": 0.0322,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.15736,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1330,13 +1403,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0959+0410_f814W.fits",
                 "offset_arcsec": 0.0699,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.205931,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1020+1122": {
@@ -1347,13 +1421,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0386,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.223131,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1367,13 +1442,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1020+1122_f606W.fits",
                 "offset_arcsec": 0.0195,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.150708,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1387,13 +1463,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1020+1122_f814W.fits",
                 "offset_arcsec": 0.0275,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.171914,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1023+4230": {
@@ -1404,13 +1481,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0505,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.249583,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1424,13 +1502,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1023+4230_f606W.fits",
                 "offset_arcsec": 0.0578,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.186609,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1444,13 +1523,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1023+4230_f814W.fits",
                 "offset_arcsec": 0.0718,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.21492,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1029+0420": {
@@ -1461,13 +1541,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0701,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.306428,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1481,13 +1562,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1029+0420_f606W.fits",
                 "offset_arcsec": 0.0741,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.252484,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1501,13 +1583,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1029+0420_f814W.fits",
                 "offset_arcsec": 0.066,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.217093,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1032+5322": {
@@ -1518,13 +1601,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.299,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.222347,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1538,13 +1622,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1032+5322_f606W.fits",
                 "offset_arcsec": 0.3148,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.201547,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1558,13 +1643,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1032+5322_f814W.fits",
                 "offset_arcsec": 0.3249,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.230763,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1142+1001": {
@@ -1580,13 +1666,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1142+1001_f606W.fits",
                 "offset_arcsec": 0.5881,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.144926,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1600,13 +1687,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1142+1001_f814W.fits",
                 "offset_arcsec": 0.63,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.150966,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1143-0144": {
@@ -1622,13 +1710,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1143-0144_f555W.fits",
                 "offset_arcsec": 0.0262,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.258036,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1642,13 +1731,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1143-0144_f814W.fits",
                 "offset_arcsec": 0.064,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.325203,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1205+4910": {
@@ -1664,13 +1754,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1205+4910_f555W.fits",
                 "offset_arcsec": 0.2897,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.184022,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1684,13 +1775,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1205+4910_f814W.fits",
                 "offset_arcsec": 0.3193,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.258927,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1213+6708": {
@@ -1706,13 +1798,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1213+6708_f606W.fits",
                 "offset_arcsec": 0.4953,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.282002,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1726,13 +1819,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/j1213/cutout_cr_sci.fits",
                 "offset_arcsec": 0.4952,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.317055,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1218+0830": {
@@ -1748,13 +1842,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1218+0830_f606W.fits",
                 "offset_arcsec": 0.0763,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.249926,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1768,13 +1863,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1218+0830_f814W.fits",
                 "offset_arcsec": 0.0996,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.279288,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1250+0523": {
@@ -1790,13 +1886,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1250+0523_f555W.fits",
                 "offset_arcsec": 0.1083,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.167501,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1810,13 +1907,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1250+0523_f814W.fits",
                 "offset_arcsec": 0.0571,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.228628,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1402+6321": {
@@ -1832,13 +1930,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1402+6321_f555W.fits",
                 "offset_arcsec": 0.2394,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.17482,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1852,13 +1951,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1402+6321_f814W.fits",
                 "offset_arcsec": 0.1987,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.241779,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1420+6019": {
@@ -1874,13 +1974,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1420+6019_f555W.fits",
                 "offset_arcsec": 0.2467,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.288365,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1894,13 +1995,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1420+6019_f814W.fits",
                 "offset_arcsec": 0.1957,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.353022,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1430+4105": {
@@ -1911,13 +2013,14 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1077,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.279497,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -1931,13 +2034,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1430+4105_f606W.fits",
                 "offset_arcsec": 0.1235,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.233557,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1951,13 +2055,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1430+4105_f814W.fits",
                 "offset_arcsec": 0.0763,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.247524,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1432+6317": {
@@ -1973,13 +2078,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1432+6317_f606W.fits",
                 "offset_arcsec": 0.131,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.298901,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -1993,13 +2099,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1432+6317_f814W.fits",
                 "offset_arcsec": 0.1679,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.340901,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1451-0239": {
@@ -2015,13 +2122,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1451-0239_f555W.fits",
                 "offset_arcsec": 0.1301,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.164864,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2035,13 +2143,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1451-0239_f814W.fits",
                 "offset_arcsec": 0.1002,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.214914,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1525+3327": {
@@ -2057,13 +2166,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1525+3327_f606W.fits",
                 "offset_arcsec": 0.1218,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.178705,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2077,13 +2187,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1525+3327_f814W.fits",
                 "offset_arcsec": 0.0955,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.196425,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1627-0053": {
@@ -2099,13 +2210,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1627-0053_f555W.fits",
                 "offset_arcsec": 0.1129,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.152314,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2119,13 +2231,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1627-0053_f814W.fits",
                 "offset_arcsec": 0.1098,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.209842,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1630+4520": {
@@ -2141,13 +2254,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1630+4520_f555W.fits",
                 "offset_arcsec": 0.0987,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.170185,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2161,13 +2275,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1630+4520_f814W.fits",
                 "offset_arcsec": 0.0967,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.241826,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J2238-0754": {
@@ -2183,13 +2298,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2238-0754_f555W.fits",
                 "offset_arcsec": 0.0729,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.165801,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2203,13 +2319,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2238-0754_f814W.fits",
                 "offset_arcsec": 0.1188,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.220672,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J2300+0022": {
@@ -2225,13 +2342,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2300+0022_f555W.fits",
                 "offset_arcsec": 0.1101,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.11981,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2245,13 +2363,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2300+0022_f814W.fits",
                 "offset_arcsec": 0.1163,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.160761,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J2303+1422": {
@@ -2267,13 +2386,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2303+1422_f555W.fits",
                 "offset_arcsec": 0.0927,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.17,
                 "weight_uniformity": 0.173586,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2287,13 +2407,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2303+1422_f814W.fits",
                 "offset_arcsec": 0.0927,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.254482,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J2341+0000": {
@@ -2309,13 +2430,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2341+0000_f606W.fits",
                 "offset_arcsec": 0.0848,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.215788,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2329,13 +2451,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J2341+0000_f814W.fits",
                 "offset_arcsec": 0.1044,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.25043,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         }
     },
@@ -2353,13 +2476,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0037-0942_f606W.fits",
                 "offset_arcsec": 0.791,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.217942,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J0044+0113": {
@@ -2375,13 +2499,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0044+0113_f606W.fits",
                 "offset_arcsec": 0.2131,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.206424,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J0935-0003": {
@@ -2397,13 +2522,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0935-0003_f606W.fits",
                 "offset_arcsec": 0.1636,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.161035,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J0955+0101": {
@@ -2419,13 +2545,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0955+0101_f606W.fits",
                 "offset_arcsec": 0.8039,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.201573,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J0959+4416": {
@@ -2435,14 +2562,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1143,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.24346,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2456,13 +2584,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0959+4416_f606W.fits",
                 "offset_arcsec": 0.0933,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.185186,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2476,13 +2605,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J0959+4416_f814W.fits",
                 "offset_arcsec": 0.0797,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.218306,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1016+3859": {
@@ -2492,14 +2622,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.1939,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.261372,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2513,13 +2644,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1016+3859_f606W.fits",
                 "offset_arcsec": 0.2167,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.220662,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2533,13 +2665,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1016+3859_f814W.fits",
                 "offset_arcsec": 0.2178,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.24874,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1100+5329": {
@@ -2555,13 +2688,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1100+5329_f606W.fits",
                 "offset_arcsec": 0.4983,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.183717,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1106+5228": {
@@ -2577,13 +2711,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1106+5228_f606W.fits",
                 "offset_arcsec": 0.394,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.303285,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1112+0826": {
@@ -2599,13 +2734,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1112+0826_f606W.fits",
                 "offset_arcsec": 0.1103,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.16517,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1134+6027": {
@@ -2615,14 +2751,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.425,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.304711,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2636,13 +2773,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1134+6027_f606W.fits",
                 "offset_arcsec": 0.4039,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.236514,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1153+4612": {
@@ -2652,14 +2790,15 @@
                 "center_source": "f814W",
                 "offset_arcsec": 0.0695,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.23167,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2673,13 +2812,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1153+4612_f606W.fits",
                 "offset_arcsec": 0.075,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.201643,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2693,13 +2833,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1153+4612_f814W.fits",
                 "offset_arcsec": 0.0392,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.210421,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1204+0358": {
@@ -2715,13 +2856,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1204+0358_f606W.fits",
                 "offset_arcsec": 0.2255,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.193583,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1251-0208": {
@@ -2731,14 +2873,15 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.0535,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.22454,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
                 "casertano_r_analytic": 2.5324,
-                "bcfill": false
+                "bcfill": false,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2752,13 +2895,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1251-0208_f606W.fits",
                 "offset_arcsec": 0.0839,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.172881,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1403+0006": {
@@ -2774,13 +2918,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1403+0006_f606W.fits",
                 "offset_arcsec": 0.0885,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.195885,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1416+5136": {
@@ -2796,13 +2941,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1416+5136_f606W.fits",
                 "offset_arcsec": 0.1233,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.168731,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -2816,13 +2962,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1416+5136_f814W.fits",
                 "offset_arcsec": 0.126,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.18,
                 "weight_uniformity": 0.205128,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
+                "casertano_r_analytic": 1.5,
+                "corr_factor_source": "json"
             }
         },
         "J1436-0000": {
@@ -2838,13 +2985,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1436-0000_f606W.fits",
                 "offset_arcsec": 0.7117,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.164467,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1443+0304": {
@@ -2860,13 +3008,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1443+0304_f606W.fits",
                 "offset_arcsec": 0.299,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.203479,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1531-0105": {
@@ -2882,13 +3031,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1531-0105_f606W.fits",
                 "offset_arcsec": 0.0843,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.224345,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1538+5817": {
@@ -2904,13 +3054,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1538+5817_f606W.fits",
                 "offset_arcsec": 0.5146,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.226759,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1621+3931": {
@@ -2926,13 +3077,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1621+3931_f606W.fits",
                 "offset_arcsec": 0.0807,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.217158,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J1636+4707": {
@@ -2943,13 +3095,14 @@
                 "center_source": "this band",
                 "offset_arcsec": 0.2406,
                 "noise_k": 599.232,
-                "corr_factor": 1.0,
+                "corr_factor": 1.05,
                 "weight_uniformity": 0.240532,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
+                "casertano_r_analytic": 2.5324,
+                "corr_factor_source": "json"
             },
             "f606W": {
                 "size_arcsec": 12.0,
@@ -2963,13 +3116,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1636+4707_f606W.fits",
                 "offset_arcsec": 0.2277,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.197561,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J2141-0001": {
@@ -2985,13 +3139,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J2141-0001_f606W.fits",
                 "offset_arcsec": 0.0666,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.159106,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J2302-0840": {
@@ -3007,13 +3162,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J2302-0840_f606W.fits",
                 "offset_arcsec": 0.068,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.211459,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         },
         "J2321-0939": {
@@ -3029,13 +3185,14 @@
                 "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J2321-0939_f606W.fits",
                 "offset_arcsec": 0.1775,
                 "noise_k": 1.0,
-                "corr_factor": 1.0,
+                "corr_factor": 1.07,
                 "weight_uniformity": 0.333386,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919
+                "casertano_r_analytic": 2.3919,
+                "corr_factor_source": "json"
             }
         }
     }
