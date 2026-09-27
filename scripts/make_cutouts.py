@@ -99,9 +99,9 @@ def weight_to_sigma_scale(sci_hdr):
         F160W (WFC3/IR, uncorr.)  ratio 477 at 0.24",  725 at 1.44"   -> ~700x low
 
     and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the residual is a 1.44"
-    block ratio the same size as ACS's (1.24) -- correlated noise plus long-range sky
-    structure, not a units error. (A 1.44" block ratio is NOT the --corr-factor value;
-    see AGENTS.md *Drizzle correlated noise*.) The
+    block ratio the same size as ACS's (1.24) -- faint-structure noise on that scale, not
+    a units error. (A 1.44" block ratio is NOT the --corr-factor value; see AGENTS.md
+    *Drizzle correlated noise*.) The
     `D001WTSC = 1/scale**4` term does *not* enter: it cancels against the finer
     output grid, which is why ACS (native scale, WTSC 1.0) and WFC3/IR (WTSC 20.9)
     share one formula.
@@ -210,19 +210,22 @@ def weight_uniformity(wht):
 
 
 def casertano_r(pixfrac, scale_ratio):
-    """Analytic correlated-noise correction factor R = 1/r (Casertano et al. 2000 /
-    DrizzlePac handbook), from the drop size `pixfrac` (p, native input pixels) and the
-    output-to-native pixel `scale_ratio` (s) alone.
+    """Casertano et al. 2000 correlated-noise factor R = 1/r (DrizzlePac handbook), from the
+    drop size `pixfrac` (p, native input pixels) and the output-to-native pixel `scale_ratio`
+    (s) alone. Per axis r = 1 - p/(3s) (s >= p) or (s/p)(1 - s/(3p)) (s < p); in 2D the
+    per-pixel variance ratio is r**2, so R = 1/sqrt(C(0)) for pure drizzle.
 
-    This is a closed-form CROSS-CHECK against the empirically-measured correlation factors
-    in AGENTS.md's *Drizzle correlated noise* section (1.18 ACS F814W, 1.07 WFPC2 F606W,
-    1.05 F160W, 1.18-1.26 visible UVIS -- the blank-sky ACF over the drizzle kernel,
-    measured over every stamp 2026-09-26, not derived from pixfrac/scale). It is reported alongside --corr-factor for comparison, not used to
-    set it automatically: r is the *variance*-reduction factor of a single, idealised drizzle
-    drop and does not capture the geometric-distortion or dither-pattern effects the empirical
-    measurements do (ACS: analytic 1.5 vs measured 1.18; WFPC2: 2.39 vs 1.07). Smaller p reduces correlation (R -> 1 in the
-    interlacing limit); p=1 at s=1 is shift-and-add (R=1.5). Returns None for an out-of-range
-    input rather than raising, since it's an informational cross-check, not a hard gate.
+    What R means: the factor by which sqrt(N) * (the drizzled image's own blank-sky per-pixel
+    rms) understates the true noise of an N-pixel aperture -- the correction for anyone who
+    estimates sigma from the image rather than from the weight map. It is NOT a correction to
+    the ERR-weighted noise map, which drizzle already leaves sum-correct (drizzle conserves
+    noise: it lowers C(0) and raises the neighbours by the same total), so R and
+    --corr-factor are different quantities and must not be compared (the 1.18 ACS factor is
+    an ERR-calibration deficit plus faint structure, not drizzle; see AGENTS.md *Drizzle
+    correlated noise*). The right check is R against the measured 1/sqrt(C(0)), which it
+    predicts to ~5%: WFPC2 2.39 vs 2.36, ACS 1.50 vs 1.49, and 1.50/1.30/1.25 vs
+    1.55/1.36/1.31 across the ACS pixfrac scan. Returns None for an out-of-range input rather
+    than raising, since it's informational, not a gate.
     """
     if not (0.0 < pixfrac <= 1.0) or scale_ratio <= 0.0:
         return None
@@ -429,15 +432,14 @@ def main():
                         'tell you. The grid is identical only if the two mosaics share a '
                         'WCS -- check CRPIX/CRVAL afterwards, do not assume.')
     p.add_argument('--corr-factor', type=float, default=1.0,
-                   help='multiply the noise map by this factor to absorb drizzle '
-                        'correlated noise (default 1.0 = off, leaving a pure per-pixel '
-                        'sigma). Drizzling correlates neighbouring output pixels, so a '
-                        'diagonal-covariance likelihood such as PyAutoLens understates '
-                        'the noise of anything spanning the drizzle kernel, by 1.18 '
-                        '(ACS F814W), 1.17 (F555W), 1.07 (WFPC2 F606W), 1.05 (F160W) and '
-                        '1.18-1.26 (visible UVIS), measured 2026-09-26. Set '
-                        'this per band to correct that; leave at 1.0 if the covariance '
-                        'is handled at the modelling stage instead.')
+                   help='multiply the noise map by this factor so it matches the noise '
+                        'actually present on patches the size of the drizzle drop or larger '
+                        '(default 1.0 = off, the raw 1/sqrt(WHT)). Measured 2026-09-26: 1.18 '
+                        '(ACS F814W), 1.17 (F555W), 1.07 (WFPC2 F606W), 1.05 (F160W), '
+                        '1.18-1.26 (visible UVIS). The excess is NOT drizzle (drizzle conserves '
+                        'noise and 1/sqrt(WHT) is already sum-correct): it is an ERR-array '
+                        'deficit of ~10%% rms in ACS/UVIS plus a few percent of faint unmasked '
+                        'structure. The corr-factor branch applies these by default.')
     p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
                    help='fold the empirical PSF error map (cutout_[cr_]psf_err.fits, built by '
                         'make_psf.py) into the noise map as an effective noise map: '
@@ -645,7 +647,7 @@ def main():
 
     noise_hdr = wht_hdr.copy()
     noise_hdr['NOISEK'] = (units_k, 'ERR-units scale applied to 1/sqrt(WHT)')
-    noise_hdr['NOISECOR'] = (a.corr_factor, 'drizzle correlated-noise inflation applied')
+    noise_hdr['NOISECOR'] = (a.corr_factor, 'noise-map inflation applied (see NOISECRS)')
 
     # Weight-map uniformity (STScI RMS/median rule) over the cutout region -- flags a
     # pixfrac too small for the dither pattern (coverage speckle/holes) for this specific
@@ -660,9 +662,9 @@ def main():
     else:
         print("  weight-map uniformity: no positive pixels in the cutout weight map")
 
-    # Analytic Casertano R cross-check against --corr-factor, from the pixfrac/scale ratio
-    # AstroDrizzle itself stamped into the science header -- see casertano_r()'s docstring
-    # for why this is a cross-check, not a source of truth for --corr-factor.
+    # Analytic Casertano R from the pixfrac/scale ratio AstroDrizzle stamped into the science
+    # header. Informational: it is the rms-relative factor 1/sqrt(C(0)), not comparable to
+    # --corr-factor (map-relative) -- see casertano_r()'s docstring.
     pixfrac = sci_hdr.get('D001PIXF')
     iscl, oscl = sci_hdr.get('D001ISCL'), sci_hdr.get('D001SCAL')
     r_analytic = scale_ratio = None
