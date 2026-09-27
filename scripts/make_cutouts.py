@@ -98,8 +98,10 @@ def weight_to_sigma_scale(sci_hdr):
         F814W (ACS, K=1)          ratio 1.04 at 0.24", 1.24 at 1.44"  -> correct
         F160W (WFC3/IR, uncorr.)  ratio 477 at 0.24",  725 at 1.44"   -> ~700x low
 
-    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the only thing left is
-    the same drizzle correlated-noise factor ACS shows independently (1.24). The
+    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the residual is a 1.44"
+    block ratio the same size as ACS's (1.24) -- correlated noise plus long-range sky
+    structure, not a units error. (A 1.44" block ratio is NOT the --corr-factor value;
+    see AGENTS.md *Drizzle correlated noise*.) The
     `D001WTSC = 1/scale**4` term does *not* enter: it cancels against the finer
     output grid, which is why ACS (native scale, WTSC 1.0) and WFC3/IR (WTSC 20.9)
     share one formula.

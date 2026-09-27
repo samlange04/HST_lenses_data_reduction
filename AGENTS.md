@@ -640,8 +640,9 @@ Consequences:
   smoothing, not an error — **do not "correct" a noise map because blank sky looks quiet**.
   (An old claim here that the empirical rms was "1.47× the ERR-map prediction" pointed the
   wrong way. The old factors ~1.24 ACS / 1.17 F160W came from a 1.44″ block sum on one lens,
-  where the long-range floor already dominates; ~1.1 F606W / ~1.6 UVIS have no recorded
-  measurement. All four are superseded.)
+  where the long-range floor already dominates; ~1.6 UVIS matches the UVIS pixfrac scan's
+  8×8 ratio against the empirical per-pixel rms (not the noise map); ~1.1 F606W has no
+  recorded measurement. All four are superseded.)
 - **The analytic `CASR` is a poor predictor** — it models one idealised drop, not
   multi-exposure dither averaging: 1.50 vs 1.18 measured on ACS, 2.39 vs 1.07 on WFPC2.
 - **Large-scale excess noise is not in the noise map and cannot be.** On 1–2″ scales the
@@ -1966,8 +1967,9 @@ the drizzle-broadened empirical PSF (FWHM ~3.8px, which the detector-frame model
 **The same 3e-3 gate was validated on WFC3/UVIS (gallery, 2026-07-30) and needs no
 UVIS-specific retune.** Across 25 gallery products, passing empirical builds top out at 2.26e-3,
 with a clean gap to the three F606W builds dropped to the model (J1110+2808 3.1e-3, J0237-0641
-3.4e-3, J0918+5104 4.9e-3) — the threshold sits in that gap. Despite UVIS's higher correlated
-noise (~1.5–1.6× native ACS), its clean wings are no noisier than ACS/F555W at the gate. Two
+3.4e-3, J0918+5104 4.9e-3) — the threshold sits in that gap. UVIS's correlated noise is only
+slightly above native ACS's (kernel factor 1.18–1.26 vs 1.17–1.18, measured 2026-09-26), and its
+clean wings are no noisier than ACS/F555W at the gate. Two
 marginal drops (J0237-0641, J1110+2808) were contaminant/faint-star problems, not a too-strict
 gate: both were rescued to clean empirical builds via `info/psf_stars.json` (leave-one-out
 method → memory: uvis_scatter_gate_validated).
@@ -2451,7 +2453,8 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   0.7, since a re-drizzle would buy only that uniformity, but it is not a correlated-noise
   fix (see *Output pixel scales*). Residual correlation is higher
   than native ACS at the kernel scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
-  "~1.5–1.6" was a 1.4″ block sum dominated by long-range sky structure). `make_cutouts.py`
+  "~1.5–1.6" matches the pixfrac scan's 8×8 "integrated inflation" (1.58 at pixfrac 0.7), a ratio
+  against the empirical per-pixel rms rather than the noise map). `make_cutouts.py`
   applies the measured factor by default — see *Drizzle correlated noise*. → memory:
   gallery_uvis_pixfrac
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
