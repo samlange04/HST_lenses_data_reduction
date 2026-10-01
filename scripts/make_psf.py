@@ -159,6 +159,32 @@ _INSTR = {
 }
 
 
+# Detector full well in the mosaic's native per-frame units (ACS/UVIS FLC: electrons; WFPC2
+# c0m: DN, 12-bit ADC). A candidate whose drizzled peak exceeds SAT_PEAK_FRAC x full well /
+# the LONGEST frame exposure is saturated in at least one frame (DQ 256 is drizzled in as
+# "good", so nothing upstream removes it) and must not enter the ePSF. 0.5 allows for the
+# drizzle-lowered peak and the flat top: a star just at full well in the longest frame lands
+# at ~0.7-0.9 of sat/dexp in the mosaic. Losing an unsaturated star in the top half of the
+# dynamic range is harmless (the ePSF is flux-normalised); admitting a saturated one is not.
+# WFC3/IR: up-the-ramp fitting handles saturation, no gate. Found 2026-09-29 on the pixfrac
+# 1.0 gallery rebuild: J0742+3341 f814W's 195 e-/s saturated star had failed the shape gate
+# by accident at pixfrac 0.7, passed it at 1.0, set the 2% flux floor (8 -> 4 stars) and
+# went into the ePSF. Overridable via info/psf_stars.json `satlevel` / `max_peak`.
+_SATLEVEL = {'ACS/WFC': 84700.0, 'WFC3/UVIS': 70000.0, 'WFPC2': 4095.0, 'WFC3/IR': None}
+SAT_PEAK_FRAC = 0.5
+
+
+def saturation_peak(inst_key, sci_hdr, overrides):
+    """Mosaic peak (per-second units) above which a candidate is saturated, or None."""
+    if 'max_peak' in overrides:
+        return overrides['max_peak']
+    sat = overrides.get('satlevel', _SATLEVEL.get(inst_key))
+    dexp = [v for k, v in sci_hdr.items() if k.startswith('D') and k.endswith('DEXP')]
+    if not sat or not dexp:
+        return None
+    return SAT_PEAK_FRAC * float(sat) / max(float(v) for v in dexp)
+
+
 def instrument_key(hdr):
     """Normalised instrument label for the defaults table.
 
@@ -311,7 +337,9 @@ def select_stars(data, mask, params, overrides, star_size):
         min_separation=params['min_sep'], exclude_border=True)
     sources = finder(data - median, mask=mask)
 
-    qa = {'n_detected': 0 if sources is None else len(sources), 'n_crowded_rejected': 0}
+    qa = {'n_detected': 0 if sources is None else len(sources), 'n_crowded_rejected': 0,
+          'n_saturated_rejected': 0}
+    max_peak = params.get('max_peak')
     if sources is None or len(sources) == 0:
         rows = []
     else:
@@ -342,6 +370,10 @@ def select_stars(data, mask, params, overrides, star_size):
             # absolute peak-S/N: reject faint noise blobs before the shape fit
             peak = float(data[iy - 2:iy + 3, ix - 2:ix + 3].max())
             if peak < min_peak:
+                continue
+            # saturated in at least one frame (see _SATLEVEL): never a PSF star
+            if max_peak is not None and peak > max_peak:
+                qa['n_saturated_rejected'] += 1
                 continue
             # star/galaxy separation by fitted shape
             shape = _fit_stamp_shape(data, x, y, psf_fwhm)
@@ -888,6 +920,9 @@ def main():
     else:
         method = a.method
     params = resolve_params(inst_key, overrides, a)
+    params['max_peak'] = saturation_peak(inst_key, sci_hdr, overrides)
+    if params['max_peak'] is not None:
+        print(f'  saturation gate: mosaic peak > {params["max_peak"]:.1f} rejected')
     star_size = int(params['star_size'])
     oversample = int(params['oversample'])
     kernel_size = int(params['kernel_size'])
@@ -914,7 +949,8 @@ def main():
     n_stars = len(stars_tbl)
     print(f'  stars: {qa["n_detected"]} detected -> {qa["n_auto"]} auto-kept'
           f' + {qa["n_included"]} forced = {n_stars}'
-          f' ({qa["n_crowded_rejected"]} dropped as crowded)')
+          f' ({qa["n_crowded_rejected"]} dropped as crowded, '
+          f'{qa["n_saturated_rejected"]} saturated)')
 
     too_few = n_stars < params['min_stars']
     use_model = (method == 'model') or (method == 'auto' and too_few)

@@ -1,9 +1,33 @@
 {
     "gallery": {
+        "J0029+2544": {
+            "f814W": {
+                "method": "inject_stdpsf",
+                "fwhm_pix": 2.472,
+                "kernel_size": 51,
+                "cutout_kernel_size": 21,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.0,
+                "wing_scatter": 0.0,
+                "n_frames": 3
+            }
+        },
+        "J0201+3228": {
+            "f606W": {
+                "method": "inject_stdpsf",
+                "fwhm_pix": 2.5059,
+                "kernel_size": 51,
+                "cutout_kernel_size": 19,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.0,
+                "wing_scatter": 0.0,
+                "n_frames": 4
+            }
+        },
         "J0755+3445": {
             "f438W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.4273,
+                "fwhm_pix": 2.5008,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -22,12 +46,22 @@
                 "pedestal_frac": 0.0,
                 "wing_scatter": 0.0,
                 "n_frames": 4
+            },
+            "f814W": {
+                "method": "inject_stdpsf",
+                "fwhm_pix": 2.4252,
+                "kernel_size": 51,
+                "cutout_kernel_size": 21,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.0,
+                "wing_scatter": 0.0,
+                "n_frames": 3
             }
         },
         "J1110+2808": {
             "f438W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.4791,
+                "fwhm_pix": 2.5377,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -37,7 +71,7 @@
             },
             "f814W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.2623,
+                "fwhm_pix": 2.383,
                 "kernel_size": 51,
                 "cutout_kernel_size": 21,
                 "trim_threshold": 0.001,
@@ -49,7 +83,7 @@
         "J1116+0915": {
             "f606W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.3962,
+                "fwhm_pix": 2.4757,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -61,7 +95,7 @@
         "J1141+2216": {
             "f606W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.4204,
+                "fwhm_pix": 2.5222,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -73,7 +107,7 @@
         "J2342-0120": {
             "f438W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.4656,
+                "fwhm_pix": 2.5498,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -83,7 +117,7 @@
             },
             "f606W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.4094,
+                "fwhm_pix": 2.5003,
                 "kernel_size": 51,
                 "cutout_kernel_size": 19,
                 "trim_threshold": 0.001,
@@ -93,7 +127,7 @@
             },
             "f814W": {
                 "method": "inject_stdpsf",
-                "fwhm_pix": 2.276,
+                "fwhm_pix": 2.39,
                 "kernel_size": 51,
                 "cutout_kernel_size": 21,
                 "trim_threshold": 0.001,
