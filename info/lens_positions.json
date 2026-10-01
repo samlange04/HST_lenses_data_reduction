@@ -34,13 +34,6 @@
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
                     {
-                        "filt": "f275W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 16.08,
-                        "deflector_tie_mas": 1307.2,
-                        "deflector_tie_px": 33.009
-                    },
-                    {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 0.0,
@@ -176,13 +169,6 @@
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
                     {
-                        "filt": "f275W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 14.95,
-                        "deflector_tie_mas": 1170.1,
-                        "deflector_tie_px": 29.547
-                    },
-                    {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 0.0,
@@ -243,13 +229,6 @@
                 "display_hidden_contaminant_px": 18960,
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
-                    {
-                        "filt": "f275W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 11.38,
-                        "deflector_tie_mas": 1471.1,
-                        "deflector_tie_px": 37.149
-                    },
                     {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
@@ -355,13 +334,6 @@
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
                     {
-                        "filt": "f275W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 17.64,
-                        "deflector_tie_mas": 748.7,
-                        "deflector_tie_px": 18.906
-                    },
-                    {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 14.09,
@@ -414,13 +386,6 @@
                 "display_hidden_contaminant_px": 4530,
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
-                    {
-                        "filt": "f275W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 16.74,
-                        "deflector_tie_mas": 1298.3,
-                        "deflector_tie_px": 32.786
-                    },
                     {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
@@ -752,13 +717,6 @@
                 "display_hidden_contaminant_px": 2739,
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
-                    {
-                        "filt": "f225W",
-                        "prefix": "cutout_cr",
-                        "reprojection_shift_mas": 21.42,
-                        "deflector_tie_mas": 893.9,
-                        "deflector_tie_px": 22.572
-                    },
                     {
                         "filt": "f438W",
                         "prefix": "cutout_cr",
