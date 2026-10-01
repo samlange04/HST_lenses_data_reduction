@@ -2523,8 +2523,7 @@ target), F814W second, and does **not** `rm` the output dir first (unlike
   (the box blur), factors re-measured **identical** (1.24 / 1.18 / 1.26), PSFs rebuilt.
   `make_psf_inject.py`'s UVIS `final_pixfrac` hardcode was 0.7 and is now 1.0 too — it must
   track `FINAL_PIXFRAC`, or model-tier injections get a different drop from the science
-  mosaic. The pixfrac-0.7 mosaics sit in `data/drizzled_pixfrac07/` (gitignored) until this
-  change is committed. Excess noise is only slightly
+  mosaic. The pixfrac-0.7 mosaics were deleted 2026-10-01. Excess noise is only slightly
   above native ACS at the drop scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
   "~1.5–1.6" was that same rms-relative scan number). `make_cutouts.py` applies the measured
   factor by default — see *Drizzle correlated noise*. → memory: gallery_uvis_pixfrac
