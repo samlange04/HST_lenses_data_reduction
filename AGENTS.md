@@ -28,7 +28,8 @@ re-litigate it"; the slug names the note, not a file in this repo.
 
 ## Current state of the products (verified on disk 2026-09-26)
 
-Science bands only — gallery's F225W/F275W are reduced but unusable (see *BELLS GALLERY*).
+Science bands only — gallery's F225W/F275W were reduced, found unusable, and **every UV
+product was deleted 2026-09-29** (see *BELLS GALLERY*).
 
 | sample | bands | stamps + PSF + psf_err | contaminant masks | arc masks | positions JSON |
 |---|---|---|---|---|---|
@@ -158,7 +159,7 @@ Each runner takes an optional sample arg, defaulting to `slacs_gold`:
 bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
 bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
 bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
-bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F225W/F275W/F438W/F606W/F814W (gallery only)
+bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F606W/F814W/F438W (gallery only; UV bands dropped 2026-09-29)
 bash scripts/run_cutouts_all.sh              # stamps for whatever products exist (12", default)
 bash scripts/run_cutouts_all.sh slacs_gold 20  # same, at a 20" stamp size (parallel tree)
 bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
@@ -170,8 +171,8 @@ All runners take the roster from `info/lens_samples.json` via `scripts/mast_targ
 or PSF needs a mosaic that exists). They report `ok` / `no data` / `FAILED` separately, so
 the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_cutouts_all.sh`
 globs `<filt>*` (not `<filt>`) so per-visit split-visit dirs are included, and covers every
-sample's filters (SLACS `f606W f814W f555W f160W` plus gallery's UV/blue bands `f438W f275W
-f225W`) in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
+sample's filters (SLACS `f606W f814W f555W f160W` plus gallery's `f438W`; it still lists
+`f275W f225W`, which glob to nothing since those products were deleted 2026-09-29) in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
 WFC3/UVIS data, but (like the other runners) accepts any sample as its first arg.
 
 ### `run_wfpc2_wf3.sh` — the single WFPC2 driver (three traps it exists to avoid)
@@ -670,9 +671,12 @@ Consequences:
   residuals by 1/C(0)** — 1.6× ACS, ~2× UVIS, 2.5× WFPC2, 2.8× F160W in χ² — irreducibly.
   Sum-correct is the right side to be on for arcs; a stray CR or hot pixel costs more than it
   should.
-- **Structure noise on 1–2″ scales is still 1.3–2× the corrected map** and cannot be
-  represented by a uniform rescale without overstating the pixel scale. If residuals on arc
-  scales look over-significant, this is a candidate.
+- **The scatter on 1–2″ scales is still 1.3–2× the corrected map — and that is deliberately
+  NOT corrected.** It is unmasked real signal (faint galaxies, wings, sky/flat residuals), not
+  noise: it doesn't average down, it's scale- and environment-dependent, and inflating σ for
+  it would hide model misspecification and dilute every real residual (user, 2026-09-29: the
+  noise map describes the noise; unmodelled structure is a modelling-stage matter — mask it,
+  model the sky, or report a per-fit scaling as such). Expect it as residuals to inspect.
 - **The old numbers are superseded**: ~1.24 ACS / ~1.17 F160W (1.44″ block sums on one lens,
   floor-dominated), ~1.6 UVIS (the pixfrac scan's ratio against the empirical rms), ~1.1
   F606W (no recorded measurement), and "empirical rms 1.47× the ERR map" (wrong direction).
@@ -1992,6 +1996,36 @@ marginal drops (J0237-0641, J1110+2808) were contaminant/faint-star problems, no
 gate: both were rescued to clean empirical builds via `info/psf_stars.json` (leave-one-out
 method → memory: uvis_scatter_gate_validated).
 
+### Saturated stars are rejected explicitly (`_SATLEVEL`, 2026-09-29)
+
+`select_stars` drops any candidate whose mosaic peak exceeds `SAT_PEAK_FRAC` (0.5) × full
+well ÷ the longest frame exposure (ACS 84700 e⁻, UVIS 70000 e⁻, WFPC2 4095 DN; WFC3/IR none —
+up-the-ramp). DQ 256 is drizzled in as "good", so nothing upstream removes a saturated star;
+before this gate, the only thing keeping one out of an ePSF was the Gaussian-shape window
+happening to fail on its flat top. The gallery pixfrac-1.0 rebuild showed how fragile that
+was: J0742+3341 f814W's 195 e⁻/s star (>10⁵ e⁻ in a 600 s frame) had failed the shape gate at
+pixfrac 0.7, passed it at 1.0, set the 2% flux floor (8 → 4 stars) and went into the ePSF.
+Verified on J0201+3228 f606W: the one star the gate removed peaks at 68 845 e⁻ (98% of full
+well) in a frame; every kept star is <10 000 e⁻. Logged per build as `N saturated`; override
+with `satlevel` / `max_peak` in `info/psf_stars.json`. **Every sample was rebuilt with it
+(gallery 2026-09-29, slacs_gold/slacs_other 2026-09-30; 124/124 ok).** In SLACS the gate
+fired on 50 fields and, unlike gallery, the old ACS builds *had* let the saturated star
+through the shape gate — it sat in the ePSF and set the 2% flux floor high. Removing it: no
+tier changed, every wing gate still passes, star counts mostly rose (42 builds changed; e.g.
+J1451-0239 f814W 8→25, J1032+5322 f814W 4→12), FWHM shifts are tiny (median −0.014 px) with
+the largest being *decreases* where the saturated star had broadened the old kernel
+(J0728+3835 f814W 2.56→2.32 px, J1032+5322 2.62→2.40). `psf_err_frac` medians 0.0081→0.0097;
+two to keep an eye on: J0956+5100 f814W (lost 3 saturated stars, 5 left, 0.029) and
+J2238-0754 f555W (7→25 stars, 0.017).
+
+Removing the saturated flux reference lowers the 2% floor, so more faint stars enter, and a
+field can then fail the wing-scatter gate it passed before: **J0201+3228 f606W** (5 stars →
+12, scatter 4.2e-3 > 3e-3 → model tier) is that case. Also model tier since 2026-09-29 under
+the current gates: **J0029+2544 f814W** (1 star) and **J0918+5104 f814W** (0) — star-poor
+under `min_snr=30`, which postdates their 2026-07-30 empirical builds (the same happens on
+the pixfrac-0.7 mosaic, so it is code drift, not pixfrac). Gallery tiers now: 16 empirical,
+11 `inject_stdpsf`.
+
 ### `run_psf_all.sh --models-only`
 
 `run_psf_all.sh [SAMPLE] [--all|--models-only]`. Default `--all` rebuilds everything. Use
@@ -2306,8 +2340,11 @@ per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` W
 every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
 All 34 science bands have PSF products (see *PSF generation* for the method split).
 
-`gallery` coverage (15 lenses, reduced 2026-07-29): **F606W** on all 15 (the primary band),
-**F814W**/**F438W** on 6, **F275W** on 5, **F225W** on 1 (J2342-0120). See *BELLS GALLERY:
+`gallery` coverage (15 lenses, reduced 2026-07-29, re-drizzled at pixfrac 1.0 on 2026-09-29):
+**F606W** on all 15 (the primary band), **F814W**/**F438W** on 6. (F275W on 5 and F225W on 1
+existed until 2026-09-29, when every UV product — drizzles, work dirs, calibrated FLCs, stamps,
+JSON entries — was deleted; only the `data/mosaics[_20arcsec]/gallery/f2*.png` gallery sheets
+are kept, for now.) See *BELLS GALLERY:
 WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery lenses are **not in
 `info/slacs_coords.py`** — they use `info/gallery_coords.py` instead, read by
 `drizzle_wfc3_uvis.py` for the common output WCS; a lens absent from that table falls back
@@ -2315,8 +2352,8 @@ to native drizzle WCS with a warning. PSF products exist for all 27 science band
 is keyed in `make_psf.py`/`psf_models.py`). **F225W/F275W are confirmed
 unusable for lens science across the whole sample** (arc undetected, not just the deflector
 — see *BELLS GALLERY* below); **J1110+2808's F275W is pure noise, but its F814W/F438W DO show the lensed
-images** — the older "F606W only" claim was wrong and is corrected below. No further reduction
-effort on F225W/F275W anywhere — reduced correctly, just not lensing-useful.
+images** — the older "F606W only" claim was wrong and is corrected below. The F225W/F275W
+products were deleted 2026-09-29 (user decision: not science-worthy, so not carried).
 
 Caveat carried over from before both samples were reduced: `slacs_other`'s naming is
 settled — all lenses resolve under plain `SDSS{lens}%`, no `GAL-*` overrides needed
@@ -2425,7 +2462,7 @@ stable-hot/warm pixels as good; what it *does* mask that replicates is bad colum
 
 The `gallery` sample (15 lenses, Shu et al. 2016 Table 1 class E-S-A) is BELLS GALLERY
 (props 14189, 16734), imaged in WFC3/UVIS across five filters: **F225W, F275W, F438W,
-F606W, F814W**. One filter-agnostic script (`--filt`), modeled closely on
+F606W, F814W** (the two UV filters' products were deleted 2026-09-29; see below). One filter-agnostic script (`--filt`), modeled closely on
 `drizzle_acs_wfc.py` — UVIS is a two-CCD optical detector like ACS/WFC, so it inherits the
 same alignment/CR reasoning. **That inheritance was independently audited on gallery data
 2026-09-13 and both halves hold** (see *Gallery audit* below); the per-lens `--align`
@@ -2437,9 +2474,9 @@ uv run python scripts/drizzle_wfc3_uvis.py --lens J1110+3649 --filt f606W
 bash scripts/run_gallery_uvis_all.sh                   # all 15 lenses, all 5 filters
 ```
 
-`run_gallery_uvis_all.sh` iterates `f606W f814W f438W f275W f225W` in that order — F606W
-first (the primary band and cutout `--center-band` proxy target), F814W second and before
-the UV filters (see below), and does **not** `rm` the output dir first (unlike
+`run_gallery_uvis_all.sh` iterates `f606W f814W f438W` in that order (the UV filters were
+dropped from it 2026-09-29) — F606W first (the primary band and cutout `--center-band` proxy
+target), F814W second, and does **not** `rm` the output dir first (unlike
 `run_acs_all.sh`), relying on the idempotent skip so a multi-GB campaign is resumable.
 
 - **Alignment default `mast`** — same reasoning as ACS/WFC3 (*WCS alignment* above):
@@ -2450,7 +2487,8 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   every product drizzled so far. No cross-band tie like `align_wfpc2_to_acs.py` is needed:
   a lens's bands share one field, so any absolute offset is common across them and they
   co-register with each other. → memory: gallery_uvis_idctab_only_wcs
-- **Native pixel scale, `pixfrac=0.7`** (`FINAL_SCALE=0.0396`; 0.7 chosen 2026-07-28 from a
+- **Native pixel scale, `pixfrac=1.0` — reverted from 0.7 on 2026-09-29** (`FINAL_SCALE=0.0396`;
+  0.7 had been chosen 2026-07-28 from a
   pixfrac scan on J1110+3649 F606W that scored the wrong quantity — its "integrated
   inflation" 1.81 → 1.58 was a ratio against the empirical per-pixel rms, which falls with
   pixfrac by construction). **Re-scanned 2026-09-27 against the noise map on four gallery
@@ -2460,14 +2498,21 @@ the UV filters (see below), and does **not** `rm` the output dir first (unlike
   on the fourth (a centring-sensitive proxy, not a signal). The only real effect of a
   sub-pixel drop at native scale is less box-blur in the PSF, which PyAutoLens fits from the
   same drizzled stars anyway, while 3–4 dithers with a sub-pixel drop make the effective kernel
-  vary with position. **Not warranted; reverting to 1.0 is the better-justified default**
-  (user, 2026-09-27) — a reduction change (33 gallery drizzles + stamps + PSF builds, on every
-  branch), not yet done. Excess noise is only slightly
-  above native ACS at the drop scale (measured 2026-09-26 over every stamp: 1.18–1.26
-  visible UVIS vs 1.17–1.18 ACS; F275W/F225W ~1.37; the old "~1.5–1.6×" was that same
-  rms-relative scan number). For a diagonal-covariance likelihood use `make_cutouts.py
-  --corr-factor` with the band's value (F438W 1.24, F606W 1.18, F814W 1.26); the `corr-factor`
-  branch applies these by default. → memory: gallery_uvis_pixfrac
+  vary with position. **Not warranted (user, 2026-09-27); reverted 2026-09-29:** all 27
+  science-band products re-drizzled at 1.0 (0 failures), every mosaic on the same sky grid as
+  before (integer CRPIX offsets only — the coverage crop keeps one more row/column because
+  full-width drops reach it), stamps re-cut with `--center-from` onto identical grids (masks,
+  positions, arc masks untouched), sky-subtracted flux within 3″ identical, peak 3.5% lower
+  (the box blur), factors re-measured **identical** (1.24 / 1.18 / 1.26), PSFs rebuilt.
+  `make_psf_inject.py`'s UVIS `final_pixfrac` hardcode was 0.7 and is now 1.0 too — it must
+  track `FINAL_PIXFRAC`, or model-tier injections get a different drop from the science
+  mosaic. The pixfrac-0.7 mosaics were deleted 2026-10-01. On this branch the
+  stamps keep `NOISECOR = 1.0`; excess noise is only slightly above native ACS at the drop
+  scale (measured 2026-09-26 over every stamp: 1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the
+  old "~1.5–1.6×" was that same rms-relative scan number). For a diagonal-covariance
+  likelihood use `make_cutouts.py --corr-factor` with the band's value (F438W 1.24, F606W
+  1.18, F814W 1.26); the `corr-factor` branch applies these by default. → memory:
+  gallery_uvis_pixfrac
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
@@ -2602,11 +2647,11 @@ exactly what a blue filter should on a red lens with a blue source: the deflecto
 and the lensed arc is not. So F438W is usable for source/arc work and useless for deflector
 light or for anything keyed on the deflector centroid — including the tie check above.
 
-Current state (reduced 2026-07-29): all 15 lenses have F606W; F814W/F438W on 6 each,
-F275W on 5, F225W on 1 (J2342-0120) — matches the sparse per-lens filter coverage BELLS
-GALLERY actually has on MAST, not a pipeline gap. `run_cutouts_all.sh` was extended to glob
-the UV/blue bands (`f438W f275W f225W`) alongside the SLACS filters so it stays one runner
-for every sample. **F225W/F275W across every lens are not lensing-useful** (see bullets
+Current state (reduced 2026-07-29, re-drizzled at pixfrac 1.0 on 2026-09-29): all 15 lenses
+have F606W; F814W/F438W on 6 each — matches the sparse per-lens filter coverage BELLS
+GALLERY actually has on MAST, not a pipeline gap. (F275W on 5 / F225W on 1 were reduced and
+then deleted 2026-09-29.) `run_cutouts_all.sh` globs `f438W f275W f225W` alongside the SLACS
+filters so it stays one runner for every sample; the UV entries now glob to nothing. **F225W/F275W across every lens are not lensing-useful** (see bullets
 above) — treat F606W (all 15 lenses) and F814W/F438W (**all 6** of the lenses that have them,
 J1110+2808 included — see its corrected per-lens bullet above) as science-ready, with the
 F438W qualification from the audit above: **arc yes, deflector no.**

@@ -71,9 +71,10 @@ FINAL_SCALE = 0.0396
 # conserves noise, so against the noise map nothing moves: on four gallery lenses 1.0->0.7
 # leaves the drop-window factor flat (1.292->1.293, 1.191->1.191, 1.221->1.218,
 # 1.202->1.199) and the 8x8 block ratio flat (J1110 1.389->1.397), while weight uniformity
-# gets 3-13% worse. 0.7 is NOT warranted; the user intends to revert to 1.0 (a reduction
-# change: gallery drizzles + stamps + PSF builds). See AGENTS.md *BELLS GALLERY*.
-FINAL_PIXFRAC = 0.7
+# gets 3-13% worse. 0.7 was NOT warranted; reverted to 1.0 on 2026-09-29 (gallery
+# re-drizzled, stamps re-cut on the same grid, PSFs rebuilt; factors unchanged). Keep
+# make_psf_inject.py's WFC3/UVIS final_pixfrac equal to this. See AGENTS.md *BELLS GALLERY*.
+FINAL_PIXFRAC = 1.0
 
 # DQ bits treated as GOOD so they are not drizzled out (and not mistaken for CRs by
 # LACosmic). WFC3/UVIS DQ definitions (WFC3 DHB 2024 Table 2.4, p.38):
