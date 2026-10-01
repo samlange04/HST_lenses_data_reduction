@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Drizzle every WFC3/UVIS product in a sample, all five gallery filters, with the script
-# defaults (--align mast, --cr LACosmic, native 0.0396"/px pixfrac 0.7). Passed
+# defaults (--align mast, --cr LACosmic, native 0.0396"/px pixfrac 1.0 since 2026-09-29). Passed
 # explicitly for the record.
 #
 # Usage: run_gallery_uvis_all.sh [SAMPLE]   (default: gallery)
@@ -32,7 +32,7 @@ done < <(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE")
 echo "=== WFC3/UVIS: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
 ok=0; nodata=0; blocked=0; fail=0; FAILED=()
-for filt in f606W f814W f438W f275W f225W; do
+for filt in f606W f814W f438W; do
   for lens in "${LENSES[@]}"; do
     log="$LOG/${lens}_${filt}_uvis.log"
     printf '%-12s %-6s ' "$lens" "$filt"

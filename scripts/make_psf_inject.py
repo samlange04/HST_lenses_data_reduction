@@ -124,7 +124,7 @@ _DRIZ = {
                     wht_type='IVM', resetbits=0),
     'WFC3/UVIS': dict(input='flc', suffix='drc', det_scale=0.0396,
                       driz_sep_scale=0.0396, driz_sep_bits='256,64,16',
-                      final_scale=0.0396, final_pixfrac=0.7, final_bits='256,64,16',
+                      final_scale=0.0396, final_pixfrac=1.0, final_bits='256,64,16',
                       wht_type='ERR', resetbits=0),
 }
 

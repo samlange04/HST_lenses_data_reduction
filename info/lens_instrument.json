@@ -1,106 +1,76 @@
 {
     "gallery": {
         "J0029+2544": {
-            "f225W": null,
-            "f275W": "WFC3/UVIS",
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
         },
         "J0201+3228": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J0237-0641": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J0742+3341": {
-            "f225W": null,
-            "f275W": "WFC3/UVIS",
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
         },
         "J0755+3445": {
-            "f225W": null,
-            "f275W": "WFC3/UVIS",
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
         },
         "J0856+2010": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J0918+5104": {
-            "f225W": null,
-            "f275W": "WFC3/UVIS",
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
         },
         "J1110+2808": {
-            "f225W": null,
-            "f275W": "WFC3/UVIS",
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
         },
         "J1110+3649": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J1116+0915": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J1141+2216": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J1201+4743": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J1226+5457": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J2228+1205": {
-            "f225W": null,
-            "f275W": null,
             "f438W": null,
             "f606W": "WFC3/UVIS",
             "f814W": null
         },
         "J2342-0120": {
-            "f225W": "WFC3/UVIS",
-            "f275W": null,
             "f438W": "WFC3/UVIS",
             "f606W": "WFC3/UVIS",
             "f814W": "WFC3/UVIS"
