@@ -242,6 +242,15 @@ S/N −17.7) and deleted 2026-09-26.
 
 ## Data flow and directory layout
 
+**The ignored FITS layers were purged on 2026-10-04** (6823 files, ~260 GB: every
+`calibrated/`, `drizzle_files*/`, `drizzled*/`, `cutouts_20arcsec/`, `psf/` and
+`reference_files/` FITS). Only the git-tracked `data/cutouts/` stamps remain on disk, and
+they are the finished products for every lens in the three samples. Logs, PNGs and
+shift files in those directories were left in place. Any re-cut (`--center-from`, a new
+`--size`), a new mask drawn on a fresh stamp, or a PSF rebuild now needs the lens
+re-drizzled first: `calibrated/` re-downloads from MAST, `reference_files/` re-fetches
+from CRDS, and the drizzle runners rebuild the rest from `info/*.json`.
+
 ```
 data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
@@ -1416,8 +1425,9 @@ uv run python scripts/make_positions.py --sample slacs_gold --overlays-only
 
 That flag exists so the ignore rule is honest — without it "regenerable" would have meant
 re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
-GUI wrote. Note this is the **one** ignored PNG under `data/cutouts/`: `cutout_cr.png`,
-`_dataset.png` and `_mask_arcs.png` are all still tracked, so do not generalise the rule.
+GUI wrote. `cutout_cr.png` (and the WFPC2-era `cutout.png`) joined it as an ignored QC
+render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_cutouts.py`);
+`_dataset.png` and `_mask_arcs.png` are still tracked, so do not generalise the rule.
 
 **Two panels by default, and the band's contaminants blanked (2026-09-17).** The GUI shows
 the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
