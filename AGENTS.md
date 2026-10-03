@@ -16,7 +16,9 @@ re-litigate it"; the slug names the note, not a file in this repo.
 > JSONs vs what's on disk.
 
 > **`main` carries the standard drizzle; the stamp filename carries the reduction.**
-> `cutout_[cr_]{sci,noise}.fits` is standard; `cutout_cr_bcfill_sci.fits` /
+> Since 2026-10-04 the standard noise map also carries the measured ERR-deficit inflation
+> (`NOISECOR`, see *Drizzle correlated noise*): the `corr-factor` branch was merged into
+> `main` at the user's request and is now redundant. `cutout_[cr_]{sci,noise}.fits` is standard; `cutout_cr_bcfill_sci.fits` /
 > `cutout_cr_bcfill_crfill_sci.fits` are variants that live only on the **`bcfill` branch**
 > (see *Bad-column fill*). Masks, arc masks, positions and PSFs keep the bare `cutout_[cr_]`
 > prefix — they describe the grid, which is identical across reductions — so a mask commit
