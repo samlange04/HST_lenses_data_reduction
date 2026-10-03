@@ -397,7 +397,7 @@
             }
         }
     },
-    "sl2s_pc": {
+    "sl2s_wf": {
         "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; four also have the GO-11588 F475X+F600LP snapshot. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
         "lenses": {

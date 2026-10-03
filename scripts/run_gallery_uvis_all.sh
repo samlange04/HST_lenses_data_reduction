@@ -10,7 +10,7 @@
 # lens is tried in every filter; drizzle_wfc3_uvis.py exits 0 having recorded `null`
 # where MAST has no data, so the many empty lens+filter combos report as "no data", not
 # failures. F606W is drizzled first (the primary band and the cutout --center-band).
-# The SL2S samples (sl2s_dinos_a/x, sl2s_pc, sl2s_snap) add F475X (GO-17130 Dinos II, or
+# The SL2S samples (sl2s_dinos_a/x, sl2s_wf, sl2s_snap) add F475X (GO-17130 Dinos II, or
 # the GO-11588 snapshot) and F600LP (GO-11588 snapshot); each sample just reports "no
 # data" for the other set's filters. Which program's F475X is used is decided per lens by
 # the `proposals` quirk in info/lens_samples.json, not here.

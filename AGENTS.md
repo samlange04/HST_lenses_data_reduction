@@ -2372,7 +2372,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Not yet reduced |
 | **`sl2s_dinos_x`** | 13 | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
-| **`sl2s_pc`** | 12 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
+| **`sl2s_wf`** | 12 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
 | **`sl2s_snap`** | 5 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
 | **`bells`** | 24 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
 
