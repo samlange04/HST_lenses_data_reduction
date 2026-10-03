@@ -2416,6 +2416,21 @@ archive:**
   all three scripts, matching WFPC2's existing constant; the copy-to-work-dir step now
   excludes sub-floor frames directly, not just the provenance record.
 
+### Candidate samples to add (decided 2026-10-04)
+
+From a 2026-10-04 survey of HST galaxy-scale lens samples not yet in the repo. The deciding
+facts are the exposure-time gate (*Total-exposure-time gate*) and whether the imaging is
+optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this list instead.
+
+| Sample | Status | Why |
+|---|---|---|
+| **BELLS** (Brownstein+2012; GO-12209) | **Accepted, next.** In progress as `bells` | ACS/WFC F814W, 4 × ~500 s, the same instrument and filter as SLACS; 25 definite lenses, z_l 0.4–0.7. Shares no lenses with `gallery`: BELLS sources are [OII]/Hβ/[OIII] emitters at z_s < 1.5, GALLERY sources are Lyα-only at z_s 2–3 |
+| **SL2S** grade-A (Sonnenfeld+2013) + **Project Dinos II** (GO-17130) | **Accepted, after BELLS** | 39 lenses, z_l 0.3–0.8. Snapshot imaging from mixed programs (ACS F814W 800 s + F606W 400 s; WFPC2 F606W 1200 s; WFC3 F600LP + F475X 720 s, or F475X-only 360 s, which the gate blocks). Dinos II adds deep WFC3/UVIS F475X (≥ 2366 s; the paper gives no per-target table) for 21 systems |
+| **SWELLS** (Treu+2011) | **Open**, undecided | 16 grade-A lenses whose deflectors are high-inclination disk galaxies (lenticular to late-type spiral), z_d 0.06–0.22. The 27 candidates include 8 SLACS spirals, so check overlap with `slacs_gold`/`slacs_other`. A different deflector population from the early-type samples here. HST programs and per-lens depths not yet checked against the gate |
+| S4TM / SLACS XIII (Shu+2017; SNAP 12210) | Rejected | One 420 s ACS F814W exposure per lens: below `BLOCK_EXPTIME` and no CR rejection, the same failure as the gated `slacs_other` legacy F814W visits |
+| AGEL (16773 WFC3 F140W + F200LP SNAP; 17307 ACS F606W 2 × 337 s) | Rejected | Mixed galaxy/group-scale deflectors, IR-led imaging; the ACS visits fall below the gate |
+| DESI Strong Lens Foundry (SNAP 15867, 51 lenses) | Rejected | WFC3/IR F140W 3 × 399 s only; mixed galaxy/group scale, IR-led. No optical band for a mass-vs-light sample |
+
 ### Non-standard MAST target names (`GAL-*`)
 
 Some lenses aren't on MAST under `SDSS<LENS>` — they use `GAL-<plate>-<mjd>-<fiber>`. Scripts
