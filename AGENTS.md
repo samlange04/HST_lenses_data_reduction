@@ -516,9 +516,12 @@ pixel values.
 
 Every band is pinned to the same output grid geometry so filters co-register pixel-for-pixel
 with no later reprojection: `final_rot=0.0` (North-up) and `final_ra`/`final_dec` at the
-lens catalogue position (from `info/slacs_coords.py` for SLACS, `info/gallery_coords.py` for
-`gallery`) go into every AstroDrizzle call. A lens missing from that table falls back to the
-native drizzle WCS with a warning. This aligns orientation + tangent point, not absolute
+lens catalogue position go into every AstroDrizzle call. Each sample keeps its own position
+table, transcribed from its source paper (`info/slacs_coords.py`, `info/gallery_coords.py`,
+`info/bells_coords.py`), and every script reads them through **`info/lens_coords.py`**, which
+merges them and raises on a J-name collision. A new sample's table is added there, not
+imported per script. A lens missing from every table falls back to the native drizzle WCS
+with a warning. This aligns orientation + tangent point, not absolute
 astrometry (still the delivered WCS's job, and `align_wfpc2_to_acs.py`'s for F606W — gallery
 has no equivalent cross-band tie script, and doesn't need one; see *BELLS GALLERY* below).
 
@@ -2351,6 +2354,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
+| **`bells`** | 24 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
@@ -2374,10 +2378,9 @@ All 34 science bands have PSF products (see *PSF generation* for the method spli
 existed until 2026-09-29, when every UV product — drizzles, work dirs, calibrated FLCs, stamps,
 JSON entries — was deleted; only the `data/mosaics[_20arcsec]/gallery/f2*.png` gallery sheets
 are kept, for now.) See *BELLS GALLERY:
-WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery lenses are **not in
-`info/slacs_coords.py`** — they use `info/gallery_coords.py` instead, read by
-`drizzle_wfc3_uvis.py` for the common output WCS; a lens absent from that table falls back
-to native drizzle WCS with a warning. PSF products exist for all 27 science bands (WFC3/UVIS
+WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery positions live in
+`info/gallery_coords.py` (Shu+2016 Table 1), reached like every sample's through
+`info/lens_coords.py` (see *Common output WCS across filters*). PSF products exist for all 27 science bands (WFC3/UVIS
 is keyed in `make_psf.py`/`psf_models.py`). **F225W/F275W are confirmed
 unusable for lens science across the whole sample** (arc undetected, not just the deflector
 — see *BELLS GALLERY* below); **J1110+2808's F275W is pure noise, but its F814W/F438W DO show the lensed

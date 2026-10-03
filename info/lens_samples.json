@@ -156,5 +156,35 @@
                 "mast_target": "SDSSJ234248.68-012032.5"
             }
         }
+    },
+    "bells": {
+        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Not yet reduced.",
+        "coords": "info/bells_coords.py",
+        "lenses": {
+            "J0151+0049": {},
+            "J0747+4448": {},
+            "J0747+5055": {},
+            "J0801+4727": {},
+            "J0830+5116": {},
+            "J0944-0147": {},
+            "J1159-0007": {},
+            "J1215+0047": {},
+            "J1221+3806": {},
+            "J1234-0241": {},
+            "J1318-0104": {},
+            "J1337+3620": {},
+            "J1349+3612": {},
+            "J1352+3216": {},
+            "J1541+1812": {},
+            "J1542+1629": {},
+            "J1545+2748": {},
+            "J1601+2138": {},
+            "J1611+1705": {},
+            "J1631+1854": {},
+            "J1637+1439": {},
+            "J2122+0409": {},
+            "J2125+0411": {},
+            "J2303+0037": {}
+        }
     }
 }

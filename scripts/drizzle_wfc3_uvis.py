@@ -172,12 +172,11 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # ── Common output WCS across filters (orientation + centre) ────────────────────
 # Pin every band to North-up (final_rot=0) with the tangent point (final_ra/dec) at the
 # lens position, so all five gallery filters share orientation and WCS centre and the
-# lens sits ~centred. gallery lenses live in info/gallery_coords.py (SLACS lenses live
-# in slacs_coords.py -- this script is the WFC3/UVIS gallery driver, so it reads the
-# gallery table). Unknown lens -> native drizzle WCS (empty dict), with a warning.
+# lens sits ~centred. The position comes from info/lens_coords.py, which merges every
+# sample's table. Unknown lens -> native drizzle WCS (empty dict), with a warning.
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 try:
-    from gallery_coords import gallery_coords as _coords
+    from lens_coords import lens_coords as _coords
     from astropy.coordinates import SkyCoord as _SkyCoord
     import astropy.units as _u
     _lc = _SkyCoord(*_coords[lens], unit=(_u.hourangle, _u.deg))
@@ -186,7 +185,7 @@ try:
 except (KeyError, ImportError):
     _common_wcs = {}
     _lc = None
-    print('=== Common WCS: lens not in gallery_coords -> native drizzle WCS ===')
+    print('=== Common WCS: lens not in lens_coords -> native drizzle WCS ===')
 
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────

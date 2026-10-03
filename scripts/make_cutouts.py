@@ -3,7 +3,7 @@
 Cut science + noise-map postage stamps out of the drizzled mosaics.
 
 Reads the no-CR-rejection drizzle products from data/drizzled/<sample>/<lens>/<filt>/,
-centres a cutout on the lens coordinate from info/slacs_coords.py, then recentres
+centres a cutout on the lens coordinate from info/lens_coords.py, then recentres
 onto the brightest pixel found within the central 100x100 pixels of that first
 cutout and re-cuts so the stamp is exactly centred on the lens galaxy.
 
@@ -47,25 +47,19 @@ import astropy.units as u
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from slacs_coords import slacs_coords
-from gallery_coords import gallery_coords
+from lens_coords import lens_coords
 import mast_target_names
 import info_json
 import cutout_paths
 
-# Catalogue positions live in different tables by sample (SLACS lenses in
-# slacs_coords.py, BELLS GALLERY in gallery_coords.py). Both are keyed on the J-name and
-# the names don't collide, so resolve a lens by looking through both. Order is
-# irrelevant; a lens in neither is a real error.
-_COORD_TABLES = (slacs_coords, gallery_coords)
-
 
 def catalogue_coord_for(lens):
-    """(ra, dec) HMS/DMS strings for a lens, from whichever coords table holds it."""
-    for table in _COORD_TABLES:
-        if lens in table:
-            return table[lens]
-    raise KeyError(f"{lens} not in slacs_coords or gallery_coords (info/*_coords.py)")
+    """(ra, dec) HMS/DMS strings for a lens, from info/lens_coords.py (every sample's
+    table merged)."""
+    try:
+        return lens_coords[lens]
+    except KeyError:
+        raise KeyError(f"{lens} not in any info/*_coords.py table (info/lens_coords.py)") from None
 
 
 # Detectors whose calibrated ERR array is already in ELECTRONS/S rather than counts.

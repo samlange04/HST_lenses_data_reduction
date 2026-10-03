@@ -246,18 +246,19 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # not overlay. Pin every band to North-up (final_rot=0) with the tangent point
 # (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
 # and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
-# only rotation and centre are unified. Unknown lens -> native WCS (empty dict).
+# only rotation and centre are unified. The position comes from info/lens_coords.py,
+# which merges every sample's table. Unknown lens -> native WCS (empty dict).
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 try:
-    from slacs_coords import slacs_coords as _slacs_coords
+    from lens_coords import lens_coords as _lens_coords
     from astropy.coordinates import SkyCoord as _SkyCoord
     import astropy.units as _u
-    _lc = _SkyCoord(*_slacs_coords[lens], unit=(_u.hourangle, _u.deg))
+    _lc = _SkyCoord(*_lens_coords[lens], unit=(_u.hourangle, _u.deg))
     _common_wcs = dict(final_rot=0.0, final_ra=float(_lc.ra.deg), final_dec=float(_lc.dec.deg))
     print(f'=== Common WCS: North-up, centre ({_lc.ra.deg:.5f}, {_lc.dec.deg:.5f}) ===')
 except (KeyError, ImportError):
     _common_wcs = {}
-    print('=== Common WCS: lens not in slacs_coords -> native drizzle WCS ===')
+    print('=== Common WCS: lens not in lens_coords -> native drizzle WCS ===')
 
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────

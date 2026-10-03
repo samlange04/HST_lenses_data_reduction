@@ -22,7 +22,7 @@ SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 
 # All science samples with cutouts. Positions are a lens-modelling product, so every sample
 # is in scope (unlike the drizzle runners, which are instrument-specific).
-ALL_SAMPLES="slacs_gold slacs_other gallery"
+ALL_SAMPLES="slacs_gold slacs_other gallery bells"
 
 if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then
   SAMPLES="$1"; shift            # explicit sample; remaining args pass through

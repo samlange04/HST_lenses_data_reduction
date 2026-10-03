@@ -9,7 +9,7 @@ scripts/old_notebooks/load_data.ipynb, with every manual step of that notebook r
 by automatic quality cuts plus a per-lens override file:
 
   * the hand-typed NaN rectangles that blanked the lens galaxy / bad regions  ->  an
-    automatic mask (deflector circle from info/slacs_coords.py, zero-weight pixels from
+    automatic mask (deflector circle from info/lens_coords.py, zero-weight pixels from
     the drizzle WHT map, and a frame-edge margin);
   * the frame-max detection threshold ->  a background-sigma threshold (threshold_scale x
     the sigma-clipped background std);
@@ -82,7 +82,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 # Reuse the canonical product locator and the coordinate resolver rather than
 # re-implementing the instrument-varying prefix/suffix globbing or the per-sample coords
-# table lookup (SLACS in slacs_coords.py, BELLS GALLERY in gallery_coords.py). Importing
+# lookup (info/lens_coords.py, every sample's table merged). Importing
 # make_cutouts is safe: its work is under __main__.
 from make_cutouts import find_products, _has_products, catalogue_coord_for
 import psf_models
@@ -929,7 +929,7 @@ def main():
     if kernel_size % 2 == 0:
         kernel_size += 1
 
-    ra, dec = catalogue_coord_for(a.lens)   # SLACS or BELLS GALLERY, whichever holds it
+    ra, dec = catalogue_coord_for(a.lens)   # any sample, via info/lens_coords.py
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     # ── Background subtraction and star selection ──────────────────────────────

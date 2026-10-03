@@ -49,10 +49,7 @@ def run(sample, lens, filt, instr, combos):
         rd, sat, pre = 4.5, 84700.0, 'acs_wfc_flc'
     else:
         rd, sat, pre = 3.1, 70000.0, 'wfc3_uvis_flc'
-    if sample == 'gallery':
-        from gallery_coords import gallery_coords as cat
-    else:
-        from slacs_coords import slacs_coords as cat
+    from lens_coords import lens_coords as cat
     c = SkyCoord(*cat[lens], unit=(u.hourangle, u.deg))
     nc = glob.glob(f'data/drizzled/{sample}/{lens}/{filt}/*_nocrrej_drc_sci.fits')[0]
     D = fits.getdata(nc).astype(float); H = fits.getheader(nc); W = WCS(H)

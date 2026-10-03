@@ -20,6 +20,7 @@ SAMPLE_GROUPS = {
     'slacs_gold':  _SLACS_GROUPS,
     'slacs_other': _SLACS_GROUPS,
     'gallery':     {f: [f] for f in _GALLERY_FILTERS},
+    'bells':       {'f814W': ['f814W']},
 }
 
 

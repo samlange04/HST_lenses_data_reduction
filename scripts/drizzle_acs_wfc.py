@@ -167,7 +167,7 @@ _p.add_argument('--crfill-radius', type=float, default=None, metavar='ARCSEC',
                 help='with --crfill, fill ONLY the cosmic-ray tracks that come within this '
                      'many arcsec of the lens (whole connected tracks, not clipped at the '
                      'circle). Default: no radius, i.e. fill every CR in every frame. Needs a '
-                     'lens with coordinates in info/slacs_coords.py.')
+                     'lens with coordinates in info/lens_coords.py.')
 # --crfill-min-area targets the STREAK rather than an aperture. --crfill-radius alone still
 # fills every little CR hit that happens to land near the lens (193 tracks on J1213+6708, 283
 # on J1250+0523 -- almost all of them a few px each), when the thing actually worth repairing
@@ -288,19 +288,20 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # not overlay. Pin every band to North-up (final_rot=0) with the tangent point
 # (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
 # and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
-# only rotation and centre are unified. Unknown lens -> native WCS (empty dict).
+# only rotation and centre are unified. The position comes from info/lens_coords.py,
+# which merges every sample's table. Unknown lens -> native WCS (empty dict).
 sys.path.insert(0, os.path.join(ws_path, 'info'))
 try:
-    from slacs_coords import slacs_coords as _slacs_coords
+    from lens_coords import lens_coords as _lens_coords
     from astropy.coordinates import SkyCoord as _SkyCoord
     import astropy.units as _u
-    _lc = _SkyCoord(*_slacs_coords[lens], unit=(_u.hourangle, _u.deg))
+    _lc = _SkyCoord(*_lens_coords[lens], unit=(_u.hourangle, _u.deg))
     _common_wcs = dict(final_rot=0.0, final_ra=float(_lc.ra.deg), final_dec=float(_lc.dec.deg))
     print(f'=== Common WCS: North-up, centre ({_lc.ra.deg:.5f}, {_lc.dec.deg:.5f}) ===')
 except (KeyError, ImportError):
     _common_wcs = {}
     _lc = None
-    print('=== Common WCS: lens not in slacs_coords -> native drizzle WCS ===')
+    print('=== Common WCS: lens not in lens_coords -> native drizzle WCS ===')
 
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
@@ -917,7 +918,7 @@ if do_cr:
             print('\n=== crfill: filling LACosmic cosmic rays (DQ 4096) pre-drizzle ===')
             if _a.crfill_radius is not None and _lc is None:
                 raise SystemExit('--crfill-radius needs the lens coordinate, and this lens is '
-                                 'not in info/slacs_coords.py')
+                                 'not in info/lens_coords.py')
             fill_cosmic_rays(flc_files, lens_coord=_lc, radius_arcsec=_a.crfill_radius,
                              min_area=_a.crfill_min_area, n_tracks=_a.crfill_n_tracks)
         print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')

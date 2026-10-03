@@ -225,7 +225,7 @@ def jobs_for(samples):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', nargs='+', default=['slacs_gold', 'slacs_other', 'gallery'])
+    p.add_argument('--sample', nargs='+', default=['slacs_gold', 'slacs_other', 'gallery', 'bells'])
     p.add_argument('--lens', default=None, help='restrict to one lens (testing)')
     p.add_argument('--jobs', type=int, default=6)
     p.add_argument('--out', default=os.path.join(WS, 'diagnostics', 'corr_factor',

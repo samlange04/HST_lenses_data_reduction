@@ -67,7 +67,7 @@ from photutils.centroids import centroid_com
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(WS, 'info'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from slacs_coords import slacs_coords
+from lens_coords import lens_coords
 import mast_target_names
 import cutout_paths
 
@@ -144,7 +144,7 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     there -- find_product returns None -- which is correct, not an error.
     """
     target = target or f606_dir
-    cat = SkyCoord(*slacs_coords[lens], unit=(u.hourangle, u.deg))
+    cat = SkyCoord(*lens_coords[lens], unit=(u.hourangle, u.deg))
     ref = find_product(lens, ref_filt, band_prefix(ref_filt), sample, variant)
     tgt = find_product(lens, target, band_prefix(target), sample, variant)
     if ref is None:

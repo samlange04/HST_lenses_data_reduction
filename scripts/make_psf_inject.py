@@ -628,7 +628,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     size = int(make_psf._INSTR[inst_key]['star_size'])
     print(f'{lens} {filt}  [{inst_key}, {drizzle_pass} pass, {scale:.4f}"/px, kernel {size}px]')
 
-    ra, dec = catalogue_coord_for(lens)  # slacs_coords or gallery_coords
+    ra, dec = catalogue_coord_for(lens)  # any sample, via info/lens_coords.py
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     _set_ref_env()
