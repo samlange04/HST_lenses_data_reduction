@@ -278,6 +278,15 @@ else:
                 print(f'  MAST target {_pat}: {len(obs_table)} observations')
                 break
             print(f'  MAST target {_pat}: no observations')
+        # A per-lens program restriction (lens_samples.json `proposals`) keeps only the
+        # named programs' visits in this filter, e.g. SL2S F475X from GO-17130 alone rather
+        # than combined with a shallower GO-11588 snapshot of the same lens.
+        _props = mast_target_names.allowed_proposals(lens, filt_key, sample)
+        if _props and obs_table is not None and len(obs_table) > 0:
+            _keep = np.isin(np.asarray(obs_table['proposal_id']).astype(str), _props)
+            print(f'  Restricting to proposal(s) {", ".join(_props)}: '
+                  f'{_keep.sum()}/{len(obs_table)} observations kept')
+            obs_table = obs_table[_keep]
         if obs_table is None or len(obs_table) == 0:
             # Not an error: this lens simply has no WFC3/UVIS data in this filter.
             _mast_empty = True

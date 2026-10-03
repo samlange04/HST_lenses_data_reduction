@@ -2337,6 +2337,22 @@ No data for a filter → value `null`.
 - All three levels stay sorted (sample, lens, and filter/key within each lens) across
   partial runs.
 
+## Bibliography (`local/literature/HST_lenses_data_reduction.bib`)
+
+Every paper used to make a decision in this repo (sample cuts, rosters, reduction choices)
+goes in `local/literature/HST_lenses_data_reduction.bib`, which has a byte-identical twin at
+`~/papers/bibliography/mybibs/HST_lenses_data_reduction.bib`. `local/` is gitignored, as in
+the sibling projects, so the twin in `~/papers` is the tracked copy. Entries are copied verbatim
+from `~/papers/bibliography/papers.bib` under their canonical keys, never hand-typed. Each has
+a `%% Added <date>. <what it was used for here>` line above it. A paper not yet in `papers.bib`
+is filed into the papers wiki first. Write both files with one script and check their `md5`
+matches.
+
+**Open TODO (2026-10-04):** the file was started with the sample papers only. The earlier
+reduction decisions (drizzle and correlated-noise papers, PSF methods, LACosmic, the
+instrument handbooks and ISRs cited through this file, `local/literature/drizzle_noise.md`)
+still need filing retrospectively.
+
 ## Lens Samples
 
 **`info/lens_samples.json` is the single source of truth** for sample membership and per-lens
@@ -2354,6 +2370,10 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
+| **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Not yet reduced |
+| **`sl2s_dinos_x`** | 13 | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
+| **`sl2s_pc`** | 12 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
+| **`sl2s_snap`** | 5 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
 | **`bells`** | 24 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
@@ -2428,11 +2448,50 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 | Sample | Status | Why |
 |---|---|---|
 | **BELLS** (Brownstein+2012; GO-12209) | **Accepted, next.** In progress as `bells` | ACS/WFC F814W, 4 × ~500 s, the same instrument and filter as SLACS; 25 definite lenses, z_l 0.4–0.7. Shares no lenses with `gallery`: BELLS sources are [OII]/Hβ/[OIII] emitters at z_s < 1.5, GALLERY sources are Lyα-only at z_s 2–3 |
-| **SL2S** grade-A (Sonnenfeld+2013) + **Project Dinos II** (GO-17130) | **Accepted, after BELLS** | 39 lenses, z_l 0.3–0.8. Snapshot imaging from mixed programs (ACS F814W 800 s + F606W 400 s; WFPC2 F606W 1200 s; WFC3 F600LP + F475X 720 s, or F475X-only 360 s, which the gate blocks). Dinos II adds deep WFC3/UVIS F475X (≥ 2366 s; the paper gives no per-target table) for 21 systems |
+| **SL2S** grade-A (Sonnenfeld+2013) + **Project Dinos II** (GO-17130) | **Accepted, after BELLS.** Roster set 2026-10-04 as four samples, see *SL2S samples* | 39 lenses, z_l 0.3–0.8. Snapshot imaging from mixed programs (ACS F814W 800 s + F606W 400 s; WFPC2 F606W 1200 s; WFC3 F600LP + F475X 720 s, or F475X-only 360 s, which the gate blocks). Dinos II adds deep WFC3/UVIS F475X (≥ 2366 s; the paper gives no per-target table) for 21 systems |
 | **SWELLS** (Treu+2011) | **Open**, undecided | 16 grade-A lenses whose deflectors are high-inclination disk galaxies (lenticular to late-type spiral), z_d 0.06–0.22. The 27 candidates include 8 SLACS spirals, so check overlap with `slacs_gold`/`slacs_other`. A different deflector population from the early-type samples here. HST programs and per-lens depths not yet checked against the gate |
 | S4TM / SLACS XIII (Shu+2017; SNAP 12210) | Rejected | One 420 s ACS F814W exposure per lens: below `BLOCK_EXPTIME` and no CR rejection, the same failure as the gated `slacs_other` legacy F814W visits |
 | AGEL (16773 WFC3 F140W + F200LP SNAP; 17307 ACS F606W 2 × 337 s) | Rejected | Mixed galaxy/group-scale deflectors, IR-led imaging; the ACS visits fall below the gate |
 | DESI Strong Lens Foundry (SNAP 15867, 51 lenses) | Rejected | WFC3/IR F140W 3 × 399 s only; mixed galaxy/group scale, IR-led. No optical band for a mass-vs-light sample |
+
+### SL2S samples (roster agreed 2026-10-04, not yet reduced)
+
+39 lenses in four samples, grouped by which HST bands exist. Every per-lens `note` in
+`info/lens_samples.json` says why that lens is in. Selection:
+- **Sonnenfeld+2013 (SL2S III) Table 6:** grade A, HST = Y, and not the one "double"
+  (J1405+5502), giving 29 lenses. SL2S has no E-S-A-style classification. Table 6's morphology
+  note is the nearest thing, and the three "disky" lenses are kept.
+- **Project Dinos II (Sheu+2025):** the 9 lenses that are new to HST in GO-17130. Two of them,
+  J0218-0802 and J0220-0949, are grade B in SL2S III but **upgraded to A in Sonnenfeld+2015
+  (SL2S V) Sect. 2**, because new spectra put lens and arc at different redshifts. J0205-0930
+  is only in SL2S V, where it is grade A.
+- **J0233-0438:** grade A in SL2S V Table 3 ("double image system"). It was observed in
+  GO-17130 but is not one of Dinos II's 21, and the paper gives no reason.
+
+Bands and how each is taken (depths from the MAST product lists):
+- **F475X (X):** WFC3/UVIS, GO-17130, 4 × ~590 s. Where a lens also has the GO-11588 snapshot
+  F475X, **only GO-17130 is used**, enforced by the per-lens `proposals: {"f475X": ["17130"]}`
+  quirk (`mast_target_names.allowed_proposals`, applied in `drizzle_wfc3_uvis.py`).
+- **Snapshot (s):** GO-11588 WFC3/UVIS F475X + F600LP, 2 × 360 s = 720 s per band. This passes
+  `BLOCK_EXPTIME` but triggers the low-exposure warning. Two frames is enough for LACosmic.
+- **P:** GO-11289 WFPC2 F606W, 3 × 400 s. **MAST labels it `WFPC2/PC`, but the aperture is
+  `WF3-FIX`.** Checked on the FLTs of J0225-0454, J1401+5557 and J2213-0009: every exposure
+  has the lens on WF3 (ext 3, near pixel 410,410). The 3-point line dither of ~1.03″ gives 3
+  sub-pixel phases on both axes, so `drizzle_wfpc2_wf3.py` handles P unchanged, as for SLACS.
+- **ACS:** GO-10876 F814W, 2 × 400 s. Its F606W is a single 400 s frame, which the gate blocks.
+
+Every SL2S lens is archived as `SL2SJhhmmss±ddmmss`, so each entry carries that as
+`mast_target`. Positions are in `info/sl2s_coords.py`, taken from the designations (1″
+precision; neither paper tabulates better).
+
+**Open before or at reduction:**
+- **J0217-0513 and J0959+0206 archive bands.** Their deep F814W, F606W and F160W sit under
+  non-SL2S target names (COSMOS/UDS programs 9822, 12064, 12328, 13792, 14114, 17802), which
+  the name query does not reach. J0217's F814W spans 4 programs; ask Sam how to combine them.
+- **Cutout centring.** `make_cutouts.py` centres on F814W, which most SL2S lenses lack, and
+  F475X carries little deflector light (Dinos II fit lens light on CFHT r).
+- **PSFs.** F475X and F600LP have no STDPSF grid and no `_PIVOT` entry in `psf_models.py`.
+  `psf_model_error.is_stdpsf_tier` keys UVIS on `sample == 'gallery'`.
 
 ### Non-standard MAST target names (`GAL-*`)
 

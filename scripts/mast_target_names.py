@@ -12,7 +12,7 @@ defined (catalogue positions for all of them are merged in ``info/lens_coords.py
   ``bells``        24 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
-quirks, query MAST as ``SDSS<LENS>``". Two keys are understood:
+quirks, query MAST as ``SDSS<LENS>``". Four keys are understood:
 
   ``mast_target``  the lens is archived under a ``GAL-<plate>-<mjd>-<fiber>`` designation
                    rather than ``SDSS<LENS>``, so the default query returns nothing.
@@ -20,6 +20,11 @@ quirks, query MAST as ``SDSS<LENS>``". Two keys are understood:
   ``force_copy``   the lens's *non*-COPY observations are unusable (e.g. all EXPTIME=0),
                    so the ``-COPY`` duplicates must be used instead. Normally non-COPY is
                    preferred. See ``force_copy()``.
+  ``proposals``    ``{filt: [proposal_id, ...]}``: for that filter, keep only observations
+                   from these HST programs. SL2S uses it to take F475X from the deep
+                   GO-17130 (Project Dinos II) visit alone where an older GO-11588 snapshot
+                   also exists. See ``allowed_proposals()``.
+  ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
 the MAST name used to fetch.
@@ -109,6 +114,13 @@ def force_copy(lens, sample=None):
     """True if this lens must be fetched from its ``-COPY`` MAST observations (its
     non-COPY frames are unusable, e.g. EXPTIME=0)."""
     return bool(_entry(lens, sample).get('force_copy', False))
+
+
+def allowed_proposals(lens, filt, sample=None):
+    """HST program IDs (strings) this lens's ``filt`` observations are restricted to, or
+    None for no restriction. ``filt`` is the product key as passed to ``--filt``."""
+    props = _entry(lens, sample).get('proposals', {}).get(filt)
+    return [str(p) for p in props] if props else None
 
 
 def target_patterns(lens, sample=None):

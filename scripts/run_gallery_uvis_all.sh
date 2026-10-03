@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drizzle every WFC3/UVIS product in a sample, all five gallery filters, with the script
+# Drizzle every WFC3/UVIS product in a sample, the gallery and SL2S filters, with the script
 # defaults (--align mast, --cr LACosmic, native 0.0396"/px pixfrac 1.0 since 2026-09-29). Passed
 # explicitly for the record.
 #
@@ -10,6 +10,10 @@
 # lens is tried in every filter; drizzle_wfc3_uvis.py exits 0 having recorded `null`
 # where MAST has no data, so the many empty lens+filter combos report as "no data", not
 # failures. F606W is drizzled first (the primary band and the cutout --center-band).
+# The SL2S samples (sl2s_dinos_a/x, sl2s_pc, sl2s_snap) add F475X (GO-17130 Dinos II, or
+# the GO-11588 snapshot) and F600LP (GO-11588 snapshot); each sample just reports "no
+# data" for the other set's filters. Which program's F475X is used is decided per lens by
+# the `proposals` quirk in info/lens_samples.json, not here.
 #
 # Unlike run_acs_all.sh this does NOT rm the output dir first: it relies on the drizzle
 # script's idempotent skip (final product exists -> skip) so a multi-GB gallery campaign
@@ -32,7 +36,7 @@ done < <(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE")
 echo "=== WFC3/UVIS: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
 ok=0; nodata=0; blocked=0; fail=0; FAILED=()
-for filt in f606W f814W f438W; do
+for filt in f606W f814W f438W f475X f600LP; do
   for lens in "${LENSES[@]}"; do
     log="$LOG/${lens}_${filt}_uvis.log"
     printf '%-12s %-6s ' "$lens" "$filt"

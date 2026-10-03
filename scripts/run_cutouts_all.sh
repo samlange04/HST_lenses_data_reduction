@@ -45,13 +45,13 @@ TAG="${TAG}${BCFILL:+_bcfill}"
 # just left on stale cutouts. The cutout --filt is taken from the directory name for
 # the same reason.
 ok=0; fail=0
-# SLACS bands (f606W f814W f555W f160W) plus the gallery WFC3/UVIS UV/blue bands
-# (f438W f275W f225W). A filter not present in the sample globs to nothing, so listing
+# SLACS bands (f606W f814W f555W f160W), the gallery WFC3/UVIS UV/blue bands
+# (f438W f275W f225W) and the SL2S WFC3/UVIS bands (f475X f600LP). A filter not present in the sample globs to nothing, so listing
 # all known bands here is harmless and keeps this one runner correct for every sample.
 # f814W is cut before the UV bands so its mosaic (the default --center-band) is on disk;
 # in practice make_cutouts reads the f814W *mosaic*, not its cutout, so order only needs
 # the F814W drizzle to exist -- which the drizzle phase guarantees for every UV lens.
-for filt in f606W f814W f555W f160W f438W f275W f225W; do
+for filt in f606W f814W f555W f160W f438W f275W f225W f475X f600LP; do
   for d in "$WS"/data/"$DZ"/"$SAMPLE"/*/"$filt"*; do
     [ -d "$d" ] || continue
     # Any final drizzle product (CR or no-CR) means the mosaic exists and is cuttable.
