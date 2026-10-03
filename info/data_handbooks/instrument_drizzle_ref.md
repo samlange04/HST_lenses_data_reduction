@@ -1,5 +1,6 @@
 # HST Drizzle & PSF Reference
-Condensed from STScI data handbooks in this directory. Sources cited as (DHB p###).
+Condensed from the STScI data handbooks listed in `README.md` (the PDFs are not tracked;
+download them into this directory). Sources cited as (DHB p###).
 
 ---
 
