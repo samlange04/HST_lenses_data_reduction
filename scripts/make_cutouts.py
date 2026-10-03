@@ -239,6 +239,47 @@ def casertano_r(pixfrac, scale_ratio):
     return 1.0 / r
 
 
+CORR_FACTORS_JSON = 'noise_corr_factors.json'
+
+
+def instrument_key(sci_hdr):
+    """'ACS/WFC', 'WFC3/IR', 'WFC3/UVIS' or 'WFPC2' -- the top-level key of
+    info/noise_corr_factors.json. Keyed by instrument, not filter alone, because F606W and
+    F814W each occur on two instruments (WFPC2 vs WFC3/UVIS, ACS vs WFC3/UVIS) with
+    different ERR calibration and drizzle geometry."""
+    inst = str(sci_hdr.get('INSTRUME', '')).strip().upper()
+    if inst == 'WFPC2':
+        return 'WFPC2'
+    return f"{inst}/{str(sci_hdr.get('DETECTOR', '')).strip().upper()}"
+
+
+def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
+    """Noise-map inflation factor for this stamp, and where it came from.
+
+    Precedence (same idea as info/lens_cr_params.json): 1.0 < info/noise_corr_factors.json
+    per instrument/detector and filter < its `_lens_overrides` {sample: {lens: {band: f}}}
+    < an explicit --corr-factor. The values are measured by scripts/measure_corr_factor.py
+    (see its docstring and the JSON's `_method`). They are NOT a drizzle correction -- drizzle
+    conserves noise and 1/sqrt(WHT) is already right on patches >= the drop -- but an
+    ERR-array deficit (~10% rms, ACS/UVIS) plus faint unmasked structure. A band missing from
+    the JSON gets 1.0 with a warning, not a guess. `filt` may carry a visit suffix
+    (f606W_v2); it is stripped."""
+    if cli_value is not None:
+        return float(cli_value), 'cli'
+    import info_json
+    table = info_json.load(os.path.join(ws_path, 'info', CORR_FACTORS_JSON))
+    band = filt.split('_')[0]
+    override = table.get('_lens_overrides', {}).get(sample, {}).get(lens, {}).get(band)
+    if override is not None:
+        return float(override), 'lens'
+    value = table.get(instrument_key(sci_hdr), {}).get(band)
+    if value is None:
+        print(f"  WARNING: no correlated-noise factor for {instrument_key(sci_hdr)} {band} "
+              f"in info/{CORR_FACTORS_JSON}; using 1.0 (uncorrected)")
+        return 1.0, 'none'
+    return float(value), 'json'
+
+
 def find_products(drizzled_dir, drizzle_pass='nocrrej'):
     """
     Locate the sci/wht pair for a given drizzle pass in a drizzled output directory.
@@ -431,15 +472,16 @@ def main():
                         'mosaic can land a pixel (or a neighbour) away, which a mask cannot '
                         'tell you. The grid is identical only if the two mosaics share a '
                         'WCS -- check CRPIX/CRVAL afterwards, do not assume.')
-    p.add_argument('--corr-factor', type=float, default=1.0,
+    p.add_argument('--corr-factor', type=float, default=None,
                    help='multiply the noise map by this factor so it matches the noise '
-                        'actually present on patches the size of the drizzle drop or larger '
-                        '(default 1.0 = off, the raw 1/sqrt(WHT)). Measured 2026-09-26: 1.18 '
-                        '(ACS F814W), 1.17 (F555W), 1.07 (WFPC2 F606W), 1.05 (F160W), '
-                        '1.18-1.26 (visible UVIS). The excess is NOT drizzle (drizzle conserves '
-                        'noise and 1/sqrt(WHT) is already sum-correct): it is an ERR-array '
-                        'deficit of ~10%% rms in ACS/UVIS plus a few percent of faint unmasked '
-                        'structure. The corr-factor branch applies these by default.')
+                        'actually present on patches the size of the drizzle drop or larger. '
+                        f'Default: the measured per-instrument/per-filter value in '
+                        f'info/{CORR_FACTORS_JSON} (1.05-1.38, plus per-lens overrides; 1.0 '
+                        'with a warning for a band not listed). The excess is NOT drizzle '
+                        '(drizzle conserves noise and 1/sqrt(WHT) is already sum-correct): it '
+                        'is an ERR-array deficit of ~10%% rms in ACS/UVIS plus a few percent '
+                        'of faint unmasked structure. An explicit value overrides the JSON; '
+                        'pass 1.0 for the raw 1/sqrt(WHT).')
     p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
                    help='fold the empirical PSF error map (cutout_[cr_]psf_err.fits, built by '
                         'make_psf.py) into the noise map as an effective noise map: '
@@ -640,14 +682,18 @@ def main():
                   f"(IVMMODEL={model or 'absent'}). Its noise map is NOT calibrated -- "
                   "block-sum 0.46 (old IVM) or 5e-4 (exptime-only) where 1.0 is "
                   "correct. Re-drizzle before using it for a likelihood.")
-    if a.corr_factor != 1.0:
-        print(f"  correlated-noise inflation: x{a.corr_factor:g}")
+    a.corr_factor, corr_src = resolve_corr_factor(a.corr_factor, sci_hdr, a.sample, a.lens,
+                                                  a.filt, ws_path)
+    print(f"  noise-map inflation: x{a.corr_factor:g} "
+          + {'cli': '(--corr-factor)', 'json': f'(info/{CORR_FACTORS_JSON})',
+             'lens': f'(info/{CORR_FACTORS_JSON} _lens_overrides)', 'none': '(no entry)'}[corr_src])
     noise_data = noise_map_via_weight_map_from(wht_cutout.data.astype(np.float64),
                                                scale=units_k * a.corr_factor)
 
     noise_hdr = wht_hdr.copy()
     noise_hdr['NOISEK'] = (units_k, 'ERR-units scale applied to 1/sqrt(WHT)')
     noise_hdr['NOISECOR'] = (a.corr_factor, 'noise-map inflation applied (see NOISECRS)')
+    noise_hdr['NOISECRS'] = (corr_src, 'NOISECOR source: json/lens/cli/none')
 
     # Weight-map uniformity (STScI RMS/median rule) over the cutout region -- flags a
     # pixfrac too small for the dither pattern (coverage speckle/holes) for this specific
@@ -674,8 +720,7 @@ def main():
     if r_analytic is not None:
         print(f"  Casertano R (analytic, pixfrac={float(pixfrac):g}, "
               f"scale_ratio={scale_ratio:.3f}): {r_analytic:.3f}"
-              + (f"  [--corr-factor is {a.corr_factor:g}]" if a.corr_factor != 1.0 else
-                 "  (--corr-factor not set; empirical values are in AGENTS.md)"))
+              + f"  [applied corr-factor {a.corr_factor:g}]")
         noise_hdr['CASR'] = (round(r_analytic, 4), 'analytic Casertano correlated-noise R')
     else:
         print("  Casertano R: not available (D001PIXF/D001ISCL/D001SCAL missing from header)")
@@ -741,6 +786,7 @@ def main():
         'offset_arcsec': round(offset, 4),
         'noise_k': units_k,
         'corr_factor': a.corr_factor,
+        'corr_factor_source': corr_src,
         'weight_uniformity': round(wu, 6) if wu is not None else None,
         'weight_uniformity_limit': WEIGHT_UNIFORMITY_LIMIT,
         'weight_uniformity_ok': (wu is not None and wu <= WEIGHT_UNIFORMITY_LIMIT),

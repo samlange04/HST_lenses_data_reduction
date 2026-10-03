@@ -32,9 +32,13 @@ data/*
 # stamp with no GUI and no re-clicking:
 #     uv run python scripts/make_positions.py --sample <sample> --overlays-only
 # so it is regenerable in the sense this file cares about, and stays out of history.
-# NOTE this is the one PNG under data/cutouts/ that is ignored -- cutout_cr.png,
-# _dataset.png and _mask_arcs.png are all still tracked.
+# NOTE _dataset.png and _mask_arcs.png are still tracked (the dataset PNG is the QC view
+# people actually open); cutout_cr.png / cutout.png were untracked 2026-10-04 -- they are
+# a plain render of the tracked sci stamp, rebuilt by make_cutouts.py, and had grown to
+# 410 MB of history.
 data/cutouts/**/*_positions.png
+data/cutouts/**/cutout_cr.png
+data/cutouts/**/cutout.png
 
 # ── slacs_gold f606W arc masks: parked, not abandoned (2026-09-21) ─────────────
 # The slacs_gold f814W arc masks (38/38) are committed; its f606W ones (10 so far) are
@@ -54,8 +58,11 @@ data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.png
 info/lens_cutout_qc_*arcsec.json
 
 # ── Large external material ────────────────────────────────────────────────────
-# info/data_handbooks is intentionally NOT ignored: the instrument handbooks are the
-# cited source for the DQ-bit and pixel-scale choices, so they travel with the repo.
+# info/data_handbooks/*.pdf: the STScI handbooks and PSF papers the DQ-bit, pixel-scale
+# and read-noise choices cite. 147 MB of third-party PDFs that never change, untracked
+# 2026-10-04; info/data_handbooks/README.md lists each file's edition and where to
+# download it, and instrument_drizzle_ref.md keeps the page-numbered digest.
+info/data_handbooks/*.pdf
 hst_notebooks/
 
 # ── Superseded notebooks ───────────────────────────────────────────────────────
