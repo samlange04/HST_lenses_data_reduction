@@ -242,6 +242,15 @@ S/N −17.7) and deleted 2026-09-26.
 
 ## Data flow and directory layout
 
+**The ignored FITS layers were purged on 2026-10-04** (6823 files, ~260 GB: every
+`calibrated/`, `drizzle_files*/`, `drizzled*/`, `cutouts_20arcsec/`, `psf/` and
+`reference_files/` FITS). Only the git-tracked `data/cutouts/` stamps remain on disk, and
+they are the finished products for every lens in the three samples. Logs, PNGs and
+shift files in those directories were left in place. Any re-cut (`--center-from`, a new
+`--size`), a new mask drawn on a fresh stamp, or a PSF rebuild now needs the lens
+re-drizzled first: `calibrated/` re-downloads from MAST, `reference_files/` re-fetches
+from CRDS, and the drizzle runners rebuild the rest from `info/*.json`.
+
 ```
 data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
@@ -638,10 +647,11 @@ out *above* 1, and the excess is in the input frames, not the drizzle:
 The accounting closes: ACS J0008 = 1.24 (white) × 1.00 (drizzle) + 8 lags × ~0.015
 (structure) ≈ 1.36 = the measured ΣC of 1.355.
 
-**The factors — measured on the `corr-factor` branch, NOT applied on this one.** Every stamp
-here has `NOISECOR = 1.0` (`make_cutouts.py --corr-factor` defaults to 1.0 = off); the
-`corr-factor` branch applies these values by default from `info/noise_corr_factors.json` and
-carries the measuring script. To reproduce a corrected map here pass the band's value:
+**The factors: `info/noise_corr_factors.json`, applied by default by `make_cutouts.py`**
+(precedence 1.0 < JSON per instrument/filter < its `_lens_overrides` < explicit
+`--corr-factor`; keyed by instrument/detector then filter, because F606W and F814W each occur
+on two instruments; `NOISECRS` = `json`/`lens`/`cli`/`none` says which applied). **Every
+standard stamp's noise map carries it** (`NOISECOR`, since 2026-09-26):
 
 | band / detector | drop window | **factor** | C(0) | `CASR` = 1/√C(0)_drizzle |
 |---|---|---|---|---|
@@ -680,8 +690,13 @@ Consequences:
 - **The old numbers are superseded**: ~1.24 ACS / ~1.17 F160W (1.44″ block sums on one lens,
   floor-dominated), ~1.6 UVIS (the pixfrac scan's ratio against the empirical rms), ~1.1
   F606W (no recorded measurement), and "empirical rms 1.47× the ERR map" (wrong direction).
+- The noise-map change **moves S/N-based thresholds** (`detect_arcs.py` reads the noise map).
+  Arc masks and positions made before 2026-09-26 were drawn on uncorrected S/N and were not
+  redone; they are hand-checked products, and a ≤26% S/N change doesn't move them materially.
 - **Re-measure after any re-drizzle that changes pixfrac, scale, or dither handling**
-  (`uv run python scripts/measure_corr_factor.py` on the `corr-factor` branch, ~10 min).
+  (`uv run python scripts/measure_corr_factor.py`, ~10 min; it prints the per-band medians;
+  copy them into the JSON by hand). A pixfrac change alone will not move them (see *Output
+  pixel scales*), but the check is cheap.
 
 Prefer native-scale F814W where a clean per-pixel noise model matters most.
 
@@ -1417,8 +1432,9 @@ uv run python scripts/make_positions.py --sample slacs_gold --overlays-only
 
 That flag exists so the ignore rule is honest — without it "regenerable" would have meant
 re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
-GUI wrote. Note this is the **one** ignored PNG under `data/cutouts/`: `cutout_cr.png`,
-`_dataset.png` and `_mask_arcs.png` are all still tracked, so do not generalise the rule.
+GUI wrote. `cutout_cr.png` (and the WFPC2-era `cutout.png`) joined it as an ignored QC
+render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_cutouts.py`);
+`_dataset.png` and `_mask_arcs.png` are still tracked, so do not generalise the rule.
 
 **Two panels by default, and the band's contaminants blanked (2026-09-17).** The GUI shows
 the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
@@ -2256,6 +2272,11 @@ Written by hand:
   caveat. Read it before trusting a per-pixel noise value on those branch stamps.
 - **`lens_cr_params.json`**, **`psf_stars.json`** — per-lens overrides (see *Cosmic-ray
   rejection*, *PSF generation*).
+- **`noise_corr_factors.json`** — `{instrument/detector: {filter: factor}}` plus
+  `_lens_overrides: {sample: {lens: {filter: factor}}}` (one entry: J1143-0144 f814W): the
+  noise-map inflation `make_cutouts.py` applies by default — an ERR deficit plus faint
+  structure, not drizzle. Values are copied in from `measure_corr_factor.py`'s printed
+  summary (see *Drizzle correlated noise*); its `_method` key records how they were measured.
 
 Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
@@ -2512,13 +2533,10 @@ target), F814W second, and does **not** `rm` the output dir first (unlike
   (the box blur), factors re-measured **identical** (1.24 / 1.18 / 1.26), PSFs rebuilt.
   `make_psf_inject.py`'s UVIS `final_pixfrac` hardcode was 0.7 and is now 1.0 too — it must
   track `FINAL_PIXFRAC`, or model-tier injections get a different drop from the science
-  mosaic. The pixfrac-0.7 mosaics were deleted 2026-10-01. On this branch the
-  stamps keep `NOISECOR = 1.0`; excess noise is only slightly above native ACS at the drop
-  scale (measured 2026-09-26 over every stamp: 1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the
-  old "~1.5–1.6×" was that same rms-relative scan number). For a diagonal-covariance
-  likelihood use `make_cutouts.py --corr-factor` with the band's value (F438W 1.24, F606W
-  1.18, F814W 1.26); the `corr-factor` branch applies these by default. → memory:
-  gallery_uvis_pixfrac
+  mosaic. The pixfrac-0.7 mosaics were deleted 2026-10-01. Excess noise is only slightly
+  above native ACS at the drop scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
+  "~1.5–1.6" was that same rms-relative scan number). `make_cutouts.py` applies the measured
+  factor by default — see *Drizzle correlated noise*. → memory: gallery_uvis_pixfrac
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
   FLC ERR is in electrons, like ACS, not electrons/s like WFC3/IR).
