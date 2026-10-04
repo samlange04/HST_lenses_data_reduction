@@ -25,13 +25,13 @@ download them into this directory). Sources cited as (DHB p###).
 | MAST project filter | `CALACS` | Also `HAP-MVM`, `HAP-SVM` in products — filter correctly |
 | Output suffix | `_drc_` | FLC → drc (distortion + CTE corrected) |
 | Pixel scale | 0.05 ″/px | Native ~0.049 (ACS DHB p12); pipeline/IDCTAB uses 0.05 (confirmed from drizzle headers p40–42) |
-| `driz_sep_bits` / `final_bits` | `'256,64,16'` = 336 | **Official STScI MDRIZTAB default since June 2017** (DrizzlePac DHB p132, ACS ISR 2017-05) |
+| `driz_sep_bits` / `final_bits` | `'256,64,16'` = 336 | **Official STScI MDRIZTAB default since 2017** (DrizzlePac DHB p132; ACS ISR 2017-02 Hoffmann & Avila, 2018 update Table A; ACS ISR 2017-05 Borncamp et al. for bit 32) |
 | `driz_cr_snr` | `'3.5 3.0'` | |
 | `driz_cr_scale` | `'1.2 0.7'` | |
 | TweakReg `conv_width` | 3.5 | |
 | TweakReg `ylimit` | 0.2 | |
 
-**Why bit 256 (saturation) is included:** The 2017 MDRIZTAB update (ACS ISR 2017-05) explicitly sets `driz_sep_bits=336=16+64+256`. Saturated pixels are included so AstroDrizzle's median can span all input pixels (including bright saturated galaxy centres), enabling proper comparison and CR rejection. Unstable hot pixels (bit 32) remain excluded.
+**Why bit 256 (saturation) is included:** Hoffmann & Avila 2017 (ACS ISR 2017-02) added 256 to `driz_sep_bits`/`final_bits` (then 32+64+256) because AstroDrizzle was masking full-well-saturated pixels and losing flux — "charge is not lost but moves along the columns for saturated pixels" — and raised `driz_cr_scale` to 1.5 1.2 for 2- and 4-image associations. Borncamp et al. 2017 (ACS ISR 2017-05) then redefined bit 32 as *unstable* pixel and swapped 32→16 in the MDRIZTAB, giving 16+64+256 = 336 (ACS ISR 2017-02, November 2018 UPDATE, Table A). Stable hot pixels (16) are dark-subtracted and kept; unstable ones (32) stay excluded. (Corrected 2026-10-04: this used to credit all of 336 to ISR 2017-05, which never mentions 256.)
 
 **DQ Flag Table (Table 3.4, ACS DHB p87):**
 | Flag | Meaning | In bits? |
@@ -70,15 +70,15 @@ download them into this directory). Sources cited as (DHB p###).
 
 **Note on IR CR rejection (DrizzlePac DHB p98):** WFC3/IR cosmic rays are already flagged during up-the-ramp fitting (calwf3). AstroDrizzle's CR rejection steps can be turned off for IR, but running them catches additional detector artifacts not present in the DQ arrays.
 
-**DQ Flag Table (Table 3.3, WFC3 DHB p39) — IR channel:**
+**DQ Flag Table (Table 3.3, WFC3 DHB PDF p89) — IR channel:**
 | Flag | Meaning | In bits? |
 |------|---------|----------|
 | 16 | Stable hot pixel | — |
 | 32 | Unstable pixel | — |
-| 64 | (Obsolete: Warm pixel — not used for IR) | ✓ accepted (safe; unused) |
+| 64 | WARMPIX, "unused" — §7.9.1: "currently not attached to any type of bad pixel" | ✓ accepted (safe; unused) |
 | 256 | Full-well saturation | — |
 | 512 | Bad/uncertain flat value, incl. IR blobs | ✓ accepted (flat-corrected) |
-| 1024 | (Unused for IR) | — |
+| 1024 | SPIKE: CR spike detected during ramp fitting | — |
 | 2048 | Signal in zero read | — |
 | 4096 | AstroDrizzle CR | — |
 | 8192 | calwf3 ramp-fit CR (ima only; not in flt) | — |

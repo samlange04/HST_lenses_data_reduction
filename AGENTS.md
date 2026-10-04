@@ -1830,7 +1830,7 @@ NaN rectangles and manual star deletion.
 **ACS/WFC model = focus-diverse ePSF, not STDPSF.** When an ACS/WFC field is too star-poor
 for an empirical build (or `--method model`), `psf_models.acs_focus_diverse_psf` retrieves
 the **observation-matched, focus-corrected ePSF** (`acstools.focus_diverse_epsfs`; Bellini
-et al. ACS ISR 2018-08 / 2023-06) for each contributing exposure (rootnames from
+et al. ACS ISR 2018-08; Anand et al. ACS ISR 2023-06) for each contributing exposure (rootnames from
 `lens_products.json`), interpolates each to the lens's detector position via the FLC WCS
 (chip from `CCDCHIP`: 1→WFC1, 2→WFC2; grid centre if the FLC is absent), averages across
 exposures (the drizzled PSF is the exposure-average), and resamples the 4×-supersampled
@@ -2348,10 +2348,16 @@ a `%% Added <date>. <what it was used for here>` line above it. A paper not yet 
 is filed into the papers wiki first. Write both files with one script and check their `md5`
 matches.
 
-**Open TODO (2026-10-04):** the file was started with the sample papers only. The earlier
-reduction decisions (drizzle and correlated-noise papers, PSF methods, LACosmic, the
-instrument handbooks and ISRs cited through this file, `local/literature/drizzle_noise.md`)
-still need filing retrospectively.
+**Retrospective fill done 2026-10-04.** Besides the sample papers it now holds every document
+the reduction decisions cite: Casertano+2000 (drizzle correlated noise, Appendix A), van Dokkum
+2001 (LACosmic), Anderson & King 2000 (ePSF), Bayer+2023 II (the sqrt(N/W + σ_sky²) noise
+map), Auger+2009 and Bolton+2006 (θ_E catalogue, colour detection), the ISRs WFC3 2016-12
+(STDPSF), WFC3 2021-12 (PSF database), ACS 2018-08 and 2023-06 (focus-diverse ePSF), ACS
+2017-02 and 2017-05 (MDRIZTAB bits 256 and 32), and the DrizzlePac v3.0, ACS v14.0, WFC3
+v6.0, WFPC2 v5.0 data handbooks plus the WFPC2 Instrument Handbook v10.0. The papers wiki
+page `wiki/software/sources/hst-tools.md` records which sections of each were read. Still
+unfiled, deliberately: Fruchter & Hook 2002 (drizzle itself; cited nowhere in this repo) and
+Dolphin 2000 (listed in `info/data_handbooks/README.md`, used by nothing).
 
 ## Lens Samples
 

@@ -530,7 +530,7 @@ def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None):
 # ── ACS/WFC focus-diverse ePSF (preferred ACS model over the static STDPSF) ──────
 # The STDPSF library carries no ACS/WFC F555W grid and is one static, grid-centre,
 # fixed-focus PSF. acstools.focus_diverse_epsfs instead serves an *observation-matched*,
-# focus-corrected empirical ePSF (Bellini et al., ACS ISR 2018-08 / 2023-06) keyed to each
+# focus-corrected empirical ePSF (Bellini et al. ACS ISR 2018-08; Anand et al. ACS ISR 2023-06) keyed to each
 # exposure rootname -- native F555W and F814W (no nearest-filter substitution), matched to
 # the HST focus (breathing) at the time of each exposure, and interpolable to the lens's
 # actual detector position. The drizzled PSF is the exposure-average, so we retrieve the

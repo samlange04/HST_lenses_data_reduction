@@ -12,6 +12,7 @@ citations in `instrument_drizzle_ref.md` and the scripts resolve.
 | `wfc3dhb2024_final.pdf` | WFC3 Data Handbook v6.0 (June 2024), 296 pp. | https://hst-docs.stsci.edu/wfc3dhb |
 | `The_DrizzlePac_Handbook_Version3.pdf` | The DrizzlePac Handbook v3.0, 154 pp. | https://hst-docs.stsci.edu/drizzpac |
 | `wfpc2_dhb.pdf` | WFPC2 Data Handbook v5.0 (July 2010), 176 pp. | https://www.stsci.edu/hst/instrumentation/legacy/wfpc2 (Documentation) |
+| `wfpc2_ihb.pdf` | WFPC2 Instrument Handbook v10.0 (August 2008), 338 pp. — Table 4.2 read noise/gain (PDF p91) | same legacy page (handbook archive `wfpc2_ihb_cycle17.pdf`) |
 | `nic_dhb.pdf` | NICMOS Data Handbook v8.0 (May 2009), 187 pp. | https://www.stsci.edu/hst/instrumentation/legacy/nicmos (Documentation) |
 | `wfc3_ir_psfs.pdf` | Anderson 2016, "Empirical Models for the WFC3/IR PSF", WFC3 ISR 2016-12 | https://www.stsci.edu/hst/instrumentation/wfc3/documentation/instrument-science-reports-isrs |
 | `wfpc2_wfc3_database.pdf` | Dauphin et al. 2021, "The WFPC2 and WFC3 PSF Database", WFC3 ISR 2021-12 | same ISR index |
@@ -20,3 +21,9 @@ citations in `instrument_drizzle_ref.md` and the scripts resolve.
 
 The handbooks are living documents: the versions above are the ones the page numbers in
 this repo were read from. A newer edition may renumber pages.
+
+Every document in this table that a script or AGENTS.md cites is also filed in the project
+bibliography (`local/literature/HST_lenses_data_reduction.bib`, see AGENTS.md *Bibliography*)
+and in the papers wiki's `wiki/software/sources/hst-tools.md`, where the exact pages read are
+recorded. The ACS ISRs behind the DQ-bit choice are 2017-02 (Hoffmann & Avila, saturation
+bit 256) and 2017-05 (Borncamp et al., unstable-pixel bit 32).
