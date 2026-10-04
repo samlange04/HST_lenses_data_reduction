@@ -224,7 +224,7 @@
                             "12064"
                         ]
                     },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). GO-10876 ACS F814W 2x400 s under the SL2S name; deeper archive F814W/F606W/F160W from other programs is not fetched yet (combination to be decided)."
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (Sam, 2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
             },
             "J0226-0420": {
                 "mast_target": "SL2SJ022610-042011",
@@ -264,14 +264,11 @@
                         "f814W": [
                             "9822"
                         ],
-                        "f606W": [
-                            "17802"
-                        ],
                         "f160W": [
                             "14114"
                         ]
                     },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W/F606W and WFC3/IR F160W exist under non-SL2S target names (COSMOS etc.) and are not fetched by the SL2S name query yet."
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) and WFC3/IR F160W (GO-14114) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: Sam chose WFPC2 F606W (2026-10-04), since both would share the f606W band key."
             },
             "J1359+5535": {
                 "mast_target": "SL2SJ135949+553550",

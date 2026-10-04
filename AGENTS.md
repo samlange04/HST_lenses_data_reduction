@@ -2485,8 +2485,14 @@ Every SL2S lens is archived as `SL2SJhhmmss±ddmmss`, so each entry carries that
 precision; neither paper tabulates better).
 
 **Archive bands under other target names** (`archive_proposals` quirk, `scripts/mast_archive.py`).
-J0959+0206 takes ACS F814W from GO-9822 (COSMOS, 4 frames, 2028 s), ACS F606W from GO-17802
-(4 frames, 1580 s) and WFC3/IR F160W from GO-14114 (8 frames, 2074 s). J0217-0513 takes F814W
+J0959+0206 takes ACS F814W from GO-9822 (COSMOS, 4 frames, 2028 s) and WFC3/IR F160W from
+GO-14114 (8 frames, 2074 s). Its archive ACS F606W (GO-17802, 1580 s) is **not** used: it would
+share the `f606W` band key, directory and tracking entries with the lens's WFPC2 F606W, and
+Sam chose WFPC2 (2026-10-04). **One filter means one instrument per lens** in this pipeline.
+`run_acs_all.sh` loops only F814W and F555W, and it `rm -rf`s each band directory before
+drizzling. Adding F606W to that loop would delete every SLACS WFPC2 F606W product. So
+J0217-0513's ACS F606W (it has no WFPC2) is drizzled with a direct
+`drizzle_acs_wfc.py --filt f606W` call. J0217-0513 takes F814W
 (6 visits, 7917 s), F606W (6 visits, 4186 s) and F160W (2 visits, 3512 s) from GO-12064
 (CANDELS UDS). These are filed
 as `ANY`, `COSMOS33-11` and so on. For a filter listed in `archive_proposals`, the ACS and IR
