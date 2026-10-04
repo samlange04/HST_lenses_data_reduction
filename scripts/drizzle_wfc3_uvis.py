@@ -194,6 +194,13 @@ json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
+# One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
+_owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'WFC3/UVIS')
+if _owner:
+    print(f'=== NO DATA: {lens} {filt_key} is already a {_owner} product (one instrument per '
+          f'filter key); not touched ===')
+    sys.exit(0)
+
 _num_cores = 1
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -349,9 +356,32 @@ info_json.update(instrument_json_path, sample, lens, filt_key, f'{_instrume}/{_d
 # excludes them from the drizzle input itself, not just this record. Note when
 # auditing: WFC3/UVIS FLCs are 2-chip MEFs, so the product's NDRIZIM is 2 x the
 # number of exposures listed.
+# Visits with only a GSC240 guide-star WCS (no FIT_* astrometric fit) are dropped when another
+# visit of the same lens+filter carries a fitted (Gaia/GSC242) solution: the two do not agree
+# in absolute position, so combining them smears and shifts the deflector. Found on
+# J0959+0206 F475X (2026-10-04): GO-17130 visit 15 (GSC240) sits ~0.5" from visit 65
+# (FIT_REL_GSC242), which itself agrees with ACS F814W to ~0.05". A lens whose every visit is
+# GSC240-only keeps them all (nothing better to choose); AGENTS.md *SL2S samples* tracks those.
+def _visit_wcs_drop(files):
+    """Rootnames to exclude: frames of GSC240-only visits when a fitted visit exists."""
+    by_visit = {}
+    for f in files:
+        root = os.path.basename(f).replace('_flc.fits', '')
+        name = str(fits.getval(f, 'WCSNAME', ext=('SCI', 1)))
+        by_visit.setdefault(root[:6], []).append((root, 'FIT' in name.upper()))
+    fitted = {v for v, fr in by_visit.items() if all(ok for _, ok in fr)}
+    if not fitted:
+        return set()
+    return {root for v, fr in by_visit.items() if v not in fitted for root, _ in fr}
+
+_drop_visit = _visit_wcs_drop(glob.glob(os.path.join(data_path, '*flc.fits')))
+if _drop_visit:
+    print(f'=== Visit WCS: dropping GSC240-only frames {", ".join(sorted(_drop_visit))} '
+          f'(another visit has a fitted Gaia/GSC242 WCS) ===')
 _frames = [
     (os.path.basename(f).replace('_flc.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flc.fits'))
+    if os.path.basename(f).replace('_flc.fits', '') not in _drop_visit
 ]
 _obs_ids = sorted(rootname for rootname, exp in _frames if exp > MIN_EXPTIME)
 _total_exptime = sum(exp for _, exp in _frames if exp > MIN_EXPTIME)
@@ -426,6 +456,8 @@ os.environ['iref']            = os.path.join(
 # Filters on the header, not the _obs_ids set, so it also catches already-cached
 # files from before this check existed without requiring a re-download.
 for f in glob.glob(os.path.join(data_path, '*flc.fits')):
+    if os.path.basename(f).replace('_flc.fits', '') in _drop_visit:
+        continue
     if fits.getheader(f)['EXPTIME'] <= MIN_EXPTIME:
         print(f'  excluding {os.path.basename(f)} from drizzle input: '
               f"EXPTIME={fits.getheader(f)['EXPTIME']}s <= {MIN_EXPTIME:.0f}s")

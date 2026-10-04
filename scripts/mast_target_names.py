@@ -120,6 +120,14 @@ def force_copy(lens, sample=None):
     return bool(_entry(lens, sample).get('force_copy', False))
 
 
+def uvis_filters(sample):
+    """WFC3/UVIS filters run_gallery_uvis_all.sh drizzles for this sample. A sample-level
+    ``uvis_filters`` list overrides the gallery default. SL2S sets [f475X, f600LP] so the UVIS
+    runner never touches the F606W/F814W bands that its lenses take from WFPC2/ACS (one
+    instrument per filter key, see info_json.band_owner_conflict)."""
+    return list(_sample(sample).get('uvis_filters', ['f606W', 'f814W', 'f438W']))
+
+
 def center_bands(sample):
     """Ordered bands whose mosaic may define a lens's shared cutout centre: make_cutouts.py
     uses the first one drizzled for that lens. A sample-level ``center_bands`` list in
@@ -166,6 +174,8 @@ if __name__ == '__main__':
                    help=f'sample name (default {DEFAULT_SAMPLE}); '
                         f'"--list" prints the defined samples')
     p.add_argument('--list', action='store_true', help='list sample names and sizes')
+    p.add_argument('--uvis-filters', action='store_true',
+                   help='print the sample\'s WFC3/UVIS filters (space-separated) for the UVIS runner')
     p.add_argument('--print-sample', action='store_true',
                    help='print only the resolved sample name, so a shell runner can echo '
                         'the default without hardcoding a second copy of it')
@@ -173,6 +183,8 @@ if __name__ == '__main__':
     if a.list:
         for s in samples():
             print(f'{s:14s} {len(lenses(s)):3d} lenses')
+    elif a.uvis_filters:
+        print(' '.join(uvis_filters(a.sample)))
     elif a.print_sample:
         _sample(a.sample)          # validate before printing
         print(a.sample)

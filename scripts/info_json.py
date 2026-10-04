@@ -36,6 +36,22 @@ def update(path, sample, lens, key, value):
         json.dump(dict(sorted(data.items())), f, indent=4)
 
 
+def band_owner_conflict(path, sample, lens, key, instrument_prefix):
+    """The instrument recorded for this lens's band in `path` (lens_instrument.json) if it is
+    a DIFFERENT instrument from `instrument_prefix`, else None.
+
+    The pipeline keys products by filter alone (data/<tree>/<sample>/<lens>/<filt>/, and
+    every tracking JSON), so one filter can hold one instrument's product per lens. On
+    2026-10-04 the UVIS runner, looping F814W over SL2S, found J0959+0206's ACS F814W FLCs in
+    that band's calibrated dir, took them as its own download and replaced the ACS product,
+    and its F606W "no data" exit nulled the WFPC2 F606W records. The drizzle scripts call
+    this first and leave a band owned by another instrument untouched."""
+    owner = entry(path, sample, lens, key)
+    if owner and not str(owner).startswith(instrument_prefix):
+        return owner
+    return None
+
+
 def entry(path, sample, lens, key, default=None):
     """Read {sample: {lens: {key: ...}}} from `path`, or `default` if any level
     is absent. The read-only counterpart to update(); used for per-lens override

@@ -112,6 +112,11 @@ def weight_to_sigma_scale(sci_hdr):
     the error is in the noise model, not the units. The caller warns on IVMMODEL.
     """
     inst = (sci_hdr.get('INSTRUME', '').strip(), sci_hdr.get('DETECTOR', '').strip())
+    if sci_hdr.get('IRIVMEXP', False):
+        # drizzle_wfc3_ir.py drizzled an unequal-length stack with IVM = 1/(ERR*EXPTIME)^2,
+        # which DrizzlePac's IVM branch turns into a true 1/sigma_rate^2 per frame.
+        return 1.0, (f'{"/".join(inst)}: IVM-weighted mixed-exposure stack (IRIVMEXP), '
+                     '1/sqrt(WHT) already calibrated')
     if inst not in _ERR_IN_RATE_UNITS:
         return 1.0, f'{"/".join(inst)}: ERR in counts, 1/sqrt(WHT) already calibrated'
 
@@ -126,7 +131,8 @@ def weight_to_sigma_scale(sci_hdr):
         raise ValueError(
             f'unequal per-frame exposure times {dexp} for {"/".join(inst)}. The ERR '
             'units correction is a single constant only for equal-length frames; a '
-            'mixed-exposure stack needs a per-pixel treatment that is not implemented.')
+            'mixed-exposure stack must be drizzled with drizzle_wfc3_ir.py\'s IVM path '
+            '(IRIVMEXP); re-drizzle this product.')
 
     return dexp[0], (f'{"/".join(inst)}: ERR in ELECTRONS/S, scaling by per-frame '
                      f'EXPTIME={dexp[0]:.3f}s')

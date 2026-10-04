@@ -2512,6 +2512,30 @@ drivers query those programs and keep the visits whose `s_region` footprint cont
 catalogue position. A position search is not used because MAST matches it on footprint
 centres, and on 2026-10-04 a 10″ cone missed most visits that cover the lens.
 
+**One filter key, one instrument, per lens. This is enforced in code since 2026-10-04.** Products and every
+tracking JSON are keyed by filter alone. On the first SL2S UVIS run, `run_gallery_uvis_all.sh`
+looped F814W over J0959+0206. It found the ACS F814W FLCs in that band's calibrated directory,
+treated them as already downloaded, and replaced the ACS product with a UVIS drizzle of them.
+Its F606W "no data" exit also nulled the WFPC2 F606W records. Three guards now prevent this:
+- Every drizzle driver starts with `info_json.band_owner_conflict`. If `lens_instrument.json`
+  records another instrument for the band, the driver prints `=== NO DATA` and touches nothing.
+- `run_acs_all.sh` will not `rm -rf` a band directory that holds no `acs_wfc_*` product.
+- `run_gallery_uvis_all.sh` takes its filters from the sample's `uvis_filters`. The default is
+  F606W F814W F438W for gallery; SL2S uses F475X F600LP.
+
+**Mixed-WCS visits** (`drizzle_wfc3_uvis.py`). A visit carrying only a GSC240 WCS (no `FIT_*`) is
+dropped when another visit of the same lens and filter has a fitted solution. On J0959+0206's
+F475X, the GSC240 visit sat ~0.5″ from the Gaia-fit visit, and the Gaia-fit visit agreed with
+ACS F814W to ~0.05″. Combining them shifted the deflector by 0.14″, and registration QC did
+not notice. A lens whose only visits are GSC240-only keeps them; those are listed for Sam.
+
+**Unequal-length WFC3/IR stacks** (`drizzle_wfc3_ir.py`). These are drizzled with
+IVM = 1/(ERR·EXPTIME)², which gives each frame a true 1/σ²_rate weight. They are stamped
+`IRIVMEXP` and `make_cutouts.py` then uses K = 1. Equal-length stacks keep the ERR path. On
+J0959+0206 F160W (GO-14114, 228/253/278 s frames) the blank-sky block-sum ratio is 1.009 at
+1.44″, which is calibrated. That F160W also has an unfitted WCS, so it is tied to F814W with
+`--target f160W --ref f814W`.
+
 **WFPC2 tie: F475X first, then F814W** (`align_wfpc2_to_acs.py --ref auto`, the default since
 2026-10-04). No SLACS or BELLS lens has F475X, so their ties are unchanged. F475X is blue and
 shows little deflector light next to bright arcs, so read the printed check-band line on

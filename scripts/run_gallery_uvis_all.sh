@@ -13,7 +13,11 @@
 # The SL2S samples (sl2s_dinos_a/x, sl2s_wf, sl2s_snap) add F475X (GO-17130 Dinos II, or
 # the GO-11588 snapshot) and F600LP (GO-11588 snapshot); each sample just reports "no
 # data" for the other set's filters. Which program's F475X is used is decided per lens by
-# the `proposals` quirk in info/lens_samples.json, not here.
+# the `proposals` quirk in info/lens_samples.json, not here. The filter list itself comes
+# from the sample's `uvis_filters` (mast_target_names.uvis_filters; default f606W f814W
+# f438W): SL2S runs only f475X f600LP, because its F606W/F814W belong to WFPC2/ACS and one
+# filter key holds one instrument per lens. Looping F814W over SL2S on 2026-10-04 drizzled
+# J0959+0206's ACS FLCs as UVIS and nulled its WFPC2 F606W records.
 #
 # Unlike run_acs_all.sh this does NOT rm the output dir first: it relies on the drizzle
 # script's idempotent skip (final product exists -> skip) so a multi-GB gallery campaign
@@ -36,7 +40,8 @@ done < <(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE")
 echo "=== WFC3/UVIS: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 
 ok=0; nodata=0; blocked=0; fail=0; FAILED=()
-for filt in f606W f814W f438W f475X f600LP; do
+UVIS_FILTERS="$(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE" --uvis-filters)" || exit 1
+for filt in $UVIS_FILTERS; do
   for lens in "${LENSES[@]}"; do
     log="$LOG/${lens}_${filt}_uvis.log"
     printf '%-12s %-6s ' "$lens" "$filt"

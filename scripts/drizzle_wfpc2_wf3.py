@@ -276,6 +276,13 @@ json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
+# One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
+_owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, product_key, 'WFPC2')
+if _owner:
+    print(f'=== NO DATA: {lens} {product_key} is already a {_owner} product (one instrument per '
+          f'filter key); not touched ===')
+    sys.exit(0)
+
 # ── Download FLT files from MAST (skip if already present) ────────────────────
 # Distinguishes "MAST has nothing for this lens+filter" (an ordinary outcome -- every
 # lens in a sample is tried on every run, most have no data in most bands) from "the

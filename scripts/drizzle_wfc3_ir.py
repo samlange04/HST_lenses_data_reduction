@@ -140,6 +140,13 @@ json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
 exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
 instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
 
+# One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
+_owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'WFC3/IR')
+if _owner:
+    print(f'=== NO DATA: {lens} {filt_key} is already a {_owner} product (one instrument per '
+          f'filter key); not touched ===')
+    sys.exit(0)
+
 # ── Output sampling ────────────────────────────────────────────────────────────
 # WFC3/IR native is 0.1283"/px. The WFC3-IR-DITHER-BOX-MIN pattern gives 4 distinct
 # sub-pixel phases on both axes, so the data support a sub-native grid; drizzling at
@@ -318,6 +325,48 @@ def run_lacosmic(files, sigclip, objlim):
             hdul['DQ', 1].data = dq
     print(f'  LACosmic flagged {total} pixels across {len(files)} frames')
 
+# ── Mixed-length stacks: drizzle with IVM = 1/(ERR*EXPTIME)^2, not ERR weights ──
+# WFC3/IR FLT SCI and ERR are in ELECTRONS/S, so DrizzlePac's ERR weight (EXPTIME/ERR)**2
+# is EXPTIME**2 times the true inverse variance. make_cutouts.weight_to_sigma_scale divides
+# that out with one constant K = EXPTIME, which only works when every frame has the same
+# EXPTIME. For an unequal stack (J0959+0206 F160W, GO-14114: 228/253/278 s frames) we drizzle
+# with per-frame IVM = 1/(ERR*EXPTIME)**2 = 1/sigma_counts**2 instead. DrizzlePac's IVM branch
+# applies wt_scl = EXPTIME**2/scale**4 itself (as for WFPC2, see drizzle_wfpc2_wf3.py), so
+# each frame's weight is exactly 1/sigma_rate**2 whatever its length, and 1/sqrt(WHT) is the
+# calibrated sigma (K = 1). The product is stamped IRIVMEXP=T so make_cutouts uses K = 1.
+# Equal-length stacks keep the ERR path unchanged.
+def drizzle_weighting(files):
+    """(drizzle input, final_wht_type, is_mixed) for these FLTs (cwd = work dir)."""
+    exps = sorted({round(float(fits.getheader(f)['EXPTIME']), 2) for f in files})
+    if _a.wht_type != 'ERR' or len(exps) <= 1:
+        return files, _a.wht_type, False
+    lines = []
+    for f in files:
+        ivm_name = os.path.basename(f).replace('_flt.fits', '_ivmexp.fits')
+        if not os.path.exists(ivm_name):
+            with fits.open(f) as hl:
+                err = hl['ERR', 1].data.astype(np.float64)
+                t = float(hl[0].header['EXPTIME'])
+            ivm = np.zeros(err.shape, dtype=np.float32)
+            good = np.isfinite(err) & (err > 0)
+            ivm[good] = (1.0 / (err[good] * t) ** 2).astype(np.float32)
+            hdu = fits.ImageHDU(data=ivm, name='IVM')
+            hdu.header['EXTVER'] = 1
+            hdu.header['IVMEXPT'] = (t, 'EXPTIME used: IVM = 1/(ERR*EXPTIME)^2')
+            fits.HDUList([fits.PrimaryHDU(), hdu]).writeto(ivm_name, overwrite=True)
+        lines.append(f'{f} {ivm_name}\n')
+    with open('ir_ivmexp_association.lst', 'w') as fh:
+        fh.writelines(lines)
+    print(f'  Unequal frame EXPTIMEs {exps}: drizzling with IVM = 1/(ERR*EXPTIME)^2 '
+          f'({len(files)} frames)')
+    return '@ir_ivmexp_association.lst', 'IVM', True
+
+
+def stamp_ivmexp(sci_file):
+    with fits.open(sci_file, mode='update') as hl:
+        hl[0].header['IRIVMEXP'] = (True, 'weights IVM=1/(ERR*EXPTIME)^2: 1/sqrt(WHT) is sigma')
+
+
 # ── Subprocess mode: run only the no-CR drizzle pass with pre-aligned files ───
 # Launched by the main process after the CR pass to get a clean memory slate.
 if _is_subprocess:
@@ -326,8 +375,9 @@ if _is_subprocess:
     os.environ['iref']            = os.path.join(ref_path, 'references', 'hst', 'wfc3') + os.sep
     os.chdir(work_path)
     flt_files = sorted(glob.glob('*flt.fits'))
+    _driz_in, _driz_wht, _mixed = drizzle_weighting(flt_files)
     print('\n=== AstroDrizzle (no CR rejection) ===')
-    astrodrizzle.AstroDrizzle(flt_files,
+    astrodrizzle.AstroDrizzle(_driz_in,
                                output='wfc3_ir_flt_nocrrej',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
@@ -338,13 +388,15 @@ if _is_subprocess:
                                final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
-                               final_wht_type=_a.wht_type,
+                               final_wht_type=_driz_wht,
                                **_common_wcs,
                                num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
         os.remove(f)
     print('\n=== Cropping (no CR) ===')
     crop_to_coverage('wfc3_ir_flt_nocrrej_drz_sci.fits', 'wfc3_ir_flt_nocrrej_drz_wht.fits')
+    if _mixed:
+        stamp_ivmexp('wfc3_ir_flt_nocrrej_drz_sci.fits')
     sys.exit(0)
 
 # ── Download FLT files from MAST (skip if already present) ────────────────────
@@ -549,6 +601,7 @@ os.system('crds bestrefs --files *flt.fits --sync-references=1 --update-bestrefs
 # error. The TweakReg threshold/searchrad tuning kept below was fixing failures in a
 # step that should not run at all; it is retained only for --align tweakreg.
 flt_files = sorted(glob.glob('*flt.fits'))
+_driz_in, _driz_wht, _mixed = drizzle_weighting(flt_files)
 
 if _a.align == 'tweakreg':
     print('\n=== updatewcs ===')
@@ -611,7 +664,7 @@ if do_cr:
         _cr_kw = dict(median=True, blot=True, driz_cr=True,
                       driz_cr_snr='3.5 3.0', driz_cr_scale='1.2 0.7')
     print(f'\n=== AstroDrizzle (with CR rejection, {_a.cr_method}) ===')
-    astrodrizzle.AstroDrizzle(flt_files,
+    astrodrizzle.AstroDrizzle(_driz_in,
                                output='wfc3_ir_flt_cr',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
@@ -621,7 +674,7 @@ if do_cr:
                                final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
-                               final_wht_type=_a.wht_type,
+                               final_wht_type=_driz_wht,
                                **_common_wcs,
                                num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
@@ -629,6 +682,8 @@ if do_cr:
 
     print('\n=== Cropping (CR) ===')
     crop_to_coverage('wfc3_ir_flt_cr_drz_sci.fits', 'wfc3_ir_flt_cr_drz_wht.fits')
+    if _mixed:
+        stamp_ivmexp('wfc3_ir_flt_cr_drz_sci.fits')
 
     # ── AstroDrizzle pass 2: no CR rejection in subprocess to free memory ─────
     print('\n=== AstroDrizzle (no CR rejection) — launching subprocess ===')
@@ -646,7 +701,7 @@ if do_cr:
 else:
     # ── AstroDrizzle pass 2: no CR rejection ──────────────────────────────────
     print('\n=== AstroDrizzle (no CR rejection) ===')
-    astrodrizzle.AstroDrizzle(flt_files,
+    astrodrizzle.AstroDrizzle(_driz_in,
                                output='wfc3_ir_flt_nocrrej',
                                preserve=False, build=False, context=False,
                                skysub=True, skymethod='localmin',
@@ -657,7 +712,7 @@ else:
                                final_fillval=None, final_bits=_DQ_GOOD,
                                final_wcs=True, final_scale=IR_OUT_SCALE,
                                final_pixfrac=IR_OUT_PIXFRAC,
-                               final_wht_type=_a.wht_type,
+                               final_wht_type=_driz_wht,
                                **_common_wcs,
                                num_cores=_num_cores)
     for f in glob.glob('*ask.fits'):
@@ -665,6 +720,8 @@ else:
 
     print('\n=== Cropping (no CR) ===')
     crop_to_coverage('wfc3_ir_flt_nocrrej_drz_sci.fits', 'wfc3_ir_flt_nocrrej_drz_wht.fits')
+    if _mixed:
+        stamp_ivmexp('wfc3_ir_flt_nocrrej_drz_sci.fits')
 
 print('\n=== Exposure times ===')
 exptime = fits.getheader('wfc3_ir_flt_nocrrej_drz_sci.fits')['EXPTIME']

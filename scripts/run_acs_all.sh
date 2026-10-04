@@ -43,6 +43,14 @@ ok=0; nodata=0; blocked=0; fail=0; FAILED=()
 for filt in f814W f555W; do
   for lens in "${LENSES[@]}"; do
     log="$LOG/${lens}_${filt}${TAG}_acs.log"
+    # One filter key holds one instrument per lens: never delete a band directory that
+    # holds another instrument's product (e.g. a gallery WFC3/UVIS f814W). The drizzle
+    # script has the same guard, but this rm runs before it.
+    _band="$WS/data/$DZ/$SAMPLE/$lens/$filt"
+    if [ -d "$_band" ] && [ -n "$(ls -A "$_band" 2>/dev/null)" ] && ! ls "$_band"/acs_wfc_* >/dev/null 2>&1; then
+      printf '%-12s %-6s no data (band holds another instrument; not touched)\n' "$lens" "$filt"
+      nodata=$((nodata + 1)); continue
+    fi
     rm -rf "$WS/data/$DZ/$SAMPLE/$lens/$filt" "$WS/data/$DF/$SAMPLE/$lens/$filt"
     printf '%-12s %-6s ' "$lens" "$filt"
     if uv run --project "$WS" python "$SD/drizzle_acs_wfc.py" --lens "$lens" --filt "$filt" \
