@@ -612,7 +612,11 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     if len(rendered) == 1:
         composite, title = rendered[0], None
     else:
-        gutter = np.zeros((rendered[0].shape[0], _PANEL_GAP))
+        # NaN, not 0: imshow leaves NaN unpainted (figure background), where 0 is the
+        # stretch floor and paints as the colour map's lowest colour -- a blue band that
+        # reads as the left panel running on past its edge. Same fix as autogalaxy PR #641's
+        # composite_panels (not yet released; this composite is built here, not there).
+        gutter = np.full((rendered[0].shape[0], _PANEL_GAP), np.nan)
         parts = []
         for i, r in enumerate(rendered):
             if i:
