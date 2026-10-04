@@ -79,6 +79,27 @@ Runners take the roster from `info/lens_samples.json` (via `mast_target_names.py
 separately. Exception: `run_cutouts_all.sh` globs `data/drizzled/` instead (a stamp needs a
 mosaic that already exists).
 
+### Rebuilding what git does not carry (fresh clone)
+
+A clone has the finished science tree (`data/cutouts/`, `data/mosaics/`) and the tracking
+JSONs, but none of the gitignored layers: the drizzled mosaics and their inputs, the
+size-variant stamps, and the plain QC renders (`cutout[_cr].png`, `*_positions.png`).
+`scripts/regenerate_files.py` rebuilds them from the tracked files by calling the runners
+above in dependency order:
+
+```bash
+uv run python scripts/regenerate_files.py --sample slacs_gold --light   # QC PNGs only: minutes, no network
+uv run python scripts/regenerate_files.py --sample gallery              # + MAST download and drizzle (hours, tens of GB)
+uv run python scripts/regenerate_files.py --sample all --size 20        # + 20" stamps and their mosaics
+uv run python scripts/regenerate_files.py --sample all --dry-run        # print the plan, run nothing
+```
+
+Stages are `cutout-pngs`, `positions-pngs`, `drizzle`, `cutouts` (needs `--size`; the 12"
+tree is tracked and never re-cut) and `psf` (opt-in via `--stages`, since it rewrites the
+tracked PSF kernels). Only the instrument runners the sample has products for in
+`info/lens_instrument.json` are run. Everything is idempotent, so re-run the same command
+to resume after an interruption.
+
 **`run_wfpc2_wf3.sh` is the one WFPC2 driver** — it runs the full three-stage order per lens,
 reads per-lens alignment from `info/wfpc2_alignment.json`, expands the two split-visit lenses
 into per-visit products, and retries failures once. Don't drive the WFPC2 stages by hand

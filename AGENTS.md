@@ -177,6 +177,19 @@ sample's filters (SLACS `f606W f814W f555W f160W` plus gallery's `f438W`; it sti
 `f275W f225W`, which glob to nothing since those products were deleted 2026-09-29) in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
 WFC3/UVIS data, but (like the other runners) accepts any sample as its first arg.
 
+### `regenerate_files.py` — rebuild the gitignored layers on a fresh clone (2026-10-04)
+
+The wrapper for external users: `uv run python scripts/regenerate_files.py --sample
+<sample>|all` rebuilds everything `.gitignore` excludes from the tracked files, in dependency
+order, by calling the runners above — no reduction logic of its own. Stages: `cutout-pngs`
+and `positions-pngs` (LIGHT: re-rendered from the tracked stamps/JSONs, `--light` for just
+these), `drizzle` (HEAVY: only the instrument runners the sample has products for in
+`lens_instrument.json`; `--all-instruments` to try the rest; note `run_wfpc2_wf3.sh` re-cuts
+the F606W stamps as part of its unit), `cutouts` (only with `--size S`, writes the
+`_<S>arcsec` trees; the tracked 12" tree is never re-cut) and `psf` (opt-in via `--stages`,
+because it rewrites the tracked kernels). `--dry-run` prints the plan. Idempotent; re-run to
+resume. Documented for operators in `README.md`.
+
 ### `run_wfpc2_wf3.sh` — the single WFPC2 driver (three traps it exists to avoid)
 
 It runs the full three-stage order (`drizzle_wfpc2_wf3.py` → `align_wfpc2_to_acs.py` →
