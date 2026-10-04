@@ -12,7 +12,7 @@ defined (catalogue positions for all of them are merged in ``info/lens_coords.py
   ``bells``        24 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
-quirks, query MAST as ``SDSS<LENS>``". Four keys are understood:
+quirks, query MAST as ``SDSS<LENS>``". Five keys are understood:
 
   ``mast_target``  the lens is archived under a ``GAL-<plate>-<mjd>-<fiber>`` designation
                    rather than ``SDSS<LENS>``, so the default query returns nothing.
@@ -24,6 +24,10 @@ quirks, query MAST as ``SDSS<LENS>``". Four keys are understood:
                    from these HST programs. SL2S uses it to take F475X from the deep
                    GO-17130 (Project Dinos II) visit alone where an older GO-11588 snapshot
                    also exists. See ``allowed_proposals()``.
+  ``archive_proposals`` ``{filt: [proposal_id, ...]}``: for that filter, ignore the
+                   target-name query and take the lens's data from these programs, keeping
+                   the visits whose footprint covers the lens (``mast_archive.py``). For
+                   survey data filed under other target names (CANDELS 'ANY', COSMOS ...).
   ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
@@ -116,10 +120,26 @@ def force_copy(lens, sample=None):
     return bool(_entry(lens, sample).get('force_copy', False))
 
 
+def center_bands(sample):
+    """Ordered bands whose mosaic may define a lens's shared cutout centre: make_cutouts.py
+    uses the first one drizzled for that lens. A sample-level ``center_bands`` list in
+    lens_samples.json overrides the default ``["f814W"]`` (which keeps the old behaviour: a
+    lens without F814W centres each band on itself). The SL2S samples set
+    f814W > f606W > f600LP > f475X, because most have no F814W and F475X shows little
+    deflector light."""
+    return list(_sample(sample).get('center_bands', ['f814W']))
+
+
 def allowed_proposals(lens, filt, sample=None):
     """HST program IDs (strings) this lens's ``filt`` observations are restricted to, or
     None for no restriction. ``filt`` is the product key as passed to ``--filt``."""
     props = _entry(lens, sample).get('proposals', {}).get(filt)
+    return [str(p) for p in props] if props else None
+
+
+def archive_proposals(lens, filt, sample=None):
+    """HST program IDs (strings) to take ``filt`` from by footprint, or None."""
+    props = _entry(lens, sample).get('archive_proposals', {}).get(filt)
     return [str(p) for p in props] if props else None
 
 

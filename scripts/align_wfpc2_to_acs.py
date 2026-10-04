@@ -48,6 +48,14 @@ and remain right for every other SLACS lens.
 
     uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_other \
         --target f814W --ref f160W
+
+**Default reference band (2026-10-04): F475X first, then F814W** (`--ref auto`). The SL2S
+samples mostly have WFPC2 F606W next to WFC3/UVIS F475X (GO-17130, Gaia-fit WCS) and no ACS
+F814W, so auto ties F606W to F475X wherever that band was drizzled, else to F814W. No
+SLACS or BELLS lens has F475X, so their ties are unchanged. Caveat to check on every
+F475X tie: F475X is blue and carries little deflector light next to bright lensed arcs, so
+its deflector centroid is the less certain one. The printed --check band (F814W when it
+exists) is the test of that.
 """
 import argparse
 import glob
@@ -83,7 +91,12 @@ BAND_PREFIX = {
     'f814W':    'acs_wfc_flc',
     'f555W':    'acs_wfc_flc',
     'f160W':    'wfc3_ir_flt',
+    'f475X':    'wfc3_uvis_flc',
+    'f600LP':   'wfc3_uvis_flc',
 }
+
+# --ref auto: the first of these bands with a drizzled product is the reference frame.
+AUTO_REF_ORDER = ('f475X', 'f814W')
 
 
 def band_prefix(filt):
@@ -131,7 +144,7 @@ def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE, va
 
 
 def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
-               target=None, ref_filt='f814W', check_filt='f160W', variant=''):
+               target=None, ref_filt='auto', check_filt='f160W', variant=''):
     """Shift `target`'s CRVAL so its deflector centroid coincides with `ref_filt`'s.
 
     `target` defaults to `f606_dir` (the F606W band directory), keeping the original
@@ -145,6 +158,13 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     """
     target = target or f606_dir
     cat = SkyCoord(*lens_coords[lens], unit=(u.hourangle, u.deg))
+    if ref_filt == 'auto':
+        ref_filt = next((f for f in AUTO_REF_ORDER
+                         if find_product(lens, f, band_prefix(f), sample, variant)),
+                        AUTO_REF_ORDER[-1])
+        if check_filt == 'f160W' and ref_filt != 'f814W' and \
+                find_product(lens, 'f814W', band_prefix('f814W'), sample, variant):
+            check_filt = 'f814W'   # a GAIA-grade band outside the tie is the better check
     ref = find_product(lens, ref_filt, band_prefix(ref_filt), sample, variant)
     tgt = find_product(lens, target, band_prefix(target), sample, variant)
     if ref is None:
@@ -198,8 +218,9 @@ if __name__ == '__main__':
     p.add_argument('--target', default=None,
                    help='band whose CRVAL is shifted (default: --f606-dir, i.e. F606W). Use '
                         'this when the mis-fit band is not F606W -- check WCSNAME first')
-    p.add_argument('--ref', dest='ref_filt', default='f814W',
-                   help='band providing the reference astrometric frame (default f814W). '
+    p.add_argument('--ref', dest='ref_filt', default='auto',
+                   help='band providing the reference astrometric frame (default auto: '
+                        f'the first of {", ".join(AUTO_REF_ORDER)} that has a product). '
                         'Set to f160W where ACS itself carries only a GSC240 fit')
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory of data/drizzled/. Defined in '

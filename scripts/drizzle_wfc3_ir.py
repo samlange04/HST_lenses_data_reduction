@@ -35,6 +35,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mmap_fits_write
 mmap_fits_write.install()
 import mast_target_names
+import mast_archive
 import info_json
 
 # ── Configuration ──────────────────────────────────────────────────────────────
@@ -360,8 +361,12 @@ else:
     print(f'=== MAST download: querying {lens} {filt_key} WFC3/IR ===')
     os.makedirs(data_path, exist_ok=True)
     try:
-        obs_table = None
-        for _pat in mast_target_names.target_patterns(lens, sample):
+        # Survey data filed under other target names comes from named programs by
+        # footprint (lens_samples.json `archive_proposals`); otherwise query by name.
+        obs_table = mast_archive.archive_observations(Observations, lens, filt_key,
+                                                      'WFC3/IR', sample)
+        for _pat in ([] if obs_table is not None else
+                     mast_target_names.target_patterns(lens, sample)):
             obs_table = Observations.query_criteria(
                 target_name=_pat,
                 obs_collection='HST',

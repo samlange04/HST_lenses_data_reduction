@@ -190,6 +190,12 @@
     "sl2s_dinos_a": {
         "description": "SL2S lenses with deep WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025) PLUS a second band: WFPC2 F606W (GO-11289, lens on WF3) or ACS F814W (GO-10876). F475X is restricted to GO-17130 (proposals quirk). Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
+        "center_bands": [
+            "f814W",
+            "f606W",
+            "f600LP",
+            "f475X"
+        ],
         "lenses": {
             "J0214-0405": {
                 "mast_target": "SL2SJ021411-040502",
@@ -207,7 +213,15 @@
                         "17130"
                     ]
                 },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). GO-10876 ACS F814W 2x400 s under the SL2S name; deeper archive F814W/F606W/F160W from other programs is not fetched yet (combination to be decided)."
+                "archive_proposals": {
+                        "f606W": [
+                            "12064"
+                        ],
+                        "f160W": [
+                            "12064"
+                        ]
+                    },
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). GO-10876 ACS F814W 2x400 s under the SL2S name; deeper archive F814W/F606W/F160W from other programs is not fetched yet (combination to be decided)."
             },
             "J0226-0420": {
                 "mast_target": "SL2SJ022610-042011",
@@ -243,7 +257,18 @@
                         "17130"
                     ]
                 },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W/F606W and WFC3/IR F160W exist under non-SL2S target names (COSMOS etc.) and are not fetched by the SL2S name query yet."
+                "archive_proposals": {
+                        "f814W": [
+                            "9822"
+                        ],
+                        "f606W": [
+                            "17802"
+                        ],
+                        "f160W": [
+                            "14114"
+                        ]
+                    },
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W/F606W and WFC3/IR F160W exist under non-SL2S target names (COSMOS etc.) and are not fetched by the SL2S name query yet."
             },
             "J1359+5535": {
                 "mast_target": "SL2SJ135949+553550",
@@ -277,6 +302,12 @@
     "sl2s_dinos_x": {
         "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025), plus J0233-0438 (GO-17130 but not a Dinos II lens). J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
+        "center_bands": [
+            "f814W",
+            "f606W",
+            "f600LP",
+            "f475X"
+        ],
         "lenses": {
             "J0205-0930": {
                 "mast_target": "SL2SJ020524-093023",
@@ -400,6 +431,12 @@
     "sl2s_wf": {
         "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; four also have the GO-11588 F475X+F600LP snapshot. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
+        "center_bands": [
+            "f814W",
+            "f606W",
+            "f600LP",
+            "f475X"
+        ],
         "lenses": {
             "J0213-0743": {
                 "mast_target": "SL2SJ021325-074355",
@@ -454,6 +491,12 @@
     "sl2s_snap": {
         "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) whose only HST data is the GO-11588 WFC3/UVIS snapshot: F475X + F600LP, 2x360 s each (passes the 500 s gate with a low-exptime warning). Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
+        "center_bands": [
+            "f814W",
+            "f606W",
+            "f600LP",
+            "f475X"
+        ],
         "lenses": {
             "J0223-0651": {
                 "mast_target": "SL2SJ022357-065142",

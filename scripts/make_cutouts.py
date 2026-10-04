@@ -449,9 +449,11 @@ def main():
                         "CR-riddled stamps in front of the user.")
     p.add_argument('--cr', action='store_true', default=False,
                    help='deprecated alias for --pass cr')
-    p.add_argument('--center-band', default='f814W',
+    p.add_argument('--center-band', default=None,
                    help='band whose deflector peak defines the shared cutout centre for '
-                        'ALL bands of a lens, so they co-register. Default f814W (highest '
+                        'ALL bands of a lens, so they co-register. Default: the first band '
+                        'with products in the sample\'s center_bands list '
+                        '(info/lens_samples.json; f814W unless the sample sets one -- highest '
                         'S/N, GAIA-accurate). Faint bands recentred on their own brightest '
                         'pixel mis-centre (F606W locks onto a ring knot ~0.45" off).')
     p.add_argument('--center-self', action='store_true', default=False,
@@ -616,6 +618,14 @@ def main():
     #
     # Peak-finding uses the CR-rejected pass when present (no cosmic rays to lock onto),
     # else the no-CR pass; see find_peak_coord.
+    if a.center_band is None:
+        # First band of the sample's centre-band order that was drizzled for this lens;
+        # if none was, the first one, which then falls through to recentring on this band.
+        _order = mast_target_names.center_bands(a.sample)
+        a.center_band = next(
+            (b for b in _order if _has_products(os.path.join(
+                cutout_paths.drizzled_root(ws_path, variant), a.sample, a.lens, b))),
+            _order[0])
     center_dir = os.path.join(cutout_paths.drizzled_root(ws_path, variant),
                               a.sample, a.lens, a.center_band)
     if a.center_self or a.filt == a.center_band or not _has_products(center_dir):
