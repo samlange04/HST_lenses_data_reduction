@@ -7,7 +7,7 @@
 # is already the drizzle-broadened injected kernel, not the sharper analytic model (which
 # is kept alongside as *_analytic for comparison) -- see make_psf_inject.py's docstring.
 #
-# Usage: run_psf_all.sh [SAMPLE] [--all|--models-only]
+# Usage: run_psf_all.sh [SAMPLE] [--all|--models-only|--empirical-only]
 #   (default SAMPLE: mast_target_names.DEFAULT_SAMPLE;  default mode: --all)
 #
 #   --all          (default) (re)build every product -- empirical AND model.
@@ -19,6 +19,10 @@
 #                  North-up mosaic itself; the pedestal subtraction is a ~1e-4 no-op on the
 #                  sharp ACS bands). The skip set is "empirical AND already recorded", so a
 #                  lens with no entry still builds.
+#   --empirical-only  build every product with make_psf.py --method empirical: no model
+#                  fallback, so a too-star-poor field FAILS and is listed for review. Used
+#                  for the SL2S samples (Sam, 2026-10-04), whose F475X/F600LP bands have no
+#                  STDPSF grid yet; what to do with the failures is decided afterwards.
 #
 # Like run_cutouts_all.sh -- and unlike the drizzle runners -- this globs data/drizzled/
 # rather than the roster: a PSF can only be built from a mosaic that exists, so the
@@ -31,7 +35,8 @@ for arg in "$@"; do
   case "$arg" in
     --models-only) MODE="models" ;;
     --all)         MODE="all" ;;
-    -*)            echo "unknown flag: $arg (use --all or --models-only)" >&2; exit 2 ;;
+    --empirical-only) MODE="empirical" ;;
+    -*)            echo "unknown flag: $arg (use --all, --models-only or --empirical-only)" >&2; exit 2 ;;
     *)             SAMPLE_ARG="$arg" ;;
   esac
 done
@@ -51,10 +56,12 @@ fi
 # (ACS/WFPC2 hold *_cr_*; F160W holds *nocrrej* -- make_psf --pass auto picks the right one).
 # f438W is gallery's blue UVIS science band; F225W/F275W are deliberately omitted -- they
 # are confirmed unusable for lens science sample-wide (arc undetected), so no PSF work is
-# done on them (see AGENTS.md, gallery_uv_bands_unusable). The extra filters are no-ops for
-# samples that lack them (the glob matches nothing).
+# done on them (see AGENTS.md, gallery_uv_bands_unusable). f475X/f600LP are the SL2S
+# WFC3/UVIS bands. The extra filters are no-ops for samples that lack them (the glob
+# matches nothing).
+METHOD_ARG=""; [ "$MODE" = empirical ] && METHOD_ARG="--method empirical"
 ok=0; fail=0; skip=0
-for filt in f606W f814W f555W f160W f438W; do
+for filt in f606W f814W f555W f160W f438W f475X f600LP; do
   for d in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
     [ -d "$d" ] || continue
     ls "$d"/*_sci.fits >/dev/null 2>&1 || continue
@@ -67,7 +74,7 @@ for filt in f606W f814W f555W f160W f438W; do
       esac
     fi
     if uv run --project "$WS" python "$SD/make_psf.py" --lens "$lens" --filt "$key" \
-         --sample "$SAMPLE" > "$LOG/${lens}_${key}_psf.log" 2>&1; then
+         --sample "$SAMPLE" $METHOD_ARG > "$LOG/${lens}_${key}_psf.log" 2>&1; then
       ok=$((ok+1))
     else
       fail=$((fail+1)); echo "FAILED: $lens $key (see $LOG/${lens}_${key}_psf.log)"
