@@ -393,6 +393,311 @@
             ]
         }
     },
+    "sl2s_dinos_a": {
+        "J0214-0405": {
+            "f475X": [
+                "iewp03a7q",
+                "iewp03a8q",
+                "iewp03aaq",
+                "iewp03abq"
+            ]
+        },
+        "J0217-0513": {
+            "f475X": [
+                "iewp04xyq",
+                "iewp04xzq",
+                "iewp04y1q",
+                "iewp04y2q"
+            ]
+        },
+        "J0226-0420": {
+            "f475X": [
+                "iewp08bpq",
+                "iewp08brq",
+                "iewp08btq",
+                "iewp08buq"
+            ]
+        },
+        "J0232-0408": {
+            "f475X": [
+                "iewp09daq",
+                "iewp09dbq",
+                "iewp09dgq",
+                "iewp09dhq"
+            ]
+        },
+        "J0904-0059": {
+            "f475X": [
+                "iewp14r4q",
+                "iewp14r5q",
+                "iewp14r8q",
+                "iewp14r9q"
+            ]
+        },
+        "J0959+0206": {
+            "f160W": [
+                "icxe43rrq",
+                "icxe43rtq",
+                "icxe43rvq",
+                "icxe43rxq",
+                "icxe43rzq",
+                "icxe43s1q",
+                "icxe43s3q",
+                "icxe43s5q"
+            ],
+            "f475X": [
+                "iewp65k9q",
+                "iewp65kaq",
+                "iewp65kcq",
+                "iewp65kdq"
+            ],
+            "f606W": [
+                "ua1n1301m",
+                "ua1n1302m",
+                "ua1n1303m"
+            ],
+            "f814W": [
+                "j8pu6zxnq",
+                "j8pu6zxoq",
+                "j8pu6zxqq",
+                "j8pu6zxsq"
+            ]
+        },
+        "J1359+5535": {
+            "f475X": [
+                "iewp16lmq",
+                "iewp16lnq",
+                "iewp16lsq",
+                "iewp16ltq"
+            ]
+        },
+        "J1405+5243": {
+            "f475X": [
+                "iewp18hgq",
+                "iewp18hhq",
+                "iewp18hjq",
+                "iewp18hkq"
+            ],
+            "f600LP": [
+                "ib4a73cfq",
+                "ib4a73ckq"
+            ]
+        },
+        "J1406+5226": {
+            "f475X": [
+                "iewp19tjq",
+                "iewp19tkq",
+                "iewp19tpq",
+                "iewp19tqq"
+            ]
+        }
+    },
+    "sl2s_dinos_x": {
+        "J0205-0930": {
+            "f475X": [
+                "iewp01fkq",
+                "iewp01flq",
+                "iewp01fnq",
+                "iewp01foq"
+            ]
+        },
+        "J0212-0555": {
+            "f475X": [
+                "iewp02vvq",
+                "iewp02vwq",
+                "iewp02vyq",
+                "iewp02vzq"
+            ]
+        },
+        "J0218-0802": {
+            "f475X": [
+                "iewp05oiq",
+                "iewp05ojq",
+                "iewp05olq",
+                "iewp05omq"
+            ]
+        },
+        "J0219-0829": {
+            "f475X": [
+                "iewp06p3q",
+                "iewp06p4q",
+                "iewp06p6q",
+                "iewp06p7q"
+            ],
+            "f600LP": [
+                "ib4a20mfq",
+                "ib4a20mjq"
+            ]
+        },
+        "J0220-0949": {
+            "f475X": [
+                "iewp07hpq",
+                "iewp07hqq",
+                "iewp07htq",
+                "iewp07hvq"
+            ]
+        },
+        "J0233-0438": {
+            "f475X": [
+                "iewp10gtq",
+                "iewp10guq",
+                "iewp10gwq",
+                "iewp10gxq",
+                "iewp23ugq",
+                "iewp23uhq",
+                "iewp23ulq",
+                "iewp23umq"
+            ]
+        },
+        "J0848-0351": {
+            "f475X": [
+                "iewp11ojq",
+                "iewp11okq",
+                "iewp11opq",
+                "iewp11oqq"
+            ]
+        },
+        "J0849-0412": {
+            "f475X": [
+                "iewp12a2q",
+                "iewp12a3q",
+                "iewp12a8q",
+                "iewp12a9q"
+            ],
+            "f600LP": [
+                "ib4a55ctq",
+                "ib4a55cxq"
+            ]
+        },
+        "J0855-0147": {
+            "f475X": [
+                "iewp13f9q",
+                "iewp13faq",
+                "iewp13fcq",
+                "iewp13fdq"
+            ]
+        },
+        "J1404+5200": {
+            "f475X": [
+                "iewp17b4q",
+                "iewp17b5q",
+                "iewp17beq",
+                "iewp17bgq"
+            ]
+        },
+        "J2203+0205": {
+            "f475X": [
+                "iewp20vcq",
+                "iewp20vdq",
+                "iewp20vfq",
+                "iewp20vgq"
+            ],
+            "f600LP": [
+                "ib4a92mdq",
+                "ib4a92mhq"
+            ]
+        },
+        "J2205+0147": {
+            "f475X": [
+                "iewp21vjq",
+                "iewp21vkq",
+                "iewp21vpq",
+                "iewp21vqq"
+            ]
+        },
+        "J2221+0115": {
+            "f475X": [
+                "iewp22egq",
+                "iewp22ehq",
+                "iewp22ekq",
+                "iewp22elq"
+            ]
+        }
+    },
+    "sl2s_snap": {
+        "J0223-0651": {
+            "f475X": [
+                "ib4a28kvq",
+                "ib4a28kyq"
+            ],
+            "f600LP": [
+                "ib4a28kwq",
+                "ib4a28l0q"
+            ]
+        },
+        "J1401+5544": {
+            "f475X": [
+                "ib4a68b0q",
+                "ib4a68b3q"
+            ],
+            "f600LP": [
+                "ib4a68b1q",
+                "ib4a68b5q"
+            ]
+        },
+        "J1402+5505": {
+            "f475X": [
+                "ib4a69okq",
+                "ib4a69onq"
+            ],
+            "f600LP": [
+                "ib4a69olq",
+                "ib4a69opq"
+            ]
+        },
+        "J1411+5651": {
+            "f475X": [
+                "ib4a79muq",
+                "ib4a79mxq"
+            ],
+            "f600LP": [
+                "ib4a79mvq",
+                "ib4a79mzq"
+            ]
+        },
+        "J1420+5630": {
+            "f475X": [
+                "ib4a83stq",
+                "ib4a83swq"
+            ],
+            "f600LP": [
+                "ib4a83suq",
+                "ib4a83syq"
+            ]
+        },
+        "J1423+5722": {
+            "f475X": [
+                "ib4a86qpq",
+                "ib4a86qsq"
+            ],
+            "f600LP": [
+                "ib4a86qqq",
+                "ib4a86quq"
+            ]
+        }
+    },
+    "sl2s_wf": {
+        "J1358+5459": {
+            "f475X": [
+                "ib4a63cvq",
+                "ib4a63cyq"
+            ],
+            "f600LP": [
+                "ib4a63cwq",
+                "ib4a63d0q"
+            ]
+        },
+        "J1419+5117": {
+            "f475X": [
+                "ib4a80g0q",
+                "ib4a80g3q"
+            ],
+            "f600LP": [
+                "ib4a80g1q",
+                "ib4a80g5q"
+            ]
+        }
+    },
     "slacs_gold": {
         "J0008-0004": {
             "f606W": [
