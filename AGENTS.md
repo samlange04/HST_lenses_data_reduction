@@ -2486,8 +2486,9 @@ precision; neither paper tabulates better).
 
 **Archive bands under other target names** (`archive_proposals` quirk, `scripts/mast_archive.py`).
 J0959+0206 takes ACS F814W from GO-9822 (COSMOS, 4 frames, 2028 s), ACS F606W from GO-17802
-(4 frames, 1580 s) and WFC3/IR F160W from GO-14114 (8 frames, 2074 s). J0217-0513 takes F606W
-(6 visits, 4186 s) and F160W (2 visits, 3512 s) from GO-12064 (CANDELS UDS). These are filed
+(4 frames, 1580 s) and WFC3/IR F160W from GO-14114 (8 frames, 2074 s). J0217-0513 takes F814W
+(6 visits, 7917 s), F606W (6 visits, 4186 s) and F160W (2 visits, 3512 s) from GO-12064
+(CANDELS UDS). These are filed
 as `ANY`, `COSMOS33-11` and so on. For a filter listed in `archive_proposals`, the ACS and IR
 drivers query those programs and keep the visits whose `s_region` footprint contains the
 catalogue position. A position search is not used because MAST matches it on footprint
@@ -2511,8 +2512,9 @@ cutout), then `run_cutouts_all.sh`.
 **PSFs:** empirical only for now (Sam, 2026-10-04). Products that fail the empirical build are
 reviewed later. F475X and F600LP have no STDPSF grid or `_PIVOT` entry in `psf_models.py`.
 
-**Still open:** J0217-0513's F814W. It has GO-10876 800 s, GO-12064 7917 s over 6 visits,
-GO-12328 480 s and GO-13792 4031 s; Sam to choose which to combine.
+**J0217-0513's F814W** is GO-12064 alone (Sam, 2026-10-04): 7917 s over 6 visits, Nov 2010 to
+Jan 2011, matching its F606W and F160W. Not used: GO-10876 (800 s, 2006), GO-12328 (480 s)
+and GO-13792 (4031 s, 2014).
 
 ### Non-standard MAST target names (`GAL-*`)
 
