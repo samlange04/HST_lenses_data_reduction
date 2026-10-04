@@ -258,6 +258,7 @@ try:
     print(f'=== Common WCS: North-up, centre ({_lc.ra.deg:.5f}, {_lc.dec.deg:.5f}) ===')
 except (KeyError, ImportError):
     _common_wcs = {}
+    _lc = None
     print('=== Common WCS: lens not in lens_coords -> native drizzle WCS ===')
 
 
@@ -391,6 +392,27 @@ if _a.pa is not None:
     _inputs = [f for f in _inputs
                if abs(float(fits.getheader(f).get('PA_V3', 1e9)) - _a.pa) < 1.0]
     print(f'=== Single-visit: {len(_inputs)} frames within 1deg of PA_V3={_a.pa} ===')
+
+# Keep only frames whose WF3 chip actually contains the lens. MAST's WFPC2 footprint
+# (s_region) covers the PC chip alone, so it cannot vet this, and a target name is no
+# guarantee either: SL2S J1401+5544's three GO-11289 frames, filed under its own name, point
+# ~1 deg away. Without this check such frames drizzle into a perfectly good-looking mosaic
+# of the wrong field. A lens with no covering frame is "no data", not a failure.
+if '_lc' in globals() and _lc is not None:
+    def _on_wf3(fname, margin=20):
+        with fits.open(fname) as hl:
+            x, y = WCS(hl[3].header, hl).world_to_pixel(_lc)
+        return margin <= x < 800 - margin and margin <= y < 800 - margin
+    _covering = [f for f in _inputs if _on_wf3(f)]
+    if len(_covering) < len(_inputs):
+        print(f'=== WF3 coverage: {len(_covering)}/{len(_inputs)} frames contain {lens}; '
+              f'dropping {", ".join(os.path.basename(f) for f in _inputs if f not in _covering)} ===')
+    _inputs = _covering
+    if not _inputs:
+        info_json.update(exptime_json_path,    sample, lens, product_key, None)
+        info_json.update(instrument_json_path, sample, lens, product_key, None)
+        print(f'=== NO DATA: {lens} — no WFPC2 frame has the lens on WF3 (recorded as null) ===')
+        sys.exit(0)
 
 _total_exptime = sum(fits.getheader(f)['EXPTIME'] for f in _inputs)
 if _total_exptime < BLOCK_EXPTIME:

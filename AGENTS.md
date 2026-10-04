@@ -2372,8 +2372,8 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Not yet reduced |
 | **`sl2s_dinos_x`** | 13 | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
-| **`sl2s_wf`** | 12 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
-| **`sl2s_snap`** | 5 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
+| **`sl2s_wf`** | 11 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
+| **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
 | **`bells`** | 24 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
@@ -2481,8 +2481,20 @@ Bands and how each is taken (depths from the MAST product lists):
 - **ACS:** GO-10876 F814W, 2 × 400 s. Its F606W is a single 400 s frame, which the gate blocks.
 
 Every SL2S lens is archived as `SL2SJhhmmss±ddmmss`, so each entry carries that as
-`mast_target`. Positions are in `info/sl2s_coords.py`, taken from the designations (1″
-precision; neither paper tabulates better).
+`mast_target`. **The designations are truncated**, so their RA is only good to 1 s of time
+(up to ~15″). Used as positions, they put the J0959+0206 pilot's cutout search and its
+WFPC2-tie centroids on a neighbour 2.6″ away. `info/sl2s_coords.py` therefore holds the
+**Gavazzi+2014 Tables 1 and 3 decimal-degree positions**, matched on the full designation (the
+short J-name is not unique there). They agree with the GO-17130 and GO-11588 target positions to
+under 0.7″. J0858-0143 is not in Gavazzi+2014, so it uses the one SDSS DR16 galaxy in its
+designation strip. `_build()` rejects any position outside its own designation strip.
+MAST's WFPC2 target positions are pointing references (WF3-FIX sits ~45″ from them), and
+its WFPC2 `s_region` covers only the PC chip, so neither one locates the lens.
+
+**J1401+5544 has no usable F606W.** The three GO-11289 frames filed under its name point
+~1° away (checked on the FLTs), so it moved from `sl2s_wf` to `sl2s_snap`. Every other P lens
+sits on WF3 near pixel (410, 420). `drizzle_wfpc2_wf3.py` now drops any frame whose WF3 chip
+does not contain the catalogue position, and calls the lens "no data" when none does.
 
 **Archive bands under other target names** (`archive_proposals` quirk, `scripts/mast_archive.py`).
 J0959+0206 takes ACS F814W from GO-9822 (COSMOS, 4 frames, 2028 s) and WFC3/IR F160W from

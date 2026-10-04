@@ -429,7 +429,7 @@
         }
     },
     "sl2s_wf": {
-        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; four also have the GO-11588 F475X+F600LP snapshot. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; three also have the GO-11588 F475X+F600LP snapshot. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
         "center_bands": [
             "f814W",
@@ -466,10 +466,6 @@
                 "mast_target": "SL2SJ135847+545913",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
             },
-            "J1401+5544": {
-                "mast_target": "SL2SJ140156+554446",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
-            },
             "J1401+5557": {
                 "mast_target": "SL2SJ140123+555705",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
@@ -501,6 +497,10 @@
             "J0223-0651": {
                 "mast_target": "SL2SJ022357-065142",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only (2x360 s per band)."
+            },
+            "J1401+5544": {
+                "mast_target": "SL2SJ140156+554446",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only: the three GO-11289 WFPC2 frames filed under its name point ~1 deg away and do not contain the lens (checked on the FLTs 2026-10-04), so it moved from sl2s_wf."
             },
             "J1402+5505": {
                 "mast_target": "SL2SJ140221+550534",
