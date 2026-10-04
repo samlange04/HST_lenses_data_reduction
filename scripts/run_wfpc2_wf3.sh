@@ -97,6 +97,8 @@ run_product() {
   local lens="$1" align="$2" pa="$3" suffix="$4"
   local key="f606W${suffix}"
   local log="$LOGDIR/${lens}_${key}${TAG}_wf3.log"
+  # ${extra_args[@]+"${extra_args[@]}"} below, not "${extra_args[@]}": under set -u, macOS
+  # bash 3.2 treats an EMPTY array as unbound and aborts the whole runner (2026-10-04).
   local -a extra_args=()
   [ -n "$pa" ] && extra_args+=(--pa "$pa")
   [ -n "$suffix" ] && extra_args+=(--out-suffix "$suffix")
@@ -104,7 +106,7 @@ run_product() {
 
   printf '  %-10s align=%-8s ' "$key" "$align"
   if ! uv run --project "$WS" python "$SCRIPT_DIR/drizzle_wfpc2_wf3.py" --lens "$lens" \
-         --filt f606W --sample "$SAMPLE" --align "$align" "${extra_args[@]}" > "$log" 2>&1; then
+         --filt f606W --sample "$SAMPLE" --align "$align" ${extra_args[@]+"${extra_args[@]}"} > "$log" 2>&1; then
     # A lens skipped for insufficient dither phase is an intended outcome, not a
     # failure -- the script exits non-zero without writing, so separate the two.
     if grep -q 'cannot drizzle to' "$log"; then
