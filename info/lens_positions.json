@@ -745,12 +745,8 @@
     "slacs_gold": {
         "J0008-0004": {
             "f814W": {
-                "n_positions": 3,
+                "n_positions": 2,
                 "positions_arcsec": [
-                    [
-                        0.425,
-                        2.125
-                    ],
                     [
                         -0.225,
                         -0.925
@@ -789,6 +785,16 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
+                    }
+                ],
+                "edits": [
+                    {
+                        "date": "2026-10-04",
+                        "removed_arcsec": [
+                            0.425,
+                            2.125
+                        ],
+                        "reason": "Not an image of the same source point as the other two. The compact knot at r = 2.17\" (S/N 4.6) drove the SOURCE LP fit in HST_lensing_mass_light to theta_E = 1.47\" (Auger+09: 1.16\"), reproduced as a double with the 0.95\" counter-image while the 1.49\" image was held only at the 0.4\" threshold. The remaining pair (0.95\", 1.49\") implies theta_E ~ 1.22\" for an SIS. Removed by the user's decision."
                     }
                 ]
             }
