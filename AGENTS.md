@@ -2536,20 +2536,28 @@ J0959+0206 F160W (GO-14114, 228/253/278 s frames) the blank-sky block-sum ratio 
 1.44″, which is calibrated. That F160W also has an unfitted WCS, so it is tied to F814W with
 `--target f160W --ref f814W`.
 
-**WFPC2 tie: F475X first, then F814W** (`align_wfpc2_to_acs.py --ref auto`, the default since
-2026-10-04). No SLACS or BELLS lens has F475X, so their ties are unchanged. F475X is blue and
-shows little deflector light next to bright arcs, so read the printed check-band line on
-every F475X tie (F814W where the lens has it, J0959+0206).
+**WFPC2 tie: F814W, then F600LP, then F475X** (`align_wfpc2_to_acs.py --ref auto`, the default
+since 2026-10-04). The tie is a deflector-light centroid, so it uses the reddest band the lens
+has. F475X-first was tried and failed on J0959+0206: tied to the Gaia-only F475X visit, F606W
+landed 0.13″ from ACS F814W, although the two WCSs agree to ~0.05″. The blue arcs pull
+F475X's deflector centroid. Expect a ~0.1″ systematic wherever F475X is the only reference.
+SLACS and BELLS tie to F814W as before. **J1405+5243 and J0219-0829** get F475X from GO-17130
+and F600LP from GO-11588, on WCSs of different quality, so their F475X is tied to F600LP
+(`--target f475X --ref f600LP`) before the WFPC2 stage.
 
 **Cutout centring** follows the sample's `center_bands` list in `lens_samples.json`
 (`mast_target_names.center_bands`): the first band drizzled for the lens wins. SL2S samples
 set f814W > f606W > f600LP > f475X. Samples without the key keep the old default, F814W, and
 fall back to centring each band on itself. A BELLS re-cut was byte-identical after the change.
 
-**Run order for SL2S.** The F475X tie runs inside `run_wfpc2_wf3.sh`, and the cutouts centre on
-whichever bands exist, so drizzle in this order: `run_gallery_uvis_all.sh <sample>` (F475X,
-F600LP), then `run_acs_all.sh` and `run_wfc3_all.sh`, then `run_wfpc2_wf3.sh` (drizzle, tie,
-cutout), then `run_cutouts_all.sh`.
+**Run order for SL2S.** The WFPC2 tie runs inside `run_wfpc2_wf3.sh`, and the cutouts centre on
+whichever bands exist. So the order is:
+1. `run_gallery_uvis_all.sh <sample>` (F475X, F600LP).
+2. The F475X-to-F600LP ties for J1405+5243 and J0219-0829.
+3. `run_acs_all.sh` and `run_wfc3_all.sh`, plus J0217-0513's direct ACS F606W call.
+4. `run_wfpc2_wf3.sh` (drizzle, tie, cutout).
+5. The F160W-to-F814W ties for J0217-0513 and J0959+0206.
+6. `run_cutouts_all.sh`.
 
 **PSFs:** empirical only for now (Sam, 2026-10-04). Products that fail the empirical build are
 reviewed later. F475X and F600LP have no STDPSF grid or `_PIVOT` entry in `psf_models.py`.

@@ -49,13 +49,14 @@ and remain right for every other SLACS lens.
     uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_other \
         --target f814W --ref f160W
 
-**Default reference band (2026-10-04): F475X first, then F814W** (`--ref auto`). The SL2S
-samples mostly have WFPC2 F606W next to WFC3/UVIS F475X (GO-17130, Gaia-fit WCS) and no ACS
-F814W, so auto ties F606W to F475X wherever that band was drizzled, else to F814W. No
-SLACS or BELLS lens has F475X, so their ties are unchanged. Caveat to check on every
-F475X tie: F475X is blue and carries little deflector light next to bright lensed arcs, so
-its deflector centroid is the less certain one. The printed --check band (F814W when it
-exists) is the test of that.
+**Default reference band (2026-10-04): F814W, then F600LP, then F475X** (`--ref auto`): the
+reddest band the lens has, because the tie is a deflector-light centroid. F475X was tried
+first and failed: on J0959+0206, tying F606W to the Gaia-only F475X visit left it 0.13" from
+ACS F814W, because the blue arcs pull F475X's deflector centroid even though the two bands'
+WCSs agree to ~0.05". So expect a ~0.1" systematic on any lens whose only reference is F475X
+(most of sl2s_dinos_a and sl2s_wf). SLACS and BELLS have F814W, so their ties are unchanged.
+The same script ties F475X to F600LP where the two come from different visits with different
+WCS quality (J1405+5243, J0219-0829): `--target f475X --ref f600LP`.
 """
 import argparse
 import glob
@@ -96,7 +97,7 @@ BAND_PREFIX = {
 }
 
 # --ref auto: the first of these bands with a drizzled product is the reference frame.
-AUTO_REF_ORDER = ('f475X', 'f814W')
+AUTO_REF_ORDER = ('f814W', 'f600LP', 'f475X')
 
 
 def band_prefix(filt):
@@ -162,9 +163,6 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
         ref_filt = next((f for f in AUTO_REF_ORDER
                          if find_product(lens, f, band_prefix(f), sample, variant)),
                         AUTO_REF_ORDER[-1])
-        if check_filt == 'f160W' and ref_filt != 'f814W' and \
-                find_product(lens, 'f814W', band_prefix('f814W'), sample, variant):
-            check_filt = 'f814W'   # a GAIA-grade band outside the tie is the better check
     ref = find_product(lens, ref_filt, band_prefix(ref_filt), sample, variant)
     tgt = find_product(lens, target, band_prefix(target), sample, variant)
     if ref is None:
