@@ -1,4 +1,198 @@
 {
+    "bells": {
+        "J0151+0049": {
+            "f814W": [
+                "jbiv01osq",
+                "jbiv01otq",
+                "jbiv01ovq",
+                "jbiv01oxq"
+            ]
+        },
+        "J0747+4448": {
+            "f814W": [
+                "jbiv04daq",
+                "jbiv04dbq",
+                "jbiv04ddq",
+                "jbiv04dfq"
+            ]
+        },
+        "J0747+5055": {
+            "f814W": [
+                "jbiv63wdq",
+                "jbiv63weq",
+                "jbiv63wgq",
+                "jbiv63wiq"
+            ]
+        },
+        "J0801+4727": {
+            "f814W": [
+                "jbiv06a9q",
+                "jbiv06aaq",
+                "jbiv06acq",
+                "jbiv06aeq"
+            ]
+        },
+        "J0830+5116": {
+            "f814W": [
+                "jbiv08b6q",
+                "jbiv08b8q",
+                "jbiv08byq",
+                "jbiv08c0q"
+            ]
+        },
+        "J0944-0147": {
+            "f814W": [
+                "jbiv14ksq",
+                "jbiv14ktq",
+                "jbiv14kvq",
+                "jbiv14kxq"
+            ]
+        },
+        "J1159-0007": {
+            "f814W": [
+                "jbiv18e2q",
+                "jbiv18e3q",
+                "jbiv18e5q",
+                "jbiv18e7q"
+            ]
+        },
+        "J1215+0047": {
+            "f814W": [
+                "jbiv19muq",
+                "jbiv19myq",
+                "jbiv19n0q",
+                "jbiv19n3q"
+            ]
+        },
+        "J1221+3806": {
+            "f814W": [
+                "jbiv21crq",
+                "jbiv21cxq",
+                "jbiv21czq",
+                "jbiv21d2q"
+            ]
+        },
+        "J1234-0241": {
+            "f814W": [
+                "jbiv22k5q",
+                "jbiv22k6q",
+                "jbiv22k8q",
+                "jbiv22kaq"
+            ]
+        },
+        "J1318-0104": {
+            "f814W": [
+                "jbiv23k4q",
+                "jbiv23k5q",
+                "jbiv23k7q",
+                "jbiv23k9q"
+            ]
+        },
+        "J1337+3620": {
+            "f814W": [
+                "jbiv24wzq",
+                "jbiv24x0q",
+                "jbiv24xdq",
+                "jbiv24xfq"
+            ]
+        },
+        "J1349+3612": {
+            "f814W": [
+                "jbiv27hyq",
+                "jbiv27hzq",
+                "jbiv27i1q",
+                "jbiv27i3q"
+            ]
+        },
+        "J1352+3216": {
+            "f814W": [
+                "jbiv28d7q",
+                "jbiv28d9q",
+                "jbiv28dbq",
+                "jbiv28dhq"
+            ]
+        },
+        "J1541+1812": {
+            "f814W": [
+                "jbiv53c6q",
+                "jbiv53c8q",
+                "jbiv53cdq",
+                "jbiv53cfq"
+            ]
+        },
+        "J1542+1629": {
+            "f814W": [
+                "jbiv34xsq",
+                "jbiv34xtq",
+                "jbiv34xvq",
+                "jbiv34xxq"
+            ]
+        },
+        "J1545+2748": {
+            "f814W": [
+                "jbiv35ktq",
+                "jbiv35kuq",
+                "jbiv35kwq",
+                "jbiv35kzq"
+            ]
+        },
+        "J1601+2138": {
+            "f814W": [
+                "jbiv36psq",
+                "jbiv36puq",
+                "jbiv36pwq",
+                "jbiv36qmq"
+            ]
+        },
+        "J1611+1705": {
+            "f814W": [
+                "jbiv57gwq",
+                "jbiv57gyq",
+                "jbiv57h1q",
+                "jbiv57h7q"
+            ]
+        },
+        "J1631+1854": {
+            "f814W": [
+                "jbiv41tbq",
+                "jbiv41tcq",
+                "jbiv41tgq",
+                "jbiv41tjq"
+            ]
+        },
+        "J1637+1439": {
+            "f814W": [
+                "jbiv42beq",
+                "jbiv42bfq",
+                "jbiv42bhq",
+                "jbiv42blq"
+            ]
+        },
+        "J2122+0409": {
+            "f814W": [
+                "jbiv43n8q",
+                "jbiv43naq",
+                "jbiv43nlq",
+                "jbiv43noq"
+            ]
+        },
+        "J2125+0411": {
+            "f814W": [
+                "jbiv44b2q",
+                "jbiv44b3q",
+                "jbiv44b5q",
+                "jbiv44b7q"
+            ]
+        },
+        "J2303+0037": {
+            "f814W": [
+                "jbiv55uaq",
+                "jbiv55ubq",
+                "jbiv55udq",
+                "jbiv55ufq"
+            ]
+        }
+    },
     "gallery": {
         "J0029+2544": {
             "f438W": [

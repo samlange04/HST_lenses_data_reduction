@@ -1,4 +1,102 @@
 {
+    "bells": {
+        "J0151+0049": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J0747+4448": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J0747+5055": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J0801+4727": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J0830+5116": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J0944-0147": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1159-0007": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1215+0047": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1221+3806": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1234-0241": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1318-0104": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1337+3620": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1349+3612": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1352+3216": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1541+1812": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1542+1629": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1545+2748": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1601+2138": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1611+1705": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1631+1854": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J1637+1439": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J2122+0409": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J2125+0411": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        },
+        "J2303+0037": {
+            "f555W": null,
+            "f814W": "ACS/WFC"
+        }
+    },
     "gallery": {
         "J0029+2544": {
             "f438W": "WFC3/UVIS",
