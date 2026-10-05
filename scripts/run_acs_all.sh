@@ -44,10 +44,12 @@ for filt in f814W f555W; do
   for lens in "${LENSES[@]}"; do
     log="$LOG/${lens}_${filt}${TAG}_acs.log"
     # One filter key holds one instrument per lens: never delete a band directory that
-    # holds another instrument's product (e.g. a gallery WFC3/UVIS f814W). The drizzle
-    # script has the same guard, but this rm runs before it.
+    # holds another instrument's drizzled FITS product (e.g. a gallery WFC3/UVIS f814W). The
+    # drizzle script has the same guard, but this rm runs before it. Test for the other
+    # instruments' FITS specifically: a purged band dir keeps only its old PNG renders, and
+    # "non-empty with no acs_wfc_* file" wrongly skipped all 76 slacs_gold bands (2026-10-05).
     _band="$WS/data/$DZ/$SAMPLE/$lens/$filt"
-    if [ -d "$_band" ] && [ -n "$(ls -A "$_band" 2>/dev/null)" ] && ! ls "$_band"/acs_wfc_* >/dev/null 2>&1; then
+    if ls "$_band"/wfc3_uvis_flc_*.fits "$_band"/wfc3_ir_flt_*.fits "$_band"/wfpc2_wf3_*.fits >/dev/null 2>&1; then
       printf '%-12s %-6s no data (band holds another instrument; not touched)\n' "$lens" "$filt"
       nodata=$((nodata + 1)); continue
     fi
