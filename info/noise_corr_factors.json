@@ -1,8 +1,9 @@
 {
-    "_method": "Noise-map inflation applied to cutout_[cr_]noise.fits by make_cutouts.py (precedence: 1.0 < per-instrument value < _lens_overrides < explicit --corr-factor). NOT a drizzle correction: drizzle conserves noise, so 1/sqrt(WHT) is already right for any patch >= the drop (Casertano's R is the rms-relative factor, a different quantity). The excess is an ERR-array deficit (~10% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. Measured 2026-09-26 by scripts/measure_corr_factor.py over all 157 standard 12\" stamps: sqrt of the sigma-normalised blank-sky ACF summed over the drop window |dx|,|dy| <= round(pixfrac * native/output scale) px (the smallest window over which drizzle's redistribution has summed back to 1), after subtracting the far floor (mean ACF at Chebyshev lags 7-12) and a 51 px median high-pass, 3-sigma source mask. Median over lenses, one factor per instrument/detector/filter; _lens_overrides for lenses whose frames carry extra structure. Floored at 1.0. Raw results: diagnostics/corr_factor/. See AGENTS.md *Drizzle correlated noise* and local/literature/drizzle_noise.md.",
+    "_method": "Noise-map inflation applied to cutout_[cr_]noise.fits by make_cutouts.py (precedence: 1.0 < per-instrument value < _lens_overrides < explicit --corr-factor). NOT a drizzle correction: drizzle conserves noise, so 1/sqrt(WHT) is already right for any patch >= the drop (Casertano's R is the rms-relative factor, a different quantity). The excess is an ERR-array deficit (~10% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. Measured 2026-09-26 by scripts/measure_corr_factor.py over all 157 standard 12\" stamps: sqrt of the sigma-normalised blank-sky ACF summed over the drop window |dx|,|dy| <= round(pixfrac * native/output scale) px (the smallest window over which drizzle's redistribution has summed back to 1), after subtracting the far floor (mean ACF at Chebyshev lags 7-12) and a 51 px median high-pass, 3-sigma source mask. Median over lenses, one factor per instrument/detector/filter; _lens_overrides for lenses whose frames carry extra structure. Floored at 1.0. Raw results: diagnostics/corr_factor/. See AGENTS.md *Drizzle correlated noise* and local/literature/drizzle_noise.md. SL2S bands added 2026-10-05 (same script, 66 SL2S stamps): WFC3/UVIS f475X 1.22 (median of 30), f600LP 1.19 (12), ACS/WFC f606W 1.20 (1, J0217-0513). F475X is bimodal by sky level within GO-17130 (2023): fields with MDRIZSKY < ~29 e- measure 1.31-1.41, consistent with the pixel-based CTE correction amplifying noise the FLC ERR array omits at low background; those 11 lenses carry their own measured value in _lens_overrides.",
     "ACS/WFC": {
         "f814W": 1.18,
-        "f555W": 1.17
+        "f555W": 1.17,
+        "f606W": 1.2
     },
     "WFPC2": {
         "f606W": 1.07
@@ -13,12 +14,51 @@
     "WFC3/UVIS": {
         "f438W": 1.24,
         "f606W": 1.18,
-        "f814W": 1.26
+        "f814W": 1.26,
+        "f475X": 1.22,
+        "f600LP": 1.19
     },
     "_lens_overrides": {
         "slacs_gold": {
             "J1143-0144": {
                 "f814W": 1.38
+            }
+        },
+        "sl2s_dinos_a": {
+            "J0904-0059": {
+                "f475X": 1.39
+            },
+            "J0959+0206": {
+                "f475X": 1.39
+            },
+            "J1359+5535": {
+                "f475X": 1.35
+            },
+            "J1405+5243": {
+                "f475X": 1.37
+            },
+            "J1406+5226": {
+                "f475X": 1.4
+            }
+        },
+        "sl2s_dinos_x": {
+            "J0220-0949": {
+                "f475X": 1.33
+            },
+            "J0233-0438": {
+                "f475X": 1.31
+            },
+            "J0848-0351": {
+                "f475X": 1.41
+            },
+            "J0849-0412": {
+                "f475X": 1.39
+            },
+            "J0855-0147": {
+                "f475X": 1.41
+            },
+            "J1404+5200": {
+                "f475X": 1.38
             }
         }
     }

@@ -2578,6 +2578,23 @@ whichever bands exist. So the order is:
 5. The F160W-to-F814W ties for J0217-0513 and J0959+0206.
 6. `run_cutouts_all.sh`.
 
+**Noise-map inflation** (`info/noise_corr_factors.json`, measured 2026-10-05 with
+`measure_corr_factor.py` on the 66 SL2S stamps). New band values: WFC3/UVIS F475X 1.22,
+F600LP 1.19, and ACS/WFC F606W 1.20 (J0217-0513 only). Where a band already had a value, the
+SL2S measurements agree with it: ACS F814W 1.14 against 1.18, WFPC2 F606W 1.06 against 1.07,
+F160W 1.00 against 1.05.
+
+**F475X is bimodal and follows sky level.** Within GO-17130 (2023), fields with MDRIZSKY below
+~29 e⁻ measure 1.31–1.41; the others measure 1.17–1.24. The 2009–10 GO-11588 snapshots sit at
+1.14–1.20 even at 7–14 e⁻ sky. This fits the UVIS pixel-based CTE correction, which amplifies
+noise at low background by 2023 and which the FLC ERR array omits. Those 11 lenses carry their
+own measured value in `_lens_overrides`.
+
+**`measure_corr_factor.py` overwrites `diagnostics/corr_factor/corr_factor_measurements.json`
+with whatever samples it was given.** The 2026-10-05 SL2S-only run replaced the
+2026-09-26 157-stamp record (`diagnostics/` is gitignored). The adopted values stay in the
+JSON, but re-run it over all samples if the per-stamp record is needed.
+
 **PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
 fallbacks for the 22 products with too few stars (2026-10-05):
 - **WFPC2 F606W (18) and ACS F814W (2)** use `make_psf.py --method auto`: the usual model
