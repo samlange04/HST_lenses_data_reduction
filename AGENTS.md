@@ -2590,10 +2590,14 @@ F160W 1.00 against 1.05.
 noise at low background by 2023 and which the FLC ERR array omits. Those 11 lenses carry their
 own measured value in `_lens_overrides`.
 
-**`measure_corr_factor.py` overwrites `diagnostics/corr_factor/corr_factor_measurements.json`
-with whatever samples it was given.** The 2026-10-05 SL2S-only run replaced the
-2026-09-26 157-stamp record (`diagnostics/` is gitignored). The adopted values stay in the
-JSON, but re-run it over all samples if the per-stamp record is needed.
+**The full corr-factor record is guarded** (`measure_corr_factor.py`, since 2026-10-05). An
+SL2S-only run overwrote `diagnostics/corr_factor/corr_factor_measurements.json`, the
+2026-09-26 record of 157 SLACS/GALLERY stamps (`diagnostics/` is gitignored). Those mosaics
+went in the 2026-10-04 purge, so that record cannot be rebuilt without re-drizzling SLACS and
+GALLERY. The adopted values survive in `noise_corr_factors.json`. The script now writes the
+full record only from a complete run: every sample, no `--lens`, no failed stamp. Anything
+else goes to `corr_factor_measurements_<samples>.json`, and an explicit `--out` at the full
+record is refused for a partial run. `--sample` defaults to every sample.
 
 **PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
 fallbacks for the 22 products with too few stars (2026-10-05):

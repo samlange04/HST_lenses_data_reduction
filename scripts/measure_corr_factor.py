@@ -29,6 +29,12 @@ Writes every measurement to diagnostics/corr_factor/ and prints the per-(instrum
 filter) medians in the shape of info/noise_corr_factors.json (which it does NOT write --
 copy the values in by hand after reading them).
 
+**The full record, corr_factor_measurements.json, is written only by a complete run:** every
+sample in info/lens_samples.json, no --lens, and no stamp that failed (e.g. a purged mosaic).
+Anything less goes to corr_factor_measurements_<samples>.json. On 2026-10-05 an SL2S-only run
+overwrote the 157-stamp SLACS/GALLERY record, which could not be rebuilt because those mosaics
+had been purged. --sample defaults to every sample.
+
     uv run python scripts/measure_corr_factor.py [--sample S ...] [--jobs 8]
 """
 import argparse
@@ -47,6 +53,7 @@ from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cutout_paths                                  # noqa: E402
+import mast_target_names                            # noqa: E402
 from make_cutouts import find_products              # noqa: E402
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -225,16 +232,32 @@ def jobs_for(samples):
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', nargs='+', default=['slacs_gold', 'slacs_other', 'gallery', 'bells'])
+    p.add_argument('--sample', nargs='+', default=mast_target_names.samples(),
+                   help='samples to measure (default: every sample in lens_samples.json)')
     p.add_argument('--lens', default=None, help='restrict to one lens (testing)')
     p.add_argument('--jobs', type=int, default=6)
-    p.add_argument('--out', default=os.path.join(WS, 'diagnostics', 'corr_factor',
-                                                 'corr_factor_measurements.json'))
+    p.add_argument('--out', default=None,
+                   help='output path. Default: the full record for a complete run, else '
+                        'corr_factor_measurements_<samples>.json (see the docstring)')
     a = p.parse_args()
     jobs = [j for j in jobs_for(a.sample) if a.lens is None or j[1] == a.lens]
     print(f'{len(jobs)} stamps')
     with ProcessPoolExecutor(a.jobs) as ex:
         results = list(ex.map(measure, jobs))
+    rec_dir = os.path.join(WS, 'diagnostics', 'corr_factor')
+    full = os.path.join(rec_dir, 'corr_factor_measurements.json')
+    complete = (set(a.sample) == set(mast_target_names.samples()) and a.lens is None
+                and not any('error' in r for r in results))
+    if a.out is None:
+        a.out = full if complete else os.path.join(
+            rec_dir, 'corr_factor_measurements_' + '+'.join(sorted(a.sample))
+            + (f'_{a.lens}' if a.lens else '') + '.json')
+    elif os.path.abspath(a.out) == full and not complete:
+        sys.exit(f'refusing to overwrite the full record {full} with a partial run '
+                 f'(samples {a.sample}, lens {a.lens}, '
+                 f'{sum("error" in r for r in results)} failed stamps)')
+    if not complete:
+        print(f'partial run -> {os.path.basename(a.out)} (the full record is untouched)')
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, 'w') as f:
         json.dump(results, f, indent=1)
