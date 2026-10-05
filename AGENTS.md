@@ -2578,8 +2578,19 @@ whichever bands exist. So the order is:
 5. The F160W-to-F814W ties for J0217-0513 and J0959+0206.
 6. `run_cutouts_all.sh`.
 
-**PSFs:** empirical only for now (Sam, 2026-10-04). Products that fail the empirical build are
-reviewed later. F475X and F600LP have no STDPSF grid or `_PIVOT` entry in `psf_models.py`.
+**PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
+fallbacks for the 22 products with too few stars (2026-10-05):
+- **WFPC2 F606W (18) and ACS F814W (2)** use `make_psf.py --method auto`: the usual model
+  tiers (WFPC2: MAST PSF DB; ACS: focus-diverse ePSF, else STDPSF), with the injection step.
+  The WF3 chip's 80″ field gave 0 usable stars in every SL2S WFPC2 field.
+- **J0233-0438 F475X (0 stars) and J1358+5459 F600LP (2 stars)** use
+  `scripts/make_psf_median.py`. Those bands have no STDPSF grid. The script takes the
+  per-pixel median of the other fields' empirical kernels in the same band and pixel scale
+  (29 F475X donors, 11 F600LP), with the donor-to-donor std as the PSF error map.
+  `lens_psf.json` records method `empirical_median` and lists the donors.
+  `run_psf_all.sh --all` or `--empirical-only` would rebuild these two products and overwrite
+  the median PSFs (`--models-only` skips them), so re-run `make_psf_median.py` after any
+  such sweep.
 
 **J0217-0513's F814W** is GO-12064 alone (Sam, 2026-10-04): 7917 s over 6 visits, Nov 2010 to
 Jan 2011, matching its F606W and F160W. Not used: GO-10876 (800 s, 2006), GO-12328 (480 s)
