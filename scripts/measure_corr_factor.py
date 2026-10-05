@@ -217,10 +217,12 @@ def summarise(results, thr='thr3'):
               f'{np.percentile(v, 84):.2f}]' + ('  (floored at 1.0)' if np.median(v) < 1 else ''))
 
 
-def jobs_for(samples):
+def jobs_for(samples, filts=None):
     root = cutout_paths.cutouts_root(WS)
     for sample in samples:
         for d in sorted(glob.glob(os.path.join(root, sample, '*', '*'))):
+            if filts and os.path.basename(d) not in filts:
+                continue
             for prefix in cutout_paths.PREFIXES:
                 stamps = list(cutout_paths.list_stamps(d, prefix).values())
                 if stamps:
@@ -235,23 +237,27 @@ def main():
     p.add_argument('--sample', nargs='+', default=mast_target_names.samples(),
                    help='samples to measure (default: every sample in lens_samples.json)')
     p.add_argument('--lens', default=None, help='restrict to one lens (testing)')
+    p.add_argument('--filt', nargs='+', default=None,
+                   help='restrict to these band directories (e.g. the camera/bands a new sample '
+                        'shares with the old ones: f814W f606W f160W). Always a partial run.')
     p.add_argument('--jobs', type=int, default=6)
     p.add_argument('--out', default=None,
                    help='output path. Default: the full record for a complete run, else '
                         'corr_factor_measurements_<samples>.json (see the docstring)')
     a = p.parse_args()
-    jobs = [j for j in jobs_for(a.sample) if a.lens is None or j[1] == a.lens]
+    jobs = [j for j in jobs_for(a.sample, a.filt) if a.lens is None or j[1] == a.lens]
     print(f'{len(jobs)} stamps')
     with ProcessPoolExecutor(a.jobs) as ex:
         results = list(ex.map(measure, jobs))
     rec_dir = os.path.join(WS, 'diagnostics', 'corr_factor')
     full = os.path.join(rec_dir, 'corr_factor_measurements.json')
     complete = (set(a.sample) == set(mast_target_names.samples()) and a.lens is None
-                and not any('error' in r for r in results))
+                and a.filt is None and not any('error' in r for r in results))
     if a.out is None:
         a.out = full if complete else os.path.join(
             rec_dir, 'corr_factor_measurements_' + '+'.join(sorted(a.sample))
-            + (f'_{a.lens}' if a.lens else '') + '.json')
+            + (f'_{a.lens}' if a.lens else '')
+            + ('_' + '+'.join(sorted(a.filt)) if a.filt else '') + '.json')
     elif os.path.abspath(a.out) == full and not complete:
         sys.exit(f'refusing to overwrite the full record {full} with a partial run '
                  f'(samples {a.sample}, lens {a.lens}, '
