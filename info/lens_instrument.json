@@ -176,58 +176,75 @@
     },
     "sl2s_dinos_a": {
         "J0214-0405": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
             "f606W": null,
-            "f814W": null
+            "f814W": "ACS/WFC"
         },
         "J0217-0513": {
+            "f160W": "WFC3/IR",
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
-            "f814W": null
+            "f606W": "ACS/WFC",
+            "f814W": "ACS/WFC"
         },
         "J0226-0420": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         },
         "J0232-0408": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         },
         "J0904-0059": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         },
         "J0959+0206": {
             "f160W": "WFC3/IR",
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
         "J1359+5535": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         },
         "J1405+5243": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": "WFC3/UVIS",
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         },
         "J1406+5226": {
+            "f160W": null,
             "f475X": "WFC3/UVIS",
+            "f555W": null,
             "f600LP": null,
-            "f606W": null,
+            "f606W": "WFPC2/WF3",
             "f814W": null
         }
     },
@@ -314,47 +331,58 @@
     "sl2s_wf": {
         "J0213-0743": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J0225-0454": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J0226-0406": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J0849-0251": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J0858-0143": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J0901-0259": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J1358+5459": {
             "f475X": "WFC3/UVIS",
-            "f600LP": "WFC3/UVIS"
+            "f600LP": "WFC3/UVIS",
+            "f606W": "WFPC2/WF3"
         },
         "J1401+5557": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J1419+5117": {
             "f475X": "WFC3/UVIS",
-            "f600LP": "WFC3/UVIS"
+            "f600LP": "WFC3/UVIS",
+            "f606W": "WFPC2/WF3"
         },
         "J1427+5516": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         },
         "J2213-0009": {
             "f475X": null,
-            "f600LP": null
+            "f600LP": null,
+            "f606W": "WFPC2/WF3"
         }
     },
     "slacs_gold": {
