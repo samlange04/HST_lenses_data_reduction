@@ -436,8 +436,9 @@ def main():
                         f'PARALLEL tree (data/cutouts_<size>arcsec/, its own '
                         f'info/lens_cutout_qc_<size>arcsec.json) so the standard-size '
                         f'products are never overwritten -- see cutout_paths.py')
-    p.add_argument('--box',    type=int, default=100,
-                   help='central box size in pixels searched for the brightest pixel')
+    p.add_argument('--box',    type=int, default=None,
+                   help='central box size in pixels searched for the brightest pixel. Default: '
+                        'the lens\'s cutout_box quirk in info/lens_samples.json, else 100')
     p.add_argument('--median-size', type=int, default=5,
                    help='median filter window (pix) applied before peak-finding, to stop '
                         'cosmic rays in the no-CR data being mistaken for the galaxy; '
@@ -624,6 +625,8 @@ def main():
     #
     # Peak-finding uses the CR-rejected pass when present (no cosmic rays to lock onto),
     # else the no-CR pass; see find_peak_coord.
+    if a.box is None:
+        a.box = mast_target_names.cutout_box(a.lens, a.sample) or 100
     if a.center_band is None:
         # First band of the sample's centre-band order that was drizzled for this lens;
         # if none was, the first one, which then falls through to recentring on this band.

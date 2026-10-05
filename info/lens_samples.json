@@ -255,7 +255,8 @@
                         "17130"
                     ]
                 },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X)."
+                "cutout_box": 30,
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). cutout_box 30: in F606W (its centre band) the arc outshines the deflector, and the default 100 px search centred the stamps on the arc 1.76\" off."
             },
             "J0959+0206": {
                 "mast_target": "SL2SJ095921+020638",

@@ -12,7 +12,7 @@ defined (catalogue positions for all of them are merged in ``info/lens_coords.py
   ``bells``        24 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
-quirks, query MAST as ``SDSS<LENS>``". Five keys are understood:
+quirks, query MAST as ``SDSS<LENS>``". Six keys are understood:
 
   ``mast_target``  the lens is archived under a ``GAL-<plate>-<mjd>-<fiber>`` designation
                    rather than ``SDSS<LENS>``, so the default query returns nothing.
@@ -28,6 +28,9 @@ quirks, query MAST as ``SDSS<LENS>``". Five keys are understood:
                    target-name query and take the lens's data from these programs, keeping
                    the visits whose footprint covers the lens (``mast_archive.py``). For
                    survey data filed under other target names (CANDELS 'ANY', COSMOS ...).
+  ``cutout_box``   side (px) of make_cutouts.py's brightest-pixel search box around the
+                   catalogue position, overriding the default 100. For a lens whose arc
+                   outshines the deflector in its centre band (SL2S J0904-0059 in F606W).
   ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
@@ -149,6 +152,12 @@ def archive_proposals(lens, filt, sample=None):
     """HST program IDs (strings) to take ``filt`` from by footprint, or None."""
     props = _entry(lens, sample).get('archive_proposals', {}).get(filt)
     return [str(p) for p in props] if props else None
+
+
+def cutout_box(lens, sample=None):
+    """Per-lens cutout search-box override (px), or None."""
+    box = _entry(lens, sample).get('cutout_box')
+    return int(box) if box else None
 
 
 def target_patterns(lens, sample=None):
