@@ -1,18 +1,5 @@
 {
-    "bells": {
-        "J0830+5116": {
-            "f814W": {
-                "method": "inject_stdpsf",
-                "fwhm_pix": 2.2671,
-                "kernel_size": 51,
-                "cutout_kernel_size": 19,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.0,
-                "wing_scatter": 0.0,
-                "n_frames": 4
-            }
-        }
-    },
+    "bells": {},
     "gallery": {
         "J0029+2544": {
             "f814W": {

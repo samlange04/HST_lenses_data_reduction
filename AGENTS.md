@@ -2578,6 +2578,15 @@ whichever bands exist. So the order is:
 5. The F160W-to-F814W ties for J0217-0513 and J0959+0206.
 6. `run_cutouts_all.sh`.
 
+**BELLS J0830+5116 F814W PSF: borrowed from J0747+4448** (`make_psf_median.py --donor`, method
+`empirical_donor`; Sam, 2026-10-05). The field has 2 usable stars, and STScI's focus-diverse
+ePSF service has no model for any of its four exposures (`jbiv08*`; the same call works for
+other BELLS rootnames). So it first fell back to STDPSF with injection. Fitted to the 2
+stars, J0747+4448's empirical PSF (observed the same day) did best on the bright star:
+chi2/dof 156. The 22 other BELLS empirical PSFs scored 192–345, the BELLS median 224 and the
+STDPSF+injection kernel 251. On the faint star it ranked second. The error map is the BELLS
+donor scatter. Its stale injection record was removed from `lens_psf_injected.json`.
+
 **Noise-map inflation** (`info/noise_corr_factors.json`, measured 2026-10-05 with
 `measure_corr_factor.py` on the 66 SL2S stamps). New band values: WFC3/UVIS F475X 1.22,
 F600LP 1.19, and ACS/WFC F606W 1.20 (J0217-0513 only). Where a band already had a value, the
