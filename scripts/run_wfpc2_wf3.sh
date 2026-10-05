@@ -10,7 +10,7 @@
 # discards any previous tie, because align_wfpc2_to_acs.py edits CRVAL1/2 in the
 # drizzled product -- so the tie must be re-applied after every drizzle, not once.
 #
-# Usage: run_wfpc2_wf3.sh [SAMPLE] [--bcfill]   (default: mast_target_names.DEFAULT_SAMPLE)
+# Usage: run_wfpc2_wf3.sh [SAMPLE] [--bcfill] [--no-cutout]   (default: mast_target_names.DEFAULT_SAMPLE)
 #
 # --bcfill runs the bad-column-filled reduction through all three stages: drizzle into the
 # parallel data/drizzled_bcfill/ tree, tie F606W within that tree (against its OWN F814W --
@@ -36,9 +36,13 @@ ALIGN_JSON="$WS/info/wfpc2_alignment.json"
 
 # Pull the optional --bcfill flag out of the args, leaving SAMPLE as $1. bcfill threads
 # through all three stages (drizzle/align/cutout) and _bcfill-tags the logs.
-BCFILL=""; ARGS=()
+# --no-cutout stops after the tie: rebuilds the mosaics (e.g. after a data/ purge) without
+# re-cutting tracked stamps whose hand-drawn masks are pixel-aligned to them.
+BCFILL=""; NOCUT=""; ARGS=()
 for _arg in "$@"; do
-  if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"; else ARGS+=("$_arg"); fi
+  if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"
+  elif [ "$_arg" = "--no-cutout" ]; then NOCUT=1
+  else ARGS+=("$_arg"); fi
 done
 set -- ${ARGS[@]+"${ARGS[@]}"}
 TAG="${BCFILL:+_bcfill}"
@@ -135,6 +139,9 @@ run_product() {
     echo "ALIGN FAILED (see $log)"; return 1
   fi
 
+  if [ -n "$NOCUT" ]; then
+    echo "OK (no cutout)"; return 0
+  fi
   if ! uv run --project "$WS" python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
          --filt "$key" --sample "$SAMPLE" $BCFILL >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
