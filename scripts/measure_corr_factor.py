@@ -100,6 +100,9 @@ def block_ratio(img, var, usable, n, rng):
     return dict(ratio=float(r), err=float(np.std(boot)), npairs=int(z.size))
 
 
+PATCH_ARCSEC = 10.0                       # side of the sub-patches for the patch-median ACF
+PATCH_MIN_USABLE = 0.7                    # a patch needs this usable fraction to count
+OVERRIDE_MIN_DEV = 0.10                   # override rule: |patch - band| > max(3 sigma, this)
 ACF_MAXLAG = 5                            # kernel windows L = 0..ACF_MAXLAG px
 FLOOR_LAGS = (7, 12)                      # Chebyshev-lag annulus that defines the floor
 HIPASS = 51                               # px median filter removed before the ACF
@@ -191,10 +194,35 @@ def measure(job):
                 if r is not None:
                     res[f'{n * scale:.2f}'] = dict(npix=n, **r)
             out[f'thr{nsig:g}'] = dict(frac_usable=float(usable.sum() / good.sum()),
-                                       blocks=res, acf=acf_ratio(img, var, usable))
+                                       blocks=res, acf=acf_ratio(img, var, usable),
+                                       acf_patch=patch_acf(img, var, usable, scale,
+                                                           kernel_window(out)))
     except Exception as e:                                   # noqa: BLE001
         out['error'] = f'{type(e).__name__}: {e}'
     return out
+
+
+def patch_acf(img, var, usable, scale, L):
+    """Patch-median ACF factor (2026-10-06): R_sub(L) on every PATCH_ARCSEC sub-patch of the
+    region that is >= PATCH_MIN_USABLE usable, then the median. The region-wide ACF (acf_ratio
+    on the whole +-HALF region) is pulled up by localised structure the source mask leaves:
+    a star halo, a large neighbour, the deflector's own outskirts. J2302-0840 F606W measured
+    12.5 region-wide, yet its clean patches match the controls; J0841+3824 F160W (a spiral)
+    measured 2.29. The patch median is robust to structure confined to a few patches."""
+    n = max(int(round(PATCH_ARCSEC / scale)), 4 * HIPASS // 3)
+    vals = []
+    for y in range(0, img.shape[0] - n + 1, n):
+        for x in range(0, img.shape[1] - n + 1, n):
+            u = usable[y:y + n, x:x + n]
+            if u.mean() < PATCH_MIN_USABLE:
+                continue
+            vals.append(acf_ratio(img[y:y + n, x:x + n], var[y:y + n, x:x + n], u)
+                        ['R_sub'][str(L)])
+    if not vals:
+        return None
+    v = np.array(vals)
+    return dict(median=float(np.median(v)), p16=float(np.percentile(v, 16)),
+                p84=float(np.percentile(v, 84)), n=int(v.size), L=int(L))
 
 
 def kernel_window(r):
@@ -211,12 +239,33 @@ def summarise(results, thr='thr3'):
         inst = 'WFPC2' if r['instrume'] == 'WFPC2' else f"{r['instrume']}/{r['detector']}"
         groups.setdefault((inst, r['filt'].split('_')[0]), []).append(r)
     print(f'\nper-(instrument, filter) factor, {thr} mask, kernel-window ACF (median, 16-84%):')
+    print('  region-wide ACF | patch-median ACF (the adopted statistic since 2026-10-06)')
     for (inst, band), rs in sorted(groups.items()):
         v = [r[thr]['acf']['R_sub'][str(kernel_window(r))] for r in rs]
+        pv = [r[thr]['acf_patch']['median'] for r in rs if r[thr].get('acf_patch')]
         print(f'  {inst:10s} {band:6s} n={len(rs):3d}  L={kernel_window(rs[0])}  '
               f'{max(1.0, np.median(v)):.2f}  [{np.percentile(v, 16):.2f}-'
-              f'{np.percentile(v, 84):.2f}]' + ('  (floored at 1.0)' if np.median(v) < 1 else ''))
-
+              f'{np.percentile(v, 84):.2f}]   |  '
+              + (f'{max(1.0, np.median(pv)):.2f}  [{np.percentile(pv, 16):.2f}-'
+                 f'{np.percentile(pv, 84):.2f}]' if pv else 'n/a'))
+    # Override rule on the patch-median statistic (revised 2026-10-06): a lens gets its own value
+    # when it sits more than OVERRIDE_MIN_DEV from its band median AND the band median falls
+    # outside the lens's own 16-84% patch range, i.e. the excess is uniform across its field. An
+    # earlier "3 band-sigma" form could not fire on a bimodal band. WFC3/UVIS F475X is bimodal by
+    # sky level within GO-17130, so its band sigma covers both modes.
+    print(f'\nsuggested _lens_overrides (patch median > {OVERRIDE_MIN_DEV} from the band median, '
+          f'band median outside the lens\'s own 16-84% patch range):')
+    for (inst, band), rs in sorted(groups.items()):
+        pts = [r for r in rs if r[thr].get('acf_patch')]
+        if len(pts) < 5:
+            continue
+        m = np.median([r[thr]['acf_patch']['median'] for r in pts])
+        for r in pts:
+            pa = r[thr]['acf_patch']
+            if abs(pa['median'] - m) > OVERRIDE_MIN_DEV and not (pa['p16'] <= m <= pa['p84']):
+                print(f'  {inst:10s} {band:6s} {r["sample"]:13s} {r["lens"]:11s} {r["filt"]:8s} '
+                      f'{max(1.0, pa["median"]):.2f}  [{pa["p16"]:.2f}-{pa["p84"]:.2f}]  '
+                      f'(band {m:.2f}, {pa["n"]} patches)')
 
 def jobs_for(samples, filts=None):
     root = cutout_paths.cutouts_root(WS)

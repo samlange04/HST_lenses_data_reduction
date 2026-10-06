@@ -807,8 +807,19 @@ CR_BIT = 4096          # not in final_bits='8,1024', so flagged CRs are excluded
 # WF3_READNOISE is defined above build_ivm_files, which runs first and needs it.
 
 
-def run_lacosmic(files, sigclip, objlim):
+LACOSMIC_DEFAULTS = (4.5, 5.0)   # (sigclip, objlim): the values used without an override
+
+
+def run_lacosmic(files, sigclip, objlim, relax_radius=None, lens_coord=None):
     """Flag cosmic rays into DQ bit 4096 of each WF3 FLT, in place.
+
+    relax_radius (arcsec, from info/lens_cr_params.json `lacosmic_relax_radius`): apply the
+    per-lens (relaxed) sigclip/objlim only within this radius of the lens, and the defaults
+    everywhere else. A relaxed setting exists to stop LACosmic eroding the deflector core or the
+    arc (J1538+5817, J2302-0840, J1420+6019). Applied frame-wide, it also leaves cosmic rays in
+    the blank sky, which the noise map does not model: J2302-0840 F606W measured a noise ACF
+    factor of 12.5 against the band's 1.07 (2026-10-06). Two passes per frame, merged by
+    distance from the lens on the WF3 chip.
 
     WF3 FLT is in DN (BUNIT=COUNTS): gain=ATODGAIN converts to electrons internally,
     satlevel=SATURATE*gain is the full well in electrons, readnoise is the WF3 value.
@@ -825,10 +836,18 @@ def run_lacosmic(files, sigclip, objlim):
             dq  = hdul['DQ', 1].data
             dq &= ~CR_BIT                      # clear any previous CR flags
             bad = (dq & 8) > 0                 # protect full-well saturated pixels
-            mask, _ = astroscrappy.detect_cosmics(
-                sci, inmask=bad, sigclip=sigclip, sigfrac=0.3, objlim=objlim,
-                gain=gain, readnoise=WF3_READNOISE, satlevel=satdn * gain,
-                niter=4, sepmed=True, cleantype='medmask', fsmode='median')
+            def _detect(sc, ol):
+                return astroscrappy.detect_cosmics(
+                    sci, inmask=bad, sigclip=sc, sigfrac=0.3, objlim=ol,
+                    gain=gain, readnoise=WF3_READNOISE, satlevel=satdn * gain,
+                    niter=4, sepmed=True, cleantype='medmask', fsmode='median')[0]
+            mask = _detect(sigclip, objlim)
+            if relax_radius and lens_coord is not None and \
+                    (sigclip, objlim) != LACOSMIC_DEFAULTS:
+                x, y = WCS(hdul['SCI', 1].header, hdul).world_to_pixel(lens_coord)
+                yy, xx = np.mgrid[:sci.shape[0], :sci.shape[1]]
+                inner = np.hypot(xx - float(x), yy - float(y)) * WF3_NATIVE_SCALE <= relax_radius
+                mask = np.where(inner, mask, _detect(*LACOSMIC_DEFAULTS))
             dq[mask] |= CR_BIT
             total += int(mask.sum())
             hdul['DQ', 1].data = dq
@@ -838,7 +857,12 @@ def run_lacosmic(files, sigclip, objlim):
 # ── AstroDrizzle pass 1: with CR rejection ────────────────────────────────────
 if _a.cr_method == 'lacosmic':
     print('\n=== LACosmic CR masking ===')
-    run_lacosmic(flt_wf3_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+    _relax_r = _cr_ovr.get('lacosmic_relax_radius')
+    if _relax_r:
+        print(f'  relaxed sigclip={_a.lacosmic_sigclip}/objlim={_a.lacosmic_objlim} within '
+              f'{_relax_r}" of the lens only; defaults {LACOSMIC_DEFAULTS} elsewhere')
+    run_lacosmic(flt_wf3_files, _a.lacosmic_sigclip, _a.lacosmic_objlim,
+                 relax_radius=_relax_r, lens_coord=_lc)
     print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')
     astrodrizzle.AstroDrizzle(drizzle_input,
                                output='wfpc2_wf3_cr',

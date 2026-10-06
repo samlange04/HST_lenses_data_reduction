@@ -3,7 +3,8 @@
         "J1420+6019": {
             "f814W": {
                 "lacosmic_sigclip": 10.0,
-                "lacosmic_objlim": 12.0
+                "lacosmic_objlim": 12.0,
+                "lacosmic_relax_radius": 2.5
             }
         }
     },
@@ -11,13 +12,15 @@
         "J1538+5817": {
             "f606W": {
                 "lacosmic_sigclip": 10.0,
-                "lacosmic_objlim": 12.0
+                "lacosmic_objlim": 12.0,
+                "lacosmic_relax_radius": 2.5
             }
         },
         "J2302-0840": {
             "f606W": {
                 "lacosmic_sigclip": 10.0,
-                "lacosmic_objlim": 12.0
+                "lacosmic_objlim": 12.0,
+                "lacosmic_relax_radius": 2.5
             }
         }
     }

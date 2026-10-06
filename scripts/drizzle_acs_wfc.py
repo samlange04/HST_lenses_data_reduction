@@ -906,8 +906,17 @@ CR_BIT = 4096          # DRIZ_CR; excluded by final_bits='256,64,16'
 _ACS_RDNOISE, _ACS_SATLEVEL = 4.5, 84700.0   # FLC is already in electrons, so gain=1
 
 
-def run_lacosmic(files, sigclip, objlim):
-    """Flag cosmic rays into DQ bit 4096 of each FLC, in place."""
+LACOSMIC_DEFAULTS = (4.5, 5.0)   # (sigclip, objlim): the values used without an override
+ACS_NATIVE_SCALE = 0.05          # arcsec/px, ACS/WFC
+
+
+def run_lacosmic(files, sigclip, objlim, relax_radius=None, lens_coord=None):
+    """Flag cosmic rays into DQ bit 4096 of each FLC, in place.
+
+    relax_radius (arcsec, info/lens_cr_params.json `lacosmic_relax_radius`): the per-lens
+    relaxed sigclip/objlim apply only within this radius of the lens; the defaults apply
+    everywhere else. This is the same rule as drizzle_wfpc2_wf3.py, for J1420+6019, whose
+    frame-wide relaxed setting left cosmic rays in the blank sky."""
     import astroscrappy
     total = 0
     for fname in files:
@@ -918,10 +927,19 @@ def run_lacosmic(files, sigclip, objlim):
                 dq &= ~CR_BIT              # clear any previous CR flags
                 # genuine defects, so LACosmic does not key off them
                 bad = (dq & (4 | 8 | 128 | 512)) > 0
-                mask, _ = astroscrappy.detect_cosmics(
-                    sci, inmask=bad, sigclip=sigclip, sigfrac=0.3, objlim=objlim,
-                    gain=1.0, readnoise=_ACS_RDNOISE, satlevel=_ACS_SATLEVEL,
-                    niter=4, sepmed=True, cleantype='medmask', fsmode='median')
+                def _detect(sc, ol):
+                    return astroscrappy.detect_cosmics(
+                        sci, inmask=bad, sigclip=sc, sigfrac=0.3, objlim=ol,
+                        gain=1.0, readnoise=_ACS_RDNOISE, satlevel=_ACS_SATLEVEL,
+                        niter=4, sepmed=True, cleantype='medmask', fsmode='median')[0]
+                mask = _detect(sigclip, objlim)
+                if relax_radius and lens_coord is not None and \
+                        (sigclip, objlim) != LACOSMIC_DEFAULTS:
+                    x, y = WCS(hdul['SCI', ext].header, hdul).world_to_pixel(lens_coord)
+                    yy, xx = np.mgrid[:sci.shape[0], :sci.shape[1]]
+                    inner = (np.hypot(xx - float(x), yy - float(y)) * ACS_NATIVE_SCALE
+                             <= relax_radius)
+                    mask = np.where(inner, mask, _detect(*LACOSMIC_DEFAULTS))
                 dq[mask] |= CR_BIT
                 total += int(mask.sum())
                 hdul['DQ', ext].data = dq
@@ -934,7 +952,12 @@ if do_cr:
     # These are treated as good so they are not misidentified as cosmic rays.
     if _a.cr_method == 'lacosmic':
         print('\n=== LACosmic CR masking ===')
-        run_lacosmic(flc_files, _a.lacosmic_sigclip, _a.lacosmic_objlim)
+        _relax_r = _cr_ovr.get('lacosmic_relax_radius')
+        if _relax_r:
+            print(f'  relaxed sigclip={_a.lacosmic_sigclip}/objlim={_a.lacosmic_objlim} within '
+                  f'{_relax_r}" of the lens only; defaults {LACOSMIC_DEFAULTS} elsewhere')
+        run_lacosmic(flc_files, _a.lacosmic_sigclip, _a.lacosmic_objlim,
+                     relax_radius=_relax_r, lens_coord=_lc)
         # --crfill goes HERE: after the flags exist, before anything drizzles them away.
         if _a.crfill:
             print('\n=== crfill: filling LACosmic cosmic rays (DQ 4096) pre-drizzle ===')

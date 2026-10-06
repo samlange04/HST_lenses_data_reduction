@@ -253,6 +253,22 @@ def instrument_key(sci_hdr):
     return f"{inst}/{str(sci_hdr.get('DETECTOR', '')).strip().upper()}"
 
 
+def epoch_factor(value, sci_hdr):
+    """A noise_corr_factors.json band value: a number, or an epoch-keyed entry
+    {"epochs": [{"before_mjd": 54959.0, "factor": 1.18}, ..., {"factor": 1.20}]} whose first
+    entry with EXPSTART < before_mjd wins (the last entry, without before_mjd, catches the rest).
+    Supported since 2026-10-06 for camera ageing (CTE, servicing missions) but unused so far:
+    ACS F814W drifts only 1.18 -> 1.20 from 2004-07 to 2010-11, inside its lens-to-lens scatter.
+    Split a band by epoch only where the break exceeds that scatter (see AGENTS.md)."""
+    if not isinstance(value, dict):
+        return value
+    mjd = float(sci_hdr.get('EXPSTART', 0.0))
+    for e in value['epochs']:
+        if 'before_mjd' not in e or mjd < float(e['before_mjd']):
+            return e['factor']
+    return None
+
+
 def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
     """Noise-map inflation factor for this stamp, and where it came from.
 
@@ -272,7 +288,7 @@ def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
     override = table.get('_lens_overrides', {}).get(sample, {}).get(lens, {}).get(band)
     if override is not None:
         return float(override), 'lens'
-    value = table.get(instrument_key(sci_hdr), {}).get(band)
+    value = epoch_factor(table.get(instrument_key(sci_hdr), {}).get(band), sci_hdr)
     if value is None:
         print(f"  WARNING: no correlated-noise factor for {instrument_key(sci_hdr)} {band} "
               f"in info/{CORR_FACTORS_JSON}; using 1.0 (uncorrected)")

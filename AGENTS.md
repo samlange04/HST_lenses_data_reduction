@@ -673,12 +673,76 @@ standard stamp's noise map carries it** (`NOISECOR`, since 2026-09-26):
 
 | band / detector | drop window | **factor** | C(0) | `CASR` = 1/√C(0)_drizzle |
 |---|---|---|---|---|
-| F814W ACS/WFC | ±1 px | **1.18** | 0.57 | 1.50 |
-| F555W ACS/WFC | ±1 px | **1.17** | 0.57 | 1.50 |
-| F606W WFPC2 | ±2 px | **1.07** | 0.18 | 2.39 |
-| F160W WFC3/IR | ±2 px | **1.05** | 0.14 | 2.53 |
-| F438W / F606W / F814W WFC3/UVIS | ±1 px | **1.24 / 1.18 / 1.26** | 0.72–0.84 | 1.30 |
+| F814W ACS/WFC | ±1 px | **1.17** (2026-10-06; was 1.18) | 0.57 | 1.50 |
+| F555W ACS/WFC | ±1 px | **1.17** (2026-09-26, not re-measured) | 0.57 | 1.50 |
+| F606W ACS/WFC | ±1 px | **1.20** (J0217-0513 only) | | |
+| F606W WFPC2 | ±2 px | **1.04** (2026-10-06; was 1.07) | 0.18 | 2.39 |
+| F160W WFC3/IR | ±2 px | **1.00** (2026-10-06, median 0.98 floored; was 1.05) | 0.14 | 2.53 |
+| F475X / F600LP WFC3/UVIS | ±1 px | **1.21 / 1.19** (SL2S; 11 F475X overrides) | | 1.30 |
+| F438W / F606W / F814W WFC3/UVIS | ±1 px | **1.24 / 1.18 / 1.26** (gallery, 2026-09-26, not re-measured) | 0.72–0.84 | 1.30 |
 | F275W / F225W WFC3/UVIS | ±1 px | **1.38 / 1.37** | 0.92–0.95 | 1.30 |
+
+### Repo-wide factors and the patch-median statistic (2026-10-06)
+
+**One value per camera/band, measured across every sample that has it, plus rule-based
+per-lens overrides.** The factor tracks observing conditions (epoch, sky level), not sample, so
+a per-sample value would only stand in for those conditions, and badly: SL2S spans 2004–2024.
+The 2026-10-06 values come from the camera/bands BELLS and SL2S share with SLACS: ACS F814W
+(69 stamps), WFPC2 F606W (65) and WFC3/IR F160W (21). Getting them took a re-drizzle of the
+SLACS mosaics purged on 2026-10-04 (`run_wfpc2_wf3.sh --no-cutout` keeps the tracked stamps).
+GALLERY UVIS and SLACS F555W keep their 2026-09-26 values; their mosaics were not rebuilt.
+
+**Statistic: the patch-median ACF** (`measure_corr_factor.py`, `acf_patch`). It is the same
+kernel-window ACF, computed on every 10″ sub-patch of the ±30″ region and medianed. The old
+region-wide ACF picks up localised structure: J2302-0840 F606W read 12.5 region-wide and 1.03
+by patch (a bright extended structure in part of its field), and J0841+3824 F160W (a spiral)
+read 2.29 against 1.04. Raising `--lens-r` to 15–20″ confirmed both. Every 2026-10-05 outlier
+turned out to be structure, including J1143-0144's long-standing 1.38 override, now removed.
+
+**Override rule:** a lens's patch median is more than 0.10 from its band median, AND the band
+median lies outside the lens's own 16–84% patch range. A "3 band-σ" form can't fire on a
+bimodal band. It yields exactly the 11 low-sky GO-17130 F475X fields (1.32–1.43, MDRIZSKY
+below ~29 e⁻), consistent with the UVIS pixel-based CTE correction adding noise at low
+background by 2023. The 2009–10 GO-11588 snapshots sit at 1.14–1.20 even at 7–14 e⁻.
+
+**Camera ageing:** ACS F814W rises 1.18 (2004–07, n = 42) to 1.20 (2010–11, n = 25). That is
+about 2.5σ but under 2% in the noise map, inside the lens-to-lens scatter, so one value covers
+both. `make_cutouts.epoch_factor` accepts an epoch-keyed entry,
+`{"epochs": [{"before_mjd": …, "factor": …}, {"factor": …}]}` picked by `EXPSTART`, for a band
+whose break exceeds its scatter. None uses it yet. **Re-check this when adding a late-epoch
+sample.**
+
+**Applying a changed factor: `scripts/rescale_noise_factor.py`** (dry run by default,
+`--apply`). It multiplies each noise map by new/old `NOISECOR`, which is exact, and leaves
+the science pixels, grid, masks and positions untouched. It refuses a stamp with the PSF error
+folded in (`PSFERRAP`); re-cut those. On 2026-10-06 it rescaled 185 stamps.
+
+**The full record is guarded:** only a complete run writes
+`corr_factor_measurements.json`; partial, `--filt` or `--lens-r` runs write their own named
+files.
+
+**Stamps whose mosaic changed under them, and how they were re-cut (2026-10-06).** A re-drizzle
+reproduces a stamp to ~10⁻⁵ of the sky noise (floating point), *unless the input changed*:
+- **J1204+0358, J2141-0001 and J0822+2652 `f606W_v2` (WFPC2):** MAST re-solved these frames'
+  astrometry (new per-image `FIT_IMG_GSC242`/`FIT_IMG_GAIAeDR3` headerlets; CRDS context 1358
+  became 1361). The frames register differently, so the deflector moves by under 0.5 px and the
+  mosaic WCS shifts.
+  They were **re-cut pixel-aligned**: find the integer offset at which the new mosaic best
+  reproduces the old stamp, cut exactly there (a reference stamp passed to `--center-from`),
+  and the masks and positions stay valid unchanged. A plain `--center-from` on the old stamp
+  re-cuts at the old *sky* position, which lands 1–4 px off under the new WCS.
+- **J2302-0840, J1538+5817 (WFPC2 F606W) and J1420+6019 (ACS F814W):** their relaxed LACosmic
+  settings (sigclip 10, objlim 12) now apply only within `lacosmic_relax_radius` = 2.5″ of the
+  lens (`lens_cr_params.json`; both drivers), with the defaults elsewhere. The pixels inside
+  ~2.2″ are bit-identical; outside, the sky is cleaner (about 0.3σ rms change). They were
+  re-cut with `--center-from` on the same grid.
+- **J0912+0029 F814W (ACS):** the rebuild had combined GO-10494 visit 02 (2005, GSC240 only)
+  with visit 52 (2006, Gaia-fit). The tracked stamp is visit 52 alone. `visit_wcs.py` now
+  applies the UVIS rule to ACS (drop a GSC240-only visit when a fitted one exists), and the
+  stamp reproduces.
+- **J1134+6027 and J1251-0208 F606W:** their hand-made F160W ties (`fa7d094`) were restored by
+  making F160W the last automatic tie reference.
+
 | J1143-0144 F814W (per-lens) | ±1 px | **1.38** | 0.68 | 1.50 |
 
 The factor is `sqrt(Σ C(d))` over |dx|,|dy| ≤ round(pixfrac × native/output) — the
@@ -2587,26 +2651,9 @@ chi2/dof 156. The 22 other BELLS empirical PSFs scored 192–345, the BELLS medi
 STDPSF+injection kernel 251. On the faint star it ranked second. The error map is the BELLS
 donor scatter. Its stale injection record was removed from `lens_psf_injected.json`.
 
-**Noise-map inflation** (`info/noise_corr_factors.json`, measured 2026-10-05 with
-`measure_corr_factor.py` on the 66 SL2S stamps). New band values: WFC3/UVIS F475X 1.22,
-F600LP 1.19, and ACS/WFC F606W 1.20 (J0217-0513 only). Where a band already had a value, the
-SL2S measurements agree with it: ACS F814W 1.14 against 1.18, WFPC2 F606W 1.06 against 1.07,
-F160W 1.00 against 1.05.
-
-**F475X is bimodal and follows sky level.** Within GO-17130 (2023), fields with MDRIZSKY below
-~29 e⁻ measure 1.31–1.41; the others measure 1.17–1.24. The 2009–10 GO-11588 snapshots sit at
-1.14–1.20 even at 7–14 e⁻ sky. This fits the UVIS pixel-based CTE correction, which amplifies
-noise at low background by 2023 and which the FLC ERR array omits. Those 11 lenses carry their
-own measured value in `_lens_overrides`.
-
-**The full corr-factor record is guarded** (`measure_corr_factor.py`, since 2026-10-05). An
-SL2S-only run overwrote `diagnostics/corr_factor/corr_factor_measurements.json`, the
-2026-09-26 record of 157 SLACS/GALLERY stamps (`diagnostics/` is gitignored). Those mosaics
-went in the 2026-10-04 purge, so that record cannot be rebuilt without re-drizzling SLACS and
-GALLERY. The adopted values survive in `noise_corr_factors.json`. The script now writes the
-full record only from a complete run: every sample, no `--lens`, no failed stamp. Anything
-else goes to `corr_factor_measurements_<samples>.json`, and an explicit `--out` at the full
-record is refused for a partial run. `--sample` defaults to every sample.
+**Noise-map inflation:** see *Drizzle correlated noise → Repo-wide factors and the
+patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 11 low-sky GO-17130 overrides
+(1.32–1.43); F600LP is 1.19; J0217-0513's ACS F606W is 1.20.
 
 **PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
 fallbacks for the 22 products with too few stars (2026-10-05):
