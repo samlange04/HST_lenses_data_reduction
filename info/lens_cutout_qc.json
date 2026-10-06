@@ -3071,18 +3071,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_gold_J0822+2652_f606W_v2.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J0822+2652_f606W_v2.fits",
-                "offset_arcsec": 0.0064,
+                "center_source": "stamp J0822+2652_f606W_v2_aligned_ref.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J0822+2652_f606W_v2_aligned_ref.fits",
+                "offset_arcsec": 0.0306,
                 "noise_k": 1.0,
                 "corr_factor": 1.07,
-                "weight_uniformity": 0.187223,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.187131,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 2.3919
             },
             "f814W": {
                 "size_arcsec": 12.0,
@@ -4056,18 +4056,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_gold_J1420+6019_f814W.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_gold_J1420+6019_f814W.fits",
+                "center_source": "stamp J1420+6019_f814W_sci.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J1420+6019_f814W_sci.fits",
                 "offset_arcsec": 0.1957,
                 "noise_k": 1.0,
                 "corr_factor": 1.18,
-                "weight_uniformity": 0.353022,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.354247,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 1.5
             }
         },
         "J1430+4105": {
@@ -4917,18 +4917,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_other_J1204+0358_f606W.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1204+0358_f606W.fits",
-                "offset_arcsec": 0.2255,
+                "center_source": "stamp J1204+0358_f606W_aligned_ref.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J1204+0358_f606W_aligned_ref.fits",
+                "offset_arcsec": 0.2772,
                 "noise_k": 1.0,
                 "corr_factor": 1.07,
-                "weight_uniformity": 0.193583,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.193865,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 2.3919
             }
         },
         "J1251-0208": {
@@ -5115,18 +5115,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_other_J1538+5817_f606W.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J1538+5817_f606W.fits",
+                "center_source": "stamp J1538+5817_f606W_sci.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J1538+5817_f606W_sci.fits",
                 "offset_arcsec": 0.5146,
                 "noise_k": 1.0,
                 "corr_factor": 1.07,
-                "weight_uniformity": 0.226759,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.227976,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 2.3919
             }
         },
         "J1621+3931": {
@@ -5200,18 +5200,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_other_J2141-0001_f606W.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J2141-0001_f606W.fits",
-                "offset_arcsec": 0.0666,
+                "center_source": "stamp J2141-0001_f606W_aligned_ref.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J2141-0001_f606W_aligned_ref.fits",
+                "offset_arcsec": 0.1421,
                 "noise_k": 1.0,
                 "corr_factor": 1.07,
-                "weight_uniformity": 0.159106,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.15916,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": true,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 2.3919
             }
         },
         "J2302-0840": {
@@ -5223,18 +5223,18 @@
                 "crfill": false,
                 "dropped_frames": false,
                 "drizzle_pass": "cr",
-                "center_source": "stamp data_cutouts_slacs_other_J2302-0840_f606W.fits",
-                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/4f135018-a09d-4802-b444-1d40f7f7bbe6/scratchpad/old/data_cutouts_slacs_other_J2302-0840_f606W.fits",
+                "center_source": "stamp J2302-0840_f606W_sci.fits",
+                "center_from": "../../../../../private/tmp/claude-501/-Users-samlange-Code-current-projects-HST-lenses-data-reduction/838d0c98-9ce5-4b23-bd53-a63a8ce75a7b/scratchpad/recut_ref/J2302-0840_f606W_sci.fits",
                 "offset_arcsec": 0.068,
                 "noise_k": 1.0,
                 "corr_factor": 1.07,
-                "weight_uniformity": 0.211459,
+                "corr_factor_source": "json",
+                "weight_uniformity": 0.212805,
                 "weight_uniformity_limit": 0.2,
                 "weight_uniformity_ok": false,
                 "pixfrac": 1.0,
                 "scale_ratio": 0.502119,
-                "casertano_r_analytic": 2.3919,
-                "corr_factor_source": "json"
+                "casertano_r_analytic": 2.3919
             }
         },
         "J2321-0939": {
