@@ -38,6 +38,7 @@ import mmap_fits_write
 mmap_fits_write.install()
 import mast_target_names
 import mast_archive
+import visit_wcs
 import info_json
 import cutout_paths
 
@@ -695,9 +696,16 @@ info_json.update(instrument_json_path, sample, lens, filt_key, f'{_instrume}/{_d
 #     files never refreshed it at all.
 # Keep in mind when auditing: ACS/WFC FLCs are 2-chip MEFs, so the product's NDRIZIM
 # is 2 x the number of exposures listed here.
+# GSC240-only visits are dropped when another visit of this lens+band has a fitted WCS
+# (visit_wcs.py; J0912+0029 F814W, GO-10494 visits 02 vs 52).
+_drop_visit = visit_wcs.visit_wcs_drop(glob.glob(os.path.join(data_path, '*flc.fits')))
+if _drop_visit:
+    print(f'=== Visit WCS: dropping GSC240-only frames {", ".join(sorted(_drop_visit))} '
+          f'(another visit has a fitted WCS) ===')
 _frames = [
     (os.path.basename(f).replace('_flc.fits', ''), fits.getheader(f)['EXPTIME'])
     for f in glob.glob(os.path.join(data_path, '*flc.fits'))
+    if os.path.basename(f).replace('_flc.fits', '') not in _drop_visit
 ]
 _obs_ids = sorted(rootname for rootname, exp in _frames if exp > MIN_EXPTIME)
 _total_exptime = sum(exp for _, exp in _frames if exp > MIN_EXPTIME)
@@ -777,6 +785,8 @@ os.environ['jref']            = os.path.join(
 # the header, not the _obs_ids set, so it also catches already-cached files from
 # before this check existed without requiring a re-download.
 for f in glob.glob(os.path.join(data_path, '*flc.fits')):
+    if os.path.basename(f).replace('_flc.fits', '') in _drop_visit:
+        continue
     if any(root in os.path.basename(f) for root in _excluded):
         print(f'  EXCLUDING {os.path.basename(f)} from the drizzle (--exclude-frames)')
         continue

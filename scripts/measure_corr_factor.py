@@ -140,8 +140,9 @@ def acf_ratio(img, var, usable):
 
 
 def measure(job):
-    sample, lens, filt, stamp = job
-    out = dict(sample=sample, lens=lens, filt=filt, stamp=os.path.basename(stamp))
+    sample, lens, filt, stamp, lens_r, half = job
+    out = dict(sample=sample, lens=lens, filt=filt, stamp=os.path.basename(stamp),
+               lens_r=lens_r, half=half)
     try:
         prefix = 'cutout_cr' if os.path.basename(stamp).startswith('cutout_cr') else 'cutout'
         variant = cutout_paths.stamp_variant(stamp)
@@ -163,7 +164,7 @@ def measure(job):
                                 np.array_equal(mos_patch, stamp_sci, equal_nan=True))
             scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
             cx, cy = x0 + (nx - 1) / 2.0, y0 + (ny - 1) / 2.0
-            hw = int(HALF / scale)
+            hw = int(half / scale)
             Y0, Y1 = max(0, int(cy) - hw), min(hdr['NAXIS2'], int(cy) + hw)
             X0, X1 = max(0, int(cx) - hw), min(hdr['NAXIS1'], int(cx) + hw)
             img = np.asarray(h[0].data[Y0:Y1, X0:X1], dtype=np.float64)
@@ -171,7 +172,7 @@ def measure(job):
             wht = np.asarray(h[0].data[Y0:Y1, X0:X1], dtype=np.float64)
         good = np.isfinite(img) & np.isfinite(wht) & (wht > 0)
         yy, xx = np.mgrid[Y0:Y1, X0:X1]
-        good &= np.hypot(xx - cx, yy - cy) * scale > LENS_R
+        good &= np.hypot(xx - cx, yy - cy) * scale > lens_r
         var = np.where(good, k * k / np.where(good, wht, 1.0), 0.0)
         img = np.where(good, img, 0.0)
         out.update(scale=float(scale), instrume=str(hdr.get('INSTRUME', '')).strip(),
@@ -237,6 +238,12 @@ def main():
     p.add_argument('--sample', nargs='+', default=mast_target_names.samples(),
                    help='samples to measure (default: every sample in lens_samples.json)')
     p.add_argument('--lens', default=None, help='restrict to one lens (testing)')
+    p.add_argument('--lens-r', type=float, default=LENS_R,
+                   help=f'radius (arcsec) around the lens left out (default {LENS_R}). Raise it '
+                        'for a deflector whose own light reaches the sky region (J0841+3824, '
+                        'a spiral); recorded per measurement and never a complete run')
+    p.add_argument('--half', type=float, default=HALF,
+                   help=f'half-width (arcsec) of the measurement region (default {HALF})')
     p.add_argument('--filt', nargs='+', default=None,
                    help='restrict to these band directories (e.g. the camera/bands a new sample '
                         'shares with the old ones: f814W f606W f160W). Always a partial run.')
@@ -245,19 +252,23 @@ def main():
                    help='output path. Default: the full record for a complete run, else '
                         'corr_factor_measurements_<samples>.json (see the docstring)')
     a = p.parse_args()
-    jobs = [j for j in jobs_for(a.sample, a.filt) if a.lens is None or j[1] == a.lens]
+    jobs = [j + (a.lens_r, a.half) for j in jobs_for(a.sample, a.filt)
+            if a.lens is None or j[1] == a.lens]
     print(f'{len(jobs)} stamps')
     with ProcessPoolExecutor(a.jobs) as ex:
         results = list(ex.map(measure, jobs))
     rec_dir = os.path.join(WS, 'diagnostics', 'corr_factor')
     full = os.path.join(rec_dir, 'corr_factor_measurements.json')
     complete = (set(a.sample) == set(mast_target_names.samples()) and a.lens is None
-                and a.filt is None and not any('error' in r for r in results))
+                and a.filt is None and a.lens_r == LENS_R and a.half == HALF
+                and not any('error' in r for r in results))
     if a.out is None:
         a.out = full if complete else os.path.join(
             rec_dir, 'corr_factor_measurements_' + '+'.join(sorted(a.sample))
             + (f'_{a.lens}' if a.lens else '')
-            + ('_' + '+'.join(sorted(a.filt)) if a.filt else '') + '.json')
+            + ('_' + '+'.join(sorted(a.filt)) if a.filt else '')
+            + (f'_r{a.lens_r:g}' if a.lens_r != LENS_R else '')
+            + (f'_h{a.half:g}' if a.half != HALF else '') + '.json')
     elif os.path.abspath(a.out) == full and not complete:
         sys.exit(f'refusing to overwrite the full record {full} with a partial run '
                  f'(samples {a.sample}, lens {a.lens}, '
