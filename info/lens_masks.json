@@ -701,32 +701,79 @@
     "sl2s_dinos_a": {
         "J0214-0405": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 2075,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 2075,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -5,
+                    "dcol_px": 4,
+                    "net_masked_px_change": 0
+                },
+                "source": "drawn"
+            },
+            "f814W": {
+                "bcfill": false,
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 4,
+                    "dcol_px": -2,
+                    "net_masked_px_change": 0,
+                    "ref": "f475X"
+                },
+                "n_added_px": 947,
+                "n_erased_px": 0,
+                "n_excluded_px": 947,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f475X",
+                "proposal_px": 1303,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -4,
+                    "dcol_px": 2,
+                    "net_masked_px_change": 0
+                },
+                "source": "drawn"
             }
         },
         "J0217-0513": {
             "f160W": {
-                "prefix": "cutout",
-                "drizzle_pass": "nocrrej",
-                "pixel_scale_arcsec": 0.06,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 11805,
-                "brush_width": 0.03,
                 "brush_radius_px": 6,
+                "brush_width": 0.03,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "nocrrej",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 2,
+                    "dcol_px": 2,
+                    "net_masked_px_change": -256,
+                    "ref": "f475X"
+                },
+                "n_added_px": 5869,
+                "n_erased_px": 0,
+                "n_excluded_px": 11804,
+                "pixel_scale_arcsec": 0.06,
+                "prefix": "cutout",
                 "proposal_from": "f475X",
                 "proposal_px": 7040,
-                "n_added_px": 5869,
-                "n_erased_px": 0
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -2,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 255
+                },
+                "source": "edited_from_f475X"
             },
             "f475X": {
                 "bcfill": false,
@@ -736,28 +783,75 @@
                 "drizzle_pass": "cr",
                 "n_added_px": 80,
                 "n_erased_px": 0,
-                "n_excluded_px": 16242,
+                "n_excluded_px": 16478,
                 "note": "2026-10-14 review: DOUBLE SOURCE PLANE (Tu+2009, A&A 501, 475, arXiv:0902.4804, Table 2). Main system: cusp arc Q1-Q3 at r=1.39-1.48\" + counter-image Q4 at col 172.5 row 153.4 (r=0.88\"), all UNMASKED. The masked chain lower-left at col 112-119, row 199-210 (r=2.41-2.64\") IS R1/R1' -- the outer image of a SECOND source at z~2.9 (main source z=1.847). Masking R1 is right for a single-source-plane model; UNMASK it (and R2) for a double-source-plane fit. It does not clip the main arc: Q1 is 0.41\" from the mask, 0% masked inside 0.3\"; the arc's faint tail comes within 0.14\" but on blank sky (masked px within 0.2\" of the arc: mean S/N -0.24; 0.3% of the arc's flux). Positions converted with +col=West, +row=North about the f160W centroid (150.3,151.4); Q4 lands on the detected knot to 2 px. theta_E 1.27\" (Sonnenfeld+2013 Table 6; external shear 0.11 in that model). || R2 MASKED by Sam 2026-10-14 (+80 px, col 155-167 row 141-150; R2 residual centroid col 160.8 row 144.3, r=0.50\"). Checked for leftover light (for the ellipse lens-light fits): the edge sits 0.09-0.15\" from R2 on most sides (0.26\" on one), and the unmasked rings 0.12-0.30\" about R2 read mean per-px S/N 0.0-0.25 against a 0.37 scatter between control sectors on the same deflector ring -- no R2 light is left. The deflector's own r~0.5\" ring IS biased high (+14-30% at 30-60 deg from R2 in F606W/F814W/F160W), but that sector points at Q4 (40 deg): it is Q4's light, growing the R2 mask to a 0.3\" disc does not remove it, and it belongs in the ARC mask (or any light-fit mask), not this contaminant mask. Figures: diagnostics/masks/J0217-0513_f475X_review.png, _zoom_Q1_R1.png.",
                 "pixel_scale_arcsec": 0.0396,
                 "prefix": "cutout_cr",
                 "proposal_from": "f475X",
                 "proposal_px": 16162,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -2,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 236
+                },
                 "source": "edited_from_f475X"
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 14240,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 0,
+                    "dcol_px": 1,
+                    "net_masked_px_change": 73,
+                    "ref": "f475X"
+                },
+                "n_added_px": 5253,
+                "n_erased_px": 0,
+                "n_excluded_px": 14371,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
                 "proposal_from": "f475X",
                 "proposal_px": 10144,
-                "n_added_px": 5253,
-                "n_erased_px": 0
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 58
+                },
+                "source": "edited_from_f475X"
+            },
+            "f814W": {
+                "bcfill": false,
+                "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 1,
+                    "dcol_px": 1,
+                    "net_masked_px_change": -110,
+                    "ref": "f475X"
+                },
+                "n_added_px": 6034,
+                "n_erased_px": 0,
+                "n_excluded_px": 15206,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f475X",
+                "proposal_px": 10114,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 189
+                },
+                "source": "edited_from_f475X"
             }
         },
         "J0226-0420": {
@@ -777,15 +871,15 @@
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 9667,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 9898,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 5720,
-                "n_added_px": 6139,
+                "proposal_from": "f606W",
+                "proposal_px": 9743,
+                "n_added_px": 249,
                 "n_erased_px": 0
             }
         },
@@ -802,19 +896,26 @@
                 "brush_radius_px": 6
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 19362,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": -2,
+                    "net_masked_px_change": -18,
+                    "ref": "f475X"
+                },
+                "n_added_px": 226,
+                "n_erased_px": 0,
+                "n_excluded_px": 19344,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
                 "proposal_from": "f475X",
                 "proposal_px": 19257,
-                "n_added_px": 226,
-                "n_erased_px": 0
+                "source": "edited_from_f475X"
             }
         },
         "J0904-0059": {
@@ -825,42 +926,61 @@
                 "display": "S/N, radial-subtracted + as-observed",
                 "drizzle_pass": "cr",
                 "edited": "2026-10-14: pulled back off the ARC-END KNOT (col 191.0, row 166.2; r=1.69\" = 1.21 theta_E, Sonnenfeld+2013 theta_E 1.40\") -- cleared masked pixels within 0.5\" of it, 24430 -> 24296 px. The hand-drawn patch below-right of the arc (faint, r~2.5\", outside the arc circle, not its continuation) had its corner 0.21\" from the knot, masking 4.9% of its flux inside 0.3\" and 17.5% inside 0.5\" -- the J1451/J2342 pattern. After: nearest masked px 0.50\", 0.0% masked inside 0.5\", costing 14.4% of the patch's own positive flux; the patch stays masked. Requested by Sam. Pre-edit mask: local/mask_backups/J0904-0059_f475X_cutout_cr_mask_2026-10-14_pre_pullback.fits (this mask was untracked, so git cannot restore it). Figure: diagnostics/masks/J0904-0059_f475X_zoom_arc.png. || 2026-10-14 (same day, at Sam's call): clearance cut from 0.5\" to 0.3\" -- the 113 px of the notch beyond 0.3\" of the knot were RE-MASKED, 24296 -> 24409 px. Why: the faint tail the notch exposed (~col 195-204, row 168-172) is a flat ~2 sigma (0.04\" smoothed) plateau running from the knot INTO the masked patch, not a wing falling away from the knot (smoothed S/N 10.3 at the knot, 2.8 at 0.12\", then 1.2-1.9 flat to the patch), so it belongs to the contaminant. Now: nearest masked px 0.31\" from the knot, knot flux masked 0.0% inside 0.3\" and 15.0% inside 0.5\" (original drawn mask: 4.9% / 17.5%).",
-                "n_excluded_px": 24409,
+                "n_excluded_px": 24710,
                 "pixel_scale_arcsec": 0.0396,
                 "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 3,
+                    "dcol_px": -4,
+                    "net_masked_px_change": 301
+                },
                 "source": "drawn"
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 15688,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 15277,
-                "n_added_px": 2263,
-                "n_erased_px": 1286
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "drizzle_pass": "cr",
+                "n_added_px": 0,
+                "n_erased_px": 113,
+                "n_excluded_px": 15684,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f606W",
+                "proposal_px": 15524,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 2,
+                    "dcol_px": -3,
+                    "net_masked_px_change": 168
+                },
+                "source": "edited_from_f606W"
             }
         },
         "J0959+0206": {
             "f160W": {
-                "prefix": "cutout",
-                "drizzle_pass": "nocrrej",
-                "pixel_scale_arcsec": 0.06,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 5383,
-                "brush_width": 0.03,
                 "brush_radius_px": 6,
+                "brush_width": 0.03,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "nocrrej",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 0,
+                    "dcol_px": -1,
+                    "net_masked_px_change": -61,
+                    "ref": "f475X"
+                },
+                "n_added_px": 5383,
+                "n_erased_px": 0,
+                "n_excluded_px": 5322,
+                "pixel_scale_arcsec": 0.06,
+                "prefix": "cutout",
                 "proposal_from": "f475X",
                 "proposal_px": 2354,
-                "n_added_px": 5383,
-                "n_erased_px": 0
+                "source": "drawn"
             },
             "f475X": {
                 "prefix": "cutout_cr",
@@ -877,87 +997,146 @@
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 3435,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 3997,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 3415,
-                "n_added_px": 381,
-                "n_erased_px": 379
+                "proposal_from": "f606W",
+                "proposal_px": 3408,
+                "n_added_px": 1077,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 6047,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 5965,
+                "n_added_px": 114,
+                "n_erased_px": 0
             }
         },
         "J1359+5535": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 2450,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 2450,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -3,
+                    "dcol_px": -2,
+                    "net_masked_px_change": 0
+                },
+                "source": "drawn"
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 2491,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": 3,
+                    "dcol_px": 1,
+                    "net_masked_px_change": 0,
+                    "ref": "f475X"
+                },
+                "n_added_px": 1100,
+                "n_erased_px": 0,
+                "n_excluded_px": 2491,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
                 "proposal_from": "f475X",
                 "proposal_px": 1546,
-                "n_added_px": 1100,
-                "n_erased_px": 0
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -3,
+                    "dcol_px": -2,
+                    "net_masked_px_change": 0
+                },
+                "source": "edited_from_f475X"
             }
         },
         "J1405+5243": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 13943,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 14396,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 2,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 453
+                },
+                "source": "drawn"
             },
             "f600LP": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 7693,
-                "brush_width": 0.019802,
                 "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 13841,
-                "n_added_px": 0,
-                "n_erased_px": 9248
+                "brush_width": 0.019802,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f600LP mask outlined)",
+                "drizzle_pass": "cr",
+                "n_added_px": 1033,
+                "n_erased_px": 253,
+                "n_excluded_px": 8438,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "proposal_from": "f600LP",
+                "proposal_px": 7390,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 2,
+                    "dcol_px": -1,
+                    "net_masked_px_change": 373
+                },
+                "source": "edited_from_f600LP"
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 5866,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": 0,
+                    "net_masked_px_change": -99,
+                    "ref": "f475X"
+                },
+                "n_added_px": 5866,
+                "n_erased_px": 0,
+                "n_excluded_px": 5867,
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
                 "proposal_from": "f475X",
                 "proposal_px": 8643,
-                "n_added_px": 5866,
-                "n_erased_px": 0
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 1,
+                    "dcol_px": 0,
+                    "net_masked_px_change": 100
+                },
+                "source": "drawn"
             }
         },
         "J1406+5226": {
@@ -968,26 +1147,46 @@
                 "display": "S/N, radial-subtracted + as-observed",
                 "drizzle_pass": "cr",
                 "edited": "2026-10-14 (Sam's call): MASKED the foreground knot -- a 0.3\" disc at col 182.5, row 143.8, minus the arc's own pixels (smoothed S/N>2 within r 0.6-1.25\", dilated 1 px), +130 px, 12575 -> 12705. 0 arc px masked. Chosen over a plain disc: 0.25\" caught 0.6% of the arc's faint wing, and 0.2\" left the knot's wing at S/N ~0.9. Its MASS is not handled by the mask -- see note. Pre-edit mask: local/mask_backups/J1406+5226_f475X_cutout_cr_mask_2026-10-14_pre_knot.fits.",
-                "n_excluded_px": 12705,
-                "note": "2026-10-14 review (theta_E 1.029\", Sheu+2025). The compact knot just outside the arc (col 182.8, row 143.9; r=1.31\") is a FOREGROUND object (SL2S III Sect. 4.1, spectroscopy) -- NOT lensed. That retracts the earlier suggestion that it pairs with the inner blob (col 140, row 151). It is ~2% of the light within 2\" in F606W, slightly resolved in F475X, and separated from the arc ridge by 0.35\" (S/N 2.9 in the gap). RECOMMENDED: mask its light with a disc of <=0.25\" (0% of the arc inside). Test its mass separately with an SIS fixed at its position (ceiling theta_E,p ~0.15\" if it scaled like a normal galaxy at the lens z; probably less). The inner blob is unexplained and left unmasked.",
+                "n_excluded_px": 13052,
+                "note": "2026-10-14 review (theta_E 1.029\", Sheu+2025). The compact knot just outside the arc (col 182.8, row 143.9; r=1.31\") is a FOREGROUND object (SL2S III Sect. 4.1, spectroscopy) -- NOT lensed. That retracts the earlier suggestion that it pairs with the inner blob (col 140, row 151). It is ~2% of the light within 2\" in F606W, slightly resolved in F475X, and separated from the arc ridge by 0.35\" (S/N 2.9 in the gap). RECOMMENDED: mask its light with a disc of <=0.25\" (0% of the arc inside). Test its mass separately with an SIS fixed at its position (ceiling theta_E,p ~0.15\" if it scaled like a normal galaxy at the lens z; probably less). The inner blob is unexplained and left unmasked. || 2026-10-14 RE-CHECK after the band re-registration: the deflector's core is the F475X 'inner blob' at col 141.5, row 150.6, 0.38\" from this stamp's centre (which was set through F606W's then-misregistered WCS). The foreground knot is at r=1.65\" (not 1.31\"); 83% of its flux within 0.3\" is masked; 0% of the lensed arc is masked.",
                 "pixel_scale_arcsec": 0.0396,
                 "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 1,
+                    "dcol_px": 9,
+                    "net_masked_px_change": 347
+                },
                 "source": "drawn"
             },
             "f606W": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 7787,
-                "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 7951,
-                "n_added_px": 7787,
-                "n_erased_px": 0
+                "brush_width": 0.025,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "drizzle_pass": "cr",
+                "field_tie_shift": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": -7,
+                    "net_masked_px_change": -242,
+                    "ref": "f475X"
+                },
+                "n_added_px": 0,
+                "n_erased_px": 137,
+                "n_excluded_px": 7866,
+                "note": "2026-10-14 review: the foreground knot (col 151.1, row 114.3; SL2S III spectroscopy) and the object below it are masked (knot: 93% of px within 0.15\", 83% of its flux within 0.25\"). Sam trimmed the inner edge off the arc (137 px erased): arc flux under the mask went from 7.7% to 3.9% (17 of 386 arc px at S/N>4). The remainder is where the knot touches the arc's outer wing, which WFPC2's PSF cannot separate. Registration vs F475X is 43+/-12 mas (field sources) -- NOT the 0.35\" briefly inferred and retracted. Figure: diagnostics/masks/J1406+5226_f606W_zoom_arc_mask.png. || RE-REGISTERED 2026-10-14: F606W was 353 mas off F475X (tied; the earlier '43+/-12 mas, no misregistration' was a measurement bug). The stamp was re-cut and this mask rolled with the data. Re-check after the tie: arc flux under the mask 0.3% (the 3.9% above was measured about the wrong centre), foreground knot 79% of its flux masked within 0.3\" at r=1.64\" from the deflector.",
+                "pixel_scale_arcsec": 0.05,
+                "prefix": "cutout_cr",
+                "proposal_from": "f606W",
+                "proposal_px": 7787,
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 0,
+                    "dcol_px": 7,
+                    "net_masked_px_change": 385
+                },
+                "source": "edited_from_f606W"
             }
         }
     },
@@ -1037,15 +1236,21 @@
         },
         "J0219-0829": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 5508,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 5584,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": -1,
+                    "dcol_px": 8,
+                    "net_masked_px_change": 76
+                },
+                "source": "drawn"
             }
         },
         "J0220-0949": {
@@ -1160,15 +1365,21 @@
     "sl2s_snap": {
         "J0223-0651": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 9911,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 9900,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 4,
+                    "dcol_px": 1,
+                    "net_masked_px_change": -11
+                },
+                "source": "drawn"
             }
         },
         "J1401+5544": {
@@ -1226,15 +1437,21 @@
         },
         "J1423+5722": {
             "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
                 "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 3928,
+                "brush_radius_px": 6,
                 "brush_width": 0.019802,
-                "brush_radius_px": 6
+                "display": "S/N, radial-subtracted + as-observed",
+                "drizzle_pass": "cr",
+                "n_excluded_px": 3816,
+                "pixel_scale_arcsec": 0.0396,
+                "prefix": "cutout_cr",
+                "recentred": {
+                    "date": "2026-10-14",
+                    "drow_px": 1,
+                    "dcol_px": -2,
+                    "net_masked_px_change": -112
+                },
+                "source": "drawn"
             }
         }
     },

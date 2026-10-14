@@ -1273,13 +1273,17 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
     `local/mask_backups/`.
   - **J0226-0420**: the object right of the lens at r=1.5 θ_E is a contaminant. It is 2.3×
     redder than the arc/counter-image pair, round, and has no counter-image.
-  - **J1406+5226: the knot just outside the arc (col 183, row 144; r=1.32″) is a FOREGROUND
+  - **J1406+5226: the knot just outside the arc (col 183, row 144; r=1.65″ from the deflector) is a FOREGROUND
     object — mask it.** SL2S III Sect. 4.1: "the compact structure outside of the main arc is
     actually a foreground object, as revealed by our spectroscopic observations". This RETRACTS
     the 2026-10-14 suggestion that it pairs with the inner blob (col 140, row 151; r=0.42″) as a
     double. That pairing rested on geometry alone (167° apart, radii summing to 1.74″ vs 2θ_E)
-    and was a coincidence. The inner blob is still unexplained and is left unmasked. **Lesson:
-    read the paper's per-lens notes before inferring image pairs from geometry.**
+    and was a coincidence. **The "inner blob" (col 141.5, row 150.6) is the DEFLECTOR'S CORE.**
+    The F475X stamp was centred 0.38″ off it, through F606W's then-misregistered WCS (353 mas,
+    since tied). So every J1406 radius quoted from the stamp centre on 2026-10-14 is off by up to
+    0.38″; the knot is at 1.65″, not 1.31″. **Lessons:** read the paper's per-lens notes before
+    inferring image pairs from geometry, and register the bands before measuring colours or
+    centres.
     **Its mass:** it is ~2% of the light within 2″ in F606W, slightly resolved in F475X (FWHM
     0.17″ vs PSF 0.12″), with a gap (S/N 2.9) between it and the arc, whose ridge is 0.35″ away.
     Scaling like a normal galaxy at the lens redshift gives a ceiling of θ_E,p ≈ 1.03″ × √0.02 ≈
@@ -1566,8 +1570,10 @@ handle**, so they are listed here for the modelling project rather than lost in 
     ~0.06–0.11 at the lens), at d/θ_E ≈ 2.6.
   - **J2203+0205** — unresolved point source at 0.72″. Its light is masked; ceiling θ_E,p ≈ 0.44″.
     Probably an AGN, a compact clump or a star, so likely much less.
-  - **J1406+5226** — foreground knot at 1.31″. Its light is masked; ceiling ≈ 0.15″; z unknown,
+  - **J1406+5226** — foreground knot at 1.65″. Its light is masked; ceiling ≈ 0.15″; z unknown,
     so use the lens-plane approximation.
+- **SL2S bands are field-source tied to F475X to ≤5 mas (2026-10-14)**; see *SL2S samples*.
+  J1406 F606W included (353 mas, tied on a second pass once the matching was fixed).
 - **Double source plane:** J0217-0513 (Tu+2009). R1 is masked for a single-plane fit; unmask R1
   and R2 for a double-plane fit.
 - **Second source-light component:** J2221+0115 and J0232-0408 (Dinos II needed one).
@@ -2835,6 +2841,70 @@ Its F606W "no data" exit also nulled the WFPC2 F606W records. Three guards now p
 - `run_acs_all.sh` will not `rm -rf` a band directory that holds no `acs_wfc_*` product.
 - `run_gallery_uvis_all.sh` takes its filters from the sample's `uvis_filters`. The default is
   F606W F814W F438W for gallery; SL2S uses F475X F600LP.
+
+**Field-source band tie (`scripts/align_field_sources.py`, 2026-10-14): every SL2S secondary band
+is now registered to its F475X to ≤5 mas.** The deflector-centroid tie (`align_wfpc2_to_acs.py`)
+had left **up to 293 mas** between bands. Top of the measured list:
+
+| lens | band | offset |
+|---|---|---|
+| J0219 | F600LP | 293 mas |
+| J0214 | F814W | 230 mas |
+| J0904 | F606W | 220 mas |
+| J1359 | F606W | 162 mas |
+| J0223 | F600LP | 130 mas |
+| J0217 | F160W / F814W / F606W | 85 / 84 / 42 mas |
+| J1405 | F600LP / F606W | 84 / 84 mas |
+| J1423 | F600LP | 80 mas |
+| J0232 | F606W | 68 mas |
+
+Those offsets are why transferred mask outlines sat pixels off the data. `make_masks.
+reproject_mask_bool` is exact; the bands' WCSs disagreed.
+
+- **Method:** an independent catalogue of compact sources is built in each full drizzled mosaic
+  (S/N>15, self-re-centring centroids). The catalogues are matched one-to-one within 0.3″, and
+  the sigma-clipped median gives the offset (error 1–13 mas, 12–330 sources). `--apply` shifts
+  CRVAL of the band's drizzled products, keeps the originals in `FTORIG1/2` (`--reset` restores
+  them), and records the tie in `info/lens_field_ties.json`. `--recut` re-cuts the band's stamp
+  about the F475X stamp's centre (`--center-from`), so the F475X stamps and masks are untouched.
+  It moves an existing mask with its DATA (an exact integer-pixel roll, recovered from the
+  old/new sci; edge strips filled from the edge), and logs it as `field_tie_shift` in
+  `lens_masks.json`.
+- **Done for 24 bands** (all multi-band SL2S lenses). Residuals after are 0–5 mas, with J0219
+  F600LP done in two passes. Stamps moved 0–7 px, and 13 secondary-band masks were rolled with
+  them. Pre-tie masks: `local/mask_backups/pre_fieldtie_2026-10-14/`; pre-tie stamps: git.
+- **J1406 F606W was the worst offender at 353 mas** (dE −351, dN +34; residual 2 mas after the
+  tie; stamp moved 7 px). It was first missed: a fixed 0.3″ match radius is smaller than the true
+  offset, so it came out as 31 ± 111 mas of chance pairs. `measure()` now searches 1.5″ and takes
+  the mode of the pair offsets. After the fix, all 25 ties re-measure at 0–14 mas.
+- **Not tied:** J2203 F600LP and J1419 F600LP (8 and 6 mas, below the 10 mas threshold).
+- **Re-centred (Sam, 2026-10-14; `local/scripts/recentre_lenses.py`).** The stamps had been
+  centred where the OLD WCS put the deflector, so nine lenses sat >0.1″ off: J1406 0.38″, J0219
+  0.31, J0214 0.26, J0904 0.20, J1359 0.18, J0223 0.12, J1405 0.12, J1423 0.12, J0217 0.10.
+  Every band of those nine, F475X included, was re-cut with the normal shared-centre rule
+  through the corrected WCS (the deflector is now 0.003–0.073″ from the centre in every band).
+  Every mask, primary ones included, was rolled with its data by the exact integer shift
+  (0–9 px), and the shift is logged in `lens_masks.json` under `recentred`. **Pixel positions
+  quoted for these nine lenses in notes written BEFORE this are on the old grid**: add
+  `recentred.drow_px/dcol_px` to convert. Pre-re-centre masks:
+  `local/mask_backups/pre_recentre_2026-10-14/`.
+- **Run order:** after any re-drizzle and `align_wfpc2_to_acs.py`, BEFORE `make_cutouts`. A
+  re-drizzle resets CRVAL, so the tie must be re-run.
+- **Two methods that FAIL — don't reuse them:**
+  - **(a) Cross-correlating deflector-subtracted stamps** reads colour as shift. It gave a
+    spurious 0.34″ on J1406 and 3″ on J0959.
+  - **(b) Predicting each source in the reference and centroiding there with a single-pass
+    window** follows the prediction, not the source. It reported 94 mas on J0214 (truth 230) and
+    could not see its own correction; offsets of 30–95 mas quoted on 2026-10-14 came from it and
+    are superseded.
+  - **(c) A fixed tight match radius** (0.3″) loses every true pair once the offset exceeds it
+    (J1406, 353 mas). Search wide and take the mode.
+  - Validate any change by shifting CRVAL by a known amount: the measurement must move by
+    exactly that.
+- **J1406+5226: the 0.35″ misregistration was REAL.** It was first inferred from the arc
+  cross-correlation and from the F475X "inner blob" sitting at the arc's centre of curvature. It
+  was then wrongly retracted on the strength of method (b) and of the blob looking "too blue".
+  The colour was measured through the misregistered F606W. The blob is the deflector's core.
 
 **Mixed-WCS visits** (`drizzle_wfc3_uvis.py`). A visit carrying only a GSC240 WCS (no `FIT_*`) is
 dropped when another visit of the same lens and filter has a fitted solution. On J0959+0206's

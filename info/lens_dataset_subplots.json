@@ -578,6 +578,16 @@
                 "frac_masked": 0.022601,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0214-0405/f475X/cutout_cr_dataset.png"
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.016441,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_dinos_a/J0214-0405/f814W/cutout_cr_dataset.png"
             }
         },
         "J0217-0513": {
@@ -587,7 +597,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.295125,
+                "frac_masked": 0.2951,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0217-0513/f160W/cutout_dataset.png"
             },
@@ -597,7 +607,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.176911,
+                "frac_masked": 0.179481,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0217-0513/f475X/cutout_cr_dataset.png"
             },
@@ -607,9 +617,19 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.247222,
+                "frac_masked": 0.249497,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0217-0513/f606W/cutout_cr_dataset.png"
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.263993,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_dinos_a/J0217-0513/f814W/cutout_cr_dataset.png"
             }
         },
         "J0226-0420": {
@@ -629,7 +649,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.16783,
+                "frac_masked": 0.17184,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0226-0420/f606W/cutout_cr_dataset.png"
             }
@@ -651,7 +671,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.336146,
+                "frac_masked": 0.335833,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0232-0408/f606W/cutout_cr_dataset.png"
             }
@@ -663,7 +683,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.265867,
+                "frac_masked": 0.269146,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0904-0059/f475X/cutout_cr_dataset.png"
             },
@@ -673,7 +693,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.272361,
+                "frac_masked": 0.272292,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0904-0059/f606W/cutout_cr_dataset.png"
             }
@@ -685,7 +705,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.06,
-                "frac_masked": 0.134575,
+                "frac_masked": 0.13305,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0959+0206/f160W/cutout_dataset.png"
             },
@@ -705,9 +725,19 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.059635,
+                "frac_masked": 0.069392,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J0959+0206/f606W/cutout_cr_dataset.png"
+            },
+            "f814W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.104983,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_dinos_a/J0959+0206/f814W/cutout_cr_dataset.png"
             }
         },
         "J1359+5535": {
@@ -739,7 +769,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.15187,
+                "frac_masked": 0.156804,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J1405+5243/f475X/cutout_cr_dataset.png"
             },
@@ -749,7 +779,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.083794,
+                "frac_masked": 0.091908,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J1405+5243/f600LP/cutout_cr_dataset.png"
             },
@@ -759,7 +789,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.10184,
+                "frac_masked": 0.101858,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J1405+5243/f606W/cutout_cr_dataset.png"
             }
@@ -771,7 +801,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.138385,
+                "frac_masked": 0.142165,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J1406+5226/f475X/cutout_cr_dataset.png"
             },
@@ -781,7 +811,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.05,
-                "frac_masked": 0.135191,
+                "frac_masked": 0.136563,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_a/J1406+5226/f606W/cutout_cr_dataset.png"
             }
@@ -831,7 +861,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.059994,
+                "frac_masked": 0.060822,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_dinos_x/J0219-0829/f475X/cutout_cr_dataset.png"
             }
@@ -941,7 +971,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.107952,
+                "frac_masked": 0.107833,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_snap/J0223-0651/f475X/cutout_cr_dataset.png"
             }
@@ -1001,7 +1031,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.042784,
+                "frac_masked": 0.041565,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_snap/J1423+5722/f475X/cutout_cr_dataset.png"
             }

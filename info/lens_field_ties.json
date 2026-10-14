@@ -1,0 +1,433 @@
+{
+    "sl2s_dinos_a": {
+        "J0214-0405": {
+            "f814W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -123.5,
+                        "dN_mas": -194.6,
+                        "err_mas": 3.4,
+                        "n_sources": 99,
+                        "files": 2,
+                        "residual_after": "1 mas"
+                    }
+                ]
+            }
+        },
+        "J0217-0513": {
+            "f160W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 52.9,
+                        "dN_mas": -66.2,
+                        "err_mas": 3.7,
+                        "n_sources": 103,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            },
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 37.2,
+                        "dN_mas": -20.4,
+                        "err_mas": 2.9,
+                        "n_sources": 198,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            },
+            "f814W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 32.4,
+                        "dN_mas": -77.8,
+                        "err_mas": 2.6,
+                        "n_sources": 185,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J0226-0420": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -10.9,
+                        "dN_mas": 44.1,
+                        "err_mas": 13.2,
+                        "n_sources": 25,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J0232-0408": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -68.0,
+                        "dN_mas": 4.9,
+                        "err_mas": 6.8,
+                        "n_sources": 33,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J0904-0059": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 183.8,
+                        "dN_mas": 121.4,
+                        "err_mas": 5.0,
+                        "n_sources": 43,
+                        "files": 2,
+                        "residual_after": "5 mas"
+                    }
+                ]
+            }
+        },
+        "J0959+0206": {
+            "f160W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -11.7,
+                        "dN_mas": 23.3,
+                        "err_mas": 6.2,
+                        "n_sources": 60,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            },
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -49.1,
+                        "dN_mas": -41.3,
+                        "err_mas": 8.0,
+                        "n_sources": 22,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            },
+            "f814W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -6.3,
+                        "dN_mas": -29.7,
+                        "err_mas": 2.1,
+                        "n_sources": 163,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1359+5535": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 69.8,
+                        "dN_mas": -146.5,
+                        "err_mas": 6.3,
+                        "n_sources": 31,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1405+5243": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 45.2,
+                        "dN_mas": 70.5,
+                        "err_mas": 2.5,
+                        "n_sources": 141,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            },
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 39.8,
+                        "dN_mas": 73.4,
+                        "err_mas": 9.1,
+                        "n_sources": 20,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1406+5226": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -351.1,
+                        "dN_mas": 33.6,
+                        "err_mas": 5.4,
+                        "n_sources": 24,
+                        "files": 2,
+                        "residual_after": "2 mas"
+                    }
+                ]
+            }
+        }
+    },
+    "sl2s_dinos_x": {
+        "J0219-0829": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -290.5,
+                        "dN_mas": -35.5,
+                        "err_mas": 5.2,
+                        "n_sources": 31,
+                        "files": 2,
+                        "residual_after": "24 mas"
+                    },
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -24.0,
+                        "dN_mas": 0.5,
+                        "err_mas": 3.1,
+                        "n_sources": 134,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J0849-0412": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -5.8,
+                        "dN_mas": -13.9,
+                        "err_mas": 2.8,
+                        "n_sources": 173,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        }
+    },
+    "sl2s_snap": {
+        "J0223-0651": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -13.7,
+                        "dN_mas": 129.6,
+                        "err_mas": 1.5,
+                        "n_sources": 145,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1401+5544": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 2.3,
+                        "dN_mas": 32.4,
+                        "err_mas": 1.8,
+                        "n_sources": 204,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1402+5505": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 8.6,
+                        "dN_mas": -9.7,
+                        "err_mas": 2.5,
+                        "n_sources": 134,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1411+5651": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -6.9,
+                        "dN_mas": -45.5,
+                        "err_mas": 5.2,
+                        "n_sources": 232,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1420+5630": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -25.9,
+                        "dN_mas": -8.6,
+                        "err_mas": 1.8,
+                        "n_sources": 147,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1423+5722": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 77.9,
+                        "dN_mas": 20.3,
+                        "err_mas": 4.5,
+                        "n_sources": 145,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        }
+    },
+    "sl2s_wf": {
+        "J1358+5459": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 4.7,
+                        "dN_mas": -33.5,
+                        "err_mas": 5.5,
+                        "n_sources": 108,
+                        "files": 2,
+                        "residual_after": "1 mas"
+                    }
+                ]
+            },
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -39.0,
+                        "dN_mas": -33.2,
+                        "err_mas": 8.1,
+                        "n_sources": 20,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1419+5117": {
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -14.7,
+                        "dN_mas": 40.1,
+                        "err_mas": 5.8,
+                        "n_sources": 31,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        }
+    }
+}
