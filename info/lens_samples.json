@@ -266,12 +266,9 @@
                 "archive_proposals": {
                         "f814W": [
                             "9822"
-                        ],
-                        "f160W": [
-                            "14114"
                         ]
                     },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) and WFC3/IR F160W (GO-14114) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: Sam chose WFPC2 F606W (2026-10-04), since both would share the f606W band key."
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: Sam chose WFPC2 F606W (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14 (Sam): the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
             },
             "J1359+5535": {
                 "mast_target": "SL2SJ135949+553550",

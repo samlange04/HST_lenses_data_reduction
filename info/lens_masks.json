@@ -748,32 +748,19 @@
         },
         "J0217-0513": {
             "f160W": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.03,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
-                "drizzle_pass": "nocrrej",
-                "field_tie_shift": {
-                    "date": "2026-10-14",
-                    "drow_px": 2,
-                    "dcol_px": 2,
-                    "net_masked_px_change": -256,
-                    "ref": "f475X"
-                },
-                "n_added_px": 5869,
-                "n_erased_px": 0,
-                "n_excluded_px": 11804,
-                "pixel_scale_arcsec": 0.06,
                 "prefix": "cutout",
-                "proposal_from": "f475X",
-                "proposal_px": 7040,
-                "recentred": {
-                    "date": "2026-10-14",
-                    "drow_px": -2,
-                    "dcol_px": -1,
-                    "net_masked_px_change": 255
-                },
-                "source": "edited_from_f475X"
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f160W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f160W",
+                "n_excluded_px": 18886,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f160W",
+                "proposal_px": 11804,
+                "n_added_px": 10624,
+                "n_erased_px": 0
             },
             "f475X": {
                 "bcfill": false,
@@ -826,32 +813,19 @@
                 "source": "edited_from_f475X"
             },
             "f814W": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.025,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
-                "drizzle_pass": "cr",
-                "field_tie_shift": {
-                    "date": "2026-10-14",
-                    "drow_px": 1,
-                    "dcol_px": 1,
-                    "net_masked_px_change": -110,
-                    "ref": "f475X"
-                },
-                "n_added_px": 6034,
-                "n_erased_px": 0,
-                "n_excluded_px": 15206,
-                "pixel_scale_arcsec": 0.05,
                 "prefix": "cutout_cr",
-                "proposal_from": "f475X",
-                "proposal_px": 10114,
-                "recentred": {
-                    "date": "2026-10-14",
-                    "drow_px": -1,
-                    "dcol_px": -1,
-                    "net_masked_px_change": 189
-                },
-                "source": "edited_from_f475X"
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 15220,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 15206,
+                "n_added_px": 193,
+                "n_erased_px": 0
             }
         },
         "J0226-0420": {
@@ -960,28 +934,6 @@
             }
         },
         "J0959+0206": {
-            "f160W": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.03,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
-                "drizzle_pass": "nocrrej",
-                "field_tie_shift": {
-                    "date": "2026-10-14",
-                    "drow_px": 0,
-                    "dcol_px": -1,
-                    "net_masked_px_change": -61,
-                    "ref": "f475X"
-                },
-                "n_added_px": 5383,
-                "n_erased_px": 0,
-                "n_excluded_px": 5322,
-                "pixel_scale_arcsec": 0.06,
-                "prefix": "cutout",
-                "proposal_from": "f475X",
-                "proposal_px": 2354,
-                "source": "drawn"
-            },
             "f475X": {
                 "prefix": "cutout_cr",
                 "drizzle_pass": "cr",
@@ -1015,12 +967,12 @@
                 "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
                 "bcfill": false,
                 "source": "edited_from_f814W",
-                "n_excluded_px": 6047,
+                "n_excluded_px": 6255,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
                 "proposal_from": "f814W",
-                "proposal_px": 5965,
-                "n_added_px": 114,
+                "proposal_px": 6047,
+                "n_added_px": 208,
                 "n_erased_px": 0
             }
         },
@@ -1090,25 +1042,19 @@
                 "source": "drawn"
             },
             "f600LP": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.019802,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f600LP mask outlined)",
-                "drizzle_pass": "cr",
-                "n_added_px": 1033,
-                "n_erased_px": 253,
-                "n_excluded_px": 8438,
-                "pixel_scale_arcsec": 0.0396,
                 "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f600LP mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f600LP",
+                "n_excluded_px": 8611,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
                 "proposal_from": "f600LP",
-                "proposal_px": 7390,
-                "recentred": {
-                    "date": "2026-10-14",
-                    "drow_px": 2,
-                    "dcol_px": -1,
-                    "net_masked_px_change": 373
-                },
-                "source": "edited_from_f600LP"
+                "proposal_px": 8438,
+                "n_added_px": 206,
+                "n_erased_px": 0
             },
             "f606W": {
                 "bcfill": false,
@@ -1251,6 +1197,21 @@
                     "net_masked_px_change": 76
                 },
                 "source": "drawn"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 6210,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 5508,
+                "n_added_px": 702,
+                "n_erased_px": 0
             }
         },
         "J0220-0949": {
@@ -1290,6 +1251,21 @@
                 "n_excluded_px": 2263,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 2352,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 2263,
+                "n_added_px": 203,
+                "n_erased_px": 0
             }
         },
         "J0855-0147": {
@@ -1332,6 +1308,21 @@
                 "proposal_from": "f475X",
                 "proposal_px": 2080,
                 "n_added_px": 136,
+                "n_erased_px": 0
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f600LP mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f600LP",
+                "n_excluded_px": 3714,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f600LP",
+                "proposal_px": 3714,
+                "n_added_px": 113,
                 "n_erased_px": 0
             }
         },
@@ -1380,6 +1371,21 @@
                     "net_masked_px_change": -11
                 },
                 "source": "drawn"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 11254,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 9879,
+                "n_added_px": 1792,
+                "n_erased_px": 0
             }
         },
         "J1401+5544": {
@@ -1393,6 +1399,21 @@
                 "n_excluded_px": 2569,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 4612,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 2527,
+                "n_added_px": 4322,
+                "n_erased_px": 0
             }
         },
         "J1402+5505": {
@@ -1407,6 +1428,21 @@
                 "pixel_scale_arcsec": 0.0396,
                 "prefix": "cutout_cr",
                 "source": "drawn"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 2987,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 978,
+                "n_added_px": 2009,
+                "n_erased_px": 0
             }
         },
         "J1411+5651": {
@@ -1420,6 +1456,21 @@
                 "n_excluded_px": 201,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 313,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 201,
+                "n_added_px": 112,
+                "n_erased_px": 0
             }
         },
         "J1420+5630": {
@@ -1433,6 +1484,21 @@
                 "n_excluded_px": 782,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 3539,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 782,
+                "n_added_px": 3539,
+                "n_erased_px": 0
             }
         },
         "J1423+5722": {
@@ -1452,6 +1518,21 @@
                     "net_masked_px_change": -112
                 },
                 "source": "drawn"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 6835,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 3816,
+                "n_added_px": 3019,
+                "n_erased_px": 0
             }
         }
     },

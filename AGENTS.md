@@ -2817,7 +2817,15 @@ does not contain the catalogue position, and calls the lens "no data" when none 
 
 **Archive bands under other target names** (`archive_proposals` quirk, `scripts/mast_archive.py`).
 J0959+0206 takes ACS F814W from GO-9822 (COSMOS, 4 frames, 2028 s) and WFC3/IR F160W from
-GO-14114 (8 frames, 2074 s). Its archive ACS F606W (GO-17802, 1580 s) is **not** used: it would
+GO-14114 (8 frames, 2074 s). **That F160W was a BAD FRAME COMBINATION and was DROPPED (Sam, 2026-10-14, with all its data; `f160W` removed from `archive_proposals`).** GO-14114 is an
+8-pointing COSMOS mosaic with unfitted per-frame WCSs. Measured against F814W field sources, the frames
+disagree by up to 2.3″: rrq 0.20″, rtq 0.24″, rvq 1.06″, rxq 2.30″. Only rrq and rxq cover the lens. rrq is
+correct, but the deflector is on its top edge. rxq is shifted 2.3″, so the stamp holds two offset copies of
+the lens, and the "blobs" at 1.45″ and 2.47″ are rxq's ghosts of the neighbour and the deflector. **A
+whole-mosaic tie (align_wfpc2_to_acs / align_field_sources) cannot fix frame-to-frame errors.** A per-FLT tie before drizzling could have
+salvaged it, but the lens would have rested on one 253 s frame at a detector edge, so it was dropped. **Check multi-pointing IR programs per frame**:
+J0217-0513's CANDELS F160W was checked the same way and is consistent (4 frames within 11 mas of each
+other). Its archive ACS F606W (GO-17802, 1580 s) is **not** used: it would
 share the `f606W` band key, directory and tracking entries with the lens's WFPC2 F606W, and
 Sam chose WFPC2 (2026-10-04). **One filter means one instrument per lens** in this pipeline.
 `run_acs_all.sh` loops only F814W and F555W, and it `rm -rf`s each band directory before
@@ -2916,8 +2924,8 @@ not notice. A lens whose only visits are GSC240-only keeps them; those are liste
 IVM = 1/(ERR·EXPTIME)², which gives each frame a true 1/σ²_rate weight. They are stamped
 `IRIVMEXP` and `make_cutouts.py` then uses K = 1. Equal-length stacks keep the ERR path. On
 J0959+0206 F160W (GO-14114, 228/253/278 s frames) the blank-sky block-sum ratio is 1.009 at
-1.44″, which is calibrated. That F160W also has an unfitted WCS, so it is tied to F814W with
-`--target f160W --ref f814W`.
+1.44″, which is calibrated. That F160W also had unfitted per-frame WCSs, and was dropped on
+2026-10-14 (see above). The IVM weighting rule stands; J0959 was only its test case.
 
 **WFPC2 tie: F814W, then F600LP, then F475X** (`align_wfpc2_to_acs.py --ref auto`, the default
 since 2026-10-04). The tie is a deflector-light centroid, so it uses the reddest band the lens
@@ -2939,7 +2947,7 @@ whichever bands exist. So the order is:
 2. The F475X-to-F600LP ties for J1405+5243 and J0219-0829.
 3. `run_acs_all.sh` and `run_wfc3_all.sh`, plus J0217-0513's direct ACS F606W call.
 4. `run_wfpc2_wf3.sh` (drizzle, tie, cutout).
-5. The F160W-to-F814W ties for J0217-0513 and J0959+0206.
+5. The F160W-to-F814W tie for J0217-0513 (J0959+0206's F160W was dropped 2026-10-14).
 6. `run_cutouts_all.sh`.
 
 **BELLS J0830+5116 F814W PSF: borrowed from J0747+4448** (`make_psf_median.py --donor`, method

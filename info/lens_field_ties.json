@@ -116,21 +116,6 @@
             }
         },
         "J0959+0206": {
-            "f160W": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -11.7,
-                        "dN_mas": 23.3,
-                        "err_mas": 6.2,
-                        "n_sources": 60,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            },
             "f606W": {
                 "ref": "f475X",
                 "history": [

@@ -1370,27 +1370,6 @@
             }
         },
         "J0959+0206": {
-            "f160W": {
-                "size_arcsec": 12.0,
-                "stamp": "cutout_sci.fits",
-                "variant": "",
-                "bcfill": false,
-                "crfill": false,
-                "dropped_frames": false,
-                "drizzle_pass": "nocrrej",
-                "center_source": "stamp cutout_cr_sci.fits",
-                "center_from": "data/cutouts/sl2s_dinos_a/J0959+0206/f475X/cutout_cr_sci.fits",
-                "offset_arcsec": 0.2775,
-                "noise_k": 1.0,
-                "corr_factor": 1.0,
-                "corr_factor_source": "json",
-                "weight_uniformity": 0.396523,
-                "weight_uniformity_limit": 0.2,
-                "weight_uniformity_ok": false,
-                "pixfrac": 1.0,
-                "scale_ratio": 0.467836,
-                "casertano_r_analytic": 2.5324
-            },
             "f475X": {
                 "size_arcsec": 12.0,
                 "stamp": "cutout_cr_sci.fits",

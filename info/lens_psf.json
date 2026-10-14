@@ -1067,22 +1067,6 @@
             }
         },
         "J0959+0206": {
-            "f160W": {
-                "method": "empirical",
-                "n_stars": 3,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 3.3552,
-                "oversample": 2,
-                "kernel_size": 41,
-                "cutout_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.000247,
-                "fwhm_pix_err": 0.2188,
-                "psf_err_frac": 0.02421727,
-                "err_method": "jackknife",
-                "err_source": "stars",
-                "n_boot_valid": 3
-            },
             "f475X": {
                 "method": "empirical",
                 "n_stars": 9,
