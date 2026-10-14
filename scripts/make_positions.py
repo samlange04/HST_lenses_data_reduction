@@ -210,9 +210,10 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
     counts; `display_base` (raw signal, or S/N -- see load_display_base) is what we STRETCH
     and imshow, so bright cores and faint arcs are both visible while clicking.
 
-    PANELS ARE REAL AXES HERE, NOT A COMPOSITED ARRAY -- the opposite of make_masks.py, and
-    deliberately. The Scribbler reads one array back, so there the panels must be hstacked
-    into a single image and the scribble folded up afterwards (make_masks.fold_panels).
+    PANELS ARE REAL AXES HERE, NOT A COMPOSITED ARRAY -- the opposite of the Scribbler, and
+    deliberately. The Scribbler reads one array back, so there the panels are hstacked into a
+    single image and the scribble folded up afterwards (al.Scribbler does that itself now:
+    `autogalaxy.gui.display_util.composite_panels` / `fold_panels`).
     al.Clicker takes only `event.xdata/ydata`, so a click needs no folding at all if every
     panel is its own axes over the SAME arcsec extent: a double-click anywhere then already
     carries panel-local sky coordinates, and is forwarded to `clicker.onclick` untouched.

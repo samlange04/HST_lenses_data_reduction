@@ -8,6 +8,15 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "absl-py"
+version = "2.5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/4f/d79676ab82f2e42fc3611618139f13a9c4c31d0cff4b486982047679a802/absl_py-2.5.0.tar.gz", hash = "sha256:0c996f25c0490700fadabe6351630f6111534fa0ae252cc6d2014ea3b141135f", size = 118119, upload-time = "2026-07-03T10:57:48.157Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/58/0a/a10b45aab35b175aded078a462dc8d0c698f5b13946e7cb0869097b78bb6/absl_py-2.5.0-py3-none-any.whl", hash = "sha256:0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba", size = 137410, upload-time = "2026-07-03T10:57:46.735Z" },
+]
+
+[[package]]
 name = "acstools"
 version = "3.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -346,7 +355,7 @@ wheels = [
 
 [[package]]
 name = "autoarray"
-version = "2026.7.29.2"
+version = "2026.10.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astropy" },
@@ -359,14 +368,14 @@ dependencies = [
     { name = "scipy" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/cc/d05c67506b4fbb68888f39951fc39ce6b255136a0bedc294940731f28ec3/autoarray-2026.7.29.2.tar.gz", hash = "sha256:669940fb36b268f8ea13dbaaa5e0bee010572ce3d3cefcaec25b31af9603b230", size = 2025974, upload-time = "2026-07-29T20:21:28.135Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/78/147a9875abd0d9fd7d64b07db893a54ae09b19ddba056b7239ff0791040f/autoarray-2026.10.7.1.tar.gz", hash = "sha256:e887565f67229fa5658c02d9524e185e1ec9040e1c7382f60f30d3c4e35d7907", size = 2222077, upload-time = "2026-10-07T16:53:04.112Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/7a/60346e1edea67456867a17fcc68ce772d3fb82637082c5f06c348f230609/autoarray-2026.7.29.2-py3-none-any.whl", hash = "sha256:afccc902a0bd343b654a0d414084b8f98506c4f987d09c987bcf51f559989096", size = 2141407, upload-time = "2026-07-29T20:21:26.67Z" },
+    { url = "https://files.pythonhosted.org/packages/98/4c/5802d9dfdaf99b0a1ac2e2dbd8cc330b474549a988ed5a2c738fbfab9cd5/autoarray-2026.10.7.1-py3-none-any.whl", hash = "sha256:c6b541f30fceff8f33bd3154168b9f4e286219fe1bd9fa9667275778495cfa5a", size = 683842, upload-time = "2026-10-07T16:53:02.493Z" },
 ]
 
 [[package]]
 name = "autofit"
-version = "2026.7.29.2"
+version = "2026.10.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anesthetic" },
@@ -383,6 +392,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "networkx" },
     { name = "numpydoc" },
+    { name = "optax", marker = "platform_machine == 'arm64' or sys_platform != 'darwin'" },
     { name = "psutil" },
     { name = "pyvis" },
     { name = "scipy" },
@@ -392,51 +402,57 @@ dependencies = [
     { name = "typing-inspect" },
     { name = "xxhash" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/38/4d1cc9501de268f055dfafe9af51f71502aabfd51b1cc25af5d00b0bef26/autofit-2026.7.29.2.tar.gz", hash = "sha256:112c9260291c653c5bdc1560e18d216f4b8977114a67b1802ef455756ed6539c", size = 7455376, upload-time = "2026-07-29T20:21:28.161Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/26/ee/508b66b2370985fb396c8d128fe1f8bdb264af46e605c69d44bd85326d04/autofit-2026.10.7.1.tar.gz", hash = "sha256:e0acd75e5686defea71f46d73a9e4d83cea68b3c4dcce170d268d8af1a91deee", size = 8480949, upload-time = "2026-10-07T16:53:01.152Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/77/b34dada032fd029b73c9a39f0085dd22fbd6fe85308f88a6c5c2027e858b/autofit-2026.7.29.2-py3-none-any.whl", hash = "sha256:6f5e00eb2fdf0e6a0f848b9f1f84a93f3cdb6628e80ca09238a625764356aedd", size = 7584217, upload-time = "2026-07-29T20:21:25.975Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/63/868c4ce2cd12393fbe6f77366ebf1764612061b0b750abd7f658c5c27dd1/autofit-2026.10.7.1-py3-none-any.whl", hash = "sha256:8d862e9e6c3376e8e052393c6e968116bb89f5b9d9eef9f41b08c8d7e84ee4ae", size = 763699, upload-time = "2026-10-07T16:52:59.284Z" },
 ]
 
 [[package]]
 name = "autogalaxy"
-version = "2026.7.29.2"
+version = "2026.10.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astropy" },
     { name = "autoarray" },
     { name = "autofit" },
+    { name = "autonerves" },
+    { name = "jax-zero-contour", marker = "platform_machine == 'arm64' or sys_platform != 'darwin'" },
     { name = "nautilus-sampler" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/49/4f5c44886c2728234c2f103b90dae8795794399cbe0b87e1abb4ccf66d26/autogalaxy-2026.7.29.2.tar.gz", hash = "sha256:e8dc78ea188e3c9dc9809327873c087e144a7020db84007b47d1260500aff06e", size = 5517094, upload-time = "2026-07-29T20:21:50.38Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c5/a9/feccd9004363a7bbc9a3e7f31a1e74067951e11ce0153f1ffe812b820e00/autogalaxy-2026.10.7.1.tar.gz", hash = "sha256:0167525e2d0be6e0a4f88b087ee828bf101395ee94cbd5a1faaebe3bf560bdb6", size = 5897108, upload-time = "2026-10-07T17:49:57.375Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/86/83/92e81c097e9395d1f14ba254131b97b2a601f62b320f67ba499122c86261/autogalaxy-2026.7.29.2-py3-none-any.whl", hash = "sha256:767caacaf03a570f4b8428282ec0e5250b4b314c173646c0d22db29c5dd7bdc2", size = 5677737, upload-time = "2026-07-29T20:21:48.637Z" },
+    { url = "https://files.pythonhosted.org/packages/37/f1/e3ba35b594934b50dd425cccb92a250a64e907e76a78a311e997928c95c9/autogalaxy-2026.10.7.1-py3-none-any.whl", hash = "sha256:83d989941d0b2793c9aa6eded9c2104673bb4f26a9e93359b7677714b6961f02", size = 513706, upload-time = "2026-10-07T17:49:55.816Z" },
 ]
 
 [[package]]
 name = "autolens"
-version = "2026.7.29.2"
+version = "2026.10.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autogalaxy" },
+    { name = "autonerves" },
     { name = "nautilus-sampler" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/7c/f164ce0c422da292eb5058117dc73414bea7b35ea8d2c7d55ee2c7170194/autolens-2026.7.29.2.tar.gz", hash = "sha256:27094a9d8b5ccfeded811b64cda13661d384cd69015f88ac2f7caf20227cf187", size = 6860178, upload-time = "2026-07-29T20:21:39.016Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/13/ccef8b10d4f2d91ed5451aff45e9f31de218ff9e09e12200fa5b4f642420/autolens-2026.10.7.1.tar.gz", hash = "sha256:4a7ef1777118d510e6ff382950f20da3b6e9018a2251cd2a2352e00f8569e1f9", size = 7865411, upload-time = "2026-10-07T16:53:04.802Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/18/2462e7b949ff40e79ce40663ec430e3b8733d170a5255c3c664d27709afb/autolens-2026.7.29.2-py3-none-any.whl", hash = "sha256:a265af3b7911d298b5f636ada3693e3372f1b7b48cd8ecd83260f6f92b336410", size = 6934011, upload-time = "2026-07-29T20:21:37.241Z" },
+    { url = "https://files.pythonhosted.org/packages/94/ac/aafb8f0a7d42d97ffc0d53a5391564daf5a08f453b76e88694110235e524/autolens-2026.10.7.1-py3-none-any.whl", hash = "sha256:fa9ea3614fb2cdaad0b7989d9d1e8c78f89337541a43d47313c8f789997b40da", size = 330921, upload-time = "2026-10-07T16:53:03.289Z" },
 ]
 
 [[package]]
 name = "autonerves"
-version = "2026.7.29.2"
+version = "2026.10.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "jax", marker = "platform_machine == 'arm64' or sys_platform != 'darwin'" },
+    { name = "jaxlib", marker = "platform_machine == 'arm64' or sys_platform != 'darwin'" },
+    { name = "jaxnnls", marker = "platform_machine == 'arm64' or sys_platform != 'darwin'" },
     { name = "numpy" },
     { name = "pyyaml" },
     { name = "typing-inspect" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1e/3e/658a3554b161471479088056c49d9a4520ba0d397e2b5e519ceb39700a8a/autonerves-2026.7.29.2.tar.gz", hash = "sha256:3e6a16a88664180ce302947b014a8bfd810bbe18eb3c132facce775806b99c7b", size = 139788, upload-time = "2026-07-29T20:21:28.584Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/2a/c886d9d3533ef1e96a48ea89d469a5a605a9678abe8efca50a820019f6a7/autonerves-2026.10.7.1.tar.gz", hash = "sha256:e5db2e84e21fd107f1a65390544aff7b385763a7b5ab16cb89093970ba8d8424", size = 168145, upload-time = "2026-10-07T16:52:59.89Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/9f/d0cb873de04aef4a399fe415152ad54f1399f79583a9ab38437648321ff9/autonerves-2026.7.29.2-py3-none-any.whl", hash = "sha256:fa33bf0cc88d617f8a719da2ea0383b05a881dc871ed76b77c7846a4d3804d13", size = 36160, upload-time = "2026-07-29T20:21:27.498Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/56/079ac883cbac4201f4439fbdb3ad61ca41fbb6f805ae15da8cf6985f14c6/autonerves-2026.10.7.1-py3-none-any.whl", hash = "sha256:9a4a8a4d5de0ddf25200418135f468a110bc96dfd4f5347a1c23b21199013d4a", size = 44957, upload-time = "2026-10-07T16:52:58.501Z" },
 ]
 
 [[package]]
@@ -928,7 +944,7 @@ requires-dist = [
     { name = "astropy", specifier = "==7.2.0" },
     { name = "astroquery", specifier = "==0.4.11" },
     { name = "astroscrappy", specifier = "==1.3.0" },
-    { name = "autolens", specifier = ">=2026.7.29.2" },
+    { name = "autolens", specifier = ">=2026.10.7.1" },
     { name = "crds", specifier = "==13.1.16" },
     { name = "drizzlepac", specifier = "==3.11.0" },
     { name = "matplotlib", specifier = "==3.10.9" },
@@ -1048,6 +1064,64 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6c/1f/c23395957d41ccf27c4e535c3d334c4051e5395b3752057ba4cbaec35c56/jaraco_functools-4.6.0.tar.gz", hash = "sha256:880c577ec9720b3a052d5bc611fb9f2269b3d87902ef42440df443b88e443280", size = 20837, upload-time = "2026-07-14T01:28:02.544Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/02/36/ecc85bc96c273dc8a11273ed4782272975e6338d4a3e9228621175edf0e3/jaraco_functools-4.6.0-py3-none-any.whl", hash = "sha256:99e3dc0060c5cbe8fcd1cdb36258e2a65ca40f1566b2033b12abb1bb44dd3c30", size = 11677, upload-time = "2026-07-14T01:28:01.59Z" },
+]
+
+[[package]]
+name = "jax"
+version = "0.11.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jaxlib" },
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "opt-einsum" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/96/c3/cbb70e5e0846891b45c9b02b0755235618043cd2a8edd1f5bfe24b077cf4/jax-0.11.2.tar.gz", hash = "sha256:540dc0bed96bd5a0d8acca15cf16198fea98ef2fc151d40bdf1ace49eb76efd9", size = 2904036, upload-time = "2026-09-17T23:43:35.896Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ca/87/0c0ca8433e1135f6d1acd355cff21f31c3d433d937d6547aa545c8b060b8/jax-0.11.2-py3-none-any.whl", hash = "sha256:59e7ed9bd9ace049f4856752fe580c890e0164e1c023f40fadac386408daad66", size = 3345045, upload-time = "2026-09-17T23:41:14.517Z" },
+]
+
+[[package]]
+name = "jax-zero-contour"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jax" },
+    { name = "jaxlib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6f/c5/4be8f307c7a75ee80fae28d1bf0497244d2fe8879fb4ca24c4d0be00e3e7/jax_zero_contour-2.0.0.tar.gz", hash = "sha256:6a3408e3e5dc3cadddab630c7122bb9590ab41ecbc44d5a291c960f11477f54c", size = 10639, upload-time = "2025-06-24T13:44:33.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/b4/67d7fdc9597caa70deb65824f6c5609965cbe588e47f3eaae6a09def21b1/jax_zero_contour-2.0.0-py2.py3-none-any.whl", hash = "sha256:aa0ea0afeff0c737d9c77ded1dd5818354204274a1315bc3a3156268b816cf89", size = 9016, upload-time = "2025-06-24T13:44:32.935Z" },
+]
+
+[[package]]
+name = "jaxlib"
+version = "0.11.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ml-dtypes" },
+    { name = "numpy" },
+    { name = "scipy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/af/56ca13ef7a98137b087ef0c24dd5ace3163895f0164670babaa7dfcb69e6/jaxlib-0.11.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:eca80e745b7623369a76b5f685676ec233a33a55d69f60fa7e57cbefcfd47adc", size = 64867740, upload-time = "2026-09-17T23:42:19.368Z" },
+    { url = "https://files.pythonhosted.org/packages/69/72/318270378f5ff554ee921944bd97f59c0d6b35a8397cd35771dfdce1f445/jaxlib-0.11.2-cp312-cp312-manylinux_2_27_aarch64.whl", hash = "sha256:d497004e80daa91b98258d645b374e8dff480bf017d2c5f3e30b1371ac8f54b1", size = 84659774, upload-time = "2026-09-17T23:42:22.846Z" },
+    { url = "https://files.pythonhosted.org/packages/51/d2/07c3ea737d65b328b00377462e0e5dc8993a8a88d2a8a89e1c42038a4e53/jaxlib-0.11.2-cp312-cp312-manylinux_2_27_x86_64.whl", hash = "sha256:6338a1f0956f60d02529404ac33a8070015a52635cdb6bbb15d0d199757077bb", size = 89896206, upload-time = "2026-09-17T23:42:26.851Z" },
+    { url = "https://files.pythonhosted.org/packages/74/f7/8f6f7c55b80ca45e2225c78f4f44dbda8e5f420f933a5896e21045c3fb41/jaxlib-0.11.2-cp312-cp312-win_amd64.whl", hash = "sha256:53217a47d14eedd8fb5101f16aab1dfd58067835b4fb11910b50306218c7e620", size = 73563902, upload-time = "2026-09-17T23:42:30.216Z" },
+]
+
+[[package]]
+name = "jaxnnls"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jax" },
+    { name = "jaxlib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b8/ba/f7c99bed610e4531953b21ac1f851e673efd55591e3800049a8becbb6699/jaxnnls-1.0.1.tar.gz", hash = "sha256:6f153813455bb6569acf62db74e913822ea5f299238467c724b2d47da8e547df", size = 8308, upload-time = "2025-02-21T14:16:07.26Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1b/c9/cdb9eb2539d05d96a498d6c3cd9039c7cfbd28da63c0f71513d8b312014c/jaxnnls-1.0.1-py2.py3-none-any.whl", hash = "sha256:8d874b92f87ef89b0e0a364cbe6fcffd738cc5879d55bbdc2506872ad28e1f41", size = 10007, upload-time = "2025-02-21T14:16:05.294Z" },
 ]
 
 [[package]]
@@ -1250,6 +1324,22 @@ wheels = [
 ]
 
 [[package]]
+name = "ml-dtypes"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/72/307d7c4bd0600601c7133fba5cb78af7db968152951c1cd473abb1cda782/ml_dtypes-0.6.0.tar.gz", hash = "sha256:5e60251d32ced5598972e4d5e06a2f044341f9291402551a3f6f0ec44f9299b0", size = 3032327, upload-time = "2026-08-13T14:14:40.215Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/6a/441eb053b078954f7fea284dfb288701884d0a1404d39babb858e1649023/ml_dtypes-0.6.0-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:5359c588cc62de6f78d7430f06b65853d884955494d86d6ad90b6dd64a3f3a08", size = 565447, upload-time = "2026-08-13T14:14:01.737Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/cf/87e8a6c57eed63a91782a0d229856ddf73e138ce004dd71e2799a9dcdb33/ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:37da32aa97749251025666d62372775019594577b9c9e9cfda83bed48d778fdb", size = 360227, upload-time = "2026-08-13T14:14:02.938Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/f9/7d76c1eae866f5d4636401b31b6d6dd90e4b4ced1fa7cfdfcca9c60e4bd3/ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3b4a480aa8fd54a1805b8ac10f3f91763926a74f73c0c364c10f9231854f4170", size = 409890, upload-time = "2026-08-13T14:14:04.248Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/db/9c61ec2760b5cbfb1c6558d5c991a6d8fd3271053c32db20506a9a90272b/ml_dtypes-0.6.0-cp312-cp312-win_amd64.whl", hash = "sha256:2a3e9d53925597fbffafd2a37048dadeddd0bdaba58058f6ae0869ed709a184d", size = 439333, upload-time = "2026-08-13T14:14:05.501Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/57/780ca3e5ab135b9fbdd8e5441abf5f801b30398371b691291e05ab9834c0/ml_dtypes-0.6.0-cp312-cp312-win_arm64.whl", hash = "sha256:6eaed129a4afe90694b8685e2f9b6294849f5eda4af9a15be83a4326eeebd775", size = 552268, upload-time = "2026-08-13T14:14:06.866Z" },
+]
+
+[[package]]
 name = "more-itertools"
 version = "11.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1356,6 +1446,30 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e9/3c/dfccc9e7dee357fb2aa13c3890d952a370dd0ed071e0f7ed62ed0df567c1/numpydoc-1.10.0.tar.gz", hash = "sha256:3f7970f6eee30912260a6b31ac72bba2432830cd6722569ec17ee8d3ef5ffa01", size = 94027, upload-time = "2025-12-02T16:39:12.937Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/5e/3a6a3e90f35cea3853c45e5d5fb9b7192ce4384616f932cf7591298ab6e1/numpydoc-1.10.0-py3-none-any.whl", hash = "sha256:3149da9874af890bcc2a82ef7aae5484e5aa81cb2778f08e3c307ba6d963721b", size = 69255, upload-time = "2025-12-02T16:39:11.561Z" },
+]
+
+[[package]]
+name = "opt-einsum"
+version = "3.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/b9/2ac072041e899a52f20cf9510850ff58295003aa75525e58343591b0cbfb/opt_einsum-3.4.0.tar.gz", hash = "sha256:96ca72f1b886d148241348783498194c577fa30a8faac108586b14f1ba4473ac", size = 63004, upload-time = "2024-09-26T14:33:24.483Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/23/cd/066e86230ae37ed0be70aae89aabf03ca8d9f39c8aea0dec8029455b5540/opt_einsum-3.4.0-py3-none-any.whl", hash = "sha256:69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd", size = 71932, upload-time = "2024-09-26T14:33:23.039Z" },
+]
+
+[[package]]
+name = "optax"
+version = "0.2.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "absl-py" },
+    { name = "jax" },
+    { name = "jaxlib" },
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8c/f9/e3d11ae6f298ee941a0690e353a323d158ba5dedc436e75621c310845c5c/optax-0.2.8.tar.gz", hash = "sha256:5b225b35066fc3eebaa4d798f1b4173b4d57d1a480610908981f8343b50af0b0", size = 301193, upload-time = "2026-03-20T23:30:05.465Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8a/69/6a93d8600c339d7687a05857c7907bd4dd8cf88691a5ea106d7a50af90a1/optax-0.2.8-py3-none-any.whl", hash = "sha256:e3ca2d36c99daab1800ae9dbc0545034382d6bc780b24d969e1b0df65fa31cb4", size = 402960, upload-time = "2026-03-20T23:30:03.886Z" },
 ]
 
 [[package]]

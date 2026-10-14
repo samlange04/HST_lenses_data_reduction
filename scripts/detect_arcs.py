@@ -4,8 +4,8 @@ Automatic arc detection: propose the lensed-source region for `make_arc_masks.py
 
 WHAT THIS IS FOR. Drawing an arc mask from a blank canvas is the slow half of
 `make_arc_masks.py`. This module finds the arcs automatically and hands the result over as a
-PROPOSAL -- an outline the GUI draws over the image, which you then correct with the green
-(add) / red (erase) brushes and accept, reject or skip, exactly like `make_masks.py`'s
+PROPOSAL -- an outline the GUI draws over the image, which you then correct with the white
+(add) / black (erase) brushes and accept, reject or skip, exactly like `make_masks.py`'s
 cross-band proposals. Nothing here ever writes an arc mask: the detector proposes, the human
 disposes (`make_arc_masks.py --propose-from detect`).
 
