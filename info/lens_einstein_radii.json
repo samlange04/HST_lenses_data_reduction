@@ -47,6 +47,14 @@
   "sigma_kms": 251,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J0151+0049": {
+  "theta_e_arcsec": 0.676,
+  "RE_kpc": 4.2,
+  "zlens": 0.5171,
+  "zsrc": 1.3636,
+  "sigma_kms": 219,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J0157-0056": {
   "theta_e_arcsec": 0.7903,
   "RE_kpc": 4.89,
@@ -63,6 +71,42 @@
   "sigma_kms": 256,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
  },
+ "J0205-0930": {
+  "theta_e_arcsec": 1.246,
+  "RE_kpc": 8.04,
+  "zlens": 0.557,
+  "zsrc": 1.33,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens/zsrc from SL2S V Table 1; SL2S designation SL2SJ020524-093023; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.009,
+   0.008
+  ]
+ },
+ "J0212-0555": {
+  "theta_e_arcsec": 1.238,
+  "RE_kpc": 9.08,
+  "zlens": 0.75,
+  "zsrc": 2.74,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021247-055552; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.004,
+   0.004
+  ]
+ },
+ "J0214-0405": {
+  "theta_e_arcsec": 1.34,
+  "RE_kpc": 9.02,
+  "zlens": 0.609,
+  "zsrc": 1.88,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021411-040502; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.008,
+   0.008
+  ]
+ },
  "J0216-0813": {
   "theta_e_arcsec": 1.159,
   "RE_kpc": 5.53,
@@ -70,6 +114,102 @@
   "zsrc": 0.523,
   "sigma_kms": 333,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0217-0513": {
+  "theta_e_arcsec": 1.272,
+  "RE_kpc": 8.79,
+  "zlens": 0.646,
+  "zsrc": 1.85,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021737-051329; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.014,
+   0.014
+  ]
+ },
+ "J0218-0802": {
+  "theta_e_arcsec": 0.85,
+  "RE_kpc": 6.59,
+  "zlens": 0.884,
+  "zsrc": 2.06,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S V Table 1, zsrc SL2S IV Table 2; SL2S designation SL2SJ021801-080247; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.016,
+   0.017
+  ]
+ },
+ "J0219-0829": {
+  "theta_e_arcsec": 1.296,
+  "RE_kpc": 6.85,
+  "zlens": 0.389,
+  "zsrc": 2.15,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021902-082934; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.038,
+   0.038
+  ]
+ },
+ "J0220-0949": {
+  "theta_e_arcsec": 0.914,
+  "RE_kpc": 5.97,
+  "zlens": 0.572,
+  "zsrc": 2.61,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022046-094927; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.023,
+   0.02
+  ]
+ },
+ "J0223-0651": {
+  "theta_e_arcsec": 1.36,
+  "RE_kpc": 8.06,
+  "zlens": 0.473,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022357-065142; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J0225-0454": {
+  "theta_e_arcsec": 1.76,
+  "RE_kpc": 6.64,
+  "zlens": 0.238,
+  "zsrc": 1.2,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022511-045433; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J0226-0406": {
+  "theta_e_arcsec": 1.29,
+  "RE_kpc": 9.54,
+  "zlens": 0.766,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022648-040610; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J0226-0420": {
+  "theta_e_arcsec": 1.152,
+  "RE_kpc": 6.99,
+  "zlens": 0.494,
+  "zsrc": 1.23,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022610-042011; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.009,
+   0.009
+  ]
+ },
+ "J0232-0408": {
+  "theta_e_arcsec": 1.019,
+  "RE_kpc": 5.05,
+  "zlens": 0.352,
+  "zsrc": 2.34,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ023251-040823; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.019,
+   0.019
+  ]
  },
  "J0237-0641": {
   "theta_e_arcsec": 0.65,
@@ -127,6 +267,22 @@
   "sigma_kms": 218,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
  },
+ "J0747+4448": {
+  "theta_e_arcsec": 0.61,
+  "RE_kpc": 3.45,
+  "zlens": 0.4366,
+  "zsrc": 0.8966,
+  "sigma_kms": 281,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J0747+5055": {
+  "theta_e_arcsec": 0.754,
+  "RE_kpc": 4.28,
+  "zlens": 0.4384,
+  "zsrc": 0.8983,
+  "sigma_kms": 328,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J0755+3445": {
   "theta_e_arcsec": 2.05,
   "RE_kpc": 15.02,
@@ -134,6 +290,14 @@
   "zsrc": 2.6347,
   "sigma_kms": 272,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
+ },
+ "J0801+4727": {
+  "theta_e_arcsec": 0.491,
+  "RE_kpc": 2.94,
+  "zlens": 0.4831,
+  "zsrc": 1.5181,
+  "sigma_kms": 98,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
  "J0808+4706": {
   "theta_e_arcsec": null,
@@ -159,6 +323,14 @@
   "sigma_kms": 259,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J0830+5116": {
+  "theta_e_arcsec": 1.142,
+  "RE_kpc": 7.19,
+  "zlens": 0.5301,
+  "zsrc": 1.3317,
+  "sigma_kms": 268,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J0841+3824": {
   "theta_e_arcsec": 1.4091,
   "RE_kpc": 2.96,
@@ -166,6 +338,50 @@
   "zsrc": 0.657,
   "sigma_kms": 225,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0848-0351": {
+  "theta_e_arcsec": 0.93,
+  "RE_kpc": 6.58,
+  "zlens": 0.682,
+  "zsrc": 1.55,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ084847-035103; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.038,
+   0.038
+  ]
+ },
+ "J0849-0251": {
+  "theta_e_arcsec": 1.16,
+  "RE_kpc": 4.85,
+  "zlens": 0.274,
+  "zsrc": 2.09,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ084959-025142; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J0849-0412": {
+  "theta_e_arcsec": 1.134,
+  "RE_kpc": 8.2,
+  "zlens": 0.722,
+  "zsrc": 1.54,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ084909-041226; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.014,
+   0.011
+  ]
+ },
+ "J0855-0147": {
+  "theta_e_arcsec": 0.956,
+  "RE_kpc": 4.85,
+  "zlens": 0.365,
+  "zsrc": 3.39,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ085540-014730; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.034,
+   0.034
+  ]
  },
  "J0856+2010": {
   "theta_e_arcsec": 0.98,
@@ -175,6 +391,22 @@
   "sigma_kms": 334,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
  },
+ "J0858-0143": {
+  "theta_e_arcsec": 0.9,
+  "RE_kpc": 5.92,
+  "zlens": 0.58,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ085826-014300; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J0901-0259": {
+  "theta_e_arcsec": 1.03,
+  "RE_kpc": 7.23,
+  "zlens": 0.67,
+  "zsrc": 1.19,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ090106-025906; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
  "J0903+4116": {
   "theta_e_arcsec": 1.2887,
   "RE_kpc": 7.23,
@@ -182,6 +414,18 @@
   "zsrc": 1.065,
   "sigma_kms": 223,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0904-0059": {
+  "theta_e_arcsec": 1.411,
+  "RE_kpc": 9.51,
+  "zlens": 0.611,
+  "zsrc": 2.36,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ090407-005952; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.005,
+   0.005
+  ]
  },
  "J0912+0029": {
   "theta_e_arcsec": 1.6274,
@@ -215,6 +459,14 @@
   "sigma_kms": 243,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J0944-0147": {
+  "theta_e_arcsec": 0.725,
+  "RE_kpc": 4.6,
+  "zlens": 0.539,
+  "zsrc": 1.1785,
+  "sigma_kms": 204,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J0946+1006": {
   "theta_e_arcsec": 1.3839,
   "RE_kpc": 4.95,
@@ -238,6 +490,18 @@
   "zsrc": 0.47,
   "sigma_kms": 334,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J0959+0206": {
+  "theta_e_arcsec": 0.711,
+  "RE_kpc": 4.57,
+  "zlens": 0.552,
+  "zsrc": 3.35,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ095921+020638; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.01,
+   0.01
+  ]
  },
  "J0959+0410": {
   "theta_e_arcsec": 0.9929,
@@ -399,6 +663,14 @@
   "sigma_kms": 226,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1159-0007": {
+  "theta_e_arcsec": 0.683,
+  "RE_kpc": 4.49,
+  "zlens": 0.5793,
+  "zsrc": 1.3457,
+  "sigma_kms": 165,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture); zL dagger: differs from the BOSS DR9 redshift"
+ },
  "J1201+4743": {
   "theta_e_arcsec": 1.18,
   "RE_kpc": 7.73,
@@ -431,6 +703,14 @@
   "sigma_kms": 292,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1215+0047": {
+  "theta_e_arcsec": 1.368,
+  "RE_kpc": 9.43,
+  "zlens": 0.6423,
+  "zsrc": 1.297,
+  "sigma_kms": 262,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J1218+0830": {
   "theta_e_arcsec": 1.4502,
   "RE_kpc": 3.47,
@@ -439,6 +719,14 @@
   "sigma_kms": 219,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1221+3806": {
+  "theta_e_arcsec": 0.699,
+  "RE_kpc": 4.42,
+  "zlens": 0.5348,
+  "zsrc": 1.2844,
+  "sigma_kms": 187,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J1226+5457": {
   "theta_e_arcsec": 1.37,
   "RE_kpc": 8.42,
@@ -446,6 +734,14 @@
   "zsrc": 2.7322,
   "sigma_kms": 248,
   "source": "Shu+2016 (BELLS GALLERY IV, ApJ 833, 264), Table 2 bSIE (Sersic foreground subtraction); z/sigma from Table 1"
+ },
+ "J1234-0241": {
+  "theta_e_arcsec": 0.533,
+  "RE_kpc": 3.22,
+  "zlens": 0.49,
+  "zsrc": 1.0159,
+  "sigma_kms": 122,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
  "J1250+0523": {
   "theta_e_arcsec": 1.1302,
@@ -503,6 +799,14 @@
   "sigma_kms": 263,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1318-0104": {
+  "theta_e_arcsec": 0.679,
+  "RE_kpc": 4.73,
+  "zlens": 0.6591,
+  "zsrc": 1.3959,
+  "sigma_kms": 177,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J1318-0313": {
   "theta_e_arcsec": 1.5843,
   "RE_kpc": 6.01,
@@ -527,6 +831,58 @@
   "sigma_kms": 185,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1352+3216": {
+  "theta_e_arcsec": 1.823,
+  "RE_kpc": 10.67,
+  "zlens": 0.4634,
+  "zsrc": 1.0341,
+  "sigma_kms": 161,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J1358+5459": {
+  "theta_e_arcsec": 1.21,
+  "RE_kpc": 7.46,
+  "zlens": 0.51,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ135847+545913; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J1359+5535": {
+  "theta_e_arcsec": 1.092,
+  "RE_kpc": 8.14,
+  "zlens": 0.783,
+  "zsrc": 2.77,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ135949+553550; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.006,
+   0.006
+  ]
+ },
+ "J1401+5544": {
+  "theta_e_arcsec": 2.03,
+  "RE_kpc": 11.9,
+  "zlens": 0.464,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140156+554446; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J1401+5557": {
+  "theta_e_arcsec": 1.74,
+  "RE_kpc": 10.92,
+  "zlens": 0.527,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140123+555705; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J1402+5505": {
+  "theta_e_arcsec": 1.23,
+  "RE_kpc": 6.73,
+  "zlens": 0.412,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140221+550534; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
  "J1402+6321": {
   "theta_e_arcsec": 1.3466,
   "RE_kpc": 4.53,
@@ -543,6 +899,50 @@
   "sigma_kms": 213,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1404+5200": {
+  "theta_e_arcsec": 2.394,
+  "RE_kpc": 13.89,
+  "zlens": 0.456,
+  "zsrc": 1.59,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140454+520024; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.011,
+   0.011
+  ]
+ },
+ "J1405+5243": {
+  "theta_e_arcsec": 1.457,
+  "RE_kpc": 9.13,
+  "zlens": 0.526,
+  "zsrc": 3.01,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140546+524311; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.007,
+   0.007
+  ]
+ },
+ "J1406+5226": {
+  "theta_e_arcsec": 1.029,
+  "RE_kpc": 7.42,
+  "zlens": 0.716,
+  "zsrc": 1.47,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140650+522619; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.006,
+   0.006
+  ]
+ },
+ "J1411+5651": {
+  "theta_e_arcsec": 0.93,
+  "RE_kpc": 4.35,
+  "zlens": 0.322,
+  "zsrc": 1.42,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141137+565119; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
  "J1416+5136": {
   "theta_e_arcsec": 1.3681,
   "RE_kpc": 6.08,
@@ -551,6 +951,22 @@
   "sigma_kms": 240,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1419+5117": {
+  "theta_e_arcsec": 3.11,
+  "RE_kpc": null,
+  "zlens": null,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141917+511729; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J1420+5630": {
+  "theta_e_arcsec": 1.4,
+  "RE_kpc": 8.39,
+  "zlens": 0.483,
+  "zsrc": 3.12,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142059+563007; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
  "J1420+6019": {
   "theta_e_arcsec": 1.0388,
   "RE_kpc": 1.26,
@@ -558,6 +974,22 @@
   "zsrc": 0.535,
   "sigma_kms": 205,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1423+5722": {
+  "theta_e_arcsec": 1.3,
+  "RE_kpc": null,
+  "zlens": null,
+  "zsrc": null,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142321+572243; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J1427+5516": {
+  "theta_e_arcsec": 0.81,
+  "RE_kpc": 5.0,
+  "zlens": 0.511,
+  "zsrc": 2.58,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142731+551645; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
  },
  "J1430+4105": {
   "theta_e_arcsec": 1.5195,
@@ -631,6 +1063,46 @@
   "sigma_kms": 189,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1541+1812": {
+  "theta_e_arcsec": 0.64,
+  "RE_kpc": 4.14,
+  "zlens": 0.5603,
+  "zsrc": 1.1133,
+  "sigma_kms": 174,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J1542+1629": {
+  "theta_e_arcsec": 1.042,
+  "RE_kpc": 5.17,
+  "zlens": 0.3521,
+  "zsrc": 1.0233,
+  "sigma_kms": 210,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J1545+2748": {
+  "theta_e_arcsec": 1.21,
+  "RE_kpc": 7.55,
+  "zlens": 0.5218,
+  "zsrc": 1.2886,
+  "sigma_kms": 250,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J1601+2138": {
+  "theta_e_arcsec": 0.858,
+  "RE_kpc": 5.47,
+  "zlens": 0.5435,
+  "zsrc": 1.4461,
+  "sigma_kms": 207,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J1611+1705": {
+  "theta_e_arcsec": 0.58,
+  "RE_kpc": 3.45,
+  "zlens": 0.4766,
+  "zsrc": 1.2109,
+  "sigma_kms": 109,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J1614+4522": {
   "theta_e_arcsec": 0.8444,
   "RE_kpc": 2.54,
@@ -671,6 +1143,14 @@
   "sigma_kms": 276,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J1631+1854": {
+  "theta_e_arcsec": 1.634,
+  "RE_kpc": 8.89,
+  "zlens": 0.4081,
+  "zsrc": 1.0863,
+  "sigma_kms": 272,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J1636+4707": {
   "theta_e_arcsec": 1.0849,
   "RE_kpc": 3.96,
@@ -678,6 +1158,14 @@
   "zsrc": 0.675,
   "sigma_kms": 231,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J1637+1439": {
+  "theta_e_arcsec": 0.65,
+  "RE_kpc": 3.44,
+  "zlens": 0.391,
+  "zsrc": 0.8744,
+  "sigma_kms": 208,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
  "J1644+2625": {
   "theta_e_arcsec": 1.2671,
@@ -711,6 +1199,22 @@
   "sigma_kms": 286,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
+ "J2122+0409": {
+  "theta_e_arcsec": 1.58,
+  "RE_kpc": 10.77,
+  "zlens": 0.6261,
+  "zsrc": 1.4517,
+  "sigma_kms": 324,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
+ "J2125+0411": {
+  "theta_e_arcsec": 1.204,
+  "RE_kpc": 6.09,
+  "zlens": 0.3632,
+  "zsrc": 0.9777,
+  "sigma_kms": 247,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
+ },
  "J2141-0001": {
   "theta_e_arcsec": null,
   "RE_kpc": null,
@@ -718,6 +1222,50 @@
   "zsrc": 0.713,
   "sigma_kms": 181,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2203+0205": {
+  "theta_e_arcsec": 1.677,
+  "RE_kpc": 9.01,
+  "zlens": 0.4,
+  "zsrc": 2.15,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220329+020518; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.012,
+   0.012
+  ]
+ },
+ "J2205+0147": {
+  "theta_e_arcsec": 1.814,
+  "RE_kpc": 10.78,
+  "zlens": 0.476,
+  "zsrc": 2.53,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220506+014703; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.042,
+   0.044
+  ]
+ },
+ "J2213-0009": {
+  "theta_e_arcsec": 1.07,
+  "RE_kpc": 5.17,
+  "zlens": 0.338,
+  "zsrc": 3.45,
+  "sigma_kms": null,
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ221326-000946; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+ },
+ "J2221+0115": {
+  "theta_e_arcsec": 1.274,
+  "RE_kpc": 5.99,
+  "zlens": 0.325,
+  "zsrc": 2.35,
+  "sigma_kms": null,
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ222148+011542; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "theta_e_err_arcsec": [
+   0.011,
+   0.011
+  ]
  },
  "J2228+1205": {
   "theta_e_arcsec": 1.28,
@@ -750,6 +1298,14 @@
   "zsrc": 0.222,
   "sigma_kms": 237,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+ },
+ "J2303+0037": {
+  "theta_e_arcsec": 1.016,
+  "RE_kpc": 5.91,
+  "zlens": 0.4582,
+  "zsrc": 0.9363,
+  "sigma_kms": 274,
+  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
  "J2303+1422": {
   "theta_e_arcsec": 1.6192,

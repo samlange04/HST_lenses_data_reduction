@@ -224,42 +224,6 @@
                 "n_boot_valid": 5
             }
         },
-        "J1337+3620": {
-            "f814W": {
-                "method": "empirical",
-                "n_stars": 6,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.4121,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 21,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.000194,
-                "fwhm_pix_err": 0.0729,
-                "psf_err_frac": 0.0100712,
-                "err_method": "bootstrap",
-                "err_source": "stars",
-                "n_boot_valid": 100
-            }
-        },
-        "J1349+3612": {
-            "f814W": {
-                "method": "empirical",
-                "n_stars": 5,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.4521,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 21,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.00012,
-                "fwhm_pix_err": 0.0613,
-                "psf_err_frac": 0.01974834,
-                "err_method": "jackknife",
-                "err_source": "stars",
-                "n_boot_valid": 5
-            }
-        },
         "J1352+3216": {
             "f814W": {
                 "method": "empirical",
@@ -1364,55 +1328,6 @@
                 "n_boot_valid": 100
             }
         },
-        "J0233-0438": {
-            "f475X": {
-                "method": "empirical_median",
-                "n_stars": 0,
-                "n_donors": 29,
-                "donors": [
-                    "sl2s_dinos_a/J0214-0405",
-                    "sl2s_dinos_a/J0217-0513",
-                    "sl2s_dinos_a/J0226-0420",
-                    "sl2s_dinos_a/J0232-0408",
-                    "sl2s_dinos_a/J0904-0059",
-                    "sl2s_dinos_a/J0959+0206",
-                    "sl2s_dinos_a/J1359+5535",
-                    "sl2s_dinos_a/J1405+5243",
-                    "sl2s_dinos_a/J1406+5226",
-                    "sl2s_dinos_x/J0205-0930",
-                    "sl2s_dinos_x/J0212-0555",
-                    "sl2s_dinos_x/J0218-0802",
-                    "sl2s_dinos_x/J0219-0829",
-                    "sl2s_dinos_x/J0220-0949",
-                    "sl2s_dinos_x/J0848-0351",
-                    "sl2s_dinos_x/J0849-0412",
-                    "sl2s_dinos_x/J0855-0147",
-                    "sl2s_dinos_x/J1404+5200",
-                    "sl2s_dinos_x/J2203+0205",
-                    "sl2s_dinos_x/J2205+0147",
-                    "sl2s_dinos_x/J2221+0115",
-                    "sl2s_snap/J0223-0651",
-                    "sl2s_snap/J1401+5544",
-                    "sl2s_snap/J1402+5505",
-                    "sl2s_snap/J1411+5651",
-                    "sl2s_snap/J1420+5630",
-                    "sl2s_snap/J1423+5722",
-                    "sl2s_wf/J1358+5459",
-                    "sl2s_wf/J1419+5117"
-                ],
-                "fwhm_pix": 2.3743,
-                "oversample": null,
-                "kernel_size": 51,
-                "cutout_kernel_size": 23,
-                "trim_threshold": 0.001,
-                "pedestal_frac": -4e-06,
-                "fwhm_pix_err": 0.1269,
-                "psf_err_frac": 0.02666671,
-                "err_method": "donor_scatter",
-                "err_source": "donors",
-                "n_boot_valid": 29
-            }
-        },
         "J0848-0351": {
             "f475X": {
                 "method": "empirical",
@@ -1779,18 +1694,6 @@
         }
     },
     "sl2s_wf": {
-        "J0213-0743": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.3746,
-                "kernel_size": 35,
-                "cutout_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002074,
-                "wing_scatter": 0.00339,
-                "n_frames": 3
-            }
-        },
         "J0225-0454": {
             "f606W": {
                 "method": "inject_wfpc2_psfdb",

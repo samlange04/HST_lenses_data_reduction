@@ -247,18 +247,6 @@
         }
     },
     "sl2s_wf": {
-        "J0213-0743": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.3746,
-                "kernel_size": 35,
-                "cutout_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002074,
-                "wing_scatter": 0.00339,
-                "n_frames": 3
-            }
-        },
         "J0225-0454": {
             "f606W": {
                 "method": "inject_wfpc2_psfdb",

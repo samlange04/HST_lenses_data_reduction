@@ -701,7 +701,7 @@ turned out to be structure, including J1143-0144's long-standing 1.38 override, 
 
 **Override rule:** a lens's patch median is more than 0.10 from its band median, AND the band
 median lies outside the lens's own 16–84% patch range. A "3 band-σ" form can't fire on a
-bimodal band. It yields exactly the 11 low-sky GO-17130 F475X fields (1.32–1.43, MDRIZSKY
+bimodal band. It yields exactly the 11 low-sky GO-17130 F475X fields (1.32–1.43; 10 since J0233-0438 left the roster, 2026-10-14; MDRIZSKY
 below ~29 e⁻), consistent with the UVIS pixel-based CTE correction adding noise at low
 background by 2023. The 2009–10 GO-11588 snapshots sit at 1.14–1.20 even at 7–14 e⁻.
 
@@ -1247,9 +1247,130 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
     that both went through the same transform. The same bias matters for any cross-band or
     cross-catalogue position comparison at the tens-of-mas level.
 
+- **SL2S masks, reviewed one sample at a time against Sonnenfeld+2013's θ_E (2026-10-14 on).**
+  Drawn on F475X. **Centre on the reddest band, never on F475X**: there the lensed images can
+  outshine the deflector, and a peak search locked onto the arc on J0904-0059 and J1406+5226.
+  Review figures are `diagnostics/masks/<lens>_f475X_review.png` (`local/scripts/mask_review.py`);
+  per-lens verdicts are in each band's `note`/`edited` key in `info/lens_masks.json`.
+  **F606W colour tests are weak on SL2S.** WFPC2 F606W blurs arcs at ~1″ into the deflector, and
+  the F475X tie carries ~0.1″ of slop. On J1406+5226 the two halves of one arc differed 3× in
+  F606W/F475X, so no colour verdict was drawn there.
+  - **J0217-0513 is a DOUBLE SOURCE PLANE lens (Tu+2009).** The masked chain at r=2.4–2.6″ is
+    R1/R′1, an image of a second source at z~2.9. That mask is correct for a single-plane model
+    and must be lifted for a double-plane fit. It does NOT clip the main arc. Q1 is 0.41″ from the mask
+    with 0% masked inside 0.3″. The arc's faint lower tail comes within 0.14″, but on blank sky:
+    masked pixels within 0.2″ of the arc average S/N −0.24, and 0.3% of the arc's flux is masked. **R2 is now masked (Sam, 80 px)**, with no
+    R2 light left outside it. The deflector's r≈0.5″ isophote is still biased +14–30% over the
+    60° toward **Q4**. Q4 is lensed light and stays out of this mask, so any lens-light/isophote
+    fit must exclude it via the arc mask.
+  - **A `make_masks.py --force` redraw REPLACES the band's `lens_masks.json` record**, so a hand-added
+    `note`/`edited` key is lost. Re-add it after any redraw (it happened on J0217-0513, 2026-10-14).
+  - **J0904-0059 f475X: the edge was moved from 0.21″ to 0.31″ off the arc-end knot** (24430 →
+    24409 px; 0% of the knot's flux masked inside 0.3″), the J1451/J2342 pattern again. A 0.5″
+    pull-back was tried first and reverted at Sam's call. It exposed a faint tail that is a flat
+    ~2σ plateau running from the knot into the masked patch, not a wing falling off the knot, so
+    the tail belongs to the contaminant. The mask was untracked, so the pre-edit copy is in
+    `local/mask_backups/`.
+  - **J0226-0420**: the object right of the lens at r=1.5 θ_E is a contaminant. It is 2.3×
+    redder than the arc/counter-image pair, round, and has no counter-image.
+  - **J1406+5226: the knot just outside the arc (col 183, row 144; r=1.32″) is a FOREGROUND
+    object — mask it.** SL2S III Sect. 4.1: "the compact structure outside of the main arc is
+    actually a foreground object, as revealed by our spectroscopic observations". This RETRACTS
+    the 2026-10-14 suggestion that it pairs with the inner blob (col 140, row 151; r=0.42″) as a
+    double. That pairing rested on geometry alone (167° apart, radii summing to 1.74″ vs 2θ_E)
+    and was a coincidence. The inner blob is still unexplained and is left unmasked. **Lesson:
+    read the paper's per-lens notes before inferring image pairs from geometry.**
+    **Its mass:** it is ~2% of the light within 2″ in F606W, slightly resolved in F475X (FWHM
+    0.17″ vs PSF 0.12″), with a gap (S/N 2.9) between it and the arc, whose ridge is 0.35″ away.
+    Scaling like a normal galaxy at the lens redshift gives a ceiling of θ_E,p ≈ 1.03″ × √0.02 ≈
+    0.15″. A foreground object of the same apparent flux is intrinsically fainter, and a blue one
+    has a lower M/L, so the true value is probably below that. **Its LIGHT is now masked**
+    (2026-10-14: a 0.3″ disc minus the arc's own pixels, +130 px, 0 arc pixels). Masking leaves its MASS free to be tested: run as a
+    robustness check an SIS fixed at col 183, row 144 (single-plane approximation, since its
+    z is unknown — SL2S III treated J0213's foreground perturber the same way). Unmasking would
+    only add a light profile to fit and buys nothing for the mass.
+
+- **`sl2s_dinos_x` (2026-10-14).** **F475X-only lenses centre badly with the default 100 px
+  peak search.** The lensed images outshine the deflector, so the stamp centred on an arc or knot
+  on J0212-0555 (2.57″ off), J0218-0802 (0.74″) and J0220-0949 (1.04″). All three now carry
+  `cutout_box: 20` (±0.4″ about the Gavazzi+14 position) and sit 0.17–0.24″ from it. J0212's mask
+  was reprojected onto the new grid; 28% of that stamp was never reviewed.
+  - **J0233-0438 had NO USABLE DATA and was removed from the roster** (see *SL2S samples*).
+  - **Dinos II (Sheu+2025) Table 1 has HST-based θ_E for all 21 Dinos lenses**, and they fit
+    these images better than SL2S III/V's ground-based values. J0205-0930 is **1.246″, not
+    0.76″**. J0218's ring knots sit at 0.91 θ_E on Dinos II (0.77 on SL2S III). J0220's images
+    sum to 1.89″ against 2θ_E of 1.83″ (2.0″).
+  - **J2203+0205**: the masked object right of the lens (col 216, row 164) is **4.3× redder than
+    the arc** in F600LP/F475X; the arc's two ends agree to 5%. Keep it masked. The 44σ point
+    source at 0.73″ is Dinos II's "interloper" (1.5× redder than the arc). The knot at 0.41″
+    (col 155, row 162) **matches the arc's colour** (1.09) and is a counter-image candidate. The
+    point source is now masked (Sam, ~0.3″ disc; the knot stays clear). It is **unresolved**
+    (PSF-sized in F475X) and ~7% of the deflector's F600LP light. If it were an ordinary satellite
+    with that much light, it would be resolved, so its light is a poor guide to its mass. Test
+    any mass it has in the model (an SIS fixed at col 168, row 161); masking does not remove it.
+  - **J2221+0115**: arcs at ~1.1″ (south) and ~1.8″ (north). Dinos II needed a second
+    source-light component, like J0232-0408. Leave it all unmasked.
+
+- **`sl2s_snap` (2026-10-14; 720 s snapshots, so expect S/N 4-7 features).** All six masks sit
+  ≥1.5 θ_E from the lens. **J1402+5505**: the lens is a double (r=0.96″ + 1.47″, 172° apart,
+  summing to 2θ_E). The masked string to the left at 1.7–2.1 θ_E has the same colour as the
+  double, but an SIS can only image it once, so keeping it masked loses no constraint.
+  **J1401+5544**: outer arc ~2.6″ (upper-left) + inner counter-arc ~1.3″ (lower-right) around
+  θ_E 2.03″. **J1423+5722**: the only arc-like feature is at ~2.4″ = 1.85 θ_E (upper-right) with
+  no clear counter-image, and SL2S III's model has q=0.32 and source mag 31.7. Treat its θ_E
+  with care; it also has no `zlens`.
+
+- **`sl2s_wf` (2026-10-14).**
+  - **J0225-0454: the masked object left of the lens (col 74, row 97) is the arc's
+    COUNTER-IMAGE.** It sits opposite the arc (col 140, row 131), the radii sum to ~2θ_E, and
+    SL2S III Fig. 3 models this exact pair. **Unmasked by Sam, 2026-10-14.**
+  - **J0213-0743 was DROPPED (Sam, 2026-10-14): it is not a single deflector**, which the
+    modelling requires. The "companion" is a z = 0.016 elliptical centred 10.7″ from the lens,
+    off the stamp. Its halo makes the right side of the stamp 6× brighter than the left, and
+    SL2S III needed a second SIE (Einstein radius 0.74″) for it. Roster entry, tracked stamps,
+    tracking-JSON records and θ_E row were deleted.
+  - **J2213-0009**: the masked round object at 2.3 θ_E is a contaminant (radially elongated,
+    no counter-image).
+  - The other eight wf masks sit ≥1.2 θ_E from the lens, with nothing lensed masked.
+
+- **`bells` (2026-10-14; F814W only).** θ_E from Brownstein+2012 Table 5. Brownstein's Table 4
+  and Fig. 5 identify the images, and that is what settles "source or contaminant?" on these
+  lenses. Per-lens verdicts are in the `note` keys. **Two calls reverse the first instinct.**
+  **J1601+2138's bright compact object at 1.38″ is the lensed source** (its counter-image is
+  ~0.34″ opposite). **J1337+3620 was REMOVED from the sample (Sam, 2026-10-14) as a multi-deflector system.** A
+  companion 5.24″ away (SDSS z_phot 0.59 ± 0.10 vs z_lens 0.564) carries 35–50% of the
+  deflector's light, giving shear ≈ 0.08 at the lens; the modelling needs single deflectors.
+  All its gitignored data were deleted too. The review notes below were made before the removal. **J1542+1629's masked elliptical leaked halo past its mask** (by up to ~1″, at
+  per-pixel S/N 1.6 at the edge). **Sam regrew the mask the same day, and the leak is gone.** **J0747+4448 is usable**: the spike mask is adequate, and
+  its two nearby galaxies (2.4 and 3.7 θ_E) are now masked. **J1542's neighbour is a
+  mass-component candidate**; see *Modelling-side TODOs* below.
+  - **Other literature on these lenses (survey 2026-10-14).** Only two papers re-model the HST
+    data lens by lens:
+    - **Tan+2024** (`tan2024dinos1`, arXiv 2311.09307) models 19 of the 24 (not J0747+4448,
+      J1541, J1611, J1637 or J2122). Its Table A2 says
+      which lenses got a line-of-sight "foreground mask": J0747+5055, J0944, J1215, J1318,
+      J1337, J1352, J1542. Figs. B8–B9 give per-lens model panels.
+    - **Du+2026** (`du2026gravityanisotropy`) models all 24 with an elliptical broken power
+      law (no external-shear term listed). Its "multipoles" are in the B-spline lens-LIGHT
+      subtraction, not the mass. It publishes no per-lens parameters; the only BELLS figures are
+      J1601 (Fig. A1) and a likelihood map for J0830 (Fig. 1).
+    - Wong+2018 (SuGOHI II) has HSC overdensities for J0944, J1159, J1215 and J2303 (J2303
+      overdense).
+    - The PyAutoLens papers (Etherington 2022–24, Nightingale 2024) contain NO original-BELLS
+      lenses; they are SLACS + GALLERY.
+    - **DESI fibres on lensed images**, which must stay unmasked: J1215 (2.1″, z=1.297) and
+      J1352 (z=1.036 at E −2.24″, N −1.17″, i.e. the unmasked arc near col 165, row 97).
+    - **J1349+3612 had a same-z companion 3.9″ away** (DESI z=0.4412, Δv≈330 km/s, ~80% of the
+      deflector's light in matched apertures, Tan shear 0.17). **REMOVED by Sam, 2026-10-14**, with
+      all its data.
+    - J1542's 2.7″ neighbour is the Legacy Survey Sérsic source with r=20.2 and photo-z 0.43
+      (lens z=0.352).
+    - J1159-0007's DR9 redshift differs from Brownstein's 0.5793 because of the source's
+      emission lines (Brownstein's dagger). Keep 0.5793.
+
 **Where the arc should be: use the MEASURED Einstein radius, not an estimate.** For SLACS,
 Auger+2009 (SLACS IX) modelled these systems and VizieR carries the result (for `gallery` it is
-Shu+2016 Table 2, hand-entered — see *Tracking JSONs*):
+Shu+2016 Table 2, hand-entered; for SL2S, Sonnenfeld+2013 Table 6 — see *Tracking JSONs*):
 `J/ApJ/705/1099/lenses`, keyed on `SDSS` (e.g. `J1416+5136`), column **`RE` — the Einstein
 radius in kpc**, alongside `zlens`, `zsrc`, `sigma`, `MType`. Convert with
 θ_E["] = RE[kpc] / D_A(z_lens)[kpc] × 206265. **A lens appearing in that table has a
@@ -1324,18 +1445,21 @@ band's depth and PSF move where the sensible boundary falls.
 
 That is why a mask already drawn for another band is **proposed and reviewed** rather than
 written out blind. `find_proposal_mask` reprojects it onto the band about to be drawn and
-`draw_mask_gui` **outlines** it (1-px boundary, `mask_boundary`) over the usual two panels:
+`draw_mask_gui` hands it to `al.Scribbler(proposal=)`, which **outlines** it (a contour, black
+on a white halo) over the usual two panels:
 *radial-subtracted* (where the arcs are visible at all, so you can see what the inherited mask
 may be clipping) | *as-observed* in this band (the contaminant's real extent and the galaxy
 envelope). The interior is deliberately not filled (a "proposal applied" panel was tried
 and dropped at the user's call): the fill hides the very pixels being judged, and where the
 edge falls against this band's structure is the whole question.
 - **Two brushes, from `al.Scribbler`'s two built-in scribble segments** (nothing new to
-  maintain): `'1'` GREEN **adds** to the mask, `'2'` RED **erases** from it, on whichever
-  panel you like. `show_mask()` returns only segment 1, so the code reads `get_scribble_masks()`
-  after the blocking constructor returns. The mask written is
-  `(proposal | painted) & ~erased`. `make_arc_masks.py` inherits the eraser (its arc region
-  is `painted & ~erased`), which is the only change that tool needed.
+  maintain): `'1'` WHITE **adds** to the mask, `'2'` BLACK **erases** from it, on whichever
+  panel you like (white/black since 2026-10-08, upstream's choice: no colour map contains
+  either, and the pair is told apart by every kind of colour vision — green/red before).
+  After the blocking constructor returns, `make_masks.scribbles_from` reads
+  `get_scribble_masks()` (each brush, already on the band grid) for the provenance counts and
+  `mask_from()` for the mask written, `(proposal | painted) & ~erased` — both upstream.
+  `make_arc_masks.py` inherits the eraser (its arc region is `painted & ~erased`).
 - **The decision comes AFTER the GUI closes**, so it is made having seen the mask over this
   band's own image: `[a]` apply proposal+edits (default), `[d]` keep only what you drew
   (rejecting the proposal outright), `[s]` skip and write nothing. A non-interactive stdin or
@@ -1372,13 +1496,29 @@ extent and the galaxy envelope are. **You may scribble on either panel**; the tw
 read back and UNIONed onto the single-band mask, so the same stroke lands at the same sky
 position from either side (verified: identical masks from a left-panel and a right-panel
 stroke). Each panel is stretched independently — their dynamic ranges differ by orders of
-magnitude, so a shared scale would flatten one. Panel read-back goes through `fold_panels`
-(stride `panel_n_x + _PANEL_GAP`), which is written for N panels though only 1 or 2 are ever
-built — a reviewed proposal adds an outline to both panels, not a panel of its own.
-`make_arc_masks.py` has the same flag, also
-on by default. A panel-labelling title is applied on the first in-axes mouse move, because
-`al.Scribbler` builds its figure and then blocks inside `__init__` — there is no
-post-construction hook.
+magnitude, so a shared scale would flatten one. A reviewed proposal adds an outline to both
+panels, not a panel of its own. `make_arc_masks.py` has the same flag, also on by default.
+
+**All of this is `al.Scribbler`'s own since autolens 2026.10.7 (switched over 2026-10-08).**
+`draw_mask_gui` passes `subtract_radial=`, `side_by_side=`, `proposal=`, `positions=`,
+`mask_overlay=` and `title=` straight through and returns the closed scribbler; the panel
+compositing (NaN gutter, `panel_gap=6`), the fold-back of strokes onto the band grid (each
+stroke clipped to the panel it was drawn in), the proposal contour, the ×1.4 brush resizing
+with a 1 px floor, the brush-ring redraw and the window title (first line ours; the
+Scribbler appends the panel layout, a legend for every marker shown, and the keys) are all
+upstream. The repo's `_GuardedScribbler` subclass, `fold_panels`, `_PANEL_GAP`, the
+hand-hstacked composite and the burned-in 1-px outline are gone with it, and
+`radial_median_subtract` / `mask_boundary` are now imported from
+`autogalaxy.gui.display_util` (still reachable as `make_masks.radial_median_subtract` /
+`make_masks.mask_boundary` for the Clicker). **The display stretch changed with it**: the
+GUI now hands the raw S/N (or signal) array to the Scribbler, which maps each panel through
+its own arcsinh stretch about the panel's sky level (median / MAD-scaled, clipped at the
+0.5 / 99.5 percentiles of the stretched values — `display_util.arcsinh_stretch`), so
+`--stretch` / `--asinh-a` / `--vmin-percent` / `--vmax-percent` are gone from `make_masks.py`
+and in `make_arc_masks.py` render only the QC PNG. `stretched_display` (percentile +
+astropy `AsinhStretch(a)`) stays for `make_positions.py`'s Clicker and the QC PNGs, which
+are unchanged. The `display` field in `info/lens_masks.json` now reads
+`S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)`.
 
 **Defaults to `cutout_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
 tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked in git (see
@@ -1391,6 +1531,50 @@ Pass `--size 20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tre
 ones elsewhere; that key records what was displayed, not a different grid — the standard and
 bcfill stamps share their geometry to <1e-3 px, so every mask is valid on `main`'s standard
 stamps.
+
+### Modelling-side TODOs raised by the 2026-10-14 mask review (for `HST_lensing_mass_light`)
+
+A mask can only remove pixels. These are things the review found that **the lens model has to
+handle**, so they are listed here for the modelling project rather than lost in per-lens notes.
+
+- **Add a SKY-GRADIENT option to the modelling** (Sam, 2026-10-14): a planar (or low-order)
+  background term fitted with the lens light. The cases where smooth extended light crosses the
+  stamp and masking cannot remove it:
+  - J0747+4448 (bright star's diffuse halo, S/N ~0.1–0.35 per px across the upper part);
+  - J1159-0007 and J2122+0409 (diffuse neighbours, currently masked adequately);
+  - J0213-0743 (the reason it was dropped).
+- **Extra mass components to test** (an SIS fixed at the object's position, Einstein radius free
+  with the stated ceiling; compare the evidence with and without it):
+  - **External shear is not optional on several BELLS lenses.** Tan+2024 (`tan2024dinos1`,
+    Table 5) fits **"residual" shears** ≥0.07. Tan says the term also absorbs unmodelled
+    angular structure in the lens, so it is not purely external. The values:
+    - J1352+3216: 0.202
+    - J2303+0037: 0.167 (+0.015/−0.059; a galaxy group at the lens z, 10.8″ east, DESI z=0.4553)
+    - J1601+2138: 0.155 (+0.018/−0.136, poorly constrained)
+    - J0747+5055: 0.117
+    - J1234-0241: 0.108
+    - J1545+2748: 0.102
+    - J2125+0411: 0.092
+    - J0944-0147: 0.078
+    - J0151+0049 and J1542+1629: 0.071 each
+    (J1337 0.144 and J1349 0.173 were removed.) Verified against the PDF on 2026-10-14.
+  - *(J1337+3620 was the strongest case — a companion at 5.24″ with 35–50% of the light — and
+    was therefore REMOVED from `bells` on 2026-10-14 rather than modelled.)*
+  - **J1542+1629 — STRONG case if it is near the lens z.** The neighbour (col 75, row 89) is
+    2.72″ away, resolved (half-light radius ~0.5″; SDSS's "star" type is a blending artefact), and
+    ~10–35% of the deflector's light. There is no redshift. Ceiling θ_E,p ≈ 0.3–0.6″ (shear
+    ~0.06–0.11 at the lens), at d/θ_E ≈ 2.6.
+  - **J2203+0205** — unresolved point source at 0.72″. Its light is masked; ceiling θ_E,p ≈ 0.44″.
+    Probably an AGN, a compact clump or a star, so likely much less.
+  - **J1406+5226** — foreground knot at 1.31″. Its light is masked; ceiling ≈ 0.15″; z unknown,
+    so use the lens-plane approximation.
+- **Double source plane:** J0217-0513 (Tu+2009). R1 is masked for a single-plane fit; unmask R1
+  and R2 for a double-plane fit.
+- **Second source-light component:** J2221+0115 and J0232-0408 (Dinos II needed one).
+- **Lens light shape:** J1545+2748's deflector has flattened outer isophotes (q≈0.4), and
+  J2213-0009 is disky (q=0.20). A single round-ish Sérsic will leave residuals.
+- **Isophote/ellipse fits must exclude lensed light,** not just contaminants. On J0217-0513 the
+  counter-image Q4 biases the r≈0.5″ isophote by +14–30% over 60°. Use the arc mask too.
 
 ### Dataset QC subplots (`scripts/make_dataset_subplots.py`) — auto-rebuilt with every mask
 
@@ -1526,8 +1710,9 @@ envelope shows up at all, the as-observed panel is where you judge whether that 
 there or is a subtraction artefact. **Double-click either — they are the same sky.**
 - **Unlike `make_masks.py`, the panels are real matplotlib AXES, not an hstacked array**, and
   that is the whole reason no folding is needed here. The Scribbler reads one array back, so
-  there the panels must be composited and the scribble folded up afterwards
-  (`make_masks.fold_panels`). `al.Clicker` reads only `event.xdata/ydata`, so giving each panel
+  there the panels are composited and the scribble folded up afterwards (inside
+  `al.Scribbler` itself now: `display_util.composite_panels` / `fold_panels`). `al.Clicker`
+  reads only `event.xdata/ydata`, so giving each panel
   its own axes over the *same* arcsec extent means a click already carries panel-local sky
   coordinates and is forwarded untouched. Verified: the same click on the left panel, the right
   panel, and the old single-panel GUI all snap to identical positions.
@@ -1546,7 +1731,9 @@ there or is a subtraction artefact. **Double-click either — they are the same 
   the one region whose verdict is already in.
 - `make_masks.radial_median_subtract` gained an optional `exclude=` for this; the default
   reproduces the unexcluded profile **exactly** (verified byte-identical), so `make_masks.py`
-  and `make_arc_masks.py` are untouched.
+  and `make_arc_masks.py` are untouched. (Since 2026-10-08 that name is the upstream
+  `autogalaxy.gui.display_util.radial_median_subtract`, same algorithm and `exclude=`,
+  re-exported from `make_masks.py`.)
 
 **Three display-only levers make the arcs visible under the deflector light** (added
 2026-09-03). The deflector sets the colour scale on its own, so on most lenses the images
@@ -1575,9 +1762,11 @@ so a stamp's provenance says how it was marked:
   positions against the whole system.
 
 The shared machinery lives in `make_masks.py` next to the other display helpers
-(`stretched_display` gained `exclude=`/`vmax_value=`, plus new `radial_median_subtract`
-and `central_disc`); its default call path is byte-identical to the pre-2026-09-03
-implementation. `make_masks.py` takes `--subtract-radial` too but **OFF by default** — a
+(`stretched_display` gained `exclude=`/`vmax_value=`, plus `radial_median_subtract` — now the
+upstream one — and `central_disc`); its default call path is byte-identical to the
+pre-2026-09-03 implementation. `stretched_display` is now the Clicker's and the QC PNGs'
+only — the Scribbler GUIs use upstream's arcsinh stretch (see *Masks* above).
+`make_masks.py` takes `--subtract-radial` too but **OFF by default** — a
 contaminant mask is normally judged against the real sky — while `make_arc_masks.py` (below)
 has it **on**.
 
@@ -1607,20 +1796,21 @@ measurement, or a source-plane analysis.
   scribble, by contrast, is saved verbatim.
 - **`--subtract-radial` is ON by default here** (the arcs are the subject and are usually
   invisible under the galaxy envelope), and images already marked by `make_positions.py` are
-  **marked with a dark CROSS in the display** as a drawing guide (`--no-show-positions` off,
-  `--cross-size` for the arm length; silently inactive where no positions file exists). Both
-  are display-only.
+  **marked with a `+` CROSS in the display** as a drawing guide (`--no-show-positions` off,
+  `--cross-size` for the arm length, default the Scribbler's own 1.5 % of the stamp; silently
+  inactive where no positions file exists). Both are display-only.
   - **Crosses, not rings (2026-09-21, user's call).** Every other annotation on this GUI is a
-    *closed boundary* — the arc proposal is a solid white outline and the contaminant mask a
-    dashed dark one — so a dark ring read as a third small closed region, i.e. as one more
-    thing masked OUT, which is the opposite of what a marked image means. Four open ticks
-    cannot be read as an enclosed area at all, so the three annotations no longer have to be
-    told apart by line style alone. The arms stop 2 px short of the centre for the reason the
-    contaminant outline is not filled: the marked pixel is the one you are judging, so the
-    marker points at it rather than covering it (verified: centre pixel untouched on all four
-    J1250+0523 positions). Kept ~3 px thick so it is about as many display pixels as the 6 px
-    ring it replaced (~50 vs ~38) — a cross of hairlines reads fainter than a ring of the same
-    radius, and it has to survive being drawn over a bright arc.
+    *closed boundary* — the arc proposal's contour and the contaminant mask's edge — so a
+    dark ring read as a third small closed region, i.e. as one more thing masked OUT, which
+    is the opposite of what a marked image means. Four open ticks cannot be read as an
+    enclosed area at all, so the three annotations no longer have to be told apart by line
+    style alone.
+  - **Since 2026-10-08 the crosses are `al.Scribbler(positions=)`** — black with a thin white
+    halo, arms meeting at the marked pixel, drawn as `Line2D`s on every panel rather than
+    burned into the pixels — replacing the repo's `cross_overlay` (which had stopped the arms
+    2 px short of the centre and burned them in at the display minimum). The orientation trap
+    that overlay documented (autoarray's row 0 is +y) is upstream's to get right now
+    (`Scribbler.positions_pixels`).
 - Refuses to write an empty draw — an empty arc region would mask out the whole stamp.
 - **Where `--broadcast` is used, it reprojects the ARC REGION, not the saved array.**
   Outside-footprint pixels
@@ -1629,15 +1819,15 @@ measurement, or a source-plane analysis.
   (0.06″/200px vs 0.05″/240px): same sky area to 0.06%, same annulus radii to half a pixel.
 - Everything else — one draw per **band** (`--broadcast` to share it, same default and same
   reasoning as `make_masks.py`), band priority, `--size` routing, skip/`--force`
-  — is `make_masks.py`'s, imported rather than re-implemented. It gets the **red erase brush**
-  (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
+  — is `make_masks.py`'s, imported rather than re-implemented. It gets the **black erase
+  brush** (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
   over-painted stroke is trimmed rather than undone whole. Provenance in
   `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
   region over the radial-subtracted image.
 - **`--propose-from` IS now wired up, default `auto` (2026-09-15; union added 2026-09-16)** — the arc region you
   review comes from the automatic detector (`scripts/detect_arcs.py`, below), so arc masking
   is *correcting an outline*, not drawing one. The review loop and its code are
-  `make_masks.py`'s: outline on every panel, green adds / red erases, and `confirm_proposal`
+  `make_masks.py`'s: outline on every panel, white adds / black erases, and `confirm_proposal`
   after the GUI closes — `[a]` apply proposal+edits, `[d]` keep only what you drew, `[s]` skip
   and write nothing. Provenance gains `source` = `accepted_from_detect` / `edited_from_detect`
   / `drawn`, `proposal_px`, `n_added_px`, `n_erased_px`, and the detector's own numbers
@@ -1653,7 +1843,7 @@ measurement, or a source-plane analysis.
   from the detector *and your own reviewed region*. Both belong on screen: the detector sees
   what is blue in this lens now, your mask carries a judgement it cannot make, and neither is
   authoritative — an arc detected in one filter is often absent in another, which is precisely
-  why the union is outlined for review and trimmed with the red brush rather than broadcast.
+  why the union is outlined for review and trimmed with the black brush rather than broadcast.
   An explicit comma-separated list works too (`--propose-from detect,f814W`), `none` is the
   blank canvas, and under `--force` the draw band's own mask joins the union so refining a mask
   is not redrawing it. Provenance records `proposal_from` (`detect+f814W`),
@@ -1663,12 +1853,19 @@ measurement, or a source-plane analysis.
 - **The CONTAMINANT mask is outlined while you paint arcs (`--show-contaminants`, default on,
   2026-09-16).** The thing most likely to be mistaken for a lensed image is a neighbour or
   field source that has *already* been judged a contaminant on that very band, so
-  `cutout_[cr_]mask.fits` is drawn as a **dashed dark** boundary — which keeps three
-  annotations apart at a glance: arc proposal = solid WHITE outline, marked positions = DARK
-  CROSSES (rings until 2026-09-21, see above), contaminants = DASHED DARK. The interior is deliberately not filled, the same
-  call recorded for `make_masks.py`: blanking hides the pixels you are judging. Display only
-  and verified so (722 display pixels changed, written arc region untouched), silently
-  inactive on a band with no contaminant mask. The detector already excludes those pixels, so
+  `cutout_[cr_]mask.fits` is shown along its edge — which keeps three annotations apart at a
+  glance: arc proposal = contour (black on a white halo), marked positions = `+` CROSSES
+  (rings until 2026-09-21, see above), contaminants = black `x`s on the edge. The interior is
+  deliberately not filled, the same call recorded for `make_masks.py`: blanking hides the
+  pixels you are judging. Display only, silently inactive on a band with no contaminant mask.
+  - **Since 2026-10-08 this is `al.Scribbler(mask_overlay=)`** (was a dashed dark outline
+    burned into the pixels by the repo's `contaminant_overlay`). One trap, handled in
+    `make_arc_masks.contaminant_overlay`: the Scribbler scatters the edge of the overlay's
+    *unmasked* region (`Mask2D.derive_grid.edge`), so a contaminant mask passed as-is draws
+    ~950 `x`s around the stamp border plus the sky ring *outside* each blob. The mask is
+    therefore **inverted** before being passed, which puts the `x`s on each contaminant's own
+    boundary pixels and nowhere else (verified: every marker on a contaminant pixel, none on
+    the frame). The detector already excludes those pixels, so
   a proposal never lands on one — checked on J1020+1122, whose mask covers ~47% of the stamp.
 - **Two orientation traps, both found by test and both silent:** autoarray's native grid puts
   row 0 at **+y** (`row = cy - y/scale`), so a `cy + y/scale` position marker lands on the
@@ -2363,9 +2560,9 @@ Written by hand:
 Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
   source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* and not a
-  record of this repo's products: a lens lands here whatever sample it sits in. **100 rows from
-  two papers, and the `source` field is the only thing that says which** — read it before
-  pooling or comparing them:
+  record of this repo's products: a lens lands here whatever sample it sits in. **159 rows from
+  four survey series, and the `source` field is the only thing that says which** — read it
+  before pooling or comparing them:
   - **85 SLACS** from Auger+2009 (SLACS IX) via VizieR, `RE` kpc → arcsec on flat
     H0=70/**Ωm=0.3**. Refreshed on demand (`detect_arcs.py --fetch-theta-e`). **11 of them
     have no `RE`** — Auger has no lens model for them — so `theta_e_arcsec`/`RE_kpc` are
@@ -2382,6 +2579,33 @@ Not written by a pipeline run, and the odd one out in `info/`:
     — Table 2 also lists **J0918+4518**, one digit from gallery's **J0918+5104**, and both are
     grade-A. Values validated end-to-end: every detected gallery component lands at
     0.64–1.37 θ_E, and the dashed θ_E circle traces the arcs on all 6 contact-sheet panels.
+  - **37 SL2S** (all four `sl2s_*` samples), **added 2026-10-14** by
+    `local/scripts/add_sl2s_theta_e.py` (gitignored; its docstring is the provenance). **Two θ_E
+    sources, chosen per lens (Sam, 2026-10-14):**
+    - **The 21 Project Dinos II lenses use Sheu+2025 Table 1 `R_E`.** That is a power-law mass
+      model fitted to the HST F475X data, and its errors are kept as `theta_e_err_arcsec`
+      `[+, −]`. It fits these images better than the ground-based values. J0205-0930 is 1.246″
+      against SL2S V's 0.76″, J0218's ring knots sit at 0.91 θ_E (0.77 on SL2S III), and the
+      other shifts are 0.04–0.28″.
+    - **The other 17 use Sonnenfeld+2013 (SL2S III) Table 6 `R_Ein`** (VizieR
+      `J/ApJ/777/97/table6`), first row per lens only. Second rows are extra model components,
+      not alternatives: J0213-0743's companion SIE (θ_E 0.74″; that lens has since been dropped), and external shear on
+      J0217-0513 (0.11) and J1405+5243 (0.05).
+
+    `zlens` is Paper III Table 7 (+ SL2S V Table 1 for J0205/J0218), and `zsrc` is **SL2S IV
+    Table 2** (+ SL2S V for J0205/J0220). Both are hand-entered from the PDFs. **`sigma_kms` is
+    null for every SL2S row on purpose**: Paper IV lists several per-instrument σ per lens and
+    an aperture-corrected σ_e2 for only 25, so pick one deliberately before using it. `RE_kpc` is
+    derived on flat H0=70/Ωm=0.3, which is both SL2S's and Dinos II's cosmology; on the SL2S III
+    values it reproduced Paper IV Table 3's kpc to ≤0.03. Joined on the full designation
+    (`mast_target`), not the short name. **Every row has a θ_E**; J1423+5722 and J1419+5117 have
+    no `zlens` (so no `RE_kpc`), and 9 rows have no `zsrc`. The script drops any SL2S row whose
+    lens has left the roster (J0233-0438, J0213-0743).
+  - **22 BELLS** (24 until J1337+3620 and J1349+3612 were removed, 2026-10-14), added 2026-10-14 by `local/scripts/add_bells_theta_e.py` (gitignored; it
+    parses the filed PDF). θ_E is **Brownstein+2012 (BELLS I) Table 5** (SIE). `zlens`/`zsrc`/
+    `sigma_kms` come from its Table 2: σ_BOSS, uncorrected for aperture. J1159-0007's zL carries
+    the paper's dagger (it differs from the DR9 redshift). `RE_kpc` is derived on flat
+    H0=70/Ωm=0.3, because the paper states no cosmology. Joined on the HHMM±DDMM name.
   - **`--fetch-theta-e` MERGES, and must keep doing so.** It used to write the fetched table
     wholesale, which would now silently delete all 15 gallery rows and take
     `--propose-from detect` down on that whole sample — the failure would surface only as
@@ -2454,10 +2678,10 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Not yet reduced |
-| **`sl2s_dinos_x`** | 13 | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
-| **`sl2s_wf`** | 11 | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
+| **`sl2s_dinos_x`** | 12 (J0233-0438 removed 2026-10-14) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
+| **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
 | **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
-| **`bells`** | 24 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
+| **`bells`** | 22 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
@@ -2539,7 +2763,7 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 
 ### SL2S samples (roster agreed 2026-10-04, not yet reduced)
 
-39 lenses in four samples, grouped by which HST bands exist. Every per-lens `note` in
+37 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:
 - **Sonnenfeld+2013 (SL2S III) Table 6:** grade A, HST = Y, and not the one "double"
   (J1405+5502), giving 29 lenses. SL2S has no E-S-A-style classification. Table 6's morphology
@@ -2548,8 +2772,14 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
   J0218-0802 and J0220-0949, are grade B in SL2S III but **upgraded to A in Sonnenfeld+2015
   (SL2S V) Sect. 2**, because new spectra put lens and arc at different redshifts. J0205-0930
   is only in SL2S V, where it is grade A.
-- **J0233-0438:** grade A in SL2S V Table 3 ("double image system"). It was observed in
-  GO-17130 but is not one of Dinos II's 21, and the paper gives no reason.
+- **J0233-0438 — REMOVED 2026-10-14 (no usable data).** It is grade A in SL2S V Table 3
+  ("double image system") and was observed in GO-17130, but it is not one of Dinos II's 21, and
+  the paper gives no reason. The likely reason is that **both F475X visits failed.** All 8
+  frames carry `EXPFLAG='TDF-DOWN AT EXPSTART'` and show blank sky where the WCS puts the lens.
+  The g≈22 deflector is absent, and the 160″ field holds no recognisable sources. Its roster
+  entry, tracked stamps and tracking-JSON records were deleted; its gitignored
+  calibrated/drizzled/PSF files and run logs were deleted too (Sam, 2026-10-14). **The flag is not a rejection test on its own**: one
+  J0226-0420 frame carries it and is fine.
 
 Bands and how each is taken (depths from the MAST product lists):
 - **F475X (X):** WFC3/UVIS, GO-17130, 4 × ~590 s. Where a lens also has the GO-11588 snapshot
@@ -2649,10 +2879,13 @@ other BELLS rootnames). So it first fell back to STDPSF with injection. Fitted t
 stars, J0747+4448's empirical PSF (observed the same day) did best on the bright star:
 chi2/dof 156. The 22 other BELLS empirical PSFs scored 192–345, the BELLS median 224 and the
 STDPSF+injection kernel 251. On the faint star it ranked second. The error map is the BELLS
-donor scatter. Its stale injection record was removed from `lens_psf_injected.json`.
+donor scatter. Its stale injection record was removed from `lens_psf_injected.json`. Its error map includes
+the empirical kernels of J1337+3620 and J1349+3612 among its 23 donors. Both left the sample on
+2026-10-14, but their PSF stars are still valid, so the map was not rebuilt. A rebuild would now use
+21 donors.
 
 **Noise-map inflation:** see *Drizzle correlated noise → Repo-wide factors and the
-patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 11 low-sky GO-17130 overrides
+patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 10 low-sky GO-17130 overrides (11 before J0233-0438 was removed)
 (1.32–1.43); F600LP is 1.19; J0217-0513's ACS F606W is 1.20.
 
 **PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
@@ -2660,7 +2893,7 @@ fallbacks for the 22 products with too few stars (2026-10-05):
 - **WFPC2 F606W (18) and ACS F814W (2)** use `make_psf.py --method auto`: the usual model
   tiers (WFPC2: MAST PSF DB; ACS: focus-diverse ePSF, else STDPSF), with the injection step.
   The WF3 chip's 80″ field gave 0 usable stars in every SL2S WFPC2 field.
-- **J0233-0438 F475X (0 stars) and J1358+5459 F600LP (2 stars)** use
+- **J1358+5459 F600LP (2 stars)** uses (as did J0233-0438 F475X, 0 stars, before its removal)
   `scripts/make_psf_median.py`. Those bands have no STDPSF grid. The script takes the
   per-pixel median of the other fields' empirical kernels in the same band and pixel scale
   (29 F475X donors, 11 F600LP), with the donor-to-donor std as the PSF error map.

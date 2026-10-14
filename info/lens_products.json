@@ -88,22 +88,6 @@
                 "jbiv23k9q"
             ]
         },
-        "J1337+3620": {
-            "f814W": [
-                "jbiv24wzq",
-                "jbiv24x0q",
-                "jbiv24xdq",
-                "jbiv24xfq"
-            ]
-        },
-        "J1349+3612": {
-            "f814W": [
-                "jbiv27hyq",
-                "jbiv27hzq",
-                "jbiv27i1q",
-                "jbiv27i3q"
-            ]
-        },
         "J1352+3216": {
             "f814W": [
                 "jbiv28d7q",
@@ -609,18 +593,6 @@
                 "iewp07hvq"
             ]
         },
-        "J0233-0438": {
-            "f475X": [
-                "iewp10gtq",
-                "iewp10guq",
-                "iewp10gwq",
-                "iewp10gxq",
-                "iewp23ugq",
-                "iewp23uhq",
-                "iewp23ulq",
-                "iewp23umq"
-            ]
-        },
         "J0848-0351": {
             "f475X": [
                 "iewp11ojq",
@@ -749,13 +721,6 @@
         }
     },
     "sl2s_wf": {
-        "J0213-0743": {
-            "f606W": [
-                "ua1n2701m",
-                "ua1n2702m",
-                "ua1n2703m"
-            ]
-        },
         "J0225-0454": {
             "f606W": [
                 "ua1n7401m",
