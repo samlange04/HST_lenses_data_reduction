@@ -1347,7 +1347,7 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   All its gitignored data were deleted too. The review notes below were made before the removal. **J1542+1629's masked elliptical leaked halo past its mask** (by up to ~1″, at
   per-pixel S/N 1.6 at the edge). **Sam regrew the mask the same day, and the leak is gone.** **J0747+4448 is usable**: the spike mask is adequate, and
   its two nearby galaxies (2.4 and 3.7 θ_E) are now masked. **J1542's neighbour is a
-  mass-component candidate**; see *Modelling-side TODOs* below.
+  mass-component candidate**; see *Modelling-side to-dos* below.
   - **Other literature on these lenses (survey 2026-10-14).** Only two papers re-model the HST
     data lens by lens:
     - **Tan+2024** (`tan2024dinos1`, arXiv 2311.09307) models 19 of the 24 (not J0747+4448,
@@ -1536,51 +1536,15 @@ ones elsewhere; that key records what was displayed, not a different grid — th
 bcfill stamps share their geometry to <1e-3 px, so every mask is valid on `main`'s standard
 stamps.
 
-### Modelling-side TODOs raised by the 2026-10-14 mask review (for `HST_lensing_mass_light`)
+### Modelling-side to-dos from the 2026-10-14 mask review live in the analysis repo
 
-A mask can only remove pixels. These are things the review found that **the lens model has to
-handle**, so they are listed here for the modelling project rather than lost in per-lens notes.
-
-- **Add a SKY-GRADIENT option to the modelling** (Sam, 2026-10-14): a planar (or low-order)
-  background term fitted with the lens light. The cases where smooth extended light crosses the
-  stamp and masking cannot remove it:
-  - J0747+4448 (bright star's diffuse halo, S/N ~0.1–0.35 per px across the upper part);
-  - J1159-0007 and J2122+0409 (diffuse neighbours, currently masked adequately);
-  - J0213-0743 (the reason it was dropped).
-- **Extra mass components to test** (an SIS fixed at the object's position, Einstein radius free
-  with the stated ceiling; compare the evidence with and without it):
-  - **External shear is not optional on several BELLS lenses.** Tan+2024 (`tan2024dinos1`,
-    Table 5) fits **"residual" shears** ≥0.07. Tan says the term also absorbs unmodelled
-    angular structure in the lens, so it is not purely external. The values:
-    - J1352+3216: 0.202
-    - J2303+0037: 0.167 (+0.015/−0.059; a galaxy group at the lens z, 10.8″ east, DESI z=0.4553)
-    - J1601+2138: 0.155 (+0.018/−0.136, poorly constrained)
-    - J0747+5055: 0.117
-    - J1234-0241: 0.108
-    - J1545+2748: 0.102
-    - J2125+0411: 0.092
-    - J0944-0147: 0.078
-    - J0151+0049 and J1542+1629: 0.071 each
-    (J1337 0.144 and J1349 0.173 were removed.) Verified against the PDF on 2026-10-14.
-  - *(J1337+3620 was the strongest case — a companion at 5.24″ with 35–50% of the light — and
-    was therefore REMOVED from `bells` on 2026-10-14 rather than modelled.)*
-  - **J1542+1629 — STRONG case if it is near the lens z.** The neighbour (col 75, row 89) is
-    2.72″ away, resolved (half-light radius ~0.5″; SDSS's "star" type is a blending artefact), and
-    ~10–35% of the deflector's light. There is no redshift. Ceiling θ_E,p ≈ 0.3–0.6″ (shear
-    ~0.06–0.11 at the lens), at d/θ_E ≈ 2.6.
-  - **J2203+0205** — unresolved point source at 0.72″. Its light is masked; ceiling θ_E,p ≈ 0.44″.
-    Probably an AGN, a compact clump or a star, so likely much less.
-  - **J1406+5226** — foreground knot at 1.65″. Its light is masked; ceiling ≈ 0.15″; z unknown,
-    so use the lens-plane approximation.
-- **SL2S bands are field-source tied to F475X to ≤5 mas (2026-10-14)**; see *SL2S samples*.
-  J1406 F606W included (353 mas, tied on a second pass once the matching was fixed).
-- **Double source plane:** J0217-0513 (Tu+2009). R1 is masked for a single-plane fit; unmask R1
-  and R2 for a double-plane fit.
-- **Second source-light component:** J2221+0115 and J0232-0408 (Dinos II needed one).
-- **Lens light shape:** J1545+2748's deflector has flattened outer isophotes (q≈0.4), and
-  J2213-0009 is disky (q=0.20). A single round-ish Sérsic will leave residuals.
-- **Isophote/ellipse fits must exclude lensed light,** not just contaminants. On J0217-0513 the
-  counter-image Q4 biases the r≈0.5″ isophote by +14–30% over 60°. Use the arc mask too.
+A mask can only remove pixels; what the review found that **the lens model has to handle** (a
+sky-gradient term, large residual shears on BELLS, candidate extra masses for J1542+1629,
+J2203+0205 and J1406+5226, J0217-0513's double source plane, second source components,
+flattened lens light, lensed light in isophote fits) is listed in
+`HST_lensing_mass_light:local/data_caveats.md` § *BELLS and SL2S — what the model has to
+handle*. Keep it there, not here: add a new modelling consequence of a mask decision to that
+file, and keep only the mask verdict itself in this file and in `info/lens_masks.json`.
 
 ### Dataset QC subplots (`scripts/make_dataset_subplots.py`) — auto-rebuilt with every mask
 
