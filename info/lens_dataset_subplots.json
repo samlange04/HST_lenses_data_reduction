@@ -1188,6 +1188,26 @@
                 "frac_masked": 0.083445,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_wf/J1358+5459/f475X/cutout_cr_dataset.png"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.0396,
+                "frac_masked": 0.131414,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_wf/J1358+5459/f600LP/cutout_cr_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.109306,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_wf/J1358+5459/f606W/cutout_cr_dataset.png"
             }
         },
         "J1401+5557": {
@@ -1212,6 +1232,26 @@
                 "frac_masked": 0.042686,
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_wf/J1419+5117/f475X/cutout_cr_dataset.png"
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.0396,
+                "frac_masked": 0.074415,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_wf/J1419+5117/f600LP/cutout_cr_dataset.png"
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "stretch": "asinh",
+                "cmap": "inferno",
+                "pixel_scale_arcsec": 0.05,
+                "frac_masked": 0.076997,
+                "bcfill": false,
+                "output": "data/cutouts/sl2s_wf/J1419+5117/f606W/cutout_cr_dataset.png"
             }
         },
         "J1427+5516": {

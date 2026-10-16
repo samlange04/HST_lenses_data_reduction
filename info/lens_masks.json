@@ -1618,6 +1618,36 @@
                 "n_excluded_px": 7661,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 12065,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 7597,
+                "n_added_px": 5946,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f475X",
+                "n_excluded_px": 6296,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 4733,
+                "n_added_px": 2486,
+                "n_erased_px": 0
             }
         },
         "J1401+5557": {
@@ -1644,6 +1674,36 @@
                 "n_excluded_px": 3919,
                 "brush_width": 0.019802,
                 "brush_radius_px": 6
+            },
+            "f600LP": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 6832,
+                "brush_width": 0.019802,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 3919,
+                "n_added_px": 6832,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 4435,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f475X",
+                "proposal_px": 2439,
+                "n_added_px": 4435,
+                "n_erased_px": 0
             }
         },
         "J1427+5516": {
