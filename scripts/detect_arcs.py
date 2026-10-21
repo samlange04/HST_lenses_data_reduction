@@ -159,7 +159,10 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
     Shu+2016 and were entered by hand; a wholesale write here would silently delete them and
     take `--propose-from detect` down on all 15 gallery lenses. Rows this catalogue does not
     carry are kept as they are, and a fetched row replaces a hand-entered one of the same
-    name (the catalogue is authoritative for the lenses it does cover).
+    name (the catalogue is authoritative for the lenses it does cover) -- EXCEPT where the
+    catalogue has no theta_E for a lens and the existing row has one from another paper
+    (J2141-0001, Brewer+2012): that row keeps its theta_E, error and source, and takes only
+    the catalogue's redshifts and sigma.
     """
     import urllib.request
     from astropy.cosmology import FlatLambdaCDM
@@ -195,6 +198,11 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
         with open(THETA_E_JSON) as fh:
             merged = json.load(fh)
     kept = sorted(set(merged) - set(out))
+    for name, row in out.items():
+        old = merged.get(name) or {}
+        if row['theta_e_arcsec'] is None and old.get('theta_e_arcsec') is not None:
+            row.update({k: old[k] for k in ('theta_e_arcsec', 'theta_e_err_arcsec', 'RE_kpc',
+                                            'source') if k in old})
     merged.update(out)
     with open(THETA_E_JSON, 'w') as fh:
         json.dump(dict(sorted(merged.items())), fh, indent=1)

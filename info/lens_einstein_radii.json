@@ -1216,12 +1216,16 @@
   "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
  "J2141-0001": {
-  "theta_e_arcsec": null,
-  "RE_kpc": null,
+  "theta_e_arcsec": 0.88,
+  "RE_kpc": 2.15,
   "zlens": 0.138,
   "zsrc": 0.713,
   "sigma_kms": 181,
-  "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
+  "source": "Brewer+2012 (SWELLS III, MNRAS 422, 3574) Table 1 SIE+shear b (intermediate-axis); zlens/zsrc/sigma from Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses, which has no lens model for it",
+  "theta_e_err_arcsec": [
+   0.09,
+   0.09
+  ]
  },
  "J2203+0205": {
   "theta_e_arcsec": 1.677,

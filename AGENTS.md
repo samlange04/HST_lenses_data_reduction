@@ -2553,8 +2553,8 @@ Not written by a pipeline run, and the odd one out in `info/`:
 - **`lens_einstein_radii.json`** — `{lens: {theta_e_arcsec, RE_kpc, zlens, zsrc, sigma_kms,
   source}}` — **flat by lens, not nested by sample**, because it is a *catalogue* and not a
   record of this repo's products: a lens lands here whatever sample it sits in. **159 rows from
-  four survey series, and the `source` field is the only thing that says which** — read it
-  before pooling or comparing them:
+  four survey series, plus one θ_E from a fifth paper (J2141-0001, below). The `source` field
+  is the only thing that says which**, so read it before pooling or comparing them:
   - **85 SLACS** from Auger+2009 (SLACS IX) via VizieR, `RE` kpc → arcsec on flat
     H0=70/**Ωm=0.3**. Refreshed on demand (`detect_arcs.py --fetch-theta-e`). **11 of them
     have no `RE`** — Auger has no lens model for them — so `theta_e_arcsec`/`RE_kpc` are
@@ -2562,6 +2562,13 @@ Not written by a pipeline run, and the odd one out in `info/`:
     rows whole**, redshifts included; they are kept now because the modelling project
     (`HST_lensing_mass_light:hpc/data/stage_data.py`) reads its redshifts from this file.
     **Every reader of θ_E must allow `null`** (`theta_e_table()` → `propose()` refuses by name).
+    **J2141-0001 is the one no-`RE` row with a θ_E (entered 2026-10-21):** `0.88″ ± 0.09`
+    (`theta_e_err_arcsec`) is **Brewer+2012 (SWELLS III) Table 1** `b`, an SIE + external shear
+    fit in the intermediate-axis convention (the same convention as SLACS). It was fitted to
+    HST F814W, J2141's Table 1 modelling band. `RE_kpc` 2.15 is derived on flat H0=70/Ωm=0.3,
+    and z and σ stay Auger's. Its `source` names both papers. It was entered because J2141's
+    positions file is deliberately empty, which left the modelling project's
+    no-positions θ_E check with nothing to compare against.
   - **15 gallery** from **Shu+2016 (BELLS GALLERY IV, ApJ 833, 264) Table 2** `bSIE`
     (Sérsic foreground subtraction), z/σ from its Table 1, **entered by hand 2026-09-17** —
     that paper is **not on VizieR** (only Shu+2016a, the parent candidate list, is), so
@@ -2602,11 +2609,15 @@ Not written by a pipeline run, and the odd one out in `info/`:
     wholesale, which would now silently delete all 15 gallery rows and take
     `--propose-from detect` down on that whole sample — the failure would surface only as
     "no measured Einstein radius" much later. Rows the catalogue does not carry are kept; a
-    fetched row wins over a hand-entered one of the same name.
+    fetched row wins over a hand-entered one of the same name, **except that a fetched null
+    θ_E never overwrites a non-null one**. That row keeps its θ_E, error, `RE_kpc` and `source`
+    and takes only the catalogue's z and σ (added 2026-10-21 for J2141-0001; tested against a
+    mocked fetch).
 
   Tracked in git so the detector runs offline. Every lens in the three samples has a row and
-  redshifts. Three `slacs_other` lenses have **no θ_E** (no Auger lens model):
-  **`J1259+6134`, `J2141-0001`, `J2302-0840`** (only the last two have cutouts at all).
+  redshifts. Two `slacs_other` lenses have **no θ_E** (no Auger lens model):
+  **`J1259+6134`, `J2302-0840`** (only the second has cutouts). `J2141-0001` was the third
+  until its Brewer+2012 θ_E went in on 2026-10-21.
 
 No data for a filter → value `null`.
 
