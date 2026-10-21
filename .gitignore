@@ -32,24 +32,24 @@ data/*
 # stamp with no GUI and no re-clicking:
 #     uv run python scripts/make_positions.py --sample <sample> --overlays-only
 # so it is regenerable in the sense this file cares about, and stays out of history.
-# NOTE _dataset.png and _mask_arcs.png are still tracked (the dataset PNG is the QC view
-# people actually open); cutout_cr.png / cutout.png were untracked 2026-10-04 -- they are
+# NOTE _dataset.png is still tracked (the QC view people actually open; _mask_arcs.png
+# left git with the arc masks, below); cutout_cr.png / cutout.png were untracked 2026-10-04 -- they are
 # a plain render of the tracked sci stamp, rebuilt by make_cutouts.py, and had grown to
 # 410 MB of history.
 data/cutouts/**/*_positions.png
 data/cutouts/**/cutout_cr.png
 data/cutouts/**/cutout.png
 
-# ── slacs_gold f606W arc masks: parked, not abandoned (2026-09-21) ─────────────
-# The slacs_gold f814W arc masks (38/38) are committed; its f606W ones (10 so far) are
-# held OUT of git for now at the user's request. Nothing is deleted: the .fits and .png
-# stay on disk beside the sci they were drawn on and their provenance stays in
-# info/lens_arc_masks.json, so make_arc_masks.py still counts them done and skips them
-# (--force to redraw). Drop these two lines to commit them.
-# NOTE this is the ONLY _mask_arcs file under data/cutouts/ that is ignored -- gallery's
-# and slacs_other's f606W arc masks, and slacs_gold's own f814W ones, are all tracked.
-data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.fits
-data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.png
+# ── Arc masks: ALL out of git (2026-10-21) ─────────────────────────────────────
+# Every cutout_[cr_]mask_arcs.{fits,png}, in every sample and band, is held OUT of git at
+# the user's request (not confident in them; arc masks are optional products anyway).
+# This replaces the 2026-09-21 rule that parked only slacs_gold f606W. Untracked on main
+# and bcfill with `git rm --cached`; the earlier commits keep them in history. Nothing is
+# deleted: the files stay on disk beside the sci they were drawn on, and their provenance
+# stays in the tracked info/lens_arc_masks.json, so make_arc_masks.py still counts them
+# done and skips them (--force to redraw). Drop these two lines to track them again.
+data/cutouts/**/*_mask_arcs.fits
+data/cutouts/**/*_mask_arcs.png
 
 # ...and neither is the per-size QC provenance for an untracked size, which would
 # otherwise be a tracked file describing products nobody else has on disk. The default

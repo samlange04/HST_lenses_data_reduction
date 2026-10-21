@@ -37,8 +37,9 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*).
 | `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | f606W 10 | all 34 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | f606W 15 | all 27 |
 
-- **Masking and marking are finished.** Arc masks are **not needed** on the bands that lack
-  them (user's call, 2026-09-26) — don't offer to draw them.
+- **Masking and marking are finished.** Arc masks are **always optional** (user, 2026-09-26,
+  restated 2026-10-21) and are **out of git on both branches since 2026-10-21** — see *Arc
+  masks*. Never list a missing one as outstanding, and don't offer to draw them.
 - **16 lenses have deliberately EMPTY positions files** (user, 2026-09-26: images too
   uncertain to mark) — see *Image positions*. An empty file means "decided: none", not "to do".
 - The three 420 s SNAP F814W diagnostics (`slacs_other` J1134+6027, J1403+0006, J1538+5817)
@@ -1586,17 +1587,20 @@ measurement, or a source-plane analysis.
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
   `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
   outline needs `origin='upper'` or it is drawn vertically mirrored.
-- **`slacs_gold` f606W arc masks are PARKED OUT OF GIT (2026-09-21, user's call).** Its f814W
-  arc masks (38/38) are committed; the 10 f606W ones drawn so far are held out by a
-  `.gitignore` rule on `data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.{fits,png}` —
-  the only `_mask_arcs` files under `data/cutouts/` that are ignored (gallery's and
-  `slacs_other`'s f606W, and `slacs_gold`'s own f814W, are all tracked, so do not generalise
-  the rule). **Nothing was deleted**: the files stay on disk beside the sci they were drawn
-  on and their provenance stays in `info/lens_arc_masks.json`, so `make_arc_masks.py` still
-  counts those 10 bands done and skips them (`--force` to redraw) — the rule governs git, not
-  the campaign. Delete the two lines to commit them.
-- **Arc masking is finished.** The bands without one (see *Current state* at the top) do not
-  need one — user's call, 2026-09-26.
+- **EVERY arc mask is OUT OF GIT (2026-10-21, user's call: not confident in them).** A
+  `.gitignore` rule on `data/cutouts/**/*_mask_arcs.{fits,png}` covers every sample and band,
+  and the 126 previously tracked files (63 FITS + 63 QC PNGs: `slacs_gold` f814W 38,
+  `slacs_other` f606W 10, `gallery` f606W 15) were `git rm --cached` on **both `main` and
+  `bcfill`**. They remain in the history of earlier commits. This replaces the 2026-09-21 rule
+  that parked only `slacs_gold` f606W. **Nothing was deleted**: the files stay on disk beside
+  the sci they were drawn on, and their provenance stays in the tracked `info/lens_arc_masks.json`,
+  so `make_arc_masks.py` still counts those bands done and skips them (`--force` to redraw). The
+  rule governs git, not the campaign. A fresh clone therefore has the provenance but **not the
+  masks**. The 10 `slacs_gold` f606W entries point at files that are no longer on disk
+  (never in git, lost before 2026-10-21). Delete the two `.gitignore` lines to track arc masks again.
+- **Arc masks are ALWAYS OPTIONAL (user, 2026-09-26, restated 2026-10-21).** A band or a
+  whole sample without one is not outstanding work. Don't
+  count it in a status report, and don't offer to draw one.
 
 ## Automatic arc detection (`scripts/detect_arcs.py`)
 
