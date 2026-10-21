@@ -28,19 +28,32 @@ re-litigate it"; the slug names the note, not a file in this repo.
 > holds the standalone exploratory scripts behind the bcfill decision (validation-only; they
 > write to `diagnostics/bolton_test_outputs/`, not `data/`).
 
-## Current state of the products (verified on disk 2026-09-26)
+## Current state of the products (verified on disk 2026-10-21)
 
 Science bands only — gallery's F225W/F275W were reduced, found unusable, and **every UV
-product was deleted 2026-09-29** (see *BELLS GALLERY*).
+product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
+`_dataset.png` QC subplot (see *Dataset QC subplots*).
 
-| sample | bands | stamps + PSF + psf_err | contaminant masks | arc masks | positions JSON |
+| sample | bands | stamps + PSF + psf_err + dataset | contaminant masks | positions JSON | arc masks (optional, untracked) |
 |---|---|---|---|---|---|
-| `slacs_gold` | f814W 38, f606W 23 (incl. `f606W_v2`), f555W 16, f160W 13 | all 90 | all 90 | f814W 38 (+10 f606W, gitignored) | all 90 |
-| `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | f606W 10 | all 34 |
-| `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | f606W 15 | all 27 |
+| `slacs_gold` | f814W 38, f606W 23 (incl. `f606W_v2`), f555W 16, f160W 13 | all 90 | all 90 | all 90 | f814W 38 |
+| `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | all 34 | f606W 10 |
+| `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
+| `bells` | f814W 22 | all 22 | all 22 | **none yet** | — |
+| `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | **none yet** | — |
+| `sl2s_dinos_x` | f475X 12, f600LP 3 | all 15 | all 15 | **none yet** | — |
+| `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
+| `sl2s_snap` | f475X 6, f600LP 6 | all 12 | all 12 | **none yet** | — |
 
-- **Masking and marking are finished.** Arc masks are **not needed** on the bands that lack
-  them (user's call, 2026-09-26) — don't offer to draw them.
+- **The one outstanding product is image positions for BELLS and the four SL2S samples**
+  (`run_positions_all.sh <sample>`, the user's GUI step). Contaminant masking is finished
+  everywhere: the last two gaps (J1358+5459 and J1419+5117 f606W/f600LP) were drawn 2026-10-16.
+- **Arc masks are ALWAYS OPTIONAL (user, 2026-10-21): never list a missing one as
+  outstanding, and don't offer to draw them.** Every arc mask was **taken out of git on
+  `main` and `bcfill` on 2026-10-21** (the user is not confident in them); the files that
+  exist stay on disk, gitignored — see *Arc masks*. The 10 `slacs_gold` f606W arc masks
+  recorded in `info/lens_arc_masks.json` are **not on disk** (they were never in git, so
+  they were lost from the working tree at some point before 2026-10-21); the provenance entries remain.
 - **16 lenses have deliberately EMPTY positions files** (user, 2026-09-26: images too
   uncertain to mark) — see *Image positions*. An empty file means "decided: none", not "to do".
 - The three 420 s SNAP F814W diagnostics (`slacs_other` J1134+6027, J1403+0006, J1538+5817)
@@ -271,7 +284,7 @@ data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled[_bcfill]/<sample>/<lens>/<filter>/ ← final products (<prefix>_cr_*/_nocrrej_* sci+wht); _bcfill is the bad-column-filled re-drizzle
-  cutouts/<sample>/<lens>/<filter>/       ← THE science tree (git-tracked): one stamp per band — cutout_[cr_]{sci,noise,psf,psf_err,mask,mask_arcs}.fits, cutout_[cr_]positions.json, cutout_[cr_][_dataset].png
+  cutouts/<sample>/<lens>/<filter>/       ← THE science tree (git-tracked, except the optional mask_arcs files): one stamp per band — cutout_[cr_]{sci,noise,psf,psf_err,mask,mask_arcs}.fits, cutout_[cr_]positions.json, cutout_[cr_][_dataset].png
   cutouts_<S>arcsec/<sample>/...          ← the same stamps cut at a non-default --size (see Cutouts)
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
   mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
@@ -1670,7 +1683,8 @@ That flag exists so the ignore rule is honest — without it "regenerable" would
 re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
 GUI wrote. `cutout_cr.png` (and the WFPC2-era `cutout.png`) joined it as an ignored QC
 render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_cutouts.py`);
-`_dataset.png` and `_mask_arcs.png` are still tracked, so do not generalise the rule.
+`_dataset.png` is still tracked, so do not generalise the rule (`_mask_arcs.png` left git with
+the arc masks on 2026-10-21, see *Arc masks*).
 
 **Two panels by default, and the band's contaminants blanked (2026-09-17).** The GUI shows
 the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
@@ -1842,17 +1856,20 @@ measurement, or a source-plane analysis.
   *mirror* of each image — plausibly near the lens, and on nothing; and `plt.contour` with an
   `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
   outline needs `origin='upper'` or it is drawn vertically mirrored.
-- **`slacs_gold` f606W arc masks are PARKED OUT OF GIT (2026-09-21, user's call).** Its f814W
-  arc masks (38/38) are committed; the 10 f606W ones drawn so far are held out by a
-  `.gitignore` rule on `data/cutouts/slacs_gold/*/f606W/cutout_cr_mask_arcs.{fits,png}` —
-  the only `_mask_arcs` files under `data/cutouts/` that are ignored (gallery's and
-  `slacs_other`'s f606W, and `slacs_gold`'s own f814W, are all tracked, so do not generalise
-  the rule). **Nothing was deleted**: the files stay on disk beside the sci they were drawn
-  on and their provenance stays in `info/lens_arc_masks.json`, so `make_arc_masks.py` still
-  counts those 10 bands done and skips them (`--force` to redraw) — the rule governs git, not
-  the campaign. Delete the two lines to commit them.
-- **Arc masking is finished.** The bands without one (see *Current state* at the top) do not
-  need one — user's call, 2026-09-26.
+- **EVERY arc mask is OUT OF GIT (2026-10-21, user's call: not confident in them).** A
+  `.gitignore` rule on `data/cutouts/**/*_mask_arcs.{fits,png}` covers every sample and band,
+  and the 126 previously tracked files (63 FITS + 63 QC PNGs: `slacs_gold` f814W 38,
+  `slacs_other` f606W 10, `gallery` f606W 15) were `git rm --cached` on **both `main` and
+  `bcfill`**. They remain in the history of earlier commits. This replaces the 2026-09-21 rule
+  that parked only `slacs_gold` f606W. **Nothing was deleted**: the files stay on disk beside
+  the sci they were drawn on, and their provenance stays in the tracked `info/lens_arc_masks.json`,
+  so `make_arc_masks.py` still counts those bands done and skips them (`--force` to redraw). The
+  rule governs git, not the campaign. A fresh clone therefore has the provenance but **not the
+  masks**. The 10 `slacs_gold` f606W entries already point at files that are gone (see *Current
+  state*). Delete the two `.gitignore` lines to track arc masks again.
+- **Arc masks are ALWAYS OPTIONAL (user, 2026-09-26, restated 2026-10-21).** A band or a
+  whole sample without one (BELLS and all of SL2S have none) is not outstanding work. Don't
+  count it in a status report, and don't offer to draw one.
 
 ## Automatic arc detection (`scripts/detect_arcs.py`)
 
@@ -2647,11 +2664,11 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
-| **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Not yet reduced |
-| **`sl2s_dinos_x`** | 12 (J0233-0438 removed 2026-10-14) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Not yet reduced |
-| **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Not yet reduced |
-| **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Not yet reduced |
-| **`bells`** | 22 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04, being reduced |
+| **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions not yet marked |
+| **`sl2s_dinos_x`** | 12 (J0233-0438 removed 2026-10-14) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions not yet marked |
+| **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
+| **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
+| **`bells`** | 22 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced and masked; positions not yet marked |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
@@ -2724,14 +2741,14 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 
 | Sample | Status | Why |
 |---|---|---|
-| **BELLS** (Brownstein+2012; GO-12209) | **Accepted, next.** In progress as `bells` | ACS/WFC F814W, 4 × ~500 s, the same instrument and filter as SLACS; 25 definite lenses, z_l 0.4–0.7. Shares no lenses with `gallery`: BELLS sources are [OII]/Hβ/[OIII] emitters at z_s < 1.5, GALLERY sources are Lyα-only at z_s 2–3 |
-| **SL2S** grade-A (Sonnenfeld+2013) + **Project Dinos II** (GO-17130) | **Accepted, after BELLS.** Roster set 2026-10-04 as four samples, see *SL2S samples* | 39 lenses, z_l 0.3–0.8. Snapshot imaging from mixed programs (ACS F814W 800 s + F606W 400 s; WFPC2 F606W 1200 s; WFC3 F600LP + F475X 720 s, or F475X-only 360 s, which the gate blocks). Dinos II adds deep WFC3/UVIS F475X (≥ 2366 s; the paper gives no per-target table) for 21 systems |
+| **BELLS** (Brownstein+2012; GO-12209) | **Accepted.** Reduced and masked as `bells` | ACS/WFC F814W, 4 × ~500 s, the same instrument and filter as SLACS; 25 definite lenses, z_l 0.4–0.7. Shares no lenses with `gallery`: BELLS sources are [OII]/Hβ/[OIII] emitters at z_s < 1.5, GALLERY sources are Lyα-only at z_s 2–3 |
+| **SL2S** grade-A (Sonnenfeld+2013) + **Project Dinos II** (GO-17130) | **Accepted.** Roster set 2026-10-04 as four samples, see *SL2S samples*; reduced and masked | 39 lenses, z_l 0.3–0.8. Snapshot imaging from mixed programs (ACS F814W 800 s + F606W 400 s; WFPC2 F606W 1200 s; WFC3 F600LP + F475X 720 s, or F475X-only 360 s, which the gate blocks). Dinos II adds deep WFC3/UVIS F475X (≥ 2366 s; the paper gives no per-target table) for 21 systems |
 | **SWELLS** (Treu+2011) | **Open**, undecided | 16 grade-A lenses whose deflectors are high-inclination disk galaxies (lenticular to late-type spiral), z_d 0.06–0.22. The 27 candidates include 8 SLACS spirals, so check overlap with `slacs_gold`/`slacs_other`. A different deflector population from the early-type samples here. HST programs and per-lens depths not yet checked against the gate |
 | S4TM / SLACS XIII (Shu+2017; SNAP 12210) | Rejected | One 420 s ACS F814W exposure per lens: below `BLOCK_EXPTIME` and no CR rejection, the same failure as the gated `slacs_other` legacy F814W visits |
 | AGEL (16773 WFC3 F140W + F200LP SNAP; 17307 ACS F606W 2 × 337 s) | Rejected | Mixed galaxy/group-scale deflectors, IR-led imaging; the ACS visits fall below the gate |
 | DESI Strong Lens Foundry (SNAP 15867, 51 lenses) | Rejected | WFC3/IR F140W 3 × 399 s only; mixed galaxy/group scale, IR-led. No optical band for a mass-vs-light sample |
 
-### SL2S samples (roster agreed 2026-10-04, not yet reduced)
+### SL2S samples (roster agreed 2026-10-04; reduced and masked, positions not yet marked)
 
 37 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:
