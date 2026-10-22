@@ -299,29 +299,6 @@
                 "casertano_r_analytic": 1.5
             }
         },
-        "J1542+1629": {
-            "f814W": {
-                "size_arcsec": 12.0,
-                "stamp": "cutout_cr_sci.fits",
-                "variant": "",
-                "bcfill": false,
-                "crfill": false,
-                "dropped_frames": false,
-                "drizzle_pass": "cr",
-                "center_source": "this band",
-                "center_from": null,
-                "offset_arcsec": 0.1626,
-                "noise_k": 1.0,
-                "corr_factor": 1.18,
-                "corr_factor_source": "json",
-                "weight_uniformity": 0.175303,
-                "weight_uniformity_limit": 0.2,
-                "weight_uniformity_ok": true,
-                "pixfrac": 1.0,
-                "scale_ratio": 1.0,
-                "casertano_r_analytic": 1.5
-            }
-        },
         "J1545+2748": {
             "f814W": {
                 "size_arcsec": 12.0,

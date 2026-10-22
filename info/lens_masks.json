@@ -177,24 +177,6 @@
                 "brush_radius_px": 6
             }
         },
-        "J1542+1629": {
-            "f814W": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.025,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
-                "drizzle_pass": "cr",
-                "n_added_px": 16485,
-                "n_erased_px": 0,
-                "n_excluded_px": 19778,
-                "note": "2026-10-14 review (theta_E 1.042\", Brownstein+2012): arc (col 133, row 88; r=1.71\") and counter-arc (col 113, row 129; r=0.57\") unmasked, 1.0\" and 0.95\" from the mask. Sam's redraw masks everything left of a line passing ~1.1\" from the deflector (34% of the stamp). The halo leak is gone (S/N -0.33..+0.2 out to 1.2\"). The masked light at 1.3-2.3\" is the neighbour's halo (image PA 180-240, toward it), not lensed. The neighbour (col 75, row 89; 2.72\" away) is a RESOLVED galaxy (half-light ~0.5\"; SDSS calls it a star, a blending artefact), ~10-35% of the deflector's light, z unknown -- test its MASS in the model (AGENTS.md modelling TODOs). Fitting its light instead of masking would keep more lens-light pixels.",
-                "pixel_scale_arcsec": 0.05,
-                "prefix": "cutout_cr",
-                "proposal_from": "f814W",
-                "proposal_px": 6380,
-                "source": "edited_from_f814W"
-            }
-        },
         "J1545+2748": {
             "f814W": {
                 "bcfill": false,

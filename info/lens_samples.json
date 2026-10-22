@@ -158,7 +158,7 @@
         }
     },
     "bells": {
-        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Not yet reduced. J1337+3620 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17.",
+        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Not yet reduced. J1337+3620 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22 (Sam): its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
         "coords": "info/bells_coords.py",
         "lenses": {
             "J0151+0049": {},
@@ -174,7 +174,6 @@
             "J1318-0104": {},
             "J1352+3216": {},
             "J1541+1812": {},
-            "J1542+1629": {},
             "J1545+2748": {},
             "J1601+2138": {},
             "J1611+1705": {},

@@ -39,7 +39,7 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `slacs_gold` | f814W 38, f606W 23 (incl. `f606W_v2`), f555W 16, f160W 13 | all 90 | all 90 | all 90 | f814W 38 |
 | `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | all 34 | f606W 10 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
-| `bells` | f814W 22 | all 22 | all 22 | **none yet** | — |
+| `bells` | f814W 21 | all 21 | all 21 | **15 of 21** (2026-10-22; J0151, J0944, J1221, J1234, J1601, J1611 to do) | — |
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | **none yet** | — |
 | `sl2s_dinos_x` | f475X 12, f600LP 3 | all 15 | all 15 | **none yet** | — |
 | `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
@@ -1357,10 +1357,12 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   ~0.34″ opposite). **J1337+3620 was REMOVED from the sample (Sam, 2026-10-14) as a multi-deflector system.** A
   companion 5.24″ away (SDSS z_phot 0.59 ± 0.10 vs z_lens 0.564) carries 35–50% of the
   deflector's light, giving shear ≈ 0.08 at the lens; the modelling needs single deflectors.
-  All its gitignored data were deleted too. The review notes below were made before the removal. **J1542+1629's masked elliptical leaked halo past its mask** (by up to ~1″, at
-  per-pixel S/N 1.6 at the edge). **Sam regrew the mask the same day, and the leak is gone.** **J0747+4448 is usable**: the spike mask is adequate, and
-  its two nearby galaxies (2.4 and 3.7 θ_E) are now masked. **J1542's neighbour is a
-  mass-component candidate**; see *Modelling-side to-dos* below.
+  All its gitignored data were deleted too. The review notes below were made before the removal. **J1542+1629 was REMOVED (Sam, 2026-10-22)**:
+  the regrown mask over its neighbouring elliptical reaches in to 1.08″ from the deflector,
+  past θ_E = 1.04″, so it cuts into the Einstein-ring annulus. Its data were deleted with it.
+  (Before that, its masked elliptical had leaked halo past the mask by up to ~1″, and the
+  neighbour was a mass-component candidate.) **J0747+4448 is usable**: the spike mask is adequate, and
+  its two nearby galaxies (2.4 and 3.7 θ_E) are now masked.
   - **Other literature on these lenses (survey 2026-10-14).** Only two papers re-model the HST
     data lens by lens:
     - **Tan+2024** (`tan2024dinos1`, arXiv 2311.09307) models 19 of the 24 (not J0747+4448,
@@ -1381,7 +1383,7 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
       deflector's light in matched apertures, Tan shear 0.17). **REMOVED by Sam, 2026-10-14**, with
       all its data.
     - J1542's 2.7″ neighbour is the Legacy Survey Sérsic source with r=20.2 and photo-z 0.43
-      (lens z=0.352).
+      (lens z=0.352). (J1542 was later removed; see above.)
     - J1159-0007's DR9 redshift differs from Brownstein's 0.5793 because of the source's
       emission lines (Brownstein's dagger). Keep 0.5793.
 
@@ -1552,8 +1554,8 @@ stamps.
 ### Modelling-side to-dos from the 2026-10-14 mask review live in the analysis repo
 
 A mask can only remove pixels; what the review found that **the lens model has to handle** (a
-sky-gradient term, large residual shears on BELLS, candidate extra masses for J1542+1629,
-J2203+0205 and J1406+5226, J0217-0513's double source plane, second source components,
+sky-gradient term, large residual shears on BELLS, candidate extra masses for
+J2203+0205 and J1406+5226 (J1542+1629 was one until its removal, 2026-10-22), J0217-0513's double source plane, second source components,
 flattened lens light, lensed light in isophote fits) is listed in
 `HST_lensing_mass_light:local/data_caveats.md` § *BELLS and SL2S — what the model has to
 handle*. Keep it there, not here: add a new modelling consequence of a mask decision to that
@@ -2600,7 +2602,8 @@ Not written by a pipeline run, and the odd one out in `info/`:
     (`mast_target`), not the short name. **Every row has a θ_E**; J1423+5722 and J1419+5117 have
     no `zlens` (so no `RE_kpc`), and 9 rows have no `zsrc`. The script drops any SL2S row whose
     lens has left the roster (J0233-0438, J0213-0743).
-  - **22 BELLS** (24 until J1337+3620 and J1349+3612 were removed, 2026-10-14), added 2026-10-14 by `local/scripts/add_bells_theta_e.py` (gitignored; it
+  - **21 BELLS** (24 until J1337+3620 and J1349+3612 were removed, 2026-10-14, and
+    J1542+1629 on 2026-10-22), added 2026-10-14 by `local/scripts/add_bells_theta_e.py` (gitignored; it
     parses the filed PDF). θ_E is **Brownstein+2012 (BELLS I) Table 5** (SIE). `zlens`/`zsrc`/
     `sigma_kms` come from its Table 2: σ_BOSS, uncorrected for aperture. J1159-0007's zL carries
     the paper's dagger (it differs from the DR9 redshift). `RE_kpc` is derived on flat
@@ -2684,7 +2687,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`sl2s_dinos_x`** | 12 (J0233-0438 removed 2026-10-14) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions not yet marked |
 | **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
 | **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
-| **`bells`** | 22 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced and masked; positions not yet marked |
+| **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced and masked; positions 15 of 21 marked |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
@@ -2955,9 +2958,9 @@ stars, J0747+4448's empirical PSF (observed the same day) did best on the bright
 chi2/dof 156. The 22 other BELLS empirical PSFs scored 192–345, the BELLS median 224 and the
 STDPSF+injection kernel 251. On the faint star it ranked second. The error map is the BELLS
 donor scatter. Its stale injection record was removed from `lens_psf_injected.json`. Its error map includes
-the empirical kernels of J1337+3620 and J1349+3612 among its 23 donors. Both left the sample on
-2026-10-14, but their PSF stars are still valid, so the map was not rebuilt. A rebuild would now use
-21 donors.
+the empirical kernels of J1337+3620, J1349+3612 and J1542+1629 among its 23 donors. They left
+the sample on 2026-10-14 (the first two) and 2026-10-22, but their PSF stars are still valid, so
+the map was not rebuilt. A rebuild would now use 20 donors.
 
 **Noise-map inflation:** see *Drizzle correlated noise → Repo-wide factors and the
 patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 10 low-sky GO-17130 overrides (11 before J0233-0438 was removed)

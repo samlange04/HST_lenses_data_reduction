@@ -260,24 +260,6 @@
                 "n_boot_valid": 100
             }
         },
-        "J1542+1629": {
-            "f814W": {
-                "method": "empirical",
-                "n_stars": 17,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.4003,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 21,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.000165,
-                "fwhm_pix_err": 0.049,
-                "psf_err_frac": 0.00790213,
-                "err_method": "bootstrap",
-                "err_source": "stars",
-                "n_boot_valid": 100
-            }
-        },
         "J1545+2748": {
             "f814W": {
                 "method": "empirical",

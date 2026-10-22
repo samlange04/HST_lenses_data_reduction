@@ -1071,14 +1071,6 @@
   "sigma_kms": 174,
   "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
  },
- "J1542+1629": {
-  "theta_e_arcsec": 1.042,
-  "RE_kpc": 5.17,
-  "zlens": 0.3521,
-  "zsrc": 1.0233,
-  "sigma_kms": 210,
-  "source": "Brownstein+2012 (BELLS I, ApJ 744, 41) Table 5 SIE theta_E; zL/zS/sigma_BOSS from its Table 2 (sigma uncorrected for aperture)"
- },
  "J1545+2748": {
   "theta_e_arcsec": 1.21,
   "RE_kpc": 7.55,
