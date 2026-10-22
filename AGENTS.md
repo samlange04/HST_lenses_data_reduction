@@ -3288,6 +3288,20 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
   campaign (fast, read-only — a few seconds per sample) so the QC PNGs match the kernels
   currently on disk.
 
+### Status dashboard (`scripts/make_dashboard.py`, 2026-10-22)
+
+`uv run python scripts/make_dashboard.py [--sample S] [--no-thumbs] [--force]` writes
+`diagnostics/dashboard/index.html` (gitignored with the rest of `diagnostics/`): stat tiles,
+per-sample and sample×band completeness, the applied noise factors, a filterable card per lens
+with one thumbnail per band (rendered from the sci stamp via `cutout_paths`, mask outlined),
+and the QC mosaics downsized. The page opens from disk (its lightbox then loads the full
+`_dataset.png` out of `data/cutouts/`) and is the same file published as the shareable
+artifact (thumbnails only there). All counts come from `info/*.json` plus a disk scan, so it
+reflects uncommitted work too; a missing `psf_err` or a per-lens noise/LACosmic override is
+flagged on the card. It is an overview, not a science product — nothing reads it. The
+template is `scripts/dashboard_template.html`; the talk/demo notes that use it live in
+`local/presentation/demo_script.md`.
+
 ## NICMOS is deprioritised
 
 Do not generate or propose NICMOS (NIC2) products unless explicitly asked — the FOV is far

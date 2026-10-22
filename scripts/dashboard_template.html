@@ -1,0 +1,282 @@
+<title>HST Lens Reduction Status</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one scrolling column, summary tiles first, then tables, then the lens grid; the
+   lens grid is the working surface. Neutrals lean cold (slate) so the inferno thumbnails
+   carry the warmth; the accent is the same ember as the stamps' mid-tones. */
+:root {
+  --bg: #f3f4f7; --panel: #ffffff; --fg: #1b1f2a; --muted: #5d6475; --line: #d9dce4;
+  --accent: #c2531b; --accent-soft: #f6e3d7; --good: #2f7d4f; --warn: #b4790f; --bad: #b23a3a;
+  --chip: #e8eaf0; --sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15171d; --panel: #1e2129; --fg: #e8e9ee; --muted: #9aa0b0; --line: #30343f;
+  --accent: #e9743a; --accent-soft: #3a2a21; --good: #5cc58a; --warn: #e0b04a; --bad: #e46b6b;
+  --chip: #2a2e38; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #15171d; --panel: #1e2129; --fg: #e8e9ee; --muted: #9aa0b0; --line: #30343f;
+  --accent: #e9743a; --accent-soft: #3a2a21; --good: #5cc58a; --warn: #e0b04a; --bad: #e46b6b;
+  --chip: #2a2e38; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; margin: 0; }
+.wrap { max-width: 1400px; margin: 0 auto; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; padding-block: 22px 10px; border-bottom: 1px solid var(--line); }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 15px; font-weight: 600; margin: 28px 0 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.sub { color: var(--muted); font-size: 13px; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; min-width: 0; }
+.tile .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.tile .v { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 2px; }
+.tile .d { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.desc { white-space: normal; max-width: 420px; color: var(--muted); font-size: 12px; }
+.chip { display: inline-block; padding: 1px 7px; border-radius: 10px; background: var(--chip); font-size: 11.5px; font-family: var(--mono); margin: 1px 2px 1px 0; }
+.chip.ok { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.chip.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+.chip.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+.chip.acc { background: var(--accent-soft); color: var(--accent); }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.controls label { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+select, input[type=search] { font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); }
+input[type=search] { min-width: 160px; }
+.count { color: var(--muted); font-size: 12px; margin-left: auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px 12px; min-width: 0; }
+.card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.card .name { font-weight: 600; font-size: 15px; font-family: var(--mono); }
+.card .meta { font-size: 12px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.thumb { width: 124px; cursor: pointer; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; }
+.thumb img { width: 124px; height: 124px; display: block; border-radius: 3px; background: #000; border: 1px solid var(--line); }
+.thumb:focus-visible img { outline: 2px solid var(--accent); }
+.thumb .lab { font-size: 11.5px; font-family: var(--mono); margin-top: 3px; display: flex; justify-content: space-between; }
+.thumb .lab .dim { color: var(--muted); }
+.flags { margin-top: 8px; }
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.lightbox[hidden] { display: none !important; }
+.lb { background: var(--panel); color: var(--fg); border-radius: 8px; max-width: min(1200px, 100%); max-height: 100%; overflow: auto; display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); }
+.lb .img { padding: 12px; background: #000; display: flex; align-items: center; justify-content: center; }
+.lb .img img { max-width: 100%; max-height: calc(100vh - 80px); display: block; }
+.lb .info { padding: 14px 16px; font-size: 13px; min-width: 0; }
+.lb .info h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 17px; }
+.lb .info dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 10px 0; }
+.lb .info dt { color: var(--muted); } .lb .info dd { margin: 0; font-variant-numeric: tabular-nums; }
+.lb .close { float: right; font: inherit; background: var(--chip); border: 0; border-radius: 4px; padding: 3px 9px; cursor: pointer; color: var(--fg); }
+.lb .note { color: var(--muted); font-size: 12px; }
+.mosaics .row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+.mosaics .row a { font-family: var(--mono); font-size: 12px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 4px; color: var(--fg); text-decoration: none; background: var(--panel); }
+.mosaics .row a:hover { border-color: var(--accent); }
+.mosaics .row .lbl { font-weight: 600; width: 110px; }
+.mosaic-view { margin-top: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.mosaic-view img { max-width: 100%; display: block; margin: 0 auto; }
+.mosaic-view .cap { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; }
+footer { margin-top: 36px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+@media (max-width: 720px) { .lb { grid-template-columns: 1fr; } .lb .img img { max-height: 60vh; } }
+@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s; } .card:hover { border-color: var(--accent); } }
+</style>
+<div class="wrap">
+<header>
+  <h1>HST Lens Reduction Status</h1>
+  <span class="sub" id="hdr-sub"></span>
+</header>
+
+<section class="tiles" id="tiles"></section>
+
+<h2>Samples</h2>
+<div class="tablewrap"><table id="sample-table"></table></div>
+
+<h2>Band coverage (lenses with a finished stamp set per sample and band)</h2>
+<div class="tablewrap"><table id="matrix"></table></div>
+
+<h2>Noise-map inflation factors applied (info/noise_corr_factors.json)</h2>
+<div class="tablewrap"><table id="noise-table"></table></div>
+<p class="sub" id="noise-note"></p>
+
+<h2 id="lenses">Lenses</h2>
+<div class="controls">
+  <label>Sample <select id="f-sample"><option value="">all</option></select></label>
+  <label>Band <select id="f-band"><option value="">any</option></select></label>
+  <label>Positions <select id="f-pos"><option value="">any</option><option value="marked">marked</option><option value="empty">deliberately empty</option><option value="none">not yet marked</option></select></label>
+  <label>Find <input type="search" id="f-q" placeholder="J1213…"></label>
+  <span class="count" id="f-count"></span>
+</div>
+<div class="grid" id="grid"></div>
+
+<h2 id="mosaics">QC mosaics</h2>
+<div class="mosaics" id="mosaic-rows"></div>
+<div class="mosaic-view" id="mosaic-view" hidden><div class="cap" id="mosaic-cap"></div><img id="mosaic-img" alt=""></div>
+
+<footer id="foot"></footer>
+</div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <div class="lb">
+    <div class="img"><img id="lb-img" alt=""></div>
+    <div class="info">
+      <button class="close" id="lb-close">close</button>
+      <h3 id="lb-title"></h3>
+      <div id="lb-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const OFFLINE = location.protocol === 'file:';
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = (x, d = 2) => (x == null ? '–' : Number(x).toFixed(d));
+const BAND_ORDER = ['f814W','f606W','f606W_v2','f555W','f475X','f600LP','f438W','f160W'];
+const bandSort = (a, b) => (BAND_ORDER.indexOf(a) + 99) % 99 - (BAND_ORDER.indexOf(b) + 99) % 99 || a.localeCompare(b);
+const POS_LABEL = { marked: ['ok', 'positions marked'], empty: ['warn', 'positions: none by decision'], none: ['bad', 'positions outstanding'] };
+
+const L = DATA.lenses, META = DATA.meta;
+const samples = Object.keys(META.samples);
+const complete = (b) => b.have.noise && b.have.psf && b.have.psf_err && b.have.mask;
+
+// ── tiles
+(() => {
+  const nBands = L.reduce((n, l) => n + l.bands.length, 0);
+  const nComplete = L.reduce((n, l) => n + l.bands.filter(complete).length, 0);
+  const nMask = L.reduce((n, l) => n + l.bands.filter(b => b.have.mask).length, 0);
+  const pos = { marked: 0, empty: 0, none: 0 }; L.forEach(l => pos[l.positions]++);
+  const psf = { emp: 0, mod: 0 };
+  L.forEach(l => l.bands.forEach(b => { if (b.psf_method) (b.psf_method.startsWith('empirical') ? psf.emp++ : psf.mod++); }));
+  const tiles = [
+    ['Lenses', L.length, `${samples.length} samples`],
+    ['Band products', nBands, `${nComplete} with sci + noise + PSF + psf_err + mask`],
+    ['Contaminant masks', `${nMask} / ${nBands}`, nMask === nBands ? 'every band masked' : `${nBands - nMask} missing`],
+    ['Image positions', `${pos.marked} / ${L.length}`, `${pos.empty} deliberately empty · ${pos.none} outstanding`],
+    ['PSF kernels', `${psf.emp + psf.mod}`, `${psf.emp} empirical · ${psf.mod} injected model`],
+  ];
+  $('#tiles').innerHTML = tiles.map(([k, v, d]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${esc(d)}</div></div>`).join('');
+  $('#hdr-sub').textContent = `${L.length} lenses · ${nBands} band products · generated ${DATA.generated}`;
+})();
+
+// ── sample table
+(() => {
+  const rows = samples.map(s => {
+    const ls = L.filter(l => l.sample === s);
+    const bands = {}; ls.forEach(l => l.bands.forEach(b => { bands[b.band] = (bands[b.band] || 0) + 1; }));
+    const nb = ls.reduce((n, l) => n + l.bands.length, 0);
+    const nm = ls.reduce((n, l) => n + l.bands.filter(b => b.have.mask).length, 0);
+    const pos = { marked: 0, empty: 0, none: 0 }; ls.forEach(l => pos[l.positions]++);
+    const instr = [...new Set(ls.flatMap(l => l.bands.map(b => b.instrument)).filter(Boolean))].join(', ');
+    const posCell = pos.none === 0
+      ? `<span class="chip ok">${pos.marked} marked</span>${pos.empty ? `<span class="chip warn">${pos.empty} empty</span>` : ''}`
+      : `<span class="chip ok">${pos.marked} marked</span>${pos.empty ? `<span class="chip warn">${pos.empty} empty</span>` : ''}<span class="chip bad">${pos.none} to do</span>`;
+    return `<tr><td class="mono"><a href="#lenses" data-sample="${s}" class="samplelink">${s}</a></td><td class="num">${ls.length}${META.samples[s].n_roster !== ls.length ? ` <span class="sub">(roster ${META.samples[s].n_roster})</span>` : ''}</td>
+      <td>${Object.keys(bands).sort(bandSort).map(b => `<span class="chip">${b} ${bands[b]}</span>`).join('')}</td>
+      <td class="num">${nb}</td><td class="num">${nm === nb ? `<span class="chip ok">${nm}/${nb}</span>` : `<span class="chip bad">${nm}/${nb}</span>`}</td>
+      <td>${posCell}</td><td>${esc(instr)}</td><td class="desc" title="${esc(META.samples[s].description)}">${esc(META.samples[s].description.slice(0, 140))}${META.samples[s].description.length > 140 ? '…' : ''}</td></tr>`;
+  });
+  $('#sample-table').innerHTML = `<thead><tr><th>sample</th><th class="num">lenses</th><th>bands</th><th class="num">products</th><th class="num">masks</th><th>positions</th><th>instruments</th><th>what it is</th></tr></thead><tbody>${rows.join('')}</tbody>`;
+  document.querySelectorAll('.samplelink').forEach(a => a.addEventListener('click', () => { $('#f-sample').value = a.dataset.sample; render(); }));
+})();
+
+// ── matrix
+(() => {
+  const bands = [...new Set(L.flatMap(l => l.bands.map(b => b.band)))].sort(bandSort);
+  const head = `<thead><tr><th>sample</th>${bands.map(b => `<th class="num">${b}</th>`).join('')}<th class="num">total</th></tr></thead>`;
+  const body = samples.map(s => {
+    const ls = L.filter(l => l.sample === s);
+    const cells = bands.map(b => { const n = ls.filter(l => l.bands.some(x => x.band === b && complete(x))).length; return `<td class="num">${n || '<span class="sub">·</span>'}</td>`; });
+    return `<tr><td class="mono">${s}</td>${cells.join('')}<td class="num">${ls.reduce((n, l) => n + l.bands.length, 0)}</td></tr>`;
+  }).join('');
+  const tot = bands.map(b => `<td class="num"><b>${L.filter(l => l.bands.some(x => x.band === b)).length}</b></td>`).join('');
+  $('#matrix').innerHTML = `${head}<tbody>${body}<tr><td><b>all</b></td>${tot}<td class="num"><b>${L.reduce((n, l) => n + l.bands.length, 0)}</b></td></tr></tbody>`;
+})();
+
+// ── noise factors
+(() => {
+  const nf = META.noise_factors;
+  const filts = [...new Set(Object.values(nf).flatMap(o => Object.keys(o)))].sort(bandSort);
+  const head = `<thead><tr><th>instrument</th>${filts.map(f => `<th class="num">${f}</th>`).join('')}</tr></thead>`;
+  const body = Object.keys(nf).map(i => `<tr><td>${i}</td>${filts.map(f => `<td class="num">${nf[i][f] != null ? fmt(nf[i][f]) : '<span class="sub">·</span>'}</td>`).join('')}</tr>`).join('');
+  $('#noise-table').innerHTML = head + `<tbody>${body}</tbody>`;
+  const ov = Object.entries(META.noise_overrides).flatMap(([s, d]) => Object.entries(d).flatMap(([l, f]) => Object.entries(f).map(([b, v]) => `${l} ${b} ${fmt(v)}`)));
+  $('#noise-note').textContent = `Applied to cutout_[cr_]noise.fits at cut time. Not a drizzle correction: drizzle conserves noise. The excess is an ERR-array deficit in the FLC frames plus CTE-correction noise at low sky. Per-lens overrides (low-sky GO-17130 F475X): ${ov.length ? ov.join(' · ') : 'none'}.`;
+})();
+
+// ── lens grid
+const selS = $('#f-sample'), selB = $('#f-band'), selP = $('#f-pos'), q = $('#f-q');
+samples.forEach(s => selS.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
+[...new Set(L.flatMap(l => l.bands.map(b => b.band)))].sort(bandSort).forEach(b => selB.insertAdjacentHTML('beforeend', `<option value="${b}">${b}</option>`));
+
+function card(l) {
+  const [cls, lab] = POS_LABEL[l.positions];
+  const z = (l.zlens != null || l.zsrc != null) ? `z<sub>l</sub> ${fmt(l.zlens, 3)} · z<sub>s</sub> ${fmt(l.zsrc, 3)}` : '';
+  const te = l.theta_e != null ? `θ<sub>E</sub> ${fmt(l.theta_e, 2)}″` : 'θ<sub>E</sub> –';
+  const thumbs = l.bands.map((b, i) => `<button class="thumb" data-lens="${l.lens}" data-i="${i}" title="open ${b.band}">
+      <img loading="lazy" src="${b.thumb}" alt="${l.lens} ${b.band}">
+      <span class="lab"><span>${b.band}</span><span class="dim">${b.n_frames ? b.n_frames + '×' : ''}${b.cr_pass ? 'cr' : 'nocr'}</span></span></button>`).join('');
+  return `<div class="card" data-lens="${l.lens}"><div class="top"><span class="name">${l.lens}</span><span class="chip acc">${l.sample}</span></div>
+    <div class="meta">${te}${z ? ' · ' + z : ''}${l.sigma ? ` · σ ${l.sigma} km/s` : ''}</div>
+    <div class="thumbs">${thumbs}</div>
+    <div class="flags"><span class="chip ${cls}">${lab}${l.n_positions ? ` (${l.n_positions}, ${l.positions_band})` : ''}</span>${l.bands.some(b => b.noise_override) ? '<span class="chip warn">noise override</span>' : ''}${l.bands.some(b => b.cr_params) ? '<span class="chip warn">custom LACosmic</span>' : ''}${l.bands.some(b => b.variant) ? '<span class="chip warn">variant stamp</span>' : ''}${l.bands.filter(b => !b.have.psf_err).map(b => `<span class="chip bad">no psf_err ${b.band}</span>`).join('')}</div></div>`;
+}
+
+function render() {
+  const s = selS.value, b = selB.value, p = selP.value, t = q.value.trim().toLowerCase();
+  const rows = L.filter(l => (!s || l.sample === s) && (!b || l.bands.some(x => x.band === b)) && (!p || l.positions === p) && (!t || l.lens.toLowerCase().includes(t)));
+  $('#grid').innerHTML = rows.map(card).join('');
+  $('#f-count').textContent = `${rows.length} of ${L.length} lenses`;
+}
+[selS, selB, selP].forEach(e => e.addEventListener('change', render));
+q.addEventListener('input', render);
+render();
+
+// ── lightbox
+const byName = Object.fromEntries(L.map(l => [l.lens, l]));
+$('#grid').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('.thumb'); if (!btn) return;
+  const l = byName[btn.dataset.lens], b = l.bands[+btn.dataset.i];
+  const useFull = OFFLINE && b.dataset_rel;
+  $('#lb-img').src = useFull ? '../../' + b.dataset_rel : b.thumb;
+  $('#lb-img').alt = `${l.lens} ${b.band}`;
+  $('#lb-title').textContent = `${l.lens} · ${b.band}`;
+  const rows = [
+    ['sample', l.sample], ['instrument', b.instrument || '–'],
+    ['frames', b.n_frames || '–'], ['exposure', b.exptime ? `${Math.round(b.exptime)} s` : '–'],
+    ['stamp', `${b.prefix}${b.variant ? '_' + b.variant : ''}  (${b.cr_pass ? 'LACosmic CR pass' : 'no CR pass'})`],
+    ['noise factor', b.noise_factor != null ? `${fmt(b.noise_factor)}${b.noise_override ? ' (per-lens override)' : ''}` : '–'],
+    ['PSF', b.psf_method ? `${b.psf_method}${b.psf_n_stars ? `, ${b.psf_n_stars} stars` : ''}${b.psf_fwhm_pix ? `, FWHM ${fmt(b.psf_fwhm_pix)} px` : ''}` : '–'],
+    ['PSF error', b.psf_err_frac != null ? `${(100 * b.psf_err_frac).toFixed(1)} %` : '–'],
+    ['mask', b.have.mask ? `${b.mask_source || 'drawn'}${b.mask_px ? `, ${b.mask_px} px excluded` : ''}` : 'none'],
+    ['positions', `${POS_LABEL[l.positions][1]}${l.n_positions ? ` (${l.n_positions} in ${l.positions_band})` : ''}`],
+    ['LACosmic', b.cr_params ? `sigclip ${b.cr_params.lacosmic_sigclip} / objlim ${b.cr_params.lacosmic_objlim}${b.cr_params.lacosmic_relax_radius ? ` / relax ${b.cr_params.lacosmic_relax_radius}″` : ''}` : 'default 4.5 / 5.0'],
+    ['θE', l.theta_e != null ? `${fmt(l.theta_e, 3)}″ (${l.ein_source || ''})` : '–'],
+  ];
+  if (b.mask_note) rows.push(['mask note', b.mask_note]);
+  $('#lb-body').innerHTML = `<dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` +
+    `<div class="note">${useFull ? 'Full dataset QC figure from data/cutouts (sci, noise, PSF, S/N, mask).' : 'Thumbnail shown; the full dataset QC figure is in the repo at ' + esc(b.dataset_rel || 'data/cutouts/…') + '.'}</div>`;
+  $('#lightbox').hidden = false;
+});
+const closeLb = () => { $('#lightbox').hidden = true; $('#lb-img').src = ''; };
+$('#lb-close').addEventListener('click', closeLb);
+$('#lightbox').addEventListener('click', (e) => { if (e.target === $('#lightbox')) closeLb(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeLb(); $('#mosaic-view').hidden = true; } });
+
+// ── mosaics
+(() => {
+  const M = DATA.mosaics;
+  $('#mosaic-rows').innerHTML = samples.filter(s => M[s]).map(s => `<div class="row"><span class="lbl mono">${s}</span>${M[s].map(m => `<a href="#mosaics" data-src="${m.path}" data-cap="${s} / ${m.name}">${m.name}</a>`).join('')}</div>`).join('') || '<p class="sub">No mosaics found under data/mosaics.</p>';
+  $('#mosaic-rows').addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-src]'); if (!a) return; e.preventDefault();
+    $('#mosaic-img').src = a.dataset.src; $('#mosaic-cap').textContent = a.dataset.cap + ' (click a lens tile above for its own stamps)';
+    $('#mosaic-view').hidden = false; $('#mosaic-view').scrollIntoView({ block: 'nearest' });
+  });
+})();
+
+$('#foot').textContent = `Built by scripts/make_dashboard.py from info/*.json and data/cutouts; conclusions behind every number live in AGENTS.md. ${OFFLINE ? 'Opened from disk: lightbox shows the full dataset figures.' : 'Published copy: thumbnails only.'}`;
+</script>
