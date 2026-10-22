@@ -1,4 +1,619 @@
 {
+    "bells": {
+        "J0747+4448": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.175,
+                        0.625
+                    ],
+                    [
+                        -0.675,
+                        -0.325
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.68,
+                "snap_moved_px_mean": 1.4,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 8725,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0747+5055": {
+            "f814W": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        0.775,
+                        -0.375
+                    ],
+                    [
+                        0.775,
+                        0.225
+                    ],
+                    [
+                        -0.575,
+                        -0.175
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.6,
+                "snap_moved_px_mean": 2.17,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 7314,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0801+4727": {
+            "f814W": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        -0.025,
+                        0.575
+                    ],
+                    [
+                        -0.075,
+                        -0.675
+                    ],
+                    [
+                        0.325,
+                        -0.625
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.05,
+                "snap_moved_px_mean": 1.58,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 11655,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0830+5116": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.725,
+                        -0.425
+                    ],
+                    [
+                        -1.275,
+                        0.525
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.21,
+                "snap_moved_px_mean": 1.18,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 5810,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1159-0007": {
+            "f814W": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.275,
+                        -0.325
+                    ],
+                    [
+                        -0.675,
+                        0.625
+                    ],
+                    [
+                        -0.075,
+                        0.775
+                    ],
+                    [
+                        -0.775,
+                        0.175
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.22,
+                "snap_moved_px_mean": 0.86,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 9330,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1215+0047": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.025,
+                        -0.575
+                    ],
+                    [
+                        0.825,
+                        1.975
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.77,
+                "snap_moved_px_mean": 1.77,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4203,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1318-0104": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.075,
+                        -0.375
+                    ],
+                    [
+                        -0.025,
+                        0.925
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.21,
+                "snap_moved_px_mean": 0.7,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 5342,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1352+3216": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.075,
+                        2.375
+                    ],
+                    [
+                        -0.275,
+                        -0.975
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.74,
+                "snap_moved_px_mean": 1.49,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1184,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1541+1812": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.275,
+                        -0.425
+                    ],
+                    [
+                        0.375,
+                        0.675
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.29,
+                "snap_moved_px_mean": 2.11,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1095,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1545+2748": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.675,
+                        0.325
+                    ],
+                    [
+                        1.875,
+                        0.275
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.61,
+                "snap_moved_px_mean": 1.43,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 6818,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1631+1854": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.175,
+                        0.375
+                    ],
+                    [
+                        -1.925,
+                        0.075
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.97,
+                "snap_moved_px_mean": 1.94,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 8103,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1637+1439": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.825,
+                        -0.275
+                    ],
+                    [
+                        0.525,
+                        -0.075
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.18,
+                "snap_moved_px_mean": 1.12,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2089,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2122+0409": {
+            "f814W": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        -2.075,
+                        -0.975
+                    ],
+                    [
+                        1.025,
+                        0.275
+                    ],
+                    [
+                        0.625,
+                        0.875
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.71,
+                "snap_moved_px_mean": 1.11,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4546,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2125+0411": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.275,
+                        0.475
+                    ],
+                    [
+                        1.025,
+                        -1.325
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.19,
+                "snap_moved_px_mean": 1.33,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1103,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2303+0037": {
+            "f814W": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.975,
+                        -0.525
+                    ],
+                    [
+                        -0.025,
+                        -1.025
+                    ],
+                    [
+                        -1.075,
+                        -0.475
+                    ],
+                    [
+                        -0.025,
+                        0.725
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.68,
+                "snap_moved_px_mean": 1.22,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2633,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f814W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        }
+    },
     "gallery": {
         "J0029+2544": {
             "f814W": {
