@@ -1669,11 +1669,26 @@ correction produces a 0–2 px stamp shift, and **the two do not match**. Conseq
   the script shifts CRVAL without renaming. The alignment is idempotent (re-run applies ~0).
 
 **What the broadcast CANNOT fix: a misregistered band.** The same deflector sits at slightly
-different sky coords in different bands' WCS (9–84 mas across the f160W pairs). That is
-upstream astrometry, so `process_lens` measures the deflector tie per band and **warns**
-(`deflector_tie_mas` / `deflector_tie_px`) rather than absorbing it. Worst: **J0029-0055 84 mas
-(1.40 px)**, confirmed against an independent field source. Do not re-mark these; the clicks
-are right and the pixels are shifted. The f555W/f606W ties are tight (median 0.13–0.14 px).
+different sky coords in different bands' WCS. That is upstream astrometry, so `process_lens`
+measures the deflector tie per band and **warns** above 1 px (`deflector_tie_mas` /
+`deflector_tie_px`) rather than absorbing it. Do not re-mark a warned band; the clicks are right
+and the pixels are shifted. (J0029-0055 f160W read 84 mas = 1.40 px when this was written,
+confirmed against an independent field source; it is 20 mas since the alignment.)
+
+**How the tie is measured (`deflector_sky`, fixed 2026-10-24).** It takes the peak within 0.3″ of
+the stamp centre, then an iterated Gaussian-windowed centroid (σ = 0.1″), and returns
+**unmeasured (null) below windowed S/N 10**. The earlier version (peak within 1.2″, flux
+centroid in a 0.6″ box) **recorded false misregistrations wherever the arcs outshine the
+deflector**. On SL2S F475X the peak landed on an arc knot, so J0217, J1406, J1359, J0904 and
+J2203 recorded 0.4–1.4″, and the box still pulled the centroid 30–120 mas toward the arcs after
+the search was narrowed. On GALLERY F438W the deflector is not detected (S/N 3–7.5, against
+≥ 18 in every other band), so its centroid was noise. Those six ties are now null. The
+broadcast positions themselves were never affected; only the recorded check was wrong. All
+90 records in `info/lens_positions.json` were re-measured. **None exceeds 1 px**: the largest
+is 0.97 px (gallery J0918+5104 f814W), f555W/f606W have a median of 0.13 px, and f160W ranges
+3–56 mas. Validation: shifting a stamp's pixels by a known 0.2–0.45″ in four directions is
+recovered exactly, including on F475X. At 0.6″ an arc can win, so a stamp cut with
+`--center-from` through a worse misregistration would read low.
 
 **Of the two files per band, only the JSON is a product: the PNG is gitignored
 (2026-09-17).** `cutout_[cr_]positions.json` is the hand-marked work and is tracked like a

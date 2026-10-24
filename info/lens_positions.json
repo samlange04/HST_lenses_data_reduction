@@ -736,15 +736,15 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": 1012.9,
-                        "deflector_tie_px": 25.579
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 2.78,
-                        "deflector_tie_mas": 13.4,
-                        "deflector_tie_px": 0.338
+                        "deflector_tie_mas": 17.3,
+                        "deflector_tie_px": 0.438
                     },
                     {
                         "filt": "f814W",
@@ -871,15 +871,15 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": 963.2,
-                        "deflector_tie_px": 24.324
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 15.57,
-                        "deflector_tie_mas": 9.8,
-                        "deflector_tie_px": 0.247
+                        "deflector_tie_mas": 8.1,
+                        "deflector_tie_px": 0.205
                     },
                     {
                         "filt": "f814W",
@@ -932,15 +932,15 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 19.8,
-                        "deflector_tie_mas": 1306.2,
-                        "deflector_tie_px": 32.986
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 17.53,
-                        "deflector_tie_mas": 28.9,
-                        "deflector_tie_px": 0.73
+                        "deflector_tie_mas": 29.8,
+                        "deflector_tie_px": 0.753
                     },
                     {
                         "filt": "f814W",
@@ -1036,8 +1036,8 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 14.09,
-                        "deflector_tie_mas": 1214.5,
-                        "deflector_tie_px": 30.668
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
@@ -1050,8 +1050,8 @@
                         "filt": "f814W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 16.45,
-                        "deflector_tie_mas": 36.1,
-                        "deflector_tie_px": 0.911
+                        "deflector_tie_mas": 38.4,
+                        "deflector_tie_px": 0.97
                     }
                 ]
             }
@@ -1089,8 +1089,8 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 15.11,
-                        "deflector_tie_mas": 1334.2,
-                        "deflector_tie_px": 33.692
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
@@ -1103,8 +1103,8 @@
                         "filt": "f814W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 21.1,
-                        "deflector_tie_mas": 5.7,
-                        "deflector_tie_px": 0.143
+                        "deflector_tie_mas": 19.0,
+                        "deflector_tie_px": 0.479
                     }
                 ]
             }
@@ -1420,8 +1420,8 @@
                         "filt": "f438W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 48.11,
-                        "deflector_tie_mas": 1338.4,
-                        "deflector_tie_px": 33.797
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     },
                     {
                         "filt": "f606W",
@@ -1434,8 +1434,8 @@
                         "filt": "f814W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 27.47,
-                        "deflector_tie_mas": 28.2,
-                        "deflector_tie_px": 0.712
+                        "deflector_tie_mas": 26.9,
+                        "deflector_tie_px": 0.68
                     }
                 ]
             }
@@ -1475,8 +1475,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 42.99,
-                        "deflector_tie_mas": 20.6,
-                        "deflector_tie_px": 0.413
+                        "deflector_tie_mas": 27.1,
+                        "deflector_tie_px": 0.542
                     },
                     {
                         "filt": "f814W",
@@ -1531,15 +1531,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 60.01,
-                        "deflector_tie_mas": 14.6,
-                        "deflector_tie_px": 0.244
+                        "deflector_tie_mas": 20.2,
+                        "deflector_tie_px": 0.337
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 27.29,
-                        "deflector_tie_mas": 4.6,
-                        "deflector_tie_px": 0.091
+                        "deflector_tie_mas": 1.0,
+                        "deflector_tie_px": 0.021
                     },
                     {
                         "filt": "f814W",
@@ -1560,7 +1560,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 3.6,
+                        "deflector_tie_px": 0.072
                     },
                     {
                         "filt": "f814W",
@@ -1602,8 +1604,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 23.59,
-                        "deflector_tie_mas": 26.4,
-                        "deflector_tie_px": 0.528
+                        "deflector_tie_mas": 29.5,
+                        "deflector_tie_px": 0.591
                     },
                     {
                         "filt": "f814W",
@@ -1652,15 +1654,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 55.68,
-                        "deflector_tie_mas": 23.6,
-                        "deflector_tie_px": 0.393
+                        "deflector_tie_mas": 19.4,
+                        "deflector_tie_px": 0.323
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 36.3,
-                        "deflector_tie_mas": 5.0,
-                        "deflector_tie_px": 0.099
+                        "deflector_tie_mas": 3.3,
+                        "deflector_tie_px": 0.065
                     },
                     {
                         "filt": "f814W",
@@ -1705,8 +1707,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 59.93,
-                        "deflector_tie_mas": 5.0,
-                        "deflector_tie_px": 0.1
+                        "deflector_tie_mas": 7.9,
+                        "deflector_tie_px": 0.157
                     },
                     {
                         "filt": "f814W",
@@ -1755,15 +1757,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 21.76,
-                        "deflector_tie_mas": 12.1,
-                        "deflector_tie_px": 0.201
+                        "deflector_tie_mas": 15.4,
+                        "deflector_tie_px": 0.257
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 15.25,
-                        "deflector_tie_mas": 3.3,
-                        "deflector_tie_px": 0.066
+                        "deflector_tie_mas": 6.1,
+                        "deflector_tie_px": 0.121
                     },
                     {
                         "filt": "f814W",
@@ -1812,8 +1814,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 70.71,
-                        "deflector_tie_mas": 7.8,
-                        "deflector_tie_px": 0.155
+                        "deflector_tie_mas": 3.2,
+                        "deflector_tie_px": 0.065
                     },
                     {
                         "filt": "f814W",
@@ -1858,22 +1860,22 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 50.04,
-                        "deflector_tie_mas": 9.3,
-                        "deflector_tie_px": 0.155
+                        "deflector_tie_mas": 4.4,
+                        "deflector_tie_px": 0.074
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 37.74,
-                        "deflector_tie_mas": 2.3,
-                        "deflector_tie_px": 0.045
+                        "deflector_tie_mas": 4.6,
+                        "deflector_tie_px": 0.092
                     },
                     {
                         "filt": "f606W_v2",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 55.41,
-                        "deflector_tie_mas": 0.6,
-                        "deflector_tie_px": 0.013
+                        "deflector_tie_mas": 3.3,
+                        "deflector_tie_px": 0.067
                     },
                     {
                         "filt": "f814W",
@@ -1894,11 +1896,15 @@
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "cutout"
+                        "prefix": "cutout",
+                        "deflector_tie_mas": 27.7,
+                        "deflector_tie_px": 0.462
                     },
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 10.2,
+                        "deflector_tie_px": 0.205
                     },
                     {
                         "filt": "f814W",
@@ -1940,15 +1946,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 57.0,
-                        "deflector_tie_mas": 12.3,
-                        "deflector_tie_px": 0.205
+                        "deflector_tie_mas": 14.1,
+                        "deflector_tie_px": 0.235
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 12.36,
-                        "deflector_tie_mas": 16.1,
-                        "deflector_tie_px": 0.323
+                        "deflector_tie_mas": 14.4,
+                        "deflector_tie_px": 0.288
                     },
                     {
                         "filt": "f814W",
@@ -1969,7 +1975,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f555W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 2.1,
+                        "deflector_tie_px": 0.042
                     },
                     {
                         "filt": "f814W",
@@ -1987,11 +1995,15 @@
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "cutout"
+                        "prefix": "cutout",
+                        "deflector_tie_mas": 16.0,
+                        "deflector_tie_px": 0.267
                     },
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 6.0,
+                        "deflector_tie_px": 0.12
                     },
                     {
                         "filt": "f814W",
@@ -2037,15 +2049,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 55.53,
-                        "deflector_tie_mas": 9.4,
-                        "deflector_tie_px": 0.157
+                        "deflector_tie_mas": 6.6,
+                        "deflector_tie_px": 0.11
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 12.72,
-                        "deflector_tie_mas": 12.7,
-                        "deflector_tie_px": 0.253
+                        "deflector_tie_mas": 8.2,
+                        "deflector_tie_px": 0.163
                     },
                     {
                         "filt": "f814W",
@@ -2094,8 +2106,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 25.0,
-                        "deflector_tie_mas": 1.1,
-                        "deflector_tie_px": 0.023
+                        "deflector_tie_mas": 0.5,
+                        "deflector_tie_px": 0.009
                     },
                     {
                         "filt": "f814W",
@@ -2140,8 +2152,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 38.36,
-                        "deflector_tie_mas": 24.9,
-                        "deflector_tie_px": 0.498
+                        "deflector_tie_mas": 8.4,
+                        "deflector_tie_px": 0.168
                     },
                     {
                         "filt": "f814W",
@@ -2186,15 +2198,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 65.45,
-                        "deflector_tie_mas": 3.6,
-                        "deflector_tie_px": 0.061
+                        "deflector_tie_mas": 3.0,
+                        "deflector_tie_px": 0.05
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 30.83,
-                        "deflector_tie_mas": 3.8,
-                        "deflector_tie_px": 0.077
+                        "deflector_tie_mas": 5.5,
+                        "deflector_tie_px": 0.111
                     },
                     {
                         "filt": "f814W",
@@ -2243,15 +2255,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 44.32,
-                        "deflector_tie_mas": 3.5,
-                        "deflector_tie_px": 0.058
+                        "deflector_tie_mas": 5.0,
+                        "deflector_tie_px": 0.083
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 53.78,
-                        "deflector_tie_mas": 2.8,
-                        "deflector_tie_px": 0.056
+                        "deflector_tie_mas": 6.7,
+                        "deflector_tie_px": 0.134
                     },
                     {
                         "filt": "f814W",
@@ -2296,15 +2308,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 44.67,
-                        "deflector_tie_mas": 3.2,
-                        "deflector_tie_px": 0.053
+                        "deflector_tie_mas": 3.0,
+                        "deflector_tie_px": 0.05
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 38.89,
-                        "deflector_tie_mas": 4.5,
-                        "deflector_tie_px": 0.089
+                        "deflector_tie_mas": 7.2,
+                        "deflector_tie_px": 0.144
                     },
                     {
                         "filt": "f814W",
@@ -2349,15 +2361,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 61.11,
-                        "deflector_tie_mas": 8.6,
-                        "deflector_tie_px": 0.143
+                        "deflector_tie_mas": 13.2,
+                        "deflector_tie_px": 0.22
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 19.06,
-                        "deflector_tie_mas": 5.2,
-                        "deflector_tie_px": 0.104
+                        "deflector_tie_mas": 8.3,
+                        "deflector_tie_px": 0.165
                     },
                     {
                         "filt": "f814W",
@@ -2378,7 +2390,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 11.8,
+                        "deflector_tie_px": 0.235
                     },
                     {
                         "filt": "f814W",
@@ -2396,7 +2410,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f555W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 33.6,
+                        "deflector_tie_px": 0.672
                     },
                     {
                         "filt": "f814W",
@@ -2442,8 +2458,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 44.03,
-                        "deflector_tie_mas": 24.9,
-                        "deflector_tie_px": 0.498
+                        "deflector_tie_mas": 23.9,
+                        "deflector_tie_px": 0.478
                     },
                     {
                         "filt": "f814W",
@@ -2464,7 +2480,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 5.9,
+                        "deflector_tie_px": 0.118
                     },
                     {
                         "filt": "f814W",
@@ -2506,8 +2524,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 53.43,
-                        "deflector_tie_mas": 0.9,
-                        "deflector_tie_px": 0.017
+                        "deflector_tie_mas": 1.4,
+                        "deflector_tie_px": 0.028
                     },
                     {
                         "filt": "f814W",
@@ -2560,8 +2578,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 57.83,
-                        "deflector_tie_mas": 18.2,
-                        "deflector_tie_px": 0.365
+                        "deflector_tie_mas": 18.8,
+                        "deflector_tie_px": 0.375
                     },
                     {
                         "filt": "f814W",
@@ -2582,7 +2600,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f555W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 2.9,
+                        "deflector_tie_px": 0.058
                     },
                     {
                         "filt": "f814W",
@@ -2632,8 +2652,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 60.86,
-                        "deflector_tie_mas": 4.4,
-                        "deflector_tie_px": 0.089
+                        "deflector_tie_mas": 4.7,
+                        "deflector_tie_px": 0.094
                     },
                     {
                         "filt": "f814W",
@@ -2678,15 +2698,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 55.78,
-                        "deflector_tie_mas": 52.3,
-                        "deflector_tie_px": 0.871
+                        "deflector_tie_mas": 55.0,
+                        "deflector_tie_px": 0.916
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 51.77,
-                        "deflector_tie_mas": 43.3,
-                        "deflector_tie_px": 0.865
+                        "deflector_tie_mas": 42.1,
+                        "deflector_tie_px": 0.843
                     },
                     {
                         "filt": "f814W",
@@ -2731,8 +2751,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 49.99,
-                        "deflector_tie_mas": 11.6,
-                        "deflector_tie_px": 0.233
+                        "deflector_tie_mas": 21.4,
+                        "deflector_tie_px": 0.427
                     },
                     {
                         "filt": "f814W",
@@ -2777,8 +2797,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 50.0,
-                        "deflector_tie_mas": 24.0,
-                        "deflector_tie_px": 0.48
+                        "deflector_tie_mas": 19.0,
+                        "deflector_tie_px": 0.38
                     },
                     {
                         "filt": "f814W",
@@ -2827,8 +2847,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 38.32,
-                        "deflector_tie_mas": 6.5,
-                        "deflector_tie_px": 0.131
+                        "deflector_tie_mas": 6.6,
+                        "deflector_tie_px": 0.132
                     },
                     {
                         "filt": "f814W",
@@ -2873,8 +2893,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 25.1,
-                        "deflector_tie_mas": 1.1,
-                        "deflector_tie_px": 0.022
+                        "deflector_tie_mas": 2.2,
+                        "deflector_tie_px": 0.044
                     },
                     {
                         "filt": "f814W",
@@ -2923,8 +2943,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 28.02,
-                        "deflector_tie_mas": 7.4,
-                        "deflector_tie_px": 0.147
+                        "deflector_tie_mas": 4.6,
+                        "deflector_tie_px": 0.093
                     },
                     {
                         "filt": "f814W",
@@ -2977,8 +2997,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 48.76,
-                        "deflector_tie_mas": 6.7,
-                        "deflector_tie_px": 0.135
+                        "deflector_tie_mas": 5.6,
+                        "deflector_tie_px": 0.112
                     },
                     {
                         "filt": "f814W",
@@ -2999,7 +3019,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f555W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 2.4,
+                        "deflector_tie_px": 0.048
                     },
                     {
                         "filt": "f814W",
@@ -3045,8 +3067,8 @@
                         "filt": "f555W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": 6.4,
-                        "deflector_tie_px": 0.128
+                        "deflector_tie_mas": 6.1,
+                        "deflector_tie_px": 0.122
                     },
                     {
                         "filt": "f814W",
@@ -3099,8 +3121,8 @@
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 20.23,
-                        "deflector_tie_mas": 18.5,
-                        "deflector_tie_px": 0.369
+                        "deflector_tie_mas": 18.1,
+                        "deflector_tie_px": 0.363
                     },
                     {
                         "filt": "f814W",
@@ -3279,11 +3301,15 @@
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "cutout"
+                        "prefix": "cutout",
+                        "deflector_tie_mas": 8.3,
+                        "deflector_tie_px": 0.138
                     },
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 6.2,
+                        "deflector_tie_px": 0.125
                     },
                     {
                         "filt": "f814W",
@@ -3301,11 +3327,15 @@
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "cutout"
+                        "prefix": "cutout",
+                        "deflector_tie_mas": 4.7,
+                        "deflector_tie_px": 0.079
                     },
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 4.0,
+                        "deflector_tie_px": 0.079
                     },
                     {
                         "filt": "f814W",
@@ -3448,7 +3478,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "cutout"
+                        "prefix": "cutout",
+                        "deflector_tie_mas": 8.3,
+                        "deflector_tie_px": 0.139
                     },
                     {
                         "filt": "f606W",
@@ -3498,15 +3530,15 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 48.92,
-                        "deflector_tie_mas": 21.5,
-                        "deflector_tie_px": 0.358
+                        "deflector_tie_mas": 24.5,
+                        "deflector_tie_px": 0.409
                     },
                     {
                         "filt": "f606W",
                         "prefix": "cutout_cr",
                         "reprojection_shift_mas": 36.0,
-                        "deflector_tie_mas": 0.8,
-                        "deflector_tie_px": 0.016
+                        "deflector_tie_mas": 2.8,
+                        "deflector_tie_px": 0.055
                     },
                     {
                         "filt": "f814W",
@@ -3594,8 +3626,8 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 93.66,
-                        "deflector_tie_mas": 65.1,
-                        "deflector_tie_px": 1.085
+                        "deflector_tie_mas": 55.8,
+                        "deflector_tie_px": 0.93
                     },
                     {
                         "filt": "f606W",
@@ -3630,7 +3662,9 @@
                 "broadcast_to": [
                     {
                         "filt": "f606W",
-                        "prefix": "cutout_cr"
+                        "prefix": "cutout_cr",
+                        "deflector_tie_mas": 13.2,
+                        "deflector_tie_px": 0.264
                     },
                     {
                         "filt": "f814W",
@@ -3867,8 +3901,8 @@
                         "filt": "f160W",
                         "prefix": "cutout",
                         "reprojection_shift_mas": 54.69,
-                        "deflector_tie_mas": 8.2,
-                        "deflector_tie_px": 0.137
+                        "deflector_tie_mas": 8.0,
+                        "deflector_tie_px": 0.133
                     },
                     {
                         "filt": "f606W",

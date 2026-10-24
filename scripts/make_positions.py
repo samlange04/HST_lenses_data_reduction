@@ -139,31 +139,71 @@ def reproject_positions(positions, src_hdr, dst_hdr):
     return out
 
 
+DEFLECTOR_SEARCH_R = 0.3     # arcsec: peak search radius about the stamp centre
+DEFLECTOR_WINDOW_SIGMA = 0.1  # arcsec: Gaussian window of the centroid
+DEFLECTOR_MIN_SNR = 10.0      # below this the deflector is not detected; tie unmeasured
+
+
 def deflector_sky(cutout_dir, prefix):
-    """Sky position of the deflector in this band, by flux centroid at the stamp centre.
+    """Sky position of the deflector in this band, by windowed centroid at the stamp centre.
 
     Used only to CHECK the band tie: every stamp is recentred on the deflector, so the same
     galaxy should land on the same sky coordinate in every band. Where it does not, the
     bands are misregistered and a broadcast position will miss the lensed images in that
     band by the same amount, however it is computed.
+
+    Returns (None, ps) when the deflector is not detected (windowed S/N below
+    DEFLECTOR_MIN_SNR): the tie is then unmeasured, not zero.
+
+    Two traps the earlier version (peak within 1.2", flux centroid in a 0.6" box) fell
+    into, both in bands where the arcs outshine the deflector (2026-10-24):
+      - SL2S F475X: the peak landed on an arc knot 0.5-1.4" out, so J0217, J1406, J1359,
+        J0904 and J2203 recorded 0.4-1.4" "misregistrations" against red bands tied to
+        within ~25 mas. Hence the 0.3" search, and the Gaussian window (XWIN-style
+        iteration) in place of the box, which still pulled 30-120 mas toward the arcs.
+      - GALLERY F438W: the deflector is invisible (windowed S/N 3-7.5 against >= 18 in
+        every other band), so the centroid was noise (100-300 mas even after the search
+        fix). Hence the S/N floor.
     """
     from scipy import ndimage
-    hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
-    sci = np.asarray(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'sci')), float)
+    sci_path = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+    hdr = fits.getheader(sci_path)
+    sci = np.asarray(fits.getdata(sci_path), float)
+    noise = np.asarray(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'noise')), float)
     ps = make_masks.pixel_scale_from_header(hdr)
     n_y, n_x = sci.shape
     cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
-    h = int(round(1.2 / ps))
-    sub = sci[int(cy)-h:int(cy)+h+1, int(cx)-h:int(cx)+h+1]
-    iy, ix = np.unravel_index(np.argmax(ndimage.gaussian_filter(sub, 1.0)), sub.shape)
-    iy += int(cy) - h; ix += int(cx) - h
+    yy, xx = np.mgrid[:n_y, :n_x]
+    smooth = ndimage.gaussian_filter(np.nan_to_num(sci), 1.0)
+    smooth[np.hypot(yy - cy, xx - cx) > DEFLECTOR_SEARCH_R / ps] = -np.inf
+    iy, ix = np.unravel_index(np.argmax(smooth), smooth.shape)
+
     b = int(round(0.6 / ps))
-    box = sci[iy-b:iy+b+1, ix-b:ix+b+1].astype(float)
-    w = np.clip(box - np.median(box), 0, None)
-    if w.sum() <= 0:
+    box = np.s_[iy-b:iy+b+1, ix-b:ix+b+1]
+    s = sci[box] - np.nanmedian(sci[box])
+    nz = noise[box]
+    good = np.isfinite(s) & np.isfinite(nz)
+    s, nz = np.where(good, s, 0.0), np.where(good, nz, 0.0)
+    ly, lx = np.mgrid[iy-b:iy+b+1, ix-b:ix+b+1].astype(float)
+    sig = DEFLECTOR_WINDOW_SIGMA / ps
+
+    def window(y0, x0):
+        r = np.hypot(ly - y0, lx - x0)
+        return np.where(r <= 4 * sig, np.exp(-0.5 * (r / sig) ** 2), 0.0)
+
+    y0, x0 = float(iy), float(ix)
+    for _ in range(100):
+        w = s * window(y0, x0)
+        if w.sum() <= 0:
+            return None, ps
+        dy, dx = (ly * w).sum() / w.sum() - y0, (lx * w).sum() / w.sum() - x0
+        y0, x0 = y0 + 2 * dy, x0 + 2 * dx
+        if np.hypot(dy, dx) < 1e-4:
+            break
+    g = window(y0, x0)
+    if (s * g).sum() / np.sqrt(((nz * g) ** 2).sum()) < DEFLECTOR_MIN_SNR:
         return None, ps
-    yy, xx = np.mgrid[iy-b:iy+b+1, ix-b:ix+b+1]
-    return WCS(hdr).pixel_to_world((xx*w).sum()/w.sum(), (yy*w).sum()/w.sum()), ps
+    return WCS(hdr).pixel_to_world(x0, y0), ps
 
 
 def save_overlay_png(sci_native, pixel_scales, positions, out_path,
@@ -563,7 +603,10 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         tie_mas = None
         if marked_sky is not None and filt != display_filt:
             band_sky, _ = deflector_sky(cutout_dir, prefix)
-            if band_sky is not None:
+            if band_sky is None:
+                print(f"  {filt}: deflector not detected (windowed S/N < "
+                      f"{DEFLECTOR_MIN_SNR:g}), band tie unmeasured")
+            else:
                 tie_mas = float(band_sky.separation(marked_sky).arcsec * 1000.0)
                 if tie_mas / (band_ps * 1000.0) > 1.0:
                     print(f"  WARNING: {filt} is MISREGISTERED against {display_filt} by "
