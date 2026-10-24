@@ -42,12 +42,12 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | all 22 (2026-10-24) | — |
 | `sl2s_dinos_x` | f475X 11, f600LP 3 | all 14 | all 14 | all 14 (2026-10-24) | — |
-| `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
-| `sl2s_snap` | f475X 5, f600LP 5 | all 10 | all 10 | **none yet** | — |
+| `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | all 14 (J1401+5557, J1419+5117 deliberately empty, 2026-10-24) | — |
+| `sl2s_snap` | f475X 5, f600LP 5 | all 10 | all 10 | all 10 (2026-10-24) | — |
 
-- **The one outstanding product is image positions for `sl2s_wf` and `sl2s_snap`** (BELLS done 2026-10-22, `sl2s_dinos_a`/`sl2s_dinos_x` 2026-10-24)
-  (`run_positions_all.sh <sample>`, the user's GUI step). Contaminant masking is finished
-  everywhere: the last two gaps (J1358+5459 and J1419+5117 f606W/f600LP) were drawn 2026-10-16.
+- **No product is outstanding (2026-10-24).** Image positions were the last: BELLS done
+  2026-10-22, all four SL2S samples 2026-10-24 (`run_positions_all.sh <sample>`, the user's GUI
+  step). Contaminant masking is finished everywhere: the last two gaps (J1358+5459 and J1419+5117 f606W/f600LP) were drawn 2026-10-16.
 - **Arc masks are ALWAYS OPTIONAL (user, 2026-10-21): never list a missing one as
   outstanding, and don't offer to draw them.** Every arc mask was **taken out of git on
   `main` and `bcfill` on 2026-10-21** (the user is not confident in them); the files that
@@ -1617,12 +1617,14 @@ unlike the mask tools there is no `--broadcast` switch. Trees/skip/`--size` beha
 `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the samples. The JSONs are
 non-regenerable, so they live in the git-tracked `data/cutouts/` tree.
 
-**DELIBERATELY EMPTY positions files (user's call).** 22 lenses carry a zero-length
+**DELIBERATELY EMPTY positions files (user's call).** 24 lenses carry a zero-length
 `Grid2DIrregular` on every band. 2026-09-26 (images too uncertain to mark):
 `slacs_gold` J0157-0056, J0841+3824, J0912+0029, J0936+0913, J1142+1001, J1143-0144,
 J1213+6708, J1402+6321, J2300+0022; `slacs_other` J0959+4416, J1016+3859, J1134+6027,
 J1403+0006, J1416+5136, J2141-0001, J2321-0939. 2026-10-22: `bells` J0151+0049, J0944-0147,
-J1221+3806, J1234-0241, J1601+2138, J1611+1705. Their `info/lens_positions.json` record has
+J1221+3806, J1234-0241, J1601+2138, J1611+1705. 2026-10-24: `sl2s_wf` J1401+5557 and
+J1419+5117 (arc only; SL2S III's SIE puts their counter-images at 5–13% of the knot flux,
+below our noise). Their `info/lens_positions.json` record has
 `n_positions: 0` and a `deliberately_empty` reason. The file's existence is what stops the
 sweep re-offering the lens (`--force` to mark one after all). **Downstream: a modelling
 script must skip the positions likelihood when the grid is empty**, not build an
@@ -2703,8 +2705,8 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions marked 2026-10-24 |
-| **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
-| **`sl2s_snap`** | 5 (J1423+5722 removed 2026-10-24) | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
+| **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions marked 2026-10-24 |
+| **`sl2s_snap`** | 5 (J1423+5722 removed 2026-10-24) | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions marked 2026-10-24 |
 | **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
@@ -2785,7 +2787,7 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 | AGEL (16773 WFC3 F140W + F200LP SNAP; 17307 ACS F606W 2 × 337 s) | Rejected | Mixed galaxy/group-scale deflectors, IR-led imaging; the ACS visits fall below the gate |
 | DESI Strong Lens Foundry (SNAP 15867, 51 lenses) | Rejected | WFC3/IR F140W 3 × 399 s only; mixed galaxy/group scale, IR-led. No optical band for a mass-vs-light sample |
 
-### SL2S samples (roster agreed 2026-10-04; reduced and masked; positions marked for dinos_a/x 2026-10-24)
+### SL2S samples (roster agreed 2026-10-04; reduced, masked and positions marked by 2026-10-24)
 
 35 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 and J1423+5722 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:

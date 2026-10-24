@@ -2385,6 +2385,622 @@
             }
         }
     },
+    "sl2s_snap": {
+        "J0223-0651": {
+            "f475X": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.792,
+                        0.5148
+                    ],
+                    [
+                        0.8712,
+                        -1.386
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.27,
+                "snap_moved_px_mean": 1.96,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 9900,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 19.61,
+                        "deflector_tie_mas": 1.5,
+                        "deflector_tie_px": 0.038
+                    }
+                ]
+            }
+        },
+        "J1401+5544": {
+            "f475X": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.198,
+                        1.386
+                    ],
+                    [
+                        -1.1088,
+                        0.6732
+                    ],
+                    [
+                        1.9404,
+                        -2.2176
+                    ],
+                    [
+                        1.1088,
+                        -2.574
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.1,
+                "snap_moved_px_mean": 1.55,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2569,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 24.65,
+                        "deflector_tie_mas": 8.7,
+                        "deflector_tie_px": 0.219
+                    }
+                ]
+            }
+        },
+        "J1402+5505": {
+            "f475X": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -1.3464,
+                        -0.792
+                    ],
+                    [
+                        0.9504,
+                        0.2376
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.26,
+                "snap_moved_px_mean": 2.06,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 978,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 12.97,
+                        "deflector_tie_mas": 9.7,
+                        "deflector_tie_px": 0.245
+                    }
+                ]
+            }
+        },
+        "J1411+5651": {
+            "f475X": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        -0.792,
+                        -0.5148
+                    ],
+                    [
+                        0.9108,
+                        -0.0792
+                    ],
+                    [
+                        -0.7128,
+                        0.6336
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.5,
+                "snap_moved_px_mean": 2.08,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 201,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 19.2,
+                        "deflector_tie_mas": 42.2,
+                        "deflector_tie_px": 1.066
+                    }
+                ]
+            }
+        },
+        "J1420+5630": {
+            "f475X": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        -0.198,
+                        1.3068
+                    ],
+                    [
+                        -1.0692,
+                        -1.188
+                    ],
+                    [
+                        -1.1484,
+                        0.7128
+                    ],
+                    [
+                        0.99,
+                        -0.0792
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 3.07,
+                "snap_moved_px_mean": 1.87,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 782,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 3.98,
+                        "deflector_tie_mas": 1.4,
+                        "deflector_tie_px": 0.036
+                    }
+                ]
+            }
+        }
+    },
+    "sl2s_wf": {
+        "J0225-0454": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.725,
+                        0.975
+                    ],
+                    [
+                        1.175,
+                        -2.275
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 0.57,
+                "snap_moved_px_mean": 0.46,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1023,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0226-0406": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.575,
+                        -0.875
+                    ],
+                    [
+                        1.025,
+                        1.275
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.63,
+                "snap_moved_px_mean": 1.39,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 3404,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0849-0251": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.675,
+                        0.825
+                    ],
+                    [
+                        -1.275,
+                        -0.625
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.08,
+                "snap_moved_px_mean": 1.78,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4604,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0858-0143": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.525,
+                        -0.525
+                    ],
+                    [
+                        -0.925,
+                        0.725
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 0.97,
+                "snap_moved_px_mean": 0.93,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2046,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J0901-0259": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.625,
+                        1.075
+                    ],
+                    [
+                        0.375,
+                        -0.825
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.79,
+                "snap_moved_px_mean": 1.71,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 12423,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1358+5459": {
+            "f475X": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.3168,
+                        1.6236
+                    ],
+                    [
+                        -0.0396,
+                        -0.6732
+                    ]
+                ],
+                "marked_filt": "f475X",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.06,
+                "snap_moved_px_mean": 1.79,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 7661,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 20.92,
+                        "deflector_tie_mas": 25.4,
+                        "deflector_tie_px": 0.641
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 24.58,
+                        "deflector_tie_mas": 12.7,
+                        "deflector_tie_px": 0.254
+                    }
+                ]
+            }
+        },
+        "J1401+5557": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "deliberately left without image positions (user, 2026-10-24): arc only: SL2S III identifies three images of one knot on the arc (cusp) in the WFC3 snapshot, which our reduction lacks (blocked at the exposure gate); in WFPC2 F606W only one knot reaches S/N 4. The SL2S III SIE puts the counter-image inside at ~10% of the knot flux, below our noise; empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J1419+5117": {
+            "f475X": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f475X",
+                "deliberately_empty": "deliberately left without image positions (user, 2026-10-24): arc only: SL2S III sees two bright points on the arc and no counter-image (group-scale, theta_E 3.11\"); the SL2S III SIE puts each knot's counter-image inside at 5-13% of its flux, below our noise; empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f475X",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f600LP",
+                        "prefix": "cutout_cr"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr"
+                    }
+                ]
+            }
+        },
+        "J1427+5516": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.825,
+                        -0.575
+                    ],
+                    [
+                        0.725,
+                        -0.225
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.59,
+                "snap_moved_px_mean": 1.54,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4071,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2213-0009": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -1.525,
+                        -0.225
+                    ],
+                    [
+                        -0.525,
+                        1.175
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "cutout_cr",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.73,
+                "snap_moved_px_mean": 1.1,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4659,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "cutout_cr",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        }
+    },
     "slacs_gold": {
         "J0008-0004": {
             "f814W": {
