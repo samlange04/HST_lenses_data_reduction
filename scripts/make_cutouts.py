@@ -53,6 +53,15 @@ import info_json
 import cutout_paths
 
 
+def _repo_relative(path):
+    """A path for the tracked provenance JSON: repo-relative inside the checkout, and only
+    the basename outside it, so a scratch reference stamp never records a machine path."""
+    if not path:
+        return None
+    rel = os.path.relpath(os.path.abspath(path), ws_path)
+    return '<outside repo>/' + os.path.basename(path) if rel.startswith('..') else rel
+
+
 def catalogue_coord_for(lens):
     """(ra, dec) HMS/DMS strings for a lens, from info/lens_coords.py (every sample's
     table merged)."""
@@ -811,7 +820,7 @@ def main():
         'dropped_frames': bool(a.drop),
         'drizzle_pass': drizzle_pass,
         'center_source': peak_src,
-        'center_from': (os.path.relpath(a.center_from, ws_path) if a.center_from else None),
+        'center_from': _repo_relative(a.center_from),
         'offset_arcsec': round(offset, 4),
         'noise_k': units_k,
         'corr_factor': a.corr_factor,
