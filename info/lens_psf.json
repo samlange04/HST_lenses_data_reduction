@@ -1605,40 +1605,6 @@
                 "err_source": "stars",
                 "n_boot_valid": 4
             }
-        },
-        "J1423+5722": {
-            "f475X": {
-                "method": "empirical",
-                "n_stars": 7,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.5046,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 27,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.000287,
-                "fwhm_pix_err": 0.0998,
-                "psf_err_frac": 0.03042511,
-                "err_method": "bootstrap",
-                "err_source": "stars",
-                "n_boot_valid": 100
-            },
-            "f600LP": {
-                "method": "empirical",
-                "n_stars": 6,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.4212,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 21,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.00085,
-                "fwhm_pix_err": 0.3008,
-                "psf_err_frac": 1.01905076,
-                "err_method": "bootstrap",
-                "err_source": "stars",
-                "n_boot_valid": 100
-            }
         }
     },
     "sl2s_wf": {

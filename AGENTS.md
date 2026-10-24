@@ -43,7 +43,7 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | all 22 (2026-10-24) | — |
 | `sl2s_dinos_x` | f475X 11, f600LP 3 | all 14 | all 14 | all 14 (2026-10-24) | — |
 | `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
-| `sl2s_snap` | f475X 6, f600LP 6 | all 12 | all 12 | **none yet** | — |
+| `sl2s_snap` | f475X 5, f600LP 5 | all 10 | all 10 | **none yet** | — |
 
 - **The one outstanding product is image positions for `sl2s_wf` and `sl2s_snap`** (BELLS done 2026-10-22, `sl2s_dinos_a`/`sl2s_dinos_x` 2026-10-24)
   (`run_positions_all.sh <sample>`, the user's GUI step). Contaminant masking is finished
@@ -1335,9 +1335,9 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   summing to 2θ_E). The masked string to the left at 1.7–2.1 θ_E has the same colour as the
   double, but an SIS can only image it once, so keeping it masked loses no constraint.
   **J1401+5544**: outer arc ~2.6″ (upper-left) + inner counter-arc ~1.3″ (lower-right) around
-  θ_E 2.03″. **J1423+5722**: the only arc-like feature is at ~2.4″ = 1.85 θ_E (upper-right) with
-  no clear counter-image, and SL2S III's model has q=0.32 and source mag 31.7. Treat its θ_E
-  with care; it also has no `zlens`.
+  θ_E 2.03″. **J1423+5722** (removed 2026-10-24; see *SL2S samples*): the only arc-like feature
+  is at ~2.4″ = 1.85 θ_E (upper-right) with no clear counter-image, and SL2S III's model has
+  q=0.32 and source mag 31.7.
 
 - **`sl2s_wf` (2026-10-14).**
   - **J0225-0454: the masked object left of the lens (col 74, row 97) is the arc's
@@ -2598,7 +2598,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     — Table 2 also lists **J0918+4518**, one digit from gallery's **J0918+5104**, and both are
     grade-A. Values validated end-to-end: every detected gallery component lands at
     0.64–1.37 θ_E, and the dashed θ_E circle traces the arcs on all 6 contact-sheet panels.
-  - **36 SL2S** (all four `sl2s_*` samples; J0848-0351's row went with it, 2026-10-24), **added 2026-10-14** by
+  - **35 SL2S** (all four `sl2s_*` samples; J0848-0351's and J1423+5722's rows went with them, 2026-10-24), **added 2026-10-14** by
     `local/scripts/add_sl2s_theta_e.py` (gitignored; its docstring is the provenance). **Two θ_E
     sources, chosen per lens (Sam, 2026-10-14):**
     - **The 21 Project Dinos II lenses use Sheu+2025 Table 1 `R_E`.** That is a power-law mass
@@ -2617,9 +2617,9 @@ Not written by a pipeline run, and the odd one out in `info/`:
     an aperture-corrected σ_e2 for only 25, so pick one deliberately before using it. `RE_kpc` is
     derived on flat H0=70/Ωm=0.3, which is both SL2S's and Dinos II's cosmology; on the SL2S III
     values it reproduced Paper IV Table 3's kpc to ≤0.03. Joined on the full designation
-    (`mast_target`), not the short name. **Every row has a θ_E**; J1423+5722 and J1419+5117 have
-    no `zlens` (so no `RE_kpc`), and 9 rows have no `zsrc`. The script drops any SL2S row whose
-    lens has left the roster (J0233-0438, J0213-0743, J0848-0351).
+    (`mast_target`), not the short name. **Every row has a θ_E**; J1419+5117 has
+    no `zlens` (so no `RE_kpc`; J1423+5722 also had none until its removal), and 8 rows have no `zsrc`. The script drops any SL2S row whose
+    lens has left the roster (J0233-0438, J0213-0743, J0848-0351, J1423+5722).
   - **21 BELLS** (24 until J1337+3620 and J1349+3612 were removed, 2026-10-14, and
     J1542+1629 on 2026-10-22), added 2026-10-14 by `local/scripts/add_bells_theta_e.py` (gitignored; it
     parses the filed PDF). θ_E is **Brownstein+2012 (BELLS I) Table 5** (SIE). `zlens`/`zsrc`/
@@ -2704,7 +2704,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
-| **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
+| **`sl2s_snap`** | 5 (J1423+5722 removed 2026-10-24) | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
 | **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
 
 `slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
@@ -2787,7 +2787,7 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 
 ### SL2S samples (roster agreed 2026-10-04; reduced and masked; positions marked for dinos_a/x 2026-10-24)
 
-36 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
+35 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 and J1423+5722 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:
 - **Sonnenfeld+2013 (SL2S III) Table 6:** grade A, HST = Y, and not the one "double"
   (J1405+5502), giving 29 lenses. SL2S has no E-S-A-style classification. Table 6's morphology
@@ -2796,6 +2796,16 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
   J0218-0802 and J0220-0949, are grade B in SL2S III but **upgraded to A in Sonnenfeld+2015
   (SL2S V) Sect. 2**, because new spectra put lens and arc at different redshifts. J0205-0930
   is only in SL2S V, where it is grade A. (8 since J0848-0351 was removed; see below.)
+- **J1423+5722 — REMOVED 2026-10-24 (Sam): no demonstrated multiple imaging.** Its only
+  lensed feature is one arc at ~2.8″ (2.1 θ_E, upper-right) with no counter-image in F475X,
+  F600LP or the blue-excess map. SL2S III Table 6 grades it A (HST = Y) but gives no per-lens
+  note, and its model needs a mass axis ratio of 0.32 against a light axis ratio of ~0.85 and a
+  31.7 mag source; the lens has no redshift. Traced through that model (PA converted with
+  φ = 90° − PA, checked on the light PAs), the arc's two knots are singly imaged, so the arc
+  gives no multiple-image constraint. Contrast J1401+5557 and J1419+5117, also arc-only: SL2S
+  III identifies multiple images on their arcs, and their predicted counter-images are 5–13%
+  of the knot flux, below our noise. Its roster entry, tracked stamps, tracking-JSON records
+  (including its field tie and θ_E row) and all its gitignored data were deleted.
 - **J0848-0351 — REMOVED 2026-10-24 (Sam): not a real grade-A lens.** SL2S III Table 6 grades
   it A with HST = N, so the grade came from CFHT imaging plus the X-Shooter source redshift
   (z_s = 1.55, SL2S IV), with no per-lens note. Its first HST image, the GO-17130 F475X, shows

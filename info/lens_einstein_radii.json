@@ -963,14 +963,6 @@
   "sigma_kms": 205,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
- "J1423+5722": {
-  "theta_e_arcsec": 1.3,
-  "RE_kpc": null,
-  "zlens": null,
-  "zsrc": null,
-  "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142321+572243; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
- },
  "J1427+5516": {
   "theta_e_arcsec": 0.81,
   "RE_kpc": 5.0,

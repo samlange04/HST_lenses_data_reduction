@@ -1469,40 +1469,6 @@
                 "n_added_px": 3539,
                 "n_erased_px": 0
             }
-        },
-        "J1423+5722": {
-            "f475X": {
-                "bcfill": false,
-                "brush_radius_px": 6,
-                "brush_width": 0.019802,
-                "display": "S/N, radial-subtracted + as-observed",
-                "drizzle_pass": "cr",
-                "n_excluded_px": 3816,
-                "pixel_scale_arcsec": 0.0396,
-                "prefix": "cutout_cr",
-                "recentred": {
-                    "date": "2026-10-14",
-                    "drow_px": 1,
-                    "dcol_px": -2,
-                    "net_masked_px_change": -112
-                },
-                "source": "drawn"
-            },
-            "f600LP": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f475X mask outlined)",
-                "bcfill": false,
-                "source": "edited_from_f475X",
-                "n_excluded_px": 6835,
-                "brush_width": 0.019802,
-                "brush_radius_px": 6,
-                "proposal_from": "f475X",
-                "proposal_px": 3816,
-                "n_added_px": 3019,
-                "n_erased_px": 0
-            }
         }
     },
     "sl2s_wf": {

@@ -1069,28 +1069,6 @@
                 "bcfill": false,
                 "output": "data/cutouts/sl2s_snap/J1420+5630/f600LP/cutout_cr_dataset.png"
             }
-        },
-        "J1423+5722": {
-            "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "stretch": "asinh",
-                "cmap": "inferno",
-                "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.041565,
-                "bcfill": false,
-                "output": "data/cutouts/sl2s_snap/J1423+5722/f475X/cutout_cr_dataset.png"
-            },
-            "f600LP": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "stretch": "asinh",
-                "cmap": "inferno",
-                "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.074448,
-                "bcfill": false,
-                "output": "data/cutouts/sl2s_snap/J1423+5722/f600LP/cutout_cr_dataset.png"
-            }
         }
     },
     "sl2s_wf": {

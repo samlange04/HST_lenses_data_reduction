@@ -345,23 +345,6 @@
                     }
                 ]
             }
-        },
-        "J1423+5722": {
-            "f600LP": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": 77.9,
-                        "dN_mas": 20.3,
-                        "err_mas": 4.5,
-                        "n_sources": 145,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            }
         }
     },
     "sl2s_wf": {

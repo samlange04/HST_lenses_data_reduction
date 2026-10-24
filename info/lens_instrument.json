@@ -301,10 +301,6 @@
         "J1420+5630": {
             "f475X": "WFC3/UVIS",
             "f600LP": "WFC3/UVIS"
-        },
-        "J1423+5722": {
-            "f475X": "WFC3/UVIS",
-            "f600LP": "WFC3/UVIS"
         }
     },
     "sl2s_wf": {
