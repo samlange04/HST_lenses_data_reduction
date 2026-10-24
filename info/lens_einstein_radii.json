@@ -339,18 +339,6 @@
   "sigma_kms": 225,
   "source": "Auger+2009 (SLACS IX), VizieR J/ApJ/705/1099/lenses"
  },
- "J0848-0351": {
-  "theta_e_arcsec": 0.93,
-  "RE_kpc": 6.58,
-  "zlens": 0.682,
-  "zsrc": 1.55,
-  "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ084847-035103; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
-  "theta_e_err_arcsec": [
-   0.038,
-   0.038
-  ]
- },
  "J0849-0251": {
   "theta_e_arcsec": 1.16,
   "RE_kpc": 4.85,

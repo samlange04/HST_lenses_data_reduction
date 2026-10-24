@@ -1702,29 +1702,6 @@
                 "casertano_r_analytic": 1.5004
             }
         },
-        "J0848-0351": {
-            "f475X": {
-                "size_arcsec": 12.0,
-                "stamp": "cutout_cr_sci.fits",
-                "variant": "",
-                "bcfill": false,
-                "crfill": false,
-                "dropped_frames": false,
-                "drizzle_pass": "cr",
-                "center_source": "this band",
-                "center_from": null,
-                "offset_arcsec": 0.2074,
-                "noise_k": 1.0,
-                "corr_factor": 1.41,
-                "corr_factor_source": "lens",
-                "weight_uniformity": 0.136394,
-                "weight_uniformity_limit": 0.2,
-                "weight_uniformity_ok": true,
-                "pixfrac": 1.0,
-                "scale_ratio": 0.999495,
-                "casertano_r_analytic": 1.5004
-            }
-        },
         "J0849-0412": {
             "f475X": {
                 "size_arcsec": 12.0,

@@ -299,7 +299,7 @@
         }
     },
     "sl2s_dinos_x": {
-        "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025). J0233-0438 (GO-17130, not a Dinos II lens) was REMOVED 2026-10-14: both F475X visits failed (EXPFLAG TDF-DOWN AT EXPSTART, blank sky at the lens) -- see AGENTS.md *SL2S samples*. J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025). J0233-0438 (GO-17130, not a Dinos II lens) was REMOVED 2026-10-14: both F475X visits failed (EXPFLAG TDF-DOWN AT EXPSTART, blank sky at the lens) -- see AGENTS.md *SL2S samples*. J0848-0351 was REMOVED 2026-10-24 (Sam): not a real grade-A lens. Its SL2S III grade A (Table 6, HST=N) came from CFHT imaging plus the source redshift, before any HST data; the GO-17130 F475X shows a single arc on one side and no counter-image (as in Dinos II Fig. A2, whose theta_E 0.93+/-0.04\" and q=0.43 are among the weakest constraints in the sample), so it fails SL2S III's own HST grade-A test of a visible multiple-image pair. J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
         "coords": "info/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -359,15 +359,6 @@
                 },
                 "cutout_box": 20,
                 "note": "Grade B in Sonnenfeld+2013 Table 6, upgraded to A in Sonnenfeld+2015 Sect. 2 (spectroscopy puts lens and arc at different redshifts). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. cutout_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on the western lensed image 1.04\" off. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector."
-            },
-            "J0848-0351": {
-                "mast_target": "SL2SJ084847-035103",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
             },
             "J0849-0412": {
                 "mast_target": "SL2SJ084909-041226",

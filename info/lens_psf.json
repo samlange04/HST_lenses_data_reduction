@@ -1294,24 +1294,6 @@
                 "n_boot_valid": 100
             }
         },
-        "J0848-0351": {
-            "f475X": {
-                "method": "empirical",
-                "n_stars": 10,
-                "n_crowded_rejected": 0,
-                "fwhm_pix": 2.4157,
-                "oversample": 2,
-                "kernel_size": 51,
-                "cutout_kernel_size": 23,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.000164,
-                "fwhm_pix_err": 0.0434,
-                "psf_err_frac": 0.00852397,
-                "err_method": "bootstrap",
-                "err_source": "stars",
-                "n_boot_valid": 100
-            }
-        },
         "J0849-0412": {
             "f475X": {
                 "method": "empirical",

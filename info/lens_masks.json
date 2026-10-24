@@ -1209,19 +1209,6 @@
                 "brush_radius_px": 6
             }
         },
-        "J0848-0351": {
-            "f475X": {
-                "prefix": "cutout_cr",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.0396,
-                "display": "S/N, radial-subtracted + as-observed",
-                "bcfill": false,
-                "source": "drawn",
-                "n_excluded_px": 3996,
-                "brush_width": 0.019802,
-                "brush_radius_px": 6
-            }
-        },
         "J0849-0412": {
             "f475X": {
                 "prefix": "cutout_cr",

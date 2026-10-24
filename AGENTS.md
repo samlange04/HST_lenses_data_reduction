@@ -41,7 +41,7 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | **none yet** | — |
-| `sl2s_dinos_x` | f475X 12, f600LP 3 | all 15 | all 15 | **none yet** | — |
+| `sl2s_dinos_x` | f475X 11, f600LP 3 | all 14 | all 14 | **none yet** | — |
 | `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
 | `sl2s_snap` | f475X 6, f600LP 6 | all 12 | all 12 | **none yet** | — |
 
@@ -691,7 +691,7 @@ standard stamp's noise map carries it** (`NOISECOR`, since 2026-09-26):
 | F606W ACS/WFC | ±1 px | **1.20** (J0217-0513 only) | | |
 | F606W WFPC2 | ±2 px | **1.04** (2026-10-06; was 1.07) | 0.18 | 2.39 |
 | F160W WFC3/IR | ±2 px | **1.00** (2026-10-06, median 0.98 floored; was 1.05) | 0.14 | 2.53 |
-| F475X / F600LP WFC3/UVIS | ±1 px | **1.21 / 1.19** (SL2S; 11 F475X overrides) | | 1.30 |
+| F475X / F600LP WFC3/UVIS | ±1 px | **1.21 / 1.19** (SL2S; 9 F475X overrides) | | 1.30 |
 | F438W / F606W / F814W WFC3/UVIS | ±1 px | **1.24 / 1.18 / 1.26** (gallery, 2026-09-26, not re-measured) | 0.72–0.84 | 1.30 |
 | F275W / F225W WFC3/UVIS | ±1 px | **1.38 / 1.37** | 0.92–0.95 | 1.30 |
 
@@ -714,7 +714,7 @@ turned out to be structure, including J1143-0144's long-standing 1.38 override, 
 
 **Override rule:** a lens's patch median is more than 0.10 from its band median, AND the band
 median lies outside the lens's own 16–84% patch range. A "3 band-σ" form can't fire on a
-bimodal band. It yields exactly the 11 low-sky GO-17130 F475X fields (1.32–1.43; 10 since J0233-0438 left the roster, 2026-10-14; MDRIZSKY
+bimodal band. It yields exactly the 11 low-sky GO-17130 F475X fields (1.32–1.43; 9 since J0233-0438 and J0848-0351 left the roster, 2026-10-14 and 2026-10-24; MDRIZSKY
 below ~29 e⁻), consistent with the UVIS pixel-based CTE correction adding noise at low
 background by 2023. The 2009–10 GO-11588 snapshots sit at 1.14–1.20 even at 7–14 e⁻.
 
@@ -1313,6 +1313,8 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   `cutout_box: 20` (±0.4″ about the Gavazzi+14 position) and sit 0.17–0.24″ from it. J0212's mask
   was reprojected onto the new grid; 28% of that stamp was never reviewed.
   - **J0233-0438 had NO USABLE DATA and was removed from the roster** (see *SL2S samples*).
+  - **J0848-0351 was removed 2026-10-24**: a single arc with no counter-image, so not a real
+    grade-A lens (see *SL2S samples*).
   - **Dinos II (Sheu+2025) Table 1 has HST-based θ_E for all 21 Dinos lenses**, and they fit
     these images better than SL2S III/V's ground-based values. J0205-0930 is **1.246″, not
     0.76″**. J0218's ring knots sit at 0.91 θ_E on Dinos II (0.77 on SL2S III). J0220's images
@@ -2581,7 +2583,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     — Table 2 also lists **J0918+4518**, one digit from gallery's **J0918+5104**, and both are
     grade-A. Values validated end-to-end: every detected gallery component lands at
     0.64–1.37 θ_E, and the dashed θ_E circle traces the arcs on all 6 contact-sheet panels.
-  - **37 SL2S** (all four `sl2s_*` samples), **added 2026-10-14** by
+  - **36 SL2S** (all four `sl2s_*` samples; J0848-0351's row went with it, 2026-10-24), **added 2026-10-14** by
     `local/scripts/add_sl2s_theta_e.py` (gitignored; its docstring is the provenance). **Two θ_E
     sources, chosen per lens (Sam, 2026-10-14):**
     - **The 21 Project Dinos II lenses use Sheu+2025 Table 1 `R_E`.** That is a power-law mass
@@ -2602,7 +2604,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     values it reproduced Paper IV Table 3's kpc to ≤0.03. Joined on the full designation
     (`mast_target`), not the short name. **Every row has a θ_E**; J1423+5722 and J1419+5117 have
     no `zlens` (so no `RE_kpc`), and 9 rows have no `zsrc`. The script drops any SL2S row whose
-    lens has left the roster (J0233-0438, J0213-0743).
+    lens has left the roster (J0233-0438, J0213-0743, J0848-0351).
   - **21 BELLS** (24 until J1337+3620 and J1349+3612 were removed, 2026-10-14, and
     J1542+1629 on 2026-10-22), added 2026-10-14 by `local/scripts/add_bells_theta_e.py` (gitignored; it
     parses the filed PDF). θ_E is **Brownstein+2012 (BELLS I) Table 5** (SIE). `zlens`/`zsrc`/
@@ -2685,7 +2687,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions not yet marked |
-| **`sl2s_dinos_x`** | 12 (J0233-0438 removed 2026-10-14) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions not yet marked |
+| **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions not yet marked |
 | **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
 | **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
 | **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
@@ -2770,7 +2772,7 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 
 ### SL2S samples (roster agreed 2026-10-04; reduced and masked, positions not yet marked)
 
-37 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14), grouped by which HST bands exist. Every per-lens `note` in
+36 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:
 - **Sonnenfeld+2013 (SL2S III) Table 6:** grade A, HST = Y, and not the one "double"
   (J1405+5502), giving 29 lenses. SL2S has no E-S-A-style classification. Table 6's morphology
@@ -2778,7 +2780,17 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 - **Project Dinos II (Sheu+2025):** the 9 lenses that are new to HST in GO-17130. Two of them,
   J0218-0802 and J0220-0949, are grade B in SL2S III but **upgraded to A in Sonnenfeld+2015
   (SL2S V) Sect. 2**, because new spectra put lens and arc at different redshifts. J0205-0930
-  is only in SL2S V, where it is grade A.
+  is only in SL2S V, where it is grade A. (8 since J0848-0351 was removed; see below.)
+- **J0848-0351 — REMOVED 2026-10-24 (Sam): not a real grade-A lens.** SL2S III Table 6 grades
+  it A with HST = N, so the grade came from CFHT imaging plus the X-Shooter source redshift
+  (z_s = 1.55, SL2S IV), with no per-lens note. Its first HST image, the GO-17130 F475X, shows
+  one long arc at 1.3–1.5″ on one side and **no counter-image**. Dinos II Fig. A2 shows the
+  same: there is no counter-image in its data or model panels, and it needed a very flattened
+  mass (q = 0.43) whose θ_E (0.93 ± 0.04″) is the least certain, fractionally, of the 21. A
+  single arc with no counter-image fails SL2S III's own HST grade-A test (a visible pair of
+  multiple images). Its roster entry, tracked stamps, tracking-JSON records (including its
+  F475X noise override and θ_E row) and all its gitignored data were deleted. It never had
+  positions.
 - **J0233-0438 — REMOVED 2026-10-14 (no usable data).** It is grade A in SL2S V Table 3
   ("double image system") and was observed in GO-17130, but it is not one of Dinos II's 21, and
   the paper gives no reason. The likely reason is that **both F475X visits failed.** All 8
@@ -2964,7 +2976,7 @@ the sample on 2026-10-14 (the first two) and 2026-10-22, but their PSF stars are
 the map was not rebuilt. A rebuild would now use 20 donors.
 
 **Noise-map inflation:** see *Drizzle correlated noise → Repo-wide factors and the
-patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 10 low-sky GO-17130 overrides (11 before J0233-0438 was removed)
+patch-median statistic (2026-10-06)*. SL2S F475X is 1.21, with 9 low-sky GO-17130 overrides (11 before J0233-0438 and J0848-0351 were removed)
 (1.32–1.43); F600LP is 1.19; J0217-0513's ACS F606W is 1.20.
 
 **PSFs.** The first pass was empirical only (`run_psf_all.sh --empirical-only`). Sam then chose
