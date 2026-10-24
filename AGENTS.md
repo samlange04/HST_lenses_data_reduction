@@ -40,12 +40,12 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | all 34 | f606W 10 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
-| `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | **none yet** | — |
-| `sl2s_dinos_x` | f475X 11, f600LP 3 | all 14 | all 14 | **none yet** | — |
+| `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | all 22 (2026-10-24) | — |
+| `sl2s_dinos_x` | f475X 11, f600LP 3 | all 14 | all 14 | all 14 (2026-10-24) | — |
 | `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | **none yet** | — |
 | `sl2s_snap` | f475X 6, f600LP 6 | all 12 | all 12 | **none yet** | — |
 
-- **The one outstanding product is image positions for the four SL2S samples** (BELLS done 2026-10-22)
+- **The one outstanding product is image positions for `sl2s_wf` and `sl2s_snap`** (BELLS done 2026-10-22, `sl2s_dinos_a`/`sl2s_dinos_x` 2026-10-24)
   (`run_positions_all.sh <sample>`, the user's GUI step). Contaminant masking is finished
   everywhere: the last two gaps (J1358+5459 and J1419+5117 f606W/f600LP) were drawn 2026-10-16.
 - **Arc masks are ALWAYS OPTIONAL (user, 2026-10-21): never list a missing one as
@@ -2701,8 +2701,8 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 | **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
-| **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions not yet marked |
-| **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions not yet marked |
+| **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |
+| **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions not yet marked |
 | **`sl2s_snap`** | 6 | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions not yet marked |
 | **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
@@ -2785,7 +2785,7 @@ optical, galaxy-scale and CR-rejectable. Do not re-run the survey; change this l
 | AGEL (16773 WFC3 F140W + F200LP SNAP; 17307 ACS F606W 2 × 337 s) | Rejected | Mixed galaxy/group-scale deflectors, IR-led imaging; the ACS visits fall below the gate |
 | DESI Strong Lens Foundry (SNAP 15867, 51 lenses) | Rejected | WFC3/IR F140W 3 × 399 s only; mixed galaxy/group scale, IR-led. No optical band for a mass-vs-light sample |
 
-### SL2S samples (roster agreed 2026-10-04; reduced and masked, positions not yet marked)
+### SL2S samples (roster agreed 2026-10-04; reduced and masked; positions marked for dinos_a/x 2026-10-24)
 
 36 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
 `info/lens_samples.json` says why that lens is in. Selection:
