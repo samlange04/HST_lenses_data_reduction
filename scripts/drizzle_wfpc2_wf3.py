@@ -3,9 +3,10 @@
 Drizzle HST WFPC2 WF3-chip FLT images into a combined mosaic.
 Downloads FLT files from MAST into data/calibrated/ if not already present.
 Writes final sci/wht FITS to data/drizzled/, intermediates to data/drizzle_files/.
-Produces both a CR-rejected and a no-CR-rejection drizzle for comparison.
+Produces the LACosmic CR-rejected drizzle by default; --nocrrej adds a no-CR-rejection
+pass for comparison.
 
-WHY WF3 AND NOT THE PC: for every SLACS lens with WFPC2 F606W data, the lens
+WHY WF3 AND NOT THE PC: for every SLACS and SL2S lens with WFPC2 F606W data, the lens
 galaxy falls on WF3 (extension 3), never on the PC. `DETECTOR = PC` in the
 primary header — and hence the "WFPC2/PC" label on MAST — describes the aperture,
 not the chip the target lands on; the standard WFPC2 full-field aperture centres
@@ -137,13 +138,12 @@ _p.add_argument('--out-suffix',  default='')
 # never overwritten. Per-visit like every WFPC2 product (a split-visit lens fills each visit
 # separately). The filled pixels carry no independent information, so the noise is optimistic
 # by ~sqrt(3/4)~13% on those columns -- an opt-in cosmetic/uniformity choice, not the science
-# default. Validated standalone on J0822+2652 / J0252+0039 (scripts/bolton_investigations/
-# redrizzle_bcfill_wfpc2.py); see AGENTS.md.
+# default. Validated on J0822+2652 / J0252+0039 before being wired in; see AGENTS.md.
 _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
                 help='interpolate WF3 dead columns (DQ 2|256) in SCI and un-flag them before '
                      'building the IVM + drizzling, writing to the parallel '
                      'data/drizzled_bcfill/ tree; removes the dead-column noise stripe (see '
-                     'AGENTS.md / scripts/bolton_investigations)')
+                     'AGENTS.md)')
 _a = _p.parse_args()
 
 lens       = _a.lens
@@ -176,7 +176,7 @@ WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 # pixfrac 1.0 (not 0.8): F606W keeps its dither-supported 0.05" scale (WFPC2-BOX is a
 # 4-point HALF-pixel dither, purpose-built for 2x oversampling of the 0.0996" native --
 # do NOT coarsen to 0.06"; that would waste the sub-pixel sampling the dither encodes).
-# But with the noise now on calibrated ERR weight maps, the drizzle goal is a *uniform,
+# But with the noise now on a calibrated per-frame IVM weight map, the drizzle goal is a *uniform,
 # low-correlation* noise map for the likelihood, not the sharpest PSF. pixfrac 1.0 fills
 # the grid so adjacent-pixel noise correlation collapses. Measured on J0252+0039 (0.05",
 # correctly MAST-registered frames):
@@ -631,8 +631,7 @@ flt_wf3_files = extract_wf3_chip(sorted(glob.glob('u*flt.fits')))
 # See the --bcfill help. Fill DQ 2|256 columns in SCI (interior only, sparing the vignetted
 # border) and clear those bits, so the pixels get full weight from every frame. Runs BEFORE
 # build_ivm_files so the IVM is measured from the filled SCI (a consistent noise model on the
-# filled columns) and BEFORE LACosmic, which keys off DQ bit 8 only and is unaffected. Ported
-# from scripts/bolton_investigations/redrizzle_bcfill_wfpc2.py.
+# filled columns) and BEFORE LACosmic, which keys off DQ bit 8 only and is unaffected.
 _BCFILL_BADCOL = 2 | 256          # WFPC2 c1m: calibration/mask defect (2) + bit 256
 
 
@@ -668,10 +667,12 @@ if _a.bcfill:
     print('\n=== bcfill: filling WF3 bad columns (DQ 2|256) pre-IVM/pre-drizzle ===')
     fill_wf3_bad_columns(flt_wf3_files)
 
-# ── Build per-frame IVM files from the real ERR array ──────────────────────────
+# ── Build per-frame IVM files from a measured noise model ──────────────────────
 # See the --wht-type help above: DrizzlePac's WFPC2 driver hardcodes errExt=None
-# and never reads ERR for WFPC2, no matter what's in the file. IVM = 1/ERR^2 is
-# the inverse-variance-map DrizzlePac *does* support as a user-supplied file, fed
+# and never reads ERR for WFPC2, no matter what's in the file (and the WFPC2 ERR array
+# is sqrt(SCI) with no gain or read noise, so it must not be used anyway). IVM =
+# 1/(SCI/gain + floor^2) is the inverse-variance map DrizzlePac *does* support as a
+# user-supplied file, fed
 # via a two-column @-file (irafglob's ivmlist convention: 'atfile_ivm' reads the
 # second whitespace-separated word per line). ERR itself doesn't change between
 # the CR and no-CR passes (only DQ does), so these are built once and reused.
@@ -754,7 +755,7 @@ def build_ivm_files(wf3_files):
     return ivm_files
 
 if _a.wht_type == 'IVM':
-    print('\n=== Building per-frame IVM files (1/ERR^2) — WFPC2 ERR weighting is unsupported by DrizzlePac ===')
+    print('\n=== Building per-frame IVM files (SCI/gain + floor^2) — WFPC2 ERR weighting is unsupported by DrizzlePac ===')
     _ivm_files = build_ivm_files(flt_wf3_files)
     _ivm_assoc_path = 'wf3_ivm_association.lst'
     with open(_ivm_assoc_path, 'w') as _f:
@@ -799,8 +800,9 @@ def make_log_norm(data, wht):
 
 # ── CR rejection: LACosmic (default), same rationale as drizzle_acs_wfc.py ─────
 # driz_cr compares each frame to a blotted median of the stack; on a steep PSF core
-# that reference is biased low, so real core pixels read as CRs (measured -37% core
-# flux on ACS, and it spikes the WFPC2 noise map with masked patches + a CR trail).
+# that reference is biased low when the dither is poor, so real core pixels read as CRs
+# (on ACS the erosion appears once the dither is erased; it also spikes the WFPC2 noise
+# map with masked patches + a CR trail).
 # LACosmic works one frame at a time with an object-protection term (objlim), so no
 # stacked reference biases the core, and the final drizzle is a plain weighted mean.
 CR_BIT = 4096          # not in final_bits='8,1024', so flagged CRs are excluded

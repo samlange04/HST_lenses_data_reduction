@@ -61,12 +61,13 @@ inner region is subtraction error and the detector proposes nothing there: those
 have to be drawn by hand.
 
 WHERE IT LOOKS IS SET BY THE MEASURED EINSTEIN RADIUS. Candidates are kept only in an annulus
-around the published theta_E for that lens -- `info/lens_einstein_radii.json`, which holds two
-catalogues distinguished by each row's `source`: Auger+2009 (SLACS IX) for the SLACS lenses,
-fetched from VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e`, and Shu+2016 (BELLS GALLERY IV)
-Table 2 for the 15 gallery lenses, entered by hand because that paper is not on VizieR. Every
-slacs_gold and gallery lens has a measured value, and a lens in either table has a successful
-published lens model, so the arc is known to exist and roughly where. This is the cheapest prior available and it kills the two
+around the published theta_E for that lens -- `info/lens_einstein_radii.json`, whose rows are
+distinguished by their `source`: Auger+2009 (SLACS IX) for the SLACS lenses, fetched from
+VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e` (which merges, never overwrites a non-null
+theta_E); Shu+2016 (BELLS GALLERY IV) Table 2 for the 15 gallery lenses; Brownstein+2012 for
+BELLS; Sheu+2025 or Sonnenfeld+2013 for SL2S; Brewer+2012 for J2141-0001 -- the non-SLACS
+rows entered by hand. Every slacs_gold and gallery lens has a measured value, and a lens with
+a row has a successful published lens model, so the arc is known to exist and roughly where. This is the cheapest prior available and it kills the two
 classic false positives at once: the deflector's central residual (inside the annulus) and
 unrelated field galaxies (outside it).
 
@@ -132,7 +133,8 @@ RED_PRIORITY = ['f814W', 'f555W']
 #: 1e8). One such pixel left in an FFT convolution ruins the entire frame.
 SENTINEL_FACTOR = 1e3
 
-#: Largest sub-pixel shift this tool will apply when re-registering the blue band on the red.
+#: Band offset above which the diagnostic FLAGS a lens for align_wfpc2_to_acs.py. Nothing is
+#: applied here (see band_offset below: the measured offset is reported, never used).
 #: The bands are already tied by align_wfpc2_to_acs.py and measure within ~0.5px of each other
 #: (field sources and deflector centroids agree); a larger measurement means a broken tie or a
 #: fooled centroid, neither of which a detector should silently absorb.

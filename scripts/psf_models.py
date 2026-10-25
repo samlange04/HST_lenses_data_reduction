@@ -25,7 +25,9 @@ drizzled output scale (`out_scale`).
 Caveat (Anderson 2016, WFC3/IR ISR): the STDPSF is the *detector-frame* ePSF. The true
 drizzled-frame PSF differs -- AstroDrizzle resampling broadens point sources -- and the
 rigorous route is to inject artificial stars into the flt and drizzle them. This module's
-resample omits that broadening, so the model kernel runs slightly sharp. It is a fallback
+resample omits that broadening, so the analytic model kernel runs slightly sharp; the
+pipeline therefore injects it and re-drizzles (make_psf_inject.py), and the injected kernel
+is the canonical model-tier product. The model tier is a fallback
 for star-poor fields; the empirical ePSF (built from stars in the drizzled image itself)
 is the true drizzled PSF and is always preferred when enough stars exist.
 
@@ -68,8 +70,10 @@ _LIB = {
                     filters=['F555W', 'F658N', 'F675W', 'F814W']),
     # WFC3/UVIS is a two-CCD optical detector; its STDPSF grid stacks both chips, so a
     # detector_id (1 or 2, like ACS/WFC) must be selected -- chip 1 by default, the same
-    # secondary-effect choice as ACS. Every gallery band (F225W/F275W/F438W/F606W/F814W)
-    # has an EXACT published grid, so no nearest-filter substitution ever fires here.
+    # secondary-effect choice as ACS. Every gallery science band (F438W/F606W/F814W) has an
+    # EXACT published grid, so no nearest-filter substitution fires there. SL2S's F475X and
+    # F600LP have no STDPSF grid and no pivot entry (nearest_filter raises); those bands use
+    # make_psf_median.py when a field is star-poor.
     'WFC3/UVIS': dict(subdir='WFC3UV', detector_id=1,
                       filters=['F225W', 'F275W', 'F336W', 'F390W', 'F410M', 'F438W',
                                'F467M', 'F555W', 'F606W', 'F621M', 'F775W', 'F814W',

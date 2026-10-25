@@ -14,7 +14,7 @@ _SLACS_GROUPS = {
     'f606W_f555W': ['f606W', 'f606W_v2', 'f555W'],
     'f160W':       ['f160W'],
 }
-_GALLERY_FILTERS = ['f225W', 'f275W', 'f438W', 'f606W', 'f814W']
+_GALLERY_FILTERS = ['f438W', 'f606W', 'f814W']   # F225W/F275W products deleted 2026-09-29
 
 SAMPLE_GROUPS = {
     'slacs_gold':  _SLACS_GROUPS,

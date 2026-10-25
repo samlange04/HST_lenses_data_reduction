@@ -44,7 +44,7 @@ turns that off. The window title lists what each marker means.
 YOU CORRECT A PROPOSAL, YOU DO NOT DRAW FROM SCRATCH (--propose-from, default 'auto').
 `scripts/detect_arcs.py` finds the arcs automatically -- a PSF-matched colour difference
 against the deflector (the source is blue, the deflector is red), thresholded inside the
-measured Auger+2009 Einstein radius -- and its region is OUTLINED over both panels for review.
+measured Einstein radius (info/lens_einstein_radii.json) -- and its region is OUTLINED over both panels for review.
 You then add with the white brush ('1'), erase with the black one ('2'), and on closing the GUI choose
 [a]pply proposal+edits, keep only what you [d]rew, or [s]kip. It is the same review loop
 make_masks.py uses for cross-band mask proposals, and the same `confirm_proposal` code: the
@@ -498,7 +498,7 @@ def main():
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you DRAW on (e.g. f606W); default the best available '
-                        'band per lens (f814W>f606W>f555W>f160W>...). Only that band gets an '
+                        'band per lens (f475X>f814W>f606W>f555W>f160W>...). Only that band gets an '
                         'arc mask unless --broadcast is passed')
     p.add_argument('--broadcast', action=argparse.BooleanOptionalAction, default=False,
                    help="ALSO write the arc mask to the lens's other bands, WCS-reprojected "
@@ -513,8 +513,9 @@ def main():
                         "no CR pass exists (F160W)")
     p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
                    help=f'cutout tree to draw arc masks for (default '
-                        f'{cutout_paths.DEFAULT_SIZE:g}", data/cutouts/ -- the git-tracked '
-                        'tree; like every hand-drawn product these are non-regenerable)')
+                        f'{cutout_paths.DEFAULT_SIZE:g}", data/cutouts/). Arc masks are optional products '
+                        'and are gitignored there (since 2026-10-21); only their provenance '
+                        'in info/lens_arc_masks.json is tracked')
     p.add_argument('--force', action='store_true', default=False,
                    help='redraw an arc mask that already exists (default: skip it)')
     p.add_argument('--brush-radius', type=int, default=4,
@@ -579,7 +580,7 @@ def main():
     p.add_argument('--include-ignored', action='store_true', default=False,
                    help='also offer bands whose cutout directory is GITIGNORED. Off by '
                         'default: such a band is not a science product (the three 420 s '
-                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-drawn '
+                        'SLACS SNAP f814W diagnostics, since deleted, are why the rule exists), and hand-drawn '
                         'work written there is non-regenerable and invisible to every clone. '
                         'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()

@@ -58,11 +58,10 @@ data/cutouts/**/*_mask_arcs.png
 info/lens_cutout_qc_*arcsec.json
 
 # ── Large external material ────────────────────────────────────────────────────
-# info/data_handbooks/*.pdf: the STScI handbooks and PSF papers the DQ-bit, pixel-scale
-# and read-noise choices cite. 147 MB of third-party PDFs that never change, untracked
-# 2026-10-04; info/data_handbooks/README.md lists each file's edition and where to
-# download it, and instrument_drizzle_ref.md keeps the page-numbered digest.
-info/data_handbooks/*.pdf
+# The STScI handbooks and PSF papers the DQ-bit, pixel-scale and read-noise choices
+# cite (147 MB of third-party PDFs) live outside the repo tree since 2026-10-25;
+# info/instrument_drizzle_ref.md lists each edition with a download link and keeps
+# the page-numbered digest.
 hst_notebooks/
 
 # ── Superseded notebooks ───────────────────────────────────────────────────────
@@ -108,3 +107,9 @@ diagnostics/
 # CLAUDE.md imports the tracked AGENTS.md (@AGENTS.md) and adds the maintainer's private
 # working notes. Only AGENTS.md is needed to use the repo.
 /CLAUDE.md
+
+# ── Exploratory scripts kept out of the public tree ───────────────────────────
+# scripts/bolton_investigations/: the standalone prototypes behind the --bcfill decision
+# (Bolton-style bilinear reduction, stripe heal, bad-column re-drizzle). Closed
+# investigation, superseded by the productionised flag; untracked 2026-10-25, kept on disk.
+scripts/bolton_investigations/

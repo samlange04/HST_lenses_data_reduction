@@ -47,7 +47,7 @@ for a per-lens number use psf_model_error_injected.py against a real injected bu
 
     uv run python scripts/psf_model_error.py
     uv run python scripts/psf_model_error.py --sample gallery --filt f606W
-    uv run python scripts/psf_model_error.py --out /tmp/psf_model_error.json
+    uv run python scripts/psf_model_error.py --out diagnostics/psf_model_error.json
 """
 import argparse
 import glob

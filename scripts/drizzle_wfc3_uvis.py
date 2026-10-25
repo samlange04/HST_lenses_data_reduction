@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Drizzle HST WFC3/UVIS FLC images into a combined mosaic (BELLS GALLERY sample).
+Drizzle HST WFC3/UVIS FLC images into a combined mosaic (BELLS GALLERY and SL2S samples).
 Downloads FLC files from MAST into data/calibrated/ if not already present.
 Writes final sci/wht FITS to data/drizzled/, intermediates to data/drizzle_files/.
 Runs the LACosmic CR-rejected pass by default (the science product); the no-CR
@@ -12,8 +12,9 @@ ACS/WFC and this script is modeled closely on drizzle_acs_wfc.py: same two-chip
 LACosmic masking, same "trust the delivered GSC242/GAIAeDR3 WCS" alignment default,
 same ERR-weighting. FLC (CTE-corrected, CALWF3) is the recommended input, as for ACS.
 
-The gallery is WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W); this script
-is filter-agnostic (--filt), F606W is the primary band. The alignment and CR reasoning
+The gallery is WFC3/UVIS multi-band (F606W, F814W, F438W; its F225W/F275W were reduced,
+found unusable and deleted 2026-09-29) and SL2S uses F475X and F600LP; this script
+is filter-agnostic (--filt), F606W is the gallery's primary band. The alignment and CR reasoning
 is inherited from the ACS sibling (same optical-CCD dither/CR physics) and has NOT yet
 been independently audited on gallery data -- see the comments below and re-measure
 (stacked stellar FWHM, core-registration scatter) before trusting a batch campaign.
@@ -172,7 +173,7 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────
 # Pin every band to North-up (final_rot=0) with the tangent point (final_ra/dec) at the
-# lens position, so all five gallery filters share orientation and WCS centre and the
+# lens position, so every filter shares orientation and WCS centre and the
 # lens sits ~centred. The position comes from info/lens_coords.py, which merges every
 # sample's table. Unknown lens -> native drizzle WCS (empty dict), with a warning.
 sys.path.insert(0, os.path.join(ws_path, 'info'))
@@ -501,8 +502,8 @@ else:
 # ── CR masking: LACosmic, per frame ───────────────────────────────────────────
 # AstroDrizzle's driz_cr detects cosmic rays by comparing each frame against a blotted
 # median of the stack; on a steep PSF core that reference is systematically low, so the
-# core's residual reads as a cosmic ray (measured on ACS: it destroyed ~37% of the
-# deflector flux). LACosmic works one frame at a time with an explicit object-protection
+# core's residual reads as a cosmic ray (on ACS the erosion appears once the dither is
+# erased; see drizzle_acs_wfc.py). LACosmic works one frame at a time with an explicit object-protection
 # term (objlim), so there is no stacked reference to bias, and the final drizzle is then
 # a plain weighted mean (median/blot/driz_cr all off). Same route and defaults as ACS;
 # UVIS shares the optical-CCD/CR physics. --cr-method drizcr restores the old route.

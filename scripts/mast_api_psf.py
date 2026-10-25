@@ -6,7 +6,7 @@ name by Fred Dauphin (July 2024):
   spacetelescope/hst_notebooks notebooks/WFC3/mast_api_psf/mast_api_psf.py
 We keep only the query + single-file download path used by make_psf.py's WFPC2
 F606W model tier, and drop the multiprocessing/tqdm progress-bar downloaders so
-the module has no dependency beyond astroquery + requests (both in stenv).
+the module has no dependency beyond astroquery + requests (both pinned in pyproject.toml).
 
 The database is described in Dauphin et al., "The WFPC2 and WFC3 PSF Database"
 (ISR WFC3 2021-12). WFPC2's filter field is `filter_1` (not `filter`), and the

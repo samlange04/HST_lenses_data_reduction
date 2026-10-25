@@ -2,10 +2,11 @@
 """
 Cut science + noise-map postage stamps out of the drizzled mosaics.
 
-Reads the no-CR-rejection drizzle products from data/drizzled/<sample>/<lens>/<filt>/,
-centres a cutout on the lens coordinate from info/lens_coords.py, then recentres
-onto the brightest pixel found within the central 100x100 pixels of that first
-cutout and re-cuts so the stamp is exactly centred on the lens galaxy.
+Reads the drizzle products from data/drizzled/<sample>/<lens>/<filt>/ (--pass auto takes
+the CR-rejected pass where one exists), centres a cutout on the lens coordinate from
+info/lens_coords.py, then recentres onto the brightest pixel found within the central
+--box (100x100) pixels of the sample's centre band (--center-band, or the stamp named by
+--center-from) and re-cuts so every band shares one centre on the lens galaxy.
 
 The noise map is derived from the drizzle weight map as 1/sqrt(weight), with
 zero-weight pixels mapped to a large value so they are excluded from any fit.
@@ -151,16 +152,16 @@ def fold_psf_error_into_noise(noise_map, sci_data, psf_err_kernel):
     """Fold a per-pixel PSF error map into the pixel-noise map as an effective noise map.
 
     PyAutoLens has no slot for a PSF error map -- it treats the PSF as a fixed unit-sum
-    Kernel2D -- so, exactly as --corr-factor folds drizzle covariance into the noise map, we
+    Kernel2D -- so, as --corr-factor folds the measured ERR deficit into the noise map, we
     propagate PSF uncertainty by inflating the noise. The model image is m = s (x) K (source
     scene s convolved with the kernel K); with independent per-kernel-pixel errors sigma_K the
     induced variance is Var_psf(ij) = sum_kl s(i-k,j-l)^2 . sigma_K(k,l)^2. We use the observed
     cutout as a conservative proxy for the pre-convolution scene s (it slightly overestimates
-    at the bright convolved core -- the same conservative spirit as --corr-factor), so
+    at the bright convolved core -- a deliberately conservative choice), so
     Var_psf = convolve(I^2, sigma_K^2). The effective sigma is sqrt(sigma_pix^2 + Var_psf).
 
-    This is a static, diagonal approximation: like --corr-factor, leave it off if the PSF
-    covariance is handled at the modelling stage. The zero-weight 1e8 sentinel is preserved.
+    This is a static, diagonal approximation: leave it off if the PSF covariance is handled
+    at the modelling stage. The zero-weight 1e8 sentinel is preserved.
     """
     var_pix = np.asarray(noise_map, dtype=np.float64) ** 2
     var_psf = ndi_convolve(np.asarray(sci_data, dtype=np.float64) ** 2,
@@ -229,7 +230,7 @@ def casertano_r(pixfrac, scale_ratio):
     estimates sigma from the image rather than from the weight map. It is NOT a correction to
     the ERR-weighted noise map, which drizzle already leaves sum-correct (drizzle conserves
     noise: it lowers C(0) and raises the neighbours by the same total), so R and
-    --corr-factor are different quantities and must not be compared (the 1.18 ACS factor is
+    --corr-factor are different quantities and must not be compared (the 1.17 ACS factor is
     an ERR-calibration deficit plus faint structure, not drizzle; see AGENTS.md *Drizzle
     correlated noise*). The right check is R against the measured 1/sqrt(C(0)), which it
     predicts to ~5%: WFPC2 2.39 vs 2.36, ACS 1.50 vs 1.49, and 1.50/1.30/1.25 vs
@@ -286,7 +287,7 @@ def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
     < an explicit --corr-factor. The values are measured by scripts/measure_corr_factor.py
     (see its docstring and the JSON's `_method`). They are NOT a drizzle correction -- drizzle
     conserves noise and 1/sqrt(WHT) is already right on patches >= the drop -- but an
-    ERR-array deficit (~10% rms, ACS/UVIS) plus faint unmasked structure. A band missing from
+    ERR-array deficit (~10-20% rms, ACS/UVIS) plus faint unmasked structure. A band missing from
     the JSON gets 1.0 with a warning, not a guess. `filt` may carry a visit suffix
     (f606W_v2); it is stripped."""
     if cli_value is not None:
@@ -313,7 +314,7 @@ def find_products(drizzled_dir, drizzle_pass='nocrrej'):
     '*_cr_*' does not match '..._nocrrej_drc_...' since that has no '_cr_' substring.
 
     The filename prefix and drizzle suffix vary by instrument (_drw_ for WFPC2 FLT,
-    _drc_ for ACS FLC, _drz_ for WFC3/IR and NICMOS), so glob rather than hardcode.
+    _drc_ for ACS and WFC3/UVIS FLC, _drz_ for WFC3/IR), so glob rather than hardcode.
     """
     sci = glob.glob(os.path.join(drizzled_dir, f'*_{drizzle_pass}_*_sci.fits'))
     wht = glob.glob(os.path.join(drizzled_dir, f'*_{drizzle_pass}_*_wht.fits'))
@@ -334,9 +335,10 @@ def brightest_pixel_position(cutout, box=100, median_size=5):
     Restricting to the central region stops a bright neighbour or a field star
     near the stamp edge from stealing the recentre.
 
-    These are the no-CR-rejection mosaics, so cosmic rays are present by construction
-    and a raw brightest-pixel search will happily lock onto a CR spike instead of the
-    galaxy (J0252+0039: raw peak is a CR 48 pix off-centre, galaxy at 9 pix).
+    find_peak_coord prefers the CR-rejected mosaic for this search; on a no-CR mosaic
+    cosmic rays are present by construction and a raw brightest-pixel search will happily
+    lock onto a CR spike instead of the galaxy (J0252+0039: raw peak is a CR 48 pix
+    off-centre, galaxy at 9 pix).
 
     Peak-finding therefore runs on a median-filtered copy. A median is the right tool
     here and Gaussian smoothing is not: smoothing conserves flux, so a compact 30-count
@@ -504,22 +506,22 @@ def main():
                    help='multiply the noise map by this factor so it matches the noise '
                         'actually present on patches the size of the drizzle drop or larger. '
                         f'Default: the measured per-instrument/per-filter value in '
-                        f'info/{CORR_FACTORS_JSON} (1.05-1.38, plus per-lens overrides; 1.0 '
+                        f'info/{CORR_FACTORS_JSON} (1.00-1.26 per band, 1.33-1.43 in the per-lens overrides; 1.0 '
                         'with a warning for a band not listed). The excess is NOT drizzle '
                         '(drizzle conserves noise and 1/sqrt(WHT) is already sum-correct): it '
-                        'is an ERR-array deficit of ~10%% rms in ACS/UVIS plus a few percent '
+                        'is an ERR-array deficit of ~10-20%% rms in ACS/UVIS plus a few percent '
                         'of faint unmasked structure. An explicit value overrides the JSON; '
                         'pass 1.0 for the raw 1/sqrt(WHT).')
     p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
                    help='fold the empirical PSF error map (cutout_[cr_]psf_err.fits, built by '
                         'make_psf.py) into the noise map as an effective noise map: '
-                        'sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)). Off by default '
-                        '(like --corr-factor); use it to propagate PSF uncertainty into a '
+                        'sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)). Off by default; '
+                        'use it to propagate PSF uncertainty into a '
                         'diagonal-covariance likelihood such as PyAutoLens, which has no '
                         'native PSF-error input. No-op with a warning if no error map exists.')
     p.add_argument('--bcfill', action='store_true', default=False,
                    help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
-                        'produced by drizzle_acs_wfc.py --bcfill) instead of data/drizzled/. '
+                        'produced by drizzle_acs_wfc.py / drizzle_wfpc2_wf3.py --bcfill) instead of data/drizzled/. '
                         'Lands in the SAME cutout dir under a TAGGED name '
                         '(cutout_[cr_]bcfill_{sci,noise}.fits, cutout_paths.py) and carries '
                         'BCFILL=T from the drizzled header. Removes the ACS dead-column '
@@ -763,8 +765,7 @@ def main():
     else:
         print("  Casertano R: not available (D001PIXF/D001ISCL/D001SCAL missing from header)")
 
-    # Optionally propagate PSF uncertainty into an effective noise map (opt-in, like
-    # --corr-factor). PyAutoLens has no PSF-error input, so fold the PSF error map built by
+    # Optionally propagate PSF uncertainty into an effective noise map (opt-in). PyAutoLens has no PSF-error input, so fold the PSF error map built by
     # make_psf.py into the noise: sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)).
     if a.psf_err:
         # The PSF products are not size-keyed: resolve them through

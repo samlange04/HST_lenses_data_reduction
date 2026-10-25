@@ -60,7 +60,7 @@ import make_masks
 import detect_arcs
 
 # Central wavelength (nm) of every filter in the cutout tree; unknown filters are dropped
-# with a note. f606W_v2 is the re-reduced f606W of one lens (AGENTS.md).
+# with a note. f606W_v2 is the shorter second visit of the split-visit lens J0822+2652 (AGENTS.md).
 WAVELENGTH_NM = {
     'f275W': 275, 'f438W': 438, 'f475X': 475, 'f555W': 555, 'f606W': 606,
     'f606W_v2': 606, 'f600LP': 750, 'f814W': 814, 'f160W': 1600,
@@ -244,7 +244,7 @@ def main():
     p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
                    help='stamp size in arcsec, selects the cutout tree (default: the 12" tree)')
     p.add_argument('--ref-band', default=None,
-                   help='band whose grid the composite is on (default: make_masks priority, f814W first)')
+                   help='band whose grid the composite is on (default: make_masks priority, f475X then f814W)')
     p.add_argument('--bands', default=None, help='explicit R,G,B band names; G may be "none"')
     p.add_argument('--out-dir', default=os.path.join(ws_path, 'diagnostics', 'masks'))
     p.add_argument('--no-arcs', action='store_true', help='do not outline arc masks')

@@ -34,9 +34,10 @@ LESS than the well-behaved pair. That is what "no tuning would help" looks like.
 Usage:
     uv run python scripts/lacosmic_erosion_scan.py <sample> <lens> <filt> <acs|uvis>
 """
-import sys, warnings, glob, numpy as np
+import os, sys, warnings, glob, numpy as np
 warnings.filterwarnings('ignore')
-sys.path.insert(0, 'info')
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ws_path, 'info'))
 import astroscrappy
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -51,7 +52,7 @@ def run(sample, lens, filt, instr, combos):
         rd, sat, pre = 3.1, 70000.0, 'wfc3_uvis_flc'
     from lens_coords import lens_coords as cat
     c = SkyCoord(*cat[lens], unit=(u.hourangle, u.deg))
-    nc = glob.glob(f'data/drizzled/{sample}/{lens}/{filt}/*_nocrrej_drc_sci.fits')[0]
+    nc = glob.glob(os.path.join(ws_path, f'data/drizzled/{sample}/{lens}/{filt}/*_nocrrej_drc_sci.fits'))[0]
     D = fits.getdata(nc).astype(float); H = fits.getheader(nc); W = WCS(H)
     _, md, sd = sigma_clipped_stats(D[np.isfinite(D)])
     SN = (D - md) / sd
@@ -61,7 +62,7 @@ def run(sample, lens, filt, instr, combos):
     near = np.hypot(Y - py, X - px) * ps < 2.0
     truth = near & (SN > 10)                       # real, bright, at the lens
     print(f'=== {lens} {filt} ({instr}) -- {int(truth.sum())} high-S/N sky pixels within 2" ===')
-    files = sorted(glob.glob(f'data/calibrated/{sample}/{lens}/{filt}/*_flc.fits'))
+    files = sorted(glob.glob(os.path.join(ws_path, f'data/calibrated/{sample}/{lens}/{filt}/*_flc.fits')))
     frames = []
     for f in files:
         with fits.open(f) as h:

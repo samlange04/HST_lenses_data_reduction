@@ -9,8 +9,8 @@ areas to REMOVE from the fit (painted = excluded, everything unpainted = kept; t
 opposite polarity to the autolens_workspace GUI, which scribbles the region to keep), then
 writes the result as cutout_[cr_]mask.fits alongside that cutout's sci/noise/psf products.
 
-ONE DRAW PER BAND. Each run draws on ONE band -- the highest-S/N one available (f814W >
-f606W > f555W > f160W > ...) unless --filt forces it -- and writes the mask for THAT BAND
+ONE DRAW PER BAND. Each run draws on ONE band -- the highest-priority one available
+(f475X > f814W > f606W > f555W > f160W > ...; _BAND_PRIORITY) unless --filt forces it -- and writes the mask for THAT BAND
 ONLY. Run again with --filt <band> to do the next band; the skip check is per-band, so a
 sample sweep resumes cleanly. Per-band drawing is the rule because what a mask should exclude
 is NOT in practice band-independent: a contaminant can be bright in one filter and absent in
@@ -48,12 +48,10 @@ git (see .gitignore) precisely because it carries them, which no script can rege
 Pass --size 20 to mask the (untracked, regenerable) 20" tree instead.
 
 One cutout dir per band, so one mask per band, written beside the sci it was drawn on.
-The bad-column-filled re-drizzle (--bcfill) supersedes the standard one in place rather
-than starting a parallel tree (cutout_paths.py), so for ACS (f814W/f555W) + WFPC2 (f606W)
-you are scribbling on the bcfill image -- the same geometry with its dead-column noise
-stripes filled, i.e. a cleaner image to draw on -- and for f160W and the gallery, which
-have no bcfill, on the standard one. Either way there is nothing to choose and no second
-copy of the mask to keep in step. A (lens, filt) with a mask already on disk is SKIPPED;
+On `main` that sci is the standard drizzle; the bad-column-filled variant lives only on the
+`bcfill` branch, under a tagged stamp name in the same dir (cutout_paths.py), and shares the
+grid to <1e-3 px, so a mask drawn on either is valid on both. Either way there is nothing
+to choose and no second copy of the mask to keep in step. A (lens, filt) with a mask already on disk is SKIPPED;
 --force redraws it.
 
 Every mask written also REGENERATES that band's `{prefix}_dataset.png` QC subplot
@@ -742,7 +740,7 @@ def main():
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you DRAW on (e.g. f606W); default the best available '
-                        'band per lens (f814W>f606W>f555W>f160W>...). Only that band gets a '
+                        'band per lens (f475X>f814W>f606W>f555W>f160W>...). Only that band gets a '
                         'mask unless --broadcast is passed')
     p.add_argument('--broadcast', action=argparse.BooleanOptionalAction, default=False,
                    help='ALSO write the drawn mask to the lens\'s other bands, WCS-reprojected '
@@ -810,7 +808,7 @@ def main():
     p.add_argument('--include-ignored', action='store_true', default=False,
                    help='also offer bands whose cutout directory is GITIGNORED. Off by '
                         'default: such a band is not a science product (the three 420 s '
-                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-drawn '
+                        'SLACS SNAP f814W diagnostics, since deleted, are why the rule exists), and hand-drawn '
                         'work written there is non-regenerable and invisible to every clone. '
                         'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()

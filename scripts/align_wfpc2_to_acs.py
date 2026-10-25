@@ -43,8 +43,8 @@ WFC3/IR always carry a GAIA-grade solution -- is a property of the delivered WCS
 the instrument, and it does fail: J1016+3859's ACS F814W (the force_copy COPY visit) came
 down with a bare `-GSC240` fit and sits 0.60" off its own F160W, which is what makes it
 the reference-band trap for make_cutouts' shared --center-band. Check WCSNAME before
-assuming which band is the truth; the defaults (target F606W, ref F814W) are unchanged
-and remain right for every other SLACS lens.
+assuming which band is the truth; the defaults (target F606W, ref auto = F814W first)
+remain right for every other SLACS lens.
 
     uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_other \
         --target f814W --ref f160W

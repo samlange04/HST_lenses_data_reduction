@@ -2,14 +2,18 @@
 
 ``info/lens_samples.json`` is the single source of truth for *which lenses exist in which
 sample* and for the per-lens MAST quirks. This module is the only reader of it; nothing
-else should parse that file or keep a second copy of a lens list. Four samples are
+else should parse that file or keep a second copy of a lens list. Eight samples are
 defined (catalogue positions for all of them are merged in ``info/lens_coords.py``):
 
   ``slacs_gold``   the 38 SLACS lenses reduced first -- the working sample, and the
                    default ``--sample`` of every script.
   ``slacs_other``  27 more SLACS lenses, Bolton et al. 2008 Table 4 class E-S-A/L-S-A.
   ``gallery``      15 BELLS GALLERY lenses (HST proposals 14189, 16734), class E-S-A.
-  ``bells``        24 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
+  ``bells``        21 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
+  ``sl2s_dinos_a`` 9 SL2S lenses with GO-17130 WFC3/UVIS F475X plus WFPC2 F606W or ACS F814W.
+  ``sl2s_dinos_x`` 11 SL2S lenses whose only deep band is the GO-17130 F475X.
+  ``sl2s_wf``      10 SL2S lenses with GO-11289 WFPC2 F606W and no GO-17130 data.
+  ``sl2s_snap``    5 SL2S lenses with only the GO-11588 F475X + F600LP snapshot.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
 quirks, query MAST as ``SDSS<LENS>``". Six keys are understood:

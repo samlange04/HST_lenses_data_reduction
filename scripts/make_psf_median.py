@@ -6,8 +6,8 @@ For a band with no STDPSF model grid (WFC3/UVIS F475X, F600LP), a field with too
 stars for make_psf.py's empirical ePSF has no model fallback. Chosen 2026-10-04 for
 those products: take the per-pixel MEDIAN of the empirical kernels already built for the
 same filter in other lenses (same instrument pixel scale), as the drizzle products are all
-on one output grid per band. Used for SL2S J0233-0438 F475X (0 usable stars; 29 F475X
-donors) and J1358+5459 F600LP (2 stars; 11 F600LP donors).
+on one output grid per band. Used for SL2S J1358+5459 F600LP (2 stars; 11 F600LP donors),
+and for J0233-0438 F475X (0 usable stars) until that lens left the roster on 2026-10-14.
 
 Outputs mirror make_psf.py exactly, so everything downstream reads them unchanged:
     data/psf/<sample>/<lens>/<filt>/psf_kernel.fits, psf_kernel_err.fits, psf.png
@@ -18,7 +18,7 @@ The error map is the donor-to-donor per-pixel std (NOT the std of the median): t
 true PSF is one more draw from that field-to-field spread (focus/breathing, position on the
 chip, drizzle geometry), so the scatter of single fields is its honest uncertainty.
 
-    uv run python scripts/make_psf_median.py --lens J0233-0438 --filt f475X --sample sl2s_dinos_x
+    uv run python scripts/make_psf_median.py --lens J1358+5459 --filt f600LP --sample sl2s_wf
 
 **Single-donor mode** (``--donor SAMPLE/LENS``, method ``empirical_donor``): the kernel is
 that one lens's empirical PSF instead of the median, and the error map is still the

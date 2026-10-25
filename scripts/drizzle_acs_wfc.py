@@ -3,8 +3,8 @@
 Drizzle HST ACS/WFC FLC images into a combined mosaic.
 Downloads FLC files from MAST into data/calibrated/ if not already present.
 Writes final sci/wht FITS to data/drizzled/, intermediates to data/drizzle_files/.
-Produces a no-CR-rejection drizzle by default. Pass --cr to also run the
-CR-rejected pass.
+Produces the LACosmic CR-rejected drizzle by default (--cr). Pass --nocrrej to also
+run the no-CR-rejection pass for comparison, --no-cr to skip the CR pass.
 
 FLC files are the recommended input for ACS/WFC: they are CTE-corrected
 calibrated frames produced by CALACS, identical to FLT except for the
@@ -114,16 +114,14 @@ _p.add_argument('--block-exptime', type=float, default=None,
 # frame and the weight map comes out uniform -- removing the diagonal noise stripe that a
 # standard drizzle correctly shows there (fewer contributing frames -> higher 1/sqrt(WHT)).
 # The products land in a PARALLEL tree (data/drizzled_bcfill/, its own drizzle_files_bcfill/
-# work dir) so the standard drizzle is never overwritten. ACS-only by construction (the
-# stripe is an ACS dead-column artifact). See scripts/bolton_investigations/redrizzle_bcfill.py
-# (the standalone prototype this ports) and AGENTS.md. The filled pixels carry no independent
+# work dir) so the standard drizzle is never overwritten. The same option exists for WFPC2
+# (drizzle_wfpc2_wf3.py --bcfill); WFC3/IR has no bad columns. See AGENTS.md *Bad-column fill*. The filled pixels carry no independent
 # information, so the resulting noise is optimistic by ~sqrt(3/4)~13% on those columns -- an
 # opt-in cosmetic/uniformity choice, not the science default.
 _p.add_argument('--bcfill', action=argparse.BooleanOptionalAction, default=False,
                 help='interpolate ACS dead columns (DQ 4|128) in SCI+ERR and un-flag them '
                      'before drizzling, writing to the parallel data/drizzled_bcfill/ tree; '
-                     'removes the dead-column noise stripe (see AGENTS.md / '
-                     'scripts/bolton_investigations)')
+                     'removes the dead-column noise stripe (see AGENTS.md)')
 # Cosmic-ray fill (--crfill). The SAME mechanic as --bcfill, applied to LACosmic's own DQ
 # 4096 flags instead of the dead-column bits: interpolate SCI+ERR across each flagged pixel
 # and un-flag it, so the drizzle weights it like any other and the CR leaves no weight/noise
@@ -353,9 +351,8 @@ def make_log_norm(data, wht):
 # (diagonal because final_rot=0 rotates the detector-vertical columns by the exposure roll).
 # fill_bad_columns removes the CAUSE, per frame per chip: linearly interpolate SCI *and* ERR
 # ACROSS each flagged column from the good pixels either side in the same row, then clear the
-# DQ bits so drizzle weights those pixels like any other. Ported verbatim from the standalone
-# scripts/bolton_investigations/redrizzle_bcfill.py (the prototype that validated this on
-# J1023+4230). ACS FLC extension layout is [1]=SCI/[2]=ERR/[3]=DQ for chip 1, [4/5/6] chip 2.
+# DQ bits so drizzle weights those pixels like any other. Validated on J1023+4230 before being
+# wired in (2026-08-13). ACS FLC extension layout is [1]=SCI/[2]=ERR/[3]=DQ for chip 1, [4/5/6] chip 2.
 _BCFILL_BADBITS = 4 | 128
 
 

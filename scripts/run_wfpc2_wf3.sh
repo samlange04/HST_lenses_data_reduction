@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Drizzle WF3 F606W for every SLACS lens with WFPC2 F606W data, tie each product to
-# the GAIA-accurate ACS F814W astrometry, and cut the stamps.
+# Drizzle WF3 F606W for every lens in the sample with WFPC2 F606W data (SLACS, SL2S), tie
+# each product to the lens's reddest fitted band (ACS F814W, else F600LP, else F475X), and
+# cut the stamps.
 #
 # The full documented run order is drizzle -> align_wfpc2_to_acs.py -> make_cutouts.py.
 # The align step is NOT optional and was missing from this script until 2026-07-26:
@@ -15,8 +16,9 @@
 # --bcfill runs the bad-column-filled reduction through all three stages: drizzle into the
 # parallel data/drizzled_bcfill/ tree, tie F606W within that tree (against its OWN F814W --
 # so run_acs_all.sh --bcfill must have produced the bcfill F814W products FIRST), and cut
-# into data/cutouts/, superseding that band's standard stamp. See AGENTS.md *Bad-column
-# fill*. Logs are _bcfill-tagged.
+# into data/cutouts/ under a tagged name (make_cutouts refuses a second reduction in a dir
+# that already holds one unless --force). See AGENTS.md *Bad-column fill*. Logs are
+# _bcfill-tagged.
 #
 # EVERY lens in the sample is tried, not a hand-maintained subset. Only 22 of the 38
 # slacs_gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and

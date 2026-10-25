@@ -5,8 +5,9 @@
 #
 # Usage: run_gallery_uvis_all.sh [SAMPLE]   (default: gallery)
 #
-# Filters are the full BELLS GALLERY UVIS set. Coverage is sparse and per-lens: F606W is
-# on all 15 lenses, F814W/F438W on 6 each, F275W on 5, F225W on 1 (J2342-0120). Every
+# Filters come from the sample's `uvis_filters` (gallery: F606W F814W F438W; SL2S: F475X
+# F600LP). Gallery coverage is sparse and per-lens: F606W is on all 15 lenses, F814W/F438W
+# on 6 each (its F225W/F275W products were deleted 2026-09-29). Every
 # lens is tried in every filter; drizzle_wfc3_uvis.py exits 0 having recorded `null`
 # where MAST has no data, so the many empty lens+filter combos report as "no data", not
 # failures. F606W is drizzled first (the primary band and the cutout --center-band).

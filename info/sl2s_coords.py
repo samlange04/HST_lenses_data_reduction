@@ -2,8 +2,8 @@ import re
 
 # SL2S lens positions, keyed by their SL2S designation (SL2SJhhmmss+ddmmss).
 # The designations come from Sonnenfeld et al. 2013 (doi:10.1088/0004-637X/777/2/97), Table 6,
-# and, for J0205-0930 and J0233-0438, Sonnenfeld et al. 2015 (doi:10.1088/0004-637X/800/2/94),
-# Table 3. They are TRUNCATED, so the RA part is only good to 1 s of time (up to ~15"): using
+# and, for J0205-0930, Sonnenfeld et al. 2015 (doi:10.1088/0004-637X/800/2/94), Table 3
+# (which also named J0233-0438, removed from the roster 2026-10-14). They are TRUNCATED, so the RA part is only good to 1 s of time (up to ~15"): using
 # them as positions put J0959+0206's cutout search on a neighbour 2.6" away (2026-10-04 pilot).
 # The positions below are the decimal-degree RA/Dec of Gavazzi et al. 2014
 # (doi:10.1088/0004-637X/785/2/144), Tables 1 and 3, matched on the FULL designation (the short
@@ -28,17 +28,17 @@ _raw = [
     ("021247-055552", 33.1993, -5.9312),
     ("021801-080247", 34.5053, -8.0465),
     ("022046-094927", 35.1919, -9.8244),
-    ("084847-035103", 132.1968, -3.8511),
+    ("084847-035103", 132.1968, -3.8511),   # J0848-0351, removed 2026-10-24 (no counter-image)
     ("085540-014730", 133.9172, -1.7918),
     ("140454+520024", 211.2269, 52.0068),
     ("220506+014703", 331.2788, 1.7844),
     ("222148+011542", 335.4534, 1.2619),
-    ("023307-043838", 38.2794, -4.6440),
+    ("023307-043838", 38.2794, -4.6440),    # J0233-0438, removed 2026-10-14 (both visits failed)
     ("021902-082934", 34.7589, -8.4930),
     ("084909-041226", 132.2896, -4.2074),
     ("220329+020518", 330.8709, 2.0886),
     # sl2s_wf
-    ("021325-074355", 33.3522, -7.7319),
+    ("021325-074355", 33.3522, -7.7319),    # J0213-0743, removed 2026-10-14 (not a single deflector)
     ("022511-045433", 36.2960, -4.9093),
     ("084959-025142", 132.4990, -2.8619),
     ("085826-014300", 134.610863, -1.716815),  # SDSS DR16 (VizieR V/154): the only galaxy in the designation strip; not in G14
@@ -55,7 +55,7 @@ _raw = [
     ("140221+550534", 210.5897, 55.0930),
     ("141137+565119", 212.9043, 56.8553),
     ("142059+563007", 215.2494, 56.5021),
-    ("142321+572243", 215.8413, 57.3786),
+    ("142321+572243", 215.8413, 57.3786),   # J1423+5722, removed 2026-10-24 (no multiple imaging)
 ]
 
 _DESIG_RE = re.compile(r'^(\d{2})(\d{2})(\d{2})([+-])(\d{2})(\d{2})(\d{2})$')

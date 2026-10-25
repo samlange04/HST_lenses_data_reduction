@@ -25,11 +25,12 @@ only -- the snap runs on true flux and the saved positions do not depend on any 
 
 WHY ONE BAND PER LENS, THEN BROADCAST. Image positions are band-INDEPENDENT sky
 coordinates: every band is cut about the same shared centre (`make_cutouts.py
---center-band f814W`) and pinned to the same output WCS geometry (`final_rot=0`, tangent
+--center-band`, the sample's first available centre band) and pinned to the same output WCS geometry (`final_rot=0`, tangent
 point at the lens position), so a position measured in ARCSEC relative to the stamp centre
 is identical in every band -- even where the pixel scales differ (f160W 0.06" vs 0.05" for
 the optical bands), because arcsec, not pixels, is the shared frame PyAutoLens works in. So
-you mark ONCE, on the highest-S/N band available (f814W > f606W > f555W > f160W > ...), and
+you mark ONCE, on the highest-priority band available (f475X > f814W > f606W > f555W >
+f160W > ...), and
 the same Grid2DIrregular is broadcast into every band's cutout dir under that band's own
 pass prefix, so any per-band modelling script finds a local positions.json next to its
 sci/noise/psf/mask. `--filt` forces which band you mark on.
@@ -91,7 +92,7 @@ import make_masks
 POSITIONS_JSON = os.path.join(ws_path, 'info', 'lens_positions.json')
 
 # "Best band to mark on" is shared with make_masks so the two tools pick the same primary
-# band per lens (f814W>f606W>f555W>f160W>...).
+# band per lens (f475X>f814W>f606W>f555W>f160W>...).
 pick_display_filt = make_masks.pick_display_filt
 
 
@@ -665,7 +666,7 @@ def main():
                    help='restrict to one lens; default every lens with cutouts in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you mark on (e.g. f606W); default the best '
-                        'available band per lens (f814W>f606W>f555W>f160W>...). The marked '
+                        'available band per lens (f475X>f814W>f606W>f555W>f160W>...). The marked '
                         'positions are broadcast to every band regardless')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
@@ -757,7 +758,7 @@ def main():
     p.add_argument('--include-ignored', action='store_true', default=False,
                    help='also offer bands whose cutout directory is GITIGNORED. Off by '
                         'default: such a band is not a science product (the three 420 s '
-                        'SLACS SNAP f814W diagnostics are why the rule exists), and hand-marked '
+                        'SLACS SNAP f814W diagnostics, since deleted, are why the rule exists), and hand-marked '
                         'positions written there are non-regenerable and invisible to every '
                         'clone. This guard exists because it already happened -- J1538+5817 '
                         'was MARKED on its SNAP f814W band and broadcast from there across a '

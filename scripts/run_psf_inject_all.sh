@@ -52,10 +52,9 @@ if [ "$MODE" = models ]; then
 fi
 
 ok=0; fail=0; skip=0
-# f438W is gallery's blue UVIS science band (mirrors run_psf_all.sh's loop); F225W/F275W are
-# omitted -- unusable for lens science sample-wide, so no PSF/injection work is done on them.
+# Same filter list as run_psf_all.sh (gallery's f438W, SL2S's f475X/f600LP included).
 # Extra filters are no-ops for samples that lack them (the glob matches nothing).
-for filt in f606W f814W f555W f160W f438W; do
+for filt in f606W f814W f555W f160W f438W f475X f600LP; do
   for dd in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
     [ -d "$dd" ] || continue
     ls "$dd"/*_sci.fits >/dev/null 2>&1 || continue

@@ -13,9 +13,9 @@ never share a lens):
     f814W          - ACS/WFC
     f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v2) merged with ACS F555W
     f160W          - WFC3/IR only (NICMOS F160W products were deleted, see AGENTS.md)
-gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f225W, f275W,
-f438W, f606W, f814W. A sample not listed in mosaic_groups.py falls back to one group
-per filter subdirectory found on disk.
+gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f438W, f606W,
+f814W. A sample not listed in mosaic_groups.py (bells is; the SL2S samples are not) falls
+back to one group per filter subdirectory found on disk.
 
 Each mosaic panel shows the full cutout as cut by make_cutouts.py (12" square by
 default). Colour/stretch is inferno + an asinh stretch (astropy.visualization), the
@@ -102,7 +102,8 @@ def build_group(cutouts_dir, precedence):
         lens = os.path.basename(lens_dir)
         for filt in precedence:
             band_dir = os.path.join(lens_dir, filt)
-            # Gitignored band dirs (slacs_other's SNAP f814W diagnostics) are not products
+            # Gitignored band dirs (none today; the deleted SNAP f814W diagnostics were the
+            # motivating case) are not products
             # and must not appear in a tracked mosaic -- same guard as every other sweep.
             if cutout_paths.gitignored([band_dir], ws_path):
                 continue

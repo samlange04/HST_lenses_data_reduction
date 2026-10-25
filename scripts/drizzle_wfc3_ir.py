@@ -652,7 +652,7 @@ if do_cr:
     # 5 MAD (1052 clumps on J0841+3824), and with no cross-frame rejection each one
     # drizzles into 4 dither replicas. Only a rejection step reaches them.
     #
-    # LACosmic (default) flags per frame into DQ 4096 before drizzling, then combines
+    # LACosmic (--cr-method lacosmic) flags per frame into DQ 4096 before drizzling, then combines
     # a plain weighted mean -- same route as ACS and WFPC2, where driz_cr was found to
     # eat the deflector core. resetbits=0 is mandatory: AstroDrizzle defaults it to
     # 4096 and would clear the very bit the mask was written into.

@@ -34,7 +34,7 @@ the injected kernel: the existing pre-broadening analytic-model files are moved 
 make_psf.py auto-chains into this (run_injection(..., promote=True)) right after building a
 model-tier product, so a single `make_psf.py --lens X --filt Y` run already leaves the
 promoted, drizzle-broadened kernel as the canonical file -- this script rarely needs to be
-run by hand for that case. It IS still run standalone for: (1) the one lens missing its
+run by hand for that case. It IS still run standalone for: (1) any lens missing its
 injected build, (2) re-promoting after an injection-code change without rebuilding the
 analytic model, and (3) `--all` mode, which also runs on EMPIRICAL primaries purely as a
 validation comparison (injected-model FWHM should approach the empirical truth) -- there,
@@ -43,7 +43,7 @@ before.
 
 How it works, and why it is faithful:
   * It reuses the already-prepared inputs the science drizzle consumed, which persist in
-    data/drizzle_files/<sample>/<lens>/<filt>/ -- ACS `<root>_flc.fits`, WFC3/IR
+    data/drizzle_files/<sample>/<lens>/<filt>/ -- ACS and WFC3/UVIS `<root>_flc.fits`, WFC3/IR
     `<root>_flt.fits`, WFPC2 extracted `wf3_<root>_flt.fits` + per-frame IVM + the two-column
     `@`-association. Reusing them inherits every instrument-specific prep step (WF3 chip
     extraction + EXTVER renumbering, distortion arrays, updatewcs, the IVM weighting) that

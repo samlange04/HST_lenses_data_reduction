@@ -15,9 +15,10 @@ missing -- a subplot cannot be built from a partial dataset. In particular the M
 hand-drawn by scripts/make_masks.py and is not regenerable, so a lens that has not been
 masked yet is simply reported and skipped, not an error.
 
-All four come from the ONE cutout dir for the band (cutout_paths.py: bcfill supersedes
-standard in place, so there is no priority-tree search to do and no way for the mask to
-describe a different reduction than the sci beside it). The PSF is the one exception, and
+All four come from the ONE cutout dir for the band (cutout_paths.py resolves the one
+reduction present there -- standard on `main`, the tagged bcfill stamp on that branch -- so
+there is no priority-tree search to do and no way for the mask to describe a different
+reduction than the sci beside it). The PSF is the one exception, and
 only along the size axis: it is resolved through cutout_paths.psf_cutout_dir, which always
 points at the default-size tree because the kernel is trimmed by amplitude and is not
 size-keyed -- so a --size 20 run pairs its stamps with that same kernel rather than

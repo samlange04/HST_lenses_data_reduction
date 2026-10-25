@@ -21,9 +21,7 @@ new evidence.
 > prefix — they describe the grid, which is identical across reductions — so a mask commit
 > cherry-picks between branches without dragging a stamp along. Readers resolve stamps through
 > `cutout_paths.find_stamp` / `find_prefix`, never by spelling the name, and raise
-> `AmbiguousStampError` if two reductions ever share a dir. `scripts/bolton_investigations/`
-> holds the standalone exploratory scripts behind the bcfill decision (validation-only; they
-> write to `diagnostics/bolton_test_outputs/`, not `data/`).
+> `AmbiguousStampError` if two reductions ever share a dir.
 
 ## Current state of the products (verified on disk 2026-10-21)
 
@@ -71,7 +69,7 @@ Interactive: `source .venv/bin/activate`.
 
 **The repo root is derived from `__file__`, never hard-coded.** Every script sets
 `ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))` (three `dirname`s
-in `scripts/stale_scripts/` and `scripts/bolton_investigations/`), and the shell runners
+in `scripts/stale_scripts/`), and the shell runners
 take `WS="$(dirname "$SD")"` off `BASH_SOURCE`, so the checkout can be moved or cloned
 anywhere with no edit — done 2026-09-08, when an absolute `/Users/.../HST_lenses_data_reduction`
 literal in 18 scripts broke on a move. Don't reintroduce one. A move *does* invalidate
@@ -114,7 +112,8 @@ HST image reduction for gravitational-lens samples (SLACS, BELLS). Per lens+filt
 3. Align + combine with `AstroDrizzle`. All bands trust the delivered MAST WCS
    (`--align mast`) by default: ACS/WFC3 skip `updatewcs` and TweakReg; WFPC2 runs
    `updatewcs` (for the distortion arrays) but **not** TweakReg. TweakReg is opt-in
-   (`--align tweakreg`) and used by no lens — see *WCS alignment*.
+   (`--align tweakreg`) and used by one lens, J1213+6708 f814W, where it measured sharper
+   (`ALIGN_OVERRIDES` in `drizzle_acs_wfc.py`) — see *WCS alignment*.
 4. Produce a CR-rejected mosaic (LACosmic) — now the default and the science product for
    ACS and WFPC2. The no-CR-rejection mosaic is opt-in (`--nocrrej`) for comparison only.
    WFC3/IR F160W has no CR pass (see *Cosmic-ray rejection*).
@@ -165,8 +164,8 @@ All runners take the roster from `info/lens_samples.json` via `scripts/mast_targ
 or PSF needs a mosaic that exists). They report `ok` / `no data` / `FAILED` separately, so
 the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_cutouts_all.sh`
 globs `<filt>*` (not `<filt>`) so per-visit split-visit dirs are included, and covers every
-sample's filters (SLACS `f606W f814W f555W f160W` plus gallery's `f438W`; it still lists
-`f275W f225W`, which glob to nothing since those products were deleted 2026-09-29) in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
+sample's filters (SLACS `f606W f814W f555W f160W`, gallery's `f438W`, SL2S's `f475X f600LP`)
+in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
 WFC3/UVIS data, but (like the other runners) accepts any sample as its first arg.
 
 ### `regenerate_files.py` — rebuild the gitignored layers on a fresh clone (2026-10-04)
@@ -406,7 +405,7 @@ TweakReg's self-consistency even when the deflector is split.
 
 TweakReg `threshold` is in **image data units** and does not transfer between detectors
 (WFPC2/WF3 100, WFC3/IR 20, ACS default). This only takes effect under `--align tweakreg`,
-which no lens uses — dead code kept for comparison runs.
+which only J1213+6708 f814W uses.
 
 ### `align_wfpc2_to_acs.py` — F606W absolute astrometry (after drizzle, before cutouts)
 
@@ -2430,8 +2429,7 @@ All 34 science bands have PSF products (see *PSF generation* for the method spli
 `gallery` coverage (15 lenses, reduced 2026-07-29, re-drizzled at pixfrac 1.0 on 2026-09-29):
 **F606W** on all 15 (the primary band), **F814W**/**F438W** on 6. (F275W on 5 and F225W on 1
 existed until 2026-09-29, when every UV product — drizzles, work dirs, calibrated FLCs, stamps,
-JSON entries — was deleted; only the `data/mosaics[_20arcsec]/gallery/f2*.png` gallery sheets
-are kept, for now.) See *BELLS GALLERY:
+JSON entries — was deleted; their QC mosaics followed on 2026-10-25.) See *BELLS GALLERY:
 WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery positions live in
 `info/gallery_coords.py` (Shu+2016 Table 1), reached like every sample's through
 `info/lens_coords.py` (see *Common output WCS across filters*). PSF products exist for all 27 science bands (WFC3/UVIS

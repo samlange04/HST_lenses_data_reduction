@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Build a PSF for every drizzled product. make_psf.py defaults to --pass auto (detect
-# stars in the LACosmic CR mosaic where one exists, else the no-CR mosaic) and --method
+# Build a PSF for every drizzled product. make_psf.py defaults to --pass auto (the kernel
+# is named for the CR pass; stars are detected in the no-CR mosaic where one exists, since
+# LACosmic eats star cores) and --method
 # auto (empirical ePSF, model fallback when a field is too star-poor or its empirical
 # wings are poor). For a model-tier build, make_psf.py auto-chains make_psf_inject.py
 # (promote=True) so the canonical psf_kernel.fits / cutout_[cr_]psf.fits it leaves behind

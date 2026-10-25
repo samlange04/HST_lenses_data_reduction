@@ -5,14 +5,16 @@ Drizzle correlates neighbouring output pixels but conserves noise: for white inp
 the sigma-normalised ACF has C(0) < 1, positive neighbours, and sum C = 1 over the drop
 width, so 1/sqrt(WHT) is already right for any patch >= the drop and drizzle itself needs
 no factor. What the measured sum C > 1 catches is upstream of drizzle: an ERR-array deficit
-(~10% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. See
+(~10-20% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. See
 AGENTS.md *Drizzle correlated noise*. This measures,
 per stamp, on blank sky in its own mosaic:
 
-  * the ACF of the sigma-normalised sky (acf_ratio) -- THE factor: sqrt(sum C) over the
-    drop window |dx|,|dy| <= round(pixfrac * native/output) px (the smallest window over
-    which drizzle's redistribution has summed back to 1), less the far floor. This is what
-    make_cutouts.py applies.
+  * the ACF of the sigma-normalised sky (acf_ratio): sqrt(sum C) over the drop window
+    |dx|,|dy| <= round(pixfrac * native/output) px (the smallest window over which
+    drizzle's redistribution has summed back to 1), less the far floor, computed over the
+    whole region. Since 2026-10-06 the ADOPTED statistic is its patch-median form
+    (patch_acf: the same window on every 10" sub-patch, medianed), which localised structure
+    cannot pull up; that is what make_cutouts.py applies via info/noise_corr_factors.json.
   * the blank-sky block-sum ratio at 0.05-2" (block_ratio) -- a diagnostic only. It never
     plateaus: past the kernel a weak, environment-dependent long-range floor (faint
     wings, sky/flat residuals) keeps adding up, so it has no single right answer. See
@@ -102,7 +104,7 @@ def block_ratio(img, var, usable, n, rng):
 
 PATCH_ARCSEC = 10.0                       # side of the sub-patches for the patch-median ACF
 PATCH_MIN_USABLE = 0.7                    # a patch needs this usable fraction to count
-OVERRIDE_MIN_DEV = 0.10                   # override rule: |patch - band| > max(3 sigma, this)
+OVERRIDE_MIN_DEV = 0.10                   # override rule: |patch - band| > this AND band median outside the lens's 16-84% patch range
 ACF_MAXLAG = 5                            # kernel windows L = 0..ACF_MAXLAG px
 FLOOR_LAGS = (7, 12)                      # Chebyshev-lag annulus that defines the floor
 HIPASS = 51                               # px median filter removed before the ACF

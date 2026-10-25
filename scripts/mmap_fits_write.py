@@ -1,5 +1,5 @@
 """
-mmap-based FITS output write — workaround attempt for the macOS U-state drizzle hang.
+mmap-based FITS output write — the required workaround for the macOS U-state drizzle hang.
 
 The hang is a kernel lost-wakeup in the buffered-write path: numpy's
 ``ndarray.tofile`` issues a ``write()`` whose ``copyin`` (under ``cluster_write``)
@@ -11,8 +11,9 @@ the ``write()`` at the astropy layer did NOT help (2026-07-16) — the race is p
 This routes the big data write around ``cluster_write``/``copyin`` entirely: it
 ``mmap``s the output file region and copies the array bytes in with a numpy store
 (a ``memcpy``), so the write goes through the ``vm_fault``-on-mapped-file path
-instead. The mmap *read* path already works fine on this machine, so the mmap
-*store* path has a real chance of dodging the lost-wakeup.
+instead. The mmap *read* path already works fine on this machine, and the mmap
+*store* path dodges the lost-wakeup in practice (every drizzle since 2026-07 has run
+through it).
 
 ``install()`` monkeypatches ``astropy.io.fits.file._array_to_file`` so every real
 on-disk-file data write goes through the mmap path. No-op off macOS. Import and

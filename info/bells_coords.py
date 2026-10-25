@@ -5,6 +5,8 @@ import re
 # Raw format: HHMMSS.ss[+/-]DDMMSS.s (J2000)
 # Only grade-A single-deflector systems are kept: Table 3 classification E-S-A or L-S-A
 # (21 + 3), the same rule as slacs_other. Excluded grade-A row: J1522+2910 (E-M-A).
+# Three of the 24 were later removed from the roster (info/lens_samples.json) and are
+# marked below; their positions stay so the designation list matches the paper.
 _raw = [
     "015107.37+004909.0",
     "074734.75+444859.3",
@@ -17,11 +19,11 @@ _raw = [
     "122151.92+380610.5",
     "123427.99-024129.6",
     "131829.39-010421.6",
-    "133751.31+362018.1",
-    "134910.30+361239.7",
+    "133751.31+362018.1",   # J1337+3620, removed 2026-10-14 (companion needs its own mass)
+    "134910.30+361239.7",   # J1349+3612, removed 2026-10-14 (same-z companion)
     "135218.99+321651.8",
     "154118.56+181235.1",
-    "154246.33+162951.8",
+    "154246.33+162951.8",   # J1542+1629, removed 2026-10-22 (neighbour mask reaches theta_E)
     "154503.57+274805.3",
     "160113.27+213833.9",
     "161109.80+170526.6",
@@ -49,5 +51,5 @@ def _build():
 
 
 # Dict mapping lens name -> [RA, Dec] in HH:MM:SS format
-# Name format: J{HHMM}_{DDSS} where HHMM = RA hours+minutes, DDSS = Dec degrees+arcseconds
+# Name format: J{HHMM}{+/-DDMM} where HHMM = RA hours+minutes, DDMM = Dec degrees+arcminutes
 bells_coords = _build()

@@ -17,17 +17,12 @@ panel in each lens's psf.png rather than make_mosaics.py's pooled asinh - the PS
 are what matters here, and they read better on a log stretch. Each panel label is
 tagged 'emp' (empirical ePSF,
 cut from the drizzled mosaic - the closest thing to ground truth) or 'mod' (STDPSF /
-focus-diverse / MAST PSF DB - a detector-frame model resampled to North-up), from the
-PSFMETH keyword make_psf.py stamps on every kernel.
+focus-diverse / MAST PSF DB model, injected into the exposures and re-drizzled so it
+carries the drizzle broadening), from the PSFMETH keyword make_psf.py stamps on every
+kernel.
 
-Only slacs_gold has PSF products today (info/lens_psf.json has just that sample key).
-slacs_other uses the same three instruments as slacs_gold, so `bash
-scripts/run_psf_all.sh slacs_other` should build its kernels with no code changes.
-gallery is WFC3/UVIS, which make_psf.py/psf_models.py has no instrument support for yet
-(no detector scale, no STDPSF grid config) - this script needs no changes when that
-support lands, it will just start finding cutout_psf.fits files under
-data/cutouts/gallery/*/<filt>/ once they exist (see mosaic_groups.SAMPLE_GROUPS for
-gallery's 5 filters, already listed there).
+Every sample has PSF products (info/lens_psf.json). A sample not listed in
+mosaic_groups.SAMPLE_GROUPS falls back to one group per filter directory found on disk.
 
 Usage:
     uv run python scripts/make_psf_mosaics.py --sample slacs_gold
@@ -90,7 +85,8 @@ def build_group(sample, precedence):
     for lens in lenses:
         for filt in precedence:
             band_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
-            # A gitignored band dir (e.g. the slacs_other SNAP f814W diagnostics) is not a
+            # A gitignored band dir (none today; the deleted slacs_other SNAP f814W diagnostics
+            # were the case that motivated this) is not a
             # product: a tracked mosaic must not tile it (AGENTS.md: skip ignored bands in
             # every sweep). Same guard as make_masks.discover_targets.
             if cutout_paths.gitignored([band_dir], ws_path):

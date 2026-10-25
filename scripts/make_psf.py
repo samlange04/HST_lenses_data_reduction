@@ -5,7 +5,7 @@ Build a per-lens, per-filter PSF from the drizzled mosaics for strong-lens model
 Empirical route (default): detect isolated field stars in the full drizzled science
 frame, extract postage stamps, and build an oversampled effective PSF (ePSF) with
 photutils (DAOStarFinder -> extract_stars -> EPSFBuilder). This is a production port of
-scripts/old_notebooks/load_data.ipynb, with every manual step of that notebook replaced
+an early exploratory notebook (not tracked), with every manual step of it replaced
 by automatic quality cuts plus a per-lens override file:
 
   * the hand-typed NaN rectangles that blanked the lens galaxy / bad regions  ->  an
@@ -17,9 +17,12 @@ by automatic quality cuts plus a per-lens override file:
     keep the brightest N, plus an optional info/psf_stars.json entry (include / exclude
     coords, or per-lens parameter overrides) for the few fields the automatics get wrong.
 
-Model route (fallback): when a field has too few usable stars (< --min-stars) or with
---method model, evaluate an STScI STDPSF library grid at the deflector position via
-scripts/psf_models.py. Covers ACS/WFC, WFC3/IR, WFPC2/WF3 and WFC3/UVIS (BELLS GALLERY).
+Model route (fallback): when a field has too few usable stars (< --min-stars), a
+diverged ePSF or wings failing the pedestal/scatter gate, or with --method model, build
+a model PSF at the deflector position via scripts/psf_models.py (ACS: focus-diverse ePSF,
+else STDPSF; WFPC2 F606W: the MAST PSF-database ePSF, else STDPSF; WFC3/IR and the
+gallery UVIS bands: STDPSF) and auto-chain make_psf_inject.py so the canonical kernel is
+drizzle-broadened. SL2S F475X/F600LP have no model grid; make_psf_median.py covers them.
 
 Outputs (data/psf/<sample>/<lens>/<filt>/):
   * psf_kernel.fits  -- image-scale, odd, unit-sum: a drop-in al.Kernel2D at the band
@@ -811,13 +814,17 @@ def main():
                         f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--pass', dest='drizzle_pass',
                    choices=['auto', 'cr', 'nocrrej'], default='auto',
-                   help="drizzle pass to detect stars in. 'auto' (default) prefers the "
-                        "CR-rejected mosaic (no cosmic rays to mistake for stars) and "
-                        "falls back to no-CR (e.g. WFC3/IR F160W, no CR pass).")
+                   help="drizzle pass the kernel is NAMED for (cutout_cr_psf.fits vs "
+                        "cutout_psf.fits). 'auto' (default) matches the science stamp. Stars "
+                        "are detected in the no-CR mosaic whenever one exists (LACosmic eats "
+                        "star cores), else in this pass; override with psf_star_pass in "
+                        "info/psf_stars.json.")
     p.add_argument('--method', choices=['auto', 'empirical', 'model'], default='auto',
                    help="'auto' (default) builds an empirical ePSF and falls back to the "
-                        "STDPSF model only when usable stars < --min-stars; 'empirical' "
-                        "forces the star build (fails if too few); 'model' forces STDPSF.")
+                        "model tier (focus-diverse / PSF-DB / STDPSF, then injected) when "
+                        "usable stars < --min-stars, the ePSF diverges or its wings fail the "
+                        "quality gate; 'empirical' forces the star build (fails if too few); "
+                        "'model' forces the model tier.")
     p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
                    help="amplitude fraction of peak at which the trimmed modelling kernel "
                         "(<psf cutout dir>/<...>_psf.fits) is cut. Default 1e-3 -- an "

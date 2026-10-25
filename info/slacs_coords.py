@@ -154,5 +154,5 @@ def _build():
 
 
 # Dict mapping lens name -> [RA, Dec] in HH:MM:SS format
-# Name format: J{HHMM}_{DDSS} where HHMM = RA hours+minutes, DDSS = Dec degrees+arcseconds
+# Name format: J{HHMM}{+/-DDMM} where HHMM = RA hours+minutes, DDMM = Dec degrees+arcminutes
 slacs_coords = _build()
