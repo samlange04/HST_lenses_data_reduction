@@ -65,7 +65,7 @@ FINAL_SCALE = 0.0396
 # on this densely-dithered stack). 0.7 keeps margin for sparser-dither gallery lenses;
 # below it the gains shrink and hole risk grows. Native-scale regime, so this is the
 # opposite lever from the oversampled F606W/F160W bands (which chose pixfrac 1.0).
-# → memory: drizzle_correlated_noise. User-settled 2026-07-28.
+# Settled 2026-07-28.
 # 2026-09-27: that "integrated inflation" was a ratio against the empirical per-pixel rms,
 # which falls with pixfrac by construction (it is Casertano's rms-relative R). Drizzle
 # conserves noise, so against the noise map nothing moves: on four gallery lenses 1.0->0.7
