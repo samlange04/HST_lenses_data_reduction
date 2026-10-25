@@ -2401,7 +2401,7 @@ uv run python scripts/mast_target_names.py slacs_gold    # lens names
 
 | Sample | Lenses | What it is |
 |---|---|---|
-| **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script** |
+| **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script**. Exactly the 38 SLACS lenses graded "Gold" by Etherington et al. 2022 (MNRAS 517, 3275; automated PyAutoLens modelling of 43 SLACS + 16 GALLERY), which is where the name comes from. Four of that paper's 5 non-Gold SLACS lenses are in `slacs_other` |
 | **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |

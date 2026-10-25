@@ -18,11 +18,16 @@ ignore, and roughly where the multiple images are. This repository produces all 
 **Most people only need the finished products in `data/cutouts/`** — they are in git, so a
 plain clone has them. Re-running the reduction is only needed to change how it was done.
 
+**Recommended analysis tool: [PyAutoLens](https://github.com/PyAutoLabs/PyAutoLens)**, from
+the [PyAutoLabs](https://github.com/PyAutoLabs) software family. The products are written in
+the formats it reads directly (its masks, image positions and PSF kernels), and its own GUI
+tools drew the masks and marked the positions.
+
 ## What's in the box
 
 | Sample folder | Lenses | Survey | HST filters (number of lenses with each) |
 |---|---|---|---|
-| `slacs_gold` | 38 | SLACS (Bolton et al. 2008; Auger et al. 2009) | F814W (38), F606W (22), F555W (16), F160W (13) |
+| `slacs_gold` | 38 | SLACS (Bolton et al. 2008; Auger et al. 2009), the Etherington et al. (2022) "Gold" lenses | F814W (38), F606W (22), F555W (16), F160W (13) |
 | `slacs_other` | 24 | SLACS, the remaining lenses with a clean early-type deflector | F606W (24), F160W (6), F814W (4) |
 | `gallery` | 15 | BELLS GALLERY (Shu et al. 2016) | F606W (15), F814W (6), F438W (6) |
 | `bells` | 21 | BELLS (Brownstein et al. 2012) | F814W (21) |
@@ -72,7 +77,7 @@ number, so with Python's usual display (row 0 at the top) **North appears at the
 East on the left**. That is a vertical flip of the way astronomical images are usually shown,
 not a rotation. The FITS headers carry full sky coordinates (WCS) if you need them.
 
-**Image positions** are stored in the format of the [PyAutoLens](https://github.com/Jammy2211/PyAutoLens)
+**Image positions** are stored in the format of the [PyAutoLens](https://github.com/PyAutoLabs/PyAutoLens)
 lens-modelling software, which reads them directly. Each entry is a `(y, x)` offset in
 arcseconds from the cutout centre. Following PyAutoLens's convention, +y points South and +x
 points West. To get pixels: `row = row_centre − y / pixel_size` and
@@ -207,7 +212,8 @@ If you use this repository, please credit the repository
 and **Samuel C. Lange (The Chinese University of Hong Kong)**.
 
 Please also cite the survey papers for the lenses you use (SLACS: Bolton et al. 2008, Auger
-et al. 2009; BELLS: Brownstein et al. 2012; BELLS GALLERY: Shu et al. 2016; SL2S:
+et al. 2009, and Etherington et al. 2022 for the `slacs_gold` selection; BELLS: Brownstein et
+al. 2012; BELLS GALLERY: Shu et al. 2016; SL2S:
 Sonnenfeld et al. 2013; Project Dinos: Sheu et al. 2025), and acknowledge the HST data, e.g.
 *"Based on observations made with the NASA/ESA Hubble Space Telescope, obtained from the
 Mikulski Archive for Space Telescopes (MAST) at the Space Telescope Science Institute, which
@@ -217,4 +223,4 @@ contract NAS 5-26555."*
 The reduction is built on STScI's [DrizzlePac](https://drizzlepac.readthedocs.io),
 [Astropy](https://www.astropy.org), [photutils](https://photutils.readthedocs.io),
 [astroscrappy](https://github.com/astropy/astroscrappy) (cosmic-ray removal) and
-[PyAutoLens](https://github.com/Jammy2211/PyAutoLens) (mask and position tools).
+[PyAutoLens](https://github.com/PyAutoLabs/PyAutoLens) (mask and position tools).
