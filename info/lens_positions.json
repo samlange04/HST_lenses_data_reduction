@@ -851,7 +851,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -1185,7 +1185,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f160W",
@@ -1260,7 +1260,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f555W",
@@ -1278,7 +1278,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f160W",
@@ -1669,7 +1669,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -1687,7 +1687,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f555W",
@@ -1755,7 +1755,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -1873,7 +1873,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f555W",
@@ -2290,7 +2290,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f555W",
@@ -2570,7 +2570,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f160W",
@@ -2592,7 +2592,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f160W",
@@ -2739,7 +2739,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f606W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f160W",
@@ -2907,7 +2907,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f606W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -2921,7 +2921,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -3180,7 +3180,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f606W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
@@ -3233,7 +3233,7 @@
                 "n_positions": 0,
                 "positions_arcsec": [],
                 "marked_filt": "f606W",
-                "deliberately_empty": "image positions too uncertain to mark (user, 2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
                         "filt": "f606W",

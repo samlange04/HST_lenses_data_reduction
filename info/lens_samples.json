@@ -1,6 +1,6 @@
 {
     "slacs_gold": {
-        "description": "SLACS lenses reduced so far: the working sample. Every lens here has ACS/WFC F814W; 22 have WFPC2 F606W, 16 have ACS F555W, 13 have WFC3/IR F160W.",
+        "description": "The 38 SLACS lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), which is where the name comes from: the working sample and the default --sample. Every lens here has ACS/WFC F814W; 22 have WFPC2 F606W, 16 have ACS F555W, 13 have WFC3/IR F160W.",
         "coords": "info/slacs_coords.py",
         "lenses": {
             "J0008-0004": {},
@@ -74,7 +74,7 @@
         }
     },
     "slacs_other": {
-        "description": "The remaining SLACS lenses from Bolton et al. 2008 Table 4 (info/slacs_coords.py) that are not in slacs_gold. Restricted to Bolton et al. 2008 Table 4 classification E-S-A or L-S-A (early-type or late-type, single lens, clear multiple imaging; the '*' variants E-S-A*/L-S-A* count too -- Bolton's footnote confirms them as definite lenses, just excluded from their own lens modeling) -- all other classifications (X, B, M, U) excluded. Not yet reduced; HST coverage per lens is unknown and is discovered by querying MAST. Any GAL-* MAST target names for these are undiscovered, so a no-data result here is weaker evidence than it is for slacs_gold.",
+        "description": "The remaining SLACS lenses from Bolton et al. 2008 Table 4 (info/slacs_coords.py) that are not in slacs_gold. Restricted to Bolton et al. 2008 Table 4 classification E-S-A or L-S-A (early-type or late-type, single lens, clear multiple imaging; the '*' variants E-S-A*/L-S-A* count too -- Bolton's footnote confirms them as definite lenses, just excluded from their own lens modeling) -- all other classifications (X, B, M, U) excluded. Reduced 2026-07-29; 24 of the 27 have usable HST imaging. Every lens resolves on MAST under its plain SDSS<LENS> name (no GAL-* overrides needed), so a no-data result is a real absence.",
         "coords": "info/slacs_coords.py",
         "lenses": {
             "J0037-0942": {},
@@ -107,7 +107,7 @@
         }
     },
     "gallery": {
-        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduction scripts not yet written.",
+        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F438W, F606W, F814W; the F225W/F275W products were found unusable for lens science and deleted 2026-09-29). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduced with drizzle_wfc3_uvis.py.",
         "coords": "info/gallery_coords.py",
         "lenses": {
             "J0029+2544": {
