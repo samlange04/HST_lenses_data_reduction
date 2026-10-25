@@ -16,6 +16,7 @@ authors:
   - family-names: Lange
     given-names: Samuel C.
     affiliation: The Chinese University of Hong Kong
+    orcid: "https://orcid.org/0009-0007-0679-818X"
 repository-code: "https://github.com/samlange04/HST_lenses_data_reduction"
 url: "https://github.com/samlange04/HST_lenses_data_reduction"
 license:
