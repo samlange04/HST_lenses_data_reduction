@@ -282,7 +282,7 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
 # used by make_positions.pick_display_filt (which imports this) so the two GUIs agree on
 # which band is primary. f814W is the highest-S/N SLACS band, the cutout --center-band and
 # BELLS's only band; f606W is the gallery primary; the rest follow by typical arc S/N. f475X
-# leads (Sam, 2026-10-05): only SL2S has it, and there it is the deep GO-17130 band (2366 s, UVIS
+# leads (2026-10-05): only SL2S has it, and there it is the deep GO-17130 band (2366 s, UVIS
 # sampling, bright blue arcs), so every Dinos lens -- including J0959+0206, which also has
 # F814W -- opens on F475X; snapshot-only lenses open on F475X over F600LP. No SLACS, GALLERY
 # or BELLS lens has either band, so their primary is unchanged.

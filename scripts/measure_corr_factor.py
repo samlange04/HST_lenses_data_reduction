@@ -6,7 +6,7 @@ the sigma-normalised ACF has C(0) < 1, positive neighbours, and sum C = 1 over t
 width, so 1/sqrt(WHT) is already right for any patch >= the drop and drizzle itself needs
 no factor. What the measured sum C > 1 catches is upstream of drizzle: an ERR-array deficit
 (~10% rms in ACS/UVIS FLCs, white) plus a few percent of faint unmasked structure. See
-AGENTS.md *Drizzle correlated noise* and local/literature/drizzle_noise.md. This measures,
+AGENTS.md *Drizzle correlated noise*. This measures,
 per stamp, on blank sky in its own mosaic:
 
   * the ACF of the sigma-normalised sky (acf_ratio) -- THE factor: sqrt(sum C) over the

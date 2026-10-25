@@ -22,8 +22,5 @@ citations in `instrument_drizzle_ref.md` and the scripts resolve.
 The handbooks are living documents: the versions above are the ones the page numbers in
 this repo were read from. A newer edition may renumber pages.
 
-Every document in this table that a script or AGENTS.md cites is also filed in the project
-bibliography (`local/literature/HST_lenses_data_reduction.bib`, see AGENTS.md *Bibliography*)
-and in the papers wiki's `wiki/software/sources/hst-tools.md`, where the exact pages read are
-recorded. The ACS ISRs behind the DQ-bit choice are 2017-02 (Hoffmann & Avila, saturation
+The ACS ISRs behind the DQ-bit choice are 2017-02 (Hoffmann & Avila, saturation
 bit 256) and 2017-05 (Borncamp et al., unstable-pixel bit 32).

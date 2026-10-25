@@ -21,7 +21,7 @@
 #                  lens with no entry still builds.
 #   --empirical-only  build every product with make_psf.py --method empirical: no model
 #                  fallback, so a too-star-poor field FAILS and is listed for review. Used
-#                  for the SL2S samples (Sam, 2026-10-04), whose F475X/F600LP bands have no
+#                  for the SL2S samples (2026-10-04), whose F475X/F600LP bands have no
 #                  STDPSF grid yet; what to do with the failures is decided afterwards.
 #
 # Like run_cutouts_all.sh -- and unlike the drizzle runners -- this globs data/drizzled/

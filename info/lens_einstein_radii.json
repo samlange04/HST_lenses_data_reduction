@@ -77,7 +77,7 @@
   "zlens": 0.557,
   "zsrc": 1.33,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens/zsrc from SL2S V Table 1; SL2S designation SL2SJ020524-093023; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens/zsrc from SL2S V Table 1; SL2S designation SL2SJ020524-093023; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.009,
    0.008
@@ -89,7 +89,7 @@
   "zlens": 0.75,
   "zsrc": 2.74,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021247-055552; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021247-055552; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.004,
    0.004
@@ -101,7 +101,7 @@
   "zlens": 0.609,
   "zsrc": 1.88,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021411-040502; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021411-040502; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.008,
    0.008
@@ -121,7 +121,7 @@
   "zlens": 0.646,
   "zsrc": 1.85,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021737-051329; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021737-051329; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.014,
    0.014
@@ -133,7 +133,7 @@
   "zlens": 0.884,
   "zsrc": 2.06,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S V Table 1, zsrc SL2S IV Table 2; SL2S designation SL2SJ021801-080247; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S V Table 1, zsrc SL2S IV Table 2; SL2S designation SL2SJ021801-080247; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.016,
    0.017
@@ -145,7 +145,7 @@
   "zlens": 0.389,
   "zsrc": 2.15,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021902-082934; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ021902-082934; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.038,
    0.038
@@ -157,7 +157,7 @@
   "zlens": 0.572,
   "zsrc": 2.61,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022046-094927; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022046-094927; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.023,
    0.02
@@ -169,7 +169,7 @@
   "zlens": 0.473,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022357-065142; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022357-065142; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0225-0454": {
   "theta_e_arcsec": 1.76,
@@ -177,7 +177,7 @@
   "zlens": 0.238,
   "zsrc": 1.2,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022511-045433; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022511-045433; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0226-0406": {
   "theta_e_arcsec": 1.29,
@@ -185,7 +185,7 @@
   "zlens": 0.766,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022648-040610; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ022648-040610; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0226-0420": {
   "theta_e_arcsec": 1.152,
@@ -193,7 +193,7 @@
   "zlens": 0.494,
   "zsrc": 1.23,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022610-042011; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ022610-042011; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.009,
    0.009
@@ -205,7 +205,7 @@
   "zlens": 0.352,
   "zsrc": 2.34,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ023251-040823; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ023251-040823; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.019,
    0.019
@@ -345,7 +345,7 @@
   "zlens": 0.274,
   "zsrc": 2.09,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ084959-025142; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ084959-025142; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0849-0412": {
   "theta_e_arcsec": 1.134,
@@ -353,7 +353,7 @@
   "zlens": 0.722,
   "zsrc": 1.54,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ084909-041226; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ084909-041226; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.014,
    0.011
@@ -365,7 +365,7 @@
   "zlens": 0.365,
   "zsrc": 3.39,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ085540-014730; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ085540-014730; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.034,
    0.034
@@ -385,7 +385,7 @@
   "zlens": 0.58,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ085826-014300; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ085826-014300; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0901-0259": {
   "theta_e_arcsec": 1.03,
@@ -393,7 +393,7 @@
   "zlens": 0.67,
   "zsrc": 1.19,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ090106-025906; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ090106-025906; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J0903+4116": {
   "theta_e_arcsec": 1.2887,
@@ -409,7 +409,7 @@
   "zlens": 0.611,
   "zsrc": 2.36,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ090407-005952; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ090407-005952; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.005,
    0.005
@@ -485,7 +485,7 @@
   "zlens": 0.552,
   "zsrc": 3.35,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ095921+020638; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ095921+020638; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.01,
    0.01
@@ -833,7 +833,7 @@
   "zlens": 0.51,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ135847+545913; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ135847+545913; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1359+5535": {
   "theta_e_arcsec": 1.092,
@@ -841,7 +841,7 @@
   "zlens": 0.783,
   "zsrc": 2.77,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ135949+553550; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ135949+553550; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.006,
    0.006
@@ -853,7 +853,7 @@
   "zlens": 0.464,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140156+554446; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140156+554446; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1401+5557": {
   "theta_e_arcsec": 1.74,
@@ -861,7 +861,7 @@
   "zlens": 0.527,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140123+555705; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140123+555705; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1402+5505": {
   "theta_e_arcsec": 1.23,
@@ -869,7 +869,7 @@
   "zlens": 0.412,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140221+550534; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ140221+550534; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1402+6321": {
   "theta_e_arcsec": 1.3466,
@@ -893,7 +893,7 @@
   "zlens": 0.456,
   "zsrc": 1.59,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140454+520024; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140454+520024; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.011,
    0.011
@@ -905,7 +905,7 @@
   "zlens": 0.526,
   "zsrc": 3.01,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140546+524311; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140546+524311; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.007,
    0.007
@@ -917,7 +917,7 @@
   "zlens": 0.716,
   "zsrc": 1.47,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140650+522619; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ140650+522619; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.006,
    0.006
@@ -929,7 +929,7 @@
   "zlens": 0.322,
   "zsrc": 1.42,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141137+565119; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141137+565119; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1416+5136": {
   "theta_e_arcsec": 1.3681,
@@ -945,7 +945,7 @@
   "zlens": null,
   "zsrc": null,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141917+511729; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ141917+511729; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1420+5630": {
   "theta_e_arcsec": 1.4,
@@ -953,7 +953,7 @@
   "zlens": 0.483,
   "zsrc": 3.12,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142059+563007; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142059+563007; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1420+6019": {
   "theta_e_arcsec": 1.0388,
@@ -969,7 +969,7 @@
   "zlens": 0.511,
   "zsrc": 2.58,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142731+551645; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ142731+551645; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J1430+4105": {
   "theta_e_arcsec": 1.5195,
@@ -1205,7 +1205,7 @@
   "zlens": 0.4,
   "zsrc": 2.15,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220329+020518; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220329+020518; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.012,
    0.012
@@ -1217,7 +1217,7 @@
   "zlens": 0.476,
   "zsrc": 2.53,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220506+014703; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ220506+014703; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.042,
    0.044
@@ -1229,7 +1229,7 @@
   "zlens": 0.338,
   "zsrc": 3.45,
   "sigma_kms": null,
-  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ221326-000946; sigma not entered (see local/scripts/add_sl2s_theta_e.py)"
+  "source": "Sonnenfeld+2013 (SL2S III, ApJ 777, 97) Table 6 R_Ein via VizieR J/ApJ/777/97/table6; zlens Table 7; zsrc from SL2S IV (ApJ 777, 98) Table 2; SL2S designation SL2SJ221326-000946; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)"
  },
  "J2221+0115": {
   "theta_e_arcsec": 1.274,
@@ -1237,7 +1237,7 @@
   "zlens": 0.325,
   "zsrc": 2.35,
   "sigma_kms": null,
-  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ222148+011542; sigma not entered (see local/scripts/add_sl2s_theta_e.py)",
+  "source": "Sheu+2025 (Project Dinos II, MNRAS 541, 1) Table 1 R_E (power-law, HST F475X); zlens SL2S III Table 7, zsrc SL2S IV Table 2; SL2S designation SL2SJ222148+011542; sigma not entered (SL2S IV lists several per-instrument values; pick one deliberately)",
   "theta_e_err_arcsec": [
    0.011,
    0.011

@@ -41,8 +41,8 @@ data/cutouts/**/cutout_cr.png
 data/cutouts/**/cutout.png
 
 # ── Arc masks: ALL out of git (2026-10-21) ─────────────────────────────────────
-# Every cutout_[cr_]mask_arcs.{fits,png}, in every sample and band, is held OUT of git at
-# the user's request (not confident in them; arc masks are optional products anyway).
+# Every cutout_[cr_]mask_arcs.{fits,png}, in every sample and band, is held OUT of git
+# (their quality is not vouched for; arc masks are optional products anyway).
 # This replaces the 2026-09-21 rule that parked only slacs_gold f606W. Untracked on main
 # and bcfill with `git rm --cached`; the earlier commits keep them in history. Nothing is
 # deleted: the files stay on disk beside the sci they were drawn on, and their provenance

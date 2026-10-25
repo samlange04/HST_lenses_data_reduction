@@ -1,6 +1,6 @@
 {
     "slacs_gold": {
-        "description": "SLACS lenses reduced so far: the working sample. Every lens here has ACS/WFC F814W; 22 have WFPC2 F606W, 16 have ACS F555W, 13 have WFC3/IR F160W.",
+        "description": "The 38 SLACS lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), which is where the name comes from: the working sample and the default --sample. Every lens here has ACS/WFC F814W; 22 have WFPC2 F606W, 16 have ACS F555W, 13 have WFC3/IR F160W.",
         "coords": "info/slacs_coords.py",
         "lenses": {
             "J0008-0004": {},
@@ -74,7 +74,7 @@
         }
     },
     "slacs_other": {
-        "description": "The remaining SLACS lenses from Bolton et al. 2008 Table 4 (info/slacs_coords.py) that are not in slacs_gold. Restricted to Bolton et al. 2008 Table 4 classification E-S-A or L-S-A (early-type or late-type, single lens, clear multiple imaging; the '*' variants E-S-A*/L-S-A* count too -- Bolton's footnote confirms them as definite lenses, just excluded from their own lens modeling) -- all other classifications (X, B, M, U) excluded. Not yet reduced; HST coverage per lens is unknown and is discovered by querying MAST. Any GAL-* MAST target names for these are undiscovered, so a no-data result here is weaker evidence than it is for slacs_gold.",
+        "description": "The remaining SLACS lenses from Bolton et al. 2008 Table 4 (info/slacs_coords.py) that are not in slacs_gold. Restricted to Bolton et al. 2008 Table 4 classification E-S-A or L-S-A (early-type or late-type, single lens, clear multiple imaging; the '*' variants E-S-A*/L-S-A* count too -- Bolton's footnote confirms them as definite lenses, just excluded from their own lens modeling) -- all other classifications (X, B, M, U) excluded. Reduced 2026-07-29; 24 of the 27 have usable HST imaging. Every lens resolves on MAST under its plain SDSS<LENS> name (no GAL-* overrides needed), so a no-data result is a real absence.",
         "coords": "info/slacs_coords.py",
         "lenses": {
             "J0037-0942": {},
@@ -107,7 +107,7 @@
         }
     },
     "gallery": {
-        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F225W, F275W, F438W, F606W, F814W). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduction scripts not yet written.",
+        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F438W, F606W, F814W; the F225W/F275W products were found unusable for lens science and deleted 2026-09-29). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduced with drizzle_wfc3_uvis.py.",
         "coords": "info/gallery_coords.py",
         "lenses": {
             "J0029+2544": {
@@ -158,7 +158,7 @@
         }
     },
     "bells": {
-        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Not yet reduced. J1337+3620 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14 (Sam): a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22 (Sam): its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
+        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Reduced, masked and positions marked (2026-10-22). J1337+3620 was REMOVED 2026-10-14: a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14: a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22: its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
         "coords": "info/bells_coords.py",
         "lenses": {
             "J0151+0049": {},
@@ -185,7 +185,7 @@
         }
     },
     "sl2s_dinos_a": {
-        "description": "SL2S lenses with deep WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025) PLUS a second band: WFPC2 F606W (GO-11289, lens on WF3) or ACS F814W (GO-10876). F475X is restricted to GO-17130 (proposals quirk). Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S lenses with deep WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025) PLUS a second band: WFPC2 F606W (GO-11289, lens on WF3) or ACS F814W (GO-10876). F475X is restricted to GO-17130 (proposals quirk). Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
         "coords": "info/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -225,7 +225,7 @@
                             "12064"
                         ]
                     },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (Sam, 2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
             },
             "J0226-0420": {
                 "mast_target": "SL2SJ022610-042011",
@@ -267,7 +267,7 @@
                             "9822"
                         ]
                     },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: Sam chose WFPC2 F606W (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14 (Sam): the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
+                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: WFPC2 F606W was chosen (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14: the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
             },
             "J1359+5535": {
                 "mast_target": "SL2SJ135949+553550",
@@ -299,7 +299,7 @@
         }
     },
     "sl2s_dinos_x": {
-        "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025). J0233-0438 (GO-17130, not a Dinos II lens) was REMOVED 2026-10-14: both F475X visits failed (EXPFLAG TDF-DOWN AT EXPSTART, blank sky at the lens) -- see AGENTS.md *SL2S samples*. J0848-0351 was REMOVED 2026-10-24 (Sam): not a real grade-A lens. Its SL2S III grade A (Table 6, HST=N) came from CFHT imaging plus the source redshift, before any HST data; the GO-17130 F475X shows a single arc on one side and no counter-image (as in Dinos II Fig. A2, whose theta_E 0.93+/-0.04\" and q=0.43 are among the weakest constraints in the sample), so it fails SL2S III's own HST grade-A test of a visible multiple-image pair. J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025). J0233-0438 (GO-17130, not a Dinos II lens) was REMOVED 2026-10-14: both F475X visits failed (EXPFLAG TDF-DOWN AT EXPSTART, blank sky at the lens) -- see AGENTS.md *SL2S samples*. J0848-0351 was REMOVED 2026-10-24: not a real grade-A lens. Its SL2S III grade A (Table 6, HST=N) came from CFHT imaging plus the source redshift, before any HST data; the GO-17130 F475X shows a single arc on one side and no counter-image (as in Dinos II Fig. A2, whose theta_E 0.93+/-0.04\" and q=0.43 are among the weakest constraints in the sample), so it fails SL2S III's own HST grade-A test of a visible multiple-image pair. J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
         "coords": "info/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -417,7 +417,7 @@
         }
     },
     "sl2s_wf": {
-        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; three also have the GO-11588 F475X+F600LP snapshot. J0213-0743 was DROPPED 2026-10-14 (Sam): not a single deflector -- a z=0.016 elliptical centred 10.7\" away dominates the stamp and needed its own SIE in SL2S III. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; three also have the GO-11588 F475X+F600LP snapshot. J0213-0743 was DROPPED 2026-10-14: not a single deflector -- a z=0.016 elliptical centred 10.7\" away dominates the stamp and needed its own SIE in SL2S III. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
         "coords": "info/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -473,7 +473,7 @@
         }
     },
     "sl2s_snap": {
-        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) whose only HST data is the GO-11588 WFC3/UVIS snapshot: F475X + F600LP, 2x360 s each (passes the 500 s gate with a low-exptime warning). J1423+5722 was REMOVED 2026-10-24 (Sam): no demonstrated multiple imaging. Its only lensed feature is one arc at ~2.8\" (2.1 theta_E) with no counter-image in either band; SL2S III gives it no per-lens note, and its model needs a mass axis ratio of 0.32 against a light axis ratio of ~0.85, a 31.7 mag source, and has no lens redshift. Under that model the arc's knots are singly imaged. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Not yet reduced.",
+        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) whose only HST data is the GO-11588 WFC3/UVIS snapshot: F475X + F600LP, 2x360 s each (passes the 500 s gate with a low-exptime warning). J1423+5722 was REMOVED 2026-10-24: no demonstrated multiple imaging. Its only lensed feature is one arc at ~2.8\" (2.1 theta_E) with no counter-image in either band; SL2S III gives it no per-lens note, and its model needs a mass axis ratio of 0.32 against a light axis ratio of ~0.85, a 31.7 mag source, and has no lens redshift. Under that model the arc's knots are singly imaged. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
         "coords": "info/sl2s_coords.py",
         "uvis_filters": [
             "f475X",

@@ -3,7 +3,7 @@
 Build a PSF for a star-poor product from the median of other fields' empirical PSFs.
 
 For a band with no STDPSF model grid (WFC3/UVIS F475X, F600LP), a field with too few usable
-stars for make_psf.py's empirical ePSF has no model fallback. Sam's choice (2026-10-04) for
+stars for make_psf.py's empirical ePSF has no model fallback. Chosen 2026-10-04 for
 those products: take the per-pixel MEDIAN of the empirical kernels already built for the
 same filter in other lenses (same instrument pixel scale), as the drizzle products are all
 on one output grid per band. Used for SL2S J0233-0438 F475X (0 usable stars; 29 F475X
@@ -22,7 +22,7 @@ chip, drizzle geometry), so the scatter of single fields is its honest uncertain
 
 **Single-donor mode** (``--donor SAMPLE/LENS``, method ``empirical_donor``): the kernel is
 that one lens's empirical PSF instead of the median, and the error map is still the
-donor-pool scatter. Used for BELLS J0830+5116 F814W (Sam, 2026-10-05). Its focus-diverse ePSF
+donor-pool scatter. Used for BELLS J0830+5116 F814W (2026-10-05). Its focus-diverse ePSF
 does not exist on STScI's service, and only 2 field stars are usable. Fitted to those 2 stars,
 J0747+4448's empirical PSF (observed the same day) beat all 22 other BELLS empirical PSFs, the
 BELLS median and the STDPSF+injection kernel on the bright star: chi2/dof 156 against 192-345,
