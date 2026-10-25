@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: >-
+  If you use this repository, please credit the repository and Samuel C. Lange
+  (The Chinese University of Hong Kong), and cite the survey papers for the
+  lenses you use (see README.md).
+type: dataset
+title: "HST lens image reduction"
+abstract: >-
+  Hubble Space Telescope imaging of 133 galaxy-scale strong gravitational
+  lenses from the SLACS, BELLS, BELLS GALLERY, SL2S and Project Dinos samples,
+  reduced from the MAST archive into ready-to-model cutouts: science images,
+  noise maps, PSF kernels with uncertainty maps, hand-drawn masks and
+  hand-marked multiple-image positions, together with the pipeline that
+  produces them.
+authors:
+  - family-names: Lange
+    given-names: Samuel C.
+    affiliation: The Chinese University of Hong Kong
+repository-code: "https://github.com/samlange04/HST_lenses_data_reduction"
+url: "https://github.com/samlange04/HST_lenses_data_reduction"
+license:
+  - MIT
+  - CC-BY-4.0
+keywords:
+  - strong gravitational lensing
+  - Hubble Space Telescope
+  - data reduction
+  - drizzle
+  - SLACS
+  - BELLS
+  - SL2S
+date-released: "2026-10-25"
