@@ -1,210 +1,220 @@
 # HST lens image reduction
 
-Downloads calibrated HST exposures from MAST and drizzles them into science-ready
-mosaics + cutouts for gravitational-lens samples (SLACS, BELLS). One product per
-**lens + filter**.
+> **If you use this repository, please credit the repository
+> ([github.com/samlange04/HST_lenses_data_reduction](https://github.com/samlange04/HST_lenses_data_reduction))
+> and Samuel C. Lange (The Chinese University of Hong Kong).**
 
-> This README is the operator's quick-start: what to run, in what order, and how the
-> instruments differ. `AGENTS.md` is the deep reference — every non-obvious decision and
-> the trap it avoids. When in doubt about *why*, read that; when the doc and the code
-> disagree, trust the code.
+This repository turns Hubble Space Telescope (HST) archive images of **strong gravitational
+lenses** into clean, ready-to-model image cutouts.
 
-## Setup
+A strong lens is a massive foreground galaxy (the *deflector*) whose gravity bends the light
+of a more distant galaxy (the *source*) behind it, so the source appears as arcs, a ring, or
+two to four separate images around the deflector. Modelling those arcs measures how mass is
+distributed in the deflector. A model needs more than a picture, though: it needs to know how
+uncertain every pixel is, how blurred the telescope makes a point of light, which pixels to
+ignore, and roughly where the multiple images are. This repository produces all of that, for
+133 lenses from five published lens surveys.
 
-All scripts run inside a uv-managed virtual environment (`pyproject.toml` + `uv.lock` +
-`.python-version`, all tracked in git), pinned to the STScI packages' exact versions from
-the stenv conda env this replaced. `uv sync` downloads the pinned CPython itself — no
-conda, no external installer — so this works the same on macOS (arm64 or x86_64) and
-Linux:
+**Most people only need the finished products in `data/cutouts/`** — they are in git, so a
+plain clone has them. Re-running the reduction is only needed to change how it was done.
+
+## What's in the box
+
+| Sample folder | Lenses | Survey | HST filters (number of lenses with each) |
+|---|---|---|---|
+| `slacs_gold` | 38 | SLACS (Bolton et al. 2008; Auger et al. 2009) | F814W (38), F606W (22), F555W (16), F160W (13) |
+| `slacs_other` | 24 | SLACS, the remaining lenses with a clean early-type deflector | F606W (24), F160W (6), F814W (4) |
+| `gallery` | 15 | BELLS GALLERY (Shu et al. 2016) | F606W (15), F814W (6), F438W (6) |
+| `bells` | 21 | BELLS (Brownstein et al. 2012) | F814W (21) |
+| `sl2s_dinos_a` | 9 | SL2S (Sonnenfeld et al. 2013) + Project Dinos (Sheu et al. 2025) | F475X (9), F606W (8), F814W (3), F600LP (1), F160W (1) |
+| `sl2s_dinos_x` | 11 | as above, F475X-only lenses | F475X (11), F600LP (3) |
+| `sl2s_wf` | 10 | SL2S with older HST WFPC2 imaging | F606W (10), F475X (2), F600LP (2) |
+| `sl2s_snap` | 5 | SL2S with short "snapshot" imaging | F475X (5), F600LP (5) |
+
+That is 232 lens-and-filter images in total. A filter name gives its approximate central
+wavelength in nanometres: F438W is blue, F606W and F475X/F600LP are visible light, F814W is
+near-infrared, and F160W is infrared. Seeing the same lens in several colours helps tell the
+(usually blue) lensed source apart from the (red) deflector.
+
+The data come from four HST cameras. They differ in pixel size, so the cutouts do too:
+
+| Camera | Filters here | Pixel size | Cutout size in pixels |
+|---|---|---|---|
+| ACS/WFC | F814W, F555W, F606W (one lens) | 0.05″ | 240 × 240 |
+| WFPC2 (its WF3 chip) | F606W | 0.05″ (resampled from 0.1″) | 240 × 240 |
+| WFC3/UVIS | F438W, F475X, F600LP, F606W, F814W | 0.0396″ | 303 × 303 |
+| WFC3/IR | F160W | 0.06″ (resampled from 0.13″) | 200 × 200 |
+
+Every cutout covers the same 12″ × 12″ patch of sky, centred on the deflector.
+
+## Using the finished products
+
+Each lens and filter has one folder, `data/cutouts/<sample>/<lens>/<filter>/`, for example
+`data/cutouts/slacs_gold/J0008-0004/f814W/`. The files in it are:
+
+| File | What it is |
+|---|---|
+| `cutout_cr_sci.fits` | **The image.** Brightness per pixel, in electrons per second (counts per second for WFPC2 F606W — check the `BUNIT` header keyword before comparing filters). |
+| `cutout_cr_noise.fits` | **The noise map**: the 1σ uncertainty of every pixel, in the same units as the image. |
+| `cutout_cr_psf.fits` | **The PSF** (point-spread function): how the telescope blurs a single point of light, on the same pixel grid and orientation as the image, normalised to sum to 1. A lens model convolves with this. |
+| `cutout_cr_psf_err.fits` | The per-pixel uncertainty of that PSF. |
+| `cutout_cr_mask.fits` | **The mask**: 1 marks a pixel to *exclude* from a fit (nearby galaxies, stars, detector defects), 0 a pixel to use. The lens itself is never masked. Hand-drawn. |
+| `cutout_cr_positions.json` | **Image positions**: where the multiple images of the lensed source are, hand-marked (see below). |
+| `cutout_cr_dataset.png` | A quick-look figure of the image, noise, PSF and mask together — the fastest way to check a lens. |
+
+The `cr` in the names means cosmic-ray hits were removed (below). F160W images have no
+cosmic-ray step, so their files are named `cutout_sci.fits`, `cutout_noise.fits` and so on.
+A few lenses carry extra files beside these (for example `cutout_psf_injected.fits`, an
+alternative PSF kept for comparison); the files in the table are the ones to use.
+
+**Orientation.** North is towards increasing row number and West towards increasing column
+number, so with Python's usual display (row 0 at the top) **North appears at the bottom and
+East on the left**. That is a vertical flip of the way astronomical images are usually shown,
+not a rotation. The FITS headers carry full sky coordinates (WCS) if you need them.
+
+**Image positions** are stored in the format of the [PyAutoLens](https://github.com/Jammy2211/PyAutoLens)
+lens-modelling software, which reads them directly. Each entry is a `(y, x)` offset in
+arcseconds from the cutout centre. Following PyAutoLens's convention, +y points South and +x
+points West. To get pixels: `row = row_centre − y / pixel_size` and
+`col = col_centre + x / pixel_size`, where the centre of a 240-pixel cutout is 119.5.
+**An empty positions file is deliberate**: on 24 lenses the images were too uncertain to
+mark, or the counter-images are too faint to see. It does not mean the job was skipped.
+
+A minimal example in Python:
+
+```python
+from astropy.io import fits
+
+band = "data/cutouts/slacs_gold/J0008-0004/f814W/"
+image = fits.getdata(band + "cutout_cr_sci.fits")
+noise = fits.getdata(band + "cutout_cr_noise.fits")
+psf   = fits.getdata(band + "cutout_cr_psf.fits")
+mask  = fits.getdata(band + "cutout_cr_mask.fits").astype(bool)   # True = exclude
+
+signal_to_noise = image / noise
+```
+
+**Overview figures** tiling every lens of a sample, one sheet per filter, are in
+`data/mosaics/<sample>/` (`*_signal.png`, `*_snr.png`, `*_noise.png`, `*_psf.png`).
+
+### Things worth knowing before you model
+
+- **The noise maps already include a measured correction.** HST's own error estimates come
+  out too small on most of these images: by 4–26% depending on camera and filter, and up to
+  ~40% on a few low-background F475X fields (the infrared F160W needs none). Each noise map
+  has been scaled up by the measured factor, recorded in the `NOISECOR` header keyword.
+  Neighbouring pixels also share some noise (a side effect of combining several exposures).
+  The noise maps are correct for anything summed over a few pixels or more, which is what
+  matters for a lensed arc.
+- **Some masks are judgement calls.** A short verdict for every lens where it mattered —
+  which nearby objects are contaminants and which are lensed images, which masks are
+  provisional, and which lenses need something extra in the model (a second source, a
+  nearby perturbing galaxy) — is in [`AGENTS.md`](AGENTS.md) under *Masks → Per-lens
+  verdicts*, and in the `note` fields of `info/lens_masks.json`.
+- **Einstein radii, redshifts and velocity dispersions** from the survey papers are collected
+  in `info/lens_einstein_radii.json`, each row naming its source.
+- **Arc masks** (masks isolating just the lensed light) are optional and not included.
+- **Some lenses were removed** from the published samples, mostly because a nearby galaxy is
+  massive enough to need its own lens model, or because no second image of the source can be
+  seen. [`AGENTS.md`](AGENTS.md) lists each one and why.
+
+## How the reduction works
+
+HST does not deliver one finished picture. It takes several short exposures of each target,
+shifted slightly between exposures (*dithered*), each spoiled by cosmic-ray hits and detector
+defects. For every lens and filter the pipeline:
+
+1. **Downloads** the calibrated exposures from the HST archive (MAST) and the matching
+   calibration files.
+2. **Removes cosmic rays** — the sharp streaks and dots left when charged particles hit the
+   detector — exposure by exposure (the infrared camera's standard calibration already
+   removes them, so F160W skips this).
+3. **Combines the exposures** into one sharper, deeper image with STScI's *drizzle*
+   algorithm, onto a common North-up grid centred on the lens. The same step produces a
+   weight map, from which the noise map is made.
+4. **Aligns the filters** with each other, so the same pixel is the same point on the sky in
+   every colour.
+5. **Cuts out** the 12″ stamp around the deflector and writes the noise map.
+6. **Measures the PSF** from stars in the same image where there are enough, or from STScI's
+   PSF models otherwise.
+7. **Masks and marks** — the masks and image positions are drawn and clicked by hand in
+   small interactive tools, then checked against the published lens models and Einstein
+   radii.
+
+Every choice behind these steps — and the mistakes each one avoids — is documented in
+[`AGENTS.md`](AGENTS.md). It is written as a technical reference (it is also the guide for
+AI coding assistants working in this repository), so start here and go there for the detail.
+
+## Re-running the reduction
+
+You only need this to change how the data were processed, or to rebuild the large
+intermediate files that are not stored in git.
+
+**Setup.** Install [uv](https://docs.astral.sh/uv/), then from the repository folder:
 
 ```bash
-uv sync                                        # one-time, or after a .venv wipe
-uv run python scripts/<script>.py --lens <LENS> --filt <FILTER>
+uv sync
 ```
 
-CRDS reference files download themselves on first use into `data/reference_files/`.
+This installs the exact Python version and package versions the pipeline was run with, on
+macOS or Linux, with nothing else to install. Run any script as `uv run python scripts/<name>.py`.
 
-## Fresh clone? Rebuild what git does not carry
-
-A clone has the finished science tree (`data/cutouts/`, `data/mosaics/`) and the tracking
-JSONs, but none of the gitignored layers: the drizzled mosaics and their inputs, the
-size-variant stamps, and the plain QC renders (`cutout[_cr].png`, `*_positions.png`).
-`scripts/regenerate_files.py` rebuilds them from the tracked files by calling the batch runners
-(see *Running things*) in dependency order:
+**Rebuild everything git does not carry.** The full reduction downloads tens of gigabytes
+and takes hours per sample. One command rebuilds the missing layers in the right order, and
+can be re-run to resume after an interruption:
 
 ```bash
-uv run python scripts/regenerate_files.py --sample slacs_gold --light   # QC PNGs only: minutes, no network
-uv run python scripts/regenerate_files.py --sample gallery              # + MAST download and drizzle (hours, tens of GB)
-uv run python scripts/regenerate_files.py --sample all --size 20        # + 20" stamps and their mosaics
-uv run python scripts/regenerate_files.py --sample all --dry-run        # print the plan, run nothing
+uv run python scripts/regenerate_files.py --sample slacs_gold --dry-run   # show the plan, run nothing
+uv run python scripts/regenerate_files.py --sample slacs_gold --light     # quick-look PNGs only: minutes, no download
+uv run python scripts/regenerate_files.py --sample slacs_gold             # download + full re-reduction
 ```
 
-Stages are `cutout-pngs`, `positions-pngs`, `drizzle`, `cutouts` (needs `--size`; the 12"
-tree is tracked and never re-cut) and `psf` (opt-in via `--stages`, since it rewrites the
-tracked PSF kernels). Only the instrument runners the sample has products for in
-`info/lens_instrument.json` are run. Everything is idempotent, so re-run the same command
-to resume after an interruption.
-
-## The pipeline, end to end
-
-For each lens+filter, a drizzle script does:
-
-1. **Download** calibrated exposures from MAST (skipped if already present).
-2. **Download** CRDS reference files, run `bestrefs`.
-3. **Drizzle** — align + combine with AstroDrizzle onto a common North-up grid.
-4. Produce a **no-CR mosaic**, plus a **CR-rejected** one (WFPC2 always; others with `--cr`).
-5. Update three tracking JSONs in `info/`.
-
-Then, across bands:
-
-6. `align_wfpc2_to_acs.py` — tie F606W absolute astrometry to ACS (**F606W only**).
-7. `make_cutouts.py` — cut co-registered stamps + noise maps + preview PNGs.
-
-**Run order matters: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.**
-A re-drizzle discards the F606W astrometric tie, so the align step must run again after it.
-
-Scripts are **idempotent**: they skip the MAST download if calibrated files exist, and skip
-the whole drizzle if the final product exists. To force a re-run, delete the lens's dir
-under `data/drizzled/` (and `data/drizzle_files/`).
-
-## Running things
-
-### One lens
+**Reduce one lens in one filter**, e.g. lens J0008-0004 in F814W:
 
 ```bash
-uv run python scripts/drizzle_acs_wfc.py   --lens J0008-0004 --filt f814W
-uv run python scripts/drizzle_acs_wfc.py   --lens J0216-0813 --filt f555W
-uv run python scripts/drizzle_wfpc2_wf3.py --lens J0008-0004 --filt f606W
-uv run python scripts/drizzle_wfc3_ir.py   --lens J0008-0004 --filt f160W
-uv run python scripts/make_cutouts.py      --lens J0029-0055 --filt f606W
+uv run python scripts/drizzle_acs_wfc.py --sample slacs_gold --lens J0008-0004 --filt f814W
+uv run python scripts/make_cutouts.py    --sample slacs_gold --lens J0008-0004 --filt f814W
 ```
 
-`--sample` defaults to **`slacs_gold`** everywhere. It sets the `<sample>` level of every
-`data/` path, so passing the wrong value silently writes a good product into the wrong tree.
+There is one combining script per camera (`drizzle_acs_wfc.py`, `drizzle_wfpc2_wf3.py`,
+`drizzle_wfc3_uvis.py`, `drizzle_wfc3_ir.py`) and a batch runner per camera
+(`scripts/run_*_all.sh <sample>`). The order they must run in, and why, is in `AGENTS.md`. A
+lens with no data in the requested filter prints `NO DATA` and is skipped; that is normal.
 
-A lens with no data for the requested instrument+filter prints `=== NO DATA: ...`, records
-`null` in the tracking JSONs, and **exits 0** — no-data is a normal outcome, not a failure.
-
-### All lenses
-
-```bash
-bash scripts/run_acs_all.sh                  # ACS/WFC  F814W + F555W
-bash scripts/run_wfc3_all.sh                 # WFC3/IR  F160W
-bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
-bash scripts/run_cutouts_all.sh              # stamps for whatever products exist
-bash scripts/run_acs_all.sh slacs_other      # any runner takes an optional sample arg
-```
-
-Runners take the roster from `info/lens_samples.json` (via `mast_target_names.py`) and try
-**every** lens — only ones with data download. They report `ok` / `no data` / `FAILED`
-separately. Exception: `run_cutouts_all.sh` globs `data/drizzled/` instead (a stamp needs a
-mosaic that already exists).
-
-**`run_wfpc2_wf3.sh` is the one WFPC2 driver** — it runs the full three-stage order per lens,
-reads per-lens alignment from `info/wfpc2_alignment.json`, expands the two split-visit lenses
-into per-visit products, and retries failures once. Don't drive the WFPC2 stages by hand
-unless you know why; the runner exists to avoid three silent-wrong-product traps (align
-default, split visits, the mandatory align step).
-
-## Directory layout
+## Repository layout
 
 ```
-data/
-  calibrated/<sample>/<lens>/<filter>/    downloaded FLT/FLC/CAL files
-  drizzle_files/<sample>/<lens>/<filter>/ AstroDrizzle working dir (logs, shift files, PNGs)
-  drizzled[_bcfill]/<sample>/<lens>/<filter>/  final mosaics (_cr_ / _nocrrej_, sci + wht)
-  cutouts/<sample>/<lens>/<filter>/       THE science tree -- one stamp per band:
-                                          cutout_[cr_]{sci,noise}.fits (standard drizzle;
-                                          a variant cut is tagged: cutout_cr_bcfill_sci.fits)
-                                          + cutout_[cr_]{psf,mask,...}.fits (shared) + PNGs
-  mosaics/<sample>/                       QC grids tiling those stamps
-  reference_files/                        CRDS cache (auto-downloaded once)
-  run_logs/                               per-lens batch-runner logs
-
-Everything under data/ is gitignored except cutouts/ and mosaics/ -- the small, final
-science products, and the only place a hand-drawn (non-regenerable) mask lives. `main`
-carries the standard-drizzle stamps, which are the modelling input (2026-09-22). The
-bad-column-filled reduction (--bcfill) lives on the `bcfill` branch, where the same bands
-carry `cutout_cr_bcfill_{sci,noise}.fits` instead: the reduction is in the stamp's NAME
-(and its BCFILL header card), so the two branches can never silently swap stamps, while
-the masks/positions keep one name and cherry-pick cleanly between them. See AGENTS.md
-and scripts/cutout_paths.py.
-info/
-  lens_samples.json     single source of truth for sample membership + MAST quirks
-  wfpc2_alignment.json  per-lens WFPC2 align mode (mast) and split-visit handling
-  slacs_coords.py       catalogue positions -> common output WCS
-  lens_products.json / lens_instrument.json / lens_exptime.json   auto-updated tracking
+data/cutouts/<sample>/<lens>/<filter>/   the finished products (in git)
+data/mosaics/<sample>/                   overview figures (in git)
+data/...                                 downloads and intermediate files (not in git, rebuildable)
+info/                                    sample lists, lens coordinates, catalogue values, and a
+                                         record of how every product was made (JSON)
+scripts/                                 the pipeline
+AGENTS.md                                full technical reference
 ```
 
-## The four instruments — how they differ
+`info/lens_samples.json` is the master list of which lenses are in which sample.
 
-| Script | Input | Detector | Native → output scale | Suffix | Default CR |
-|---|---|---|---|---|---|
-| `drizzle_acs_wfc.py`  | `*flc.fits` | ACS/WFC   | 0.05″ → 0.05″     | `_drc_` | off (`--cr` to enable) |
-| `drizzle_wfc3_ir.py`  | `*flt.fits` | WFC3/IR   | 0.1283″ → 0.06″   | `_drz_` | **never add CR** |
-| `drizzle_wfpc2_wf3.py`| `u*flt.fits`| WFPC2/WF3 | 0.0996″ → 0.05″   | `_drw_` | always (LACosmic) |
+**Branches.** `main` holds the standard reduction described here and is the one to use. The
+`bcfill` branch holds an alternative in which dead detector columns are filled in by
+interpolation before combining. It looks cleaner but makes the noise map slightly
+optimistic, so it is kept only for comparison.
 
-The suffix is set by **input file type**, not output name (`_drc_` FLC, `_drw_` WFPC2 FLT,
-`_drz_` everything else). Key per-instrument differences an operator should know:
+## Credit and acknowledgements
 
-### ACS/WFC — F814W, F555W (the workhorse)
-- Native 0.05″, no oversampling; cleanest per-pixel noise model of the three.
-- `--align mast` (default): trusts the delivered GAIA/GSC WCS, no re-solve. **Do not run
-  TweakReg** — on dithered frames it removes the dither and smears the stack.
-- Noise: `--wht-type ERR` (default) → correct per-pixel σ.
-- One filter-agnostic script covers both F814W and F555W.
+If you use this repository, please credit the repository
+([github.com/samlange04/HST_lenses_data_reduction](https://github.com/samlange04/HST_lenses_data_reduction))
+and **Samuel C. Lange (The Chinese University of Hong Kong)**.
 
-### WFC3/IR — F160W
-- Drizzled to **0.06″, pixfrac 1.0** — settled by measurement; do not re-drizzle to 0.05″
-  to grid-match other bands (PyAutoLens fits inter-band offsets itself).
-- **No CR pass, ever** — the ~1px IR PSF looks like an outlier, so LACosmic/driz_cr eat point
-  sources. FLTs are already up-the-ramp CR-rejected.
-- DQ subtlety: treat **only** bit `512` as good, written as `'512'` — **never `''`** (empty
-  string disables masking entirely and quadruples detector defects).
-- ERR is in ELECTRONS/**S**, so the noise-map scaling needs a per-frame EXPTIME factor
-  (handled by `make_cutouts.py`); the raw `1/sqrt(WHT)` would be ~600× too small.
+Please also cite the survey papers for the lenses you use (SLACS: Bolton et al. 2008, Auger
+et al. 2009; BELLS: Brownstein et al. 2012; BELLS GALLERY: Shu et al. 2016; SL2S:
+Sonnenfeld et al. 2013; Project Dinos: Sheu et al. 2025), and acknowledge the HST data, e.g.
+*"Based on observations made with the NASA/ESA Hubble Space Telescope, obtained from the
+Mikulski Archive for Space Telescopes (MAST) at the Space Telescope Science Institute, which
+is operated by the Association of Universities for Research in Astronomy, Inc., under NASA
+contract NAS 5-26555."*
 
-### WFPC2/WF3 — F606W (the fiddly one)
-- **The lens sits on WF3 (ext 3), not the PC** — `DETECTOR=PC` in the header names the
-  aperture, not the chip. The script extracts the WF3 chip first.
-- **Two noise fixes, both required**: DrizzlePac ignores ERR for WFPC2 (hand-built IVM fed
-  via an `@`-file), and the WFPC2 ERR array is bogus (`ERR==sqrt(SCI)`), so the model is
-  `var = SCI/gain + floor²`. Products stamp `IVMMODEL`; a pre-fix product needs a re-drizzle.
-- **`--align mast` runs `updatewcs` but NOT TweakReg** — it's the only instrument that can't
-  skip `updatewcs` (needs the distortion arrays), but TweakReg still scatters its
-  mostly-single-visit frames into a multi-knot core.
-- **Absolute astrometry is off** (~0.5–0.9″); `align_wfpc2_to_acs.py` ties it to ACS F814W
-  afterwards. This is why the align step is mandatory and non-optional.
-- **Two lenses are split per visit** (J0728+3835, J0822+2652), not combined: the
-  longer-exptime visit is the primary product, `f606W`; a shorter second visit is
-  `f606W_v2`. The runner handles this.
-- Units: SCI is DN/s (`BUNIT='COUNTS/S'`), F814W is e/s — cross-band flux comparison must go
-  through `PHOTFLAM`, never raw pixel values.
-
-### NICMOS — deprioritised
-Do not generate or propose NICMOS products unless explicitly asked. FOV is too small and the
-pipeline may be unsound; answer F160W coverage from WFC3/IR. `scripts/stale_scripts/` holds
-retired scripts that refuse to run without an override env var — leave them alone.
-
-## Samples & coverage
-
-`info/lens_samples.json` is the single source of truth. Query it via:
-
-```bash
-uv run python scripts/mast_target_names.py --list      # samples + sizes
-uv run python scripts/mast_target_names.py slacs_gold  # lens names
-```
-
-| Sample | Lenses | Status |
-|---|---|---|
-| `slacs_gold`  | 38 | Working sample; default `--sample`. F814W (38), F606W (22), F555W (16), F160W (13) |
-| `slacs_other` | 93 | Rest of SLACS; not yet reduced |
-| `gallery`     | 16 | BELLS GALLERY; scripts not yet written |
-
-## Tracking JSONs
-
-Every run updates three files in `info/`, keyed `{lens: {product_key: value}}`:
-`lens_products.json` (drizzled frame rootnames), `lens_instrument.json` (`INSTRUME/DETECTOR`),
-`lens_exptime.json` (seconds). No data → `null`. The key is the **product directory**, so
-a split-visit lens's primary visit is keyed `f606W` like any other lens, and a shorter
-second visit `f606W_v2`.
+The reduction is built on STScI's [DrizzlePac](https://drizzlepac.readthedocs.io),
+[Astropy](https://www.astropy.org), [photutils](https://photutils.readthedocs.io),
+[astroscrappy](https://github.com/astropy/astroscrappy) (cosmic-ray removal) and
+[PyAutoLens](https://github.com/Jammy2211/PyAutoLens) (mask and position tools).
