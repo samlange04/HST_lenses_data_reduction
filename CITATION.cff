@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: >-
+  If you use this repository, please credit the repository and Samuel C. Lange
+  (The Chinese University of Hong Kong), and cite the survey papers for the
+  lenses you use (see README.md).
+type: dataset
+title: "HST lens image reduction"
+abstract: >-
+  The bcfill branch: an alternative, no-longer-developed reduction (stopped
+  2026-09-22) of Hubble Space Telescope imaging of 77 galaxy-scale strong
+  gravitational lenses from SLACS and BELLS GALLERY, in which dead detector
+  columns are filled by interpolation before drizzling. The main branch holds
+  the recommended standard reduction of all 133 lenses.
+authors:
+  - family-names: Lange
+    given-names: Samuel C.
+    affiliation: The Chinese University of Hong Kong
+repository-code: "https://github.com/samlange04/HST_lenses_data_reduction"
+url: "https://github.com/samlange04/HST_lenses_data_reduction"
+license:
+  - MIT
+  - CC-BY-4.0
+keywords:
+  - strong gravitational lensing
+  - Hubble Space Telescope
+  - data reduction
+  - drizzle
+  - SLACS
+  - BELLS
+  - SL2S
+date-released: "2026-10-25"

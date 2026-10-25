@@ -151,7 +151,13 @@ re-reduction downloads tens of gigabytes. The run order is in `AGENTS.md`.
 
 If you use this repository, please credit the repository
 ([github.com/samlange04/HST_lenses_data_reduction](https://github.com/samlange04/HST_lenses_data_reduction))
-and **Samuel C. Lange (The Chinese University of Hong Kong)**.
+and **Samuel C. Lange (The Chinese University of Hong Kong)**. GitHub's **"Cite this
+repository"** button (right-hand sidebar, from `CITATION.cff`) gives a ready-made citation.
+
+**Licences.** The code is under the [MIT License](LICENSE). The data products — everything
+in `data/`, and the JSON/CSV/Markdown records in `info/` — are under
+[CC BY 4.0](LICENSE-DATA): you may share and adapt them for any purpose, as long as you give
+credit as above.
 
 Please also cite the survey papers for the lenses you use (SLACS: Bolton et al. 2008, Auger
 et al. 2009, and Etherington et al. 2022 for the `slacs_gold` selection; BELLS GALLERY: Shu et
