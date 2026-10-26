@@ -33,7 +33,7 @@ f814W are aligned to about a third of a pixel:
   * cross-matched FIELD SOURCES (43-175 per lens, the only check the deflector cannot bias):
     median vector offset 0.002-0.026" = 0.04-0.5px;
   * the deflector centroid by windowed centre-of-mass: 0.05-0.42px, and identical in the
-    mosaic and in the cutout, so make_cutouts carries the WCS through correctly;
+    mosaic and in the stamp, so make_stamps carries the WCS through correctly;
   * this file's own per-lens diagnostic: median 0.31px, max 0.69px, nothing over the flag.
 So there is no offset to correct here, and the band offset is MEASURED AND REPORTED
 (`band_offset_px`) rather than applied. Two wrong turns are recorded in the code where they
@@ -44,7 +44,7 @@ the dipole it was meant to remove. A measurement that says the astrometry is bro
 always the estimator: check it against something the deflector cannot bias before believing it.
 
 WHAT ACTUALLY WAS BROKEN WAS THE PSF KERNELS. Convolving with an off-centre kernel translates
-the image, and these kernels are not centred: 15 of the 90 slacs_gold cutout PSFs are off their
+the image, and these kernels are not centred: 15 of the 90 slacs_gold stamp PSFs are off their
 own array centre by >0.5px and 5 by >1px, worst ~1.7px, concentrated in the INJECTED builds
 (`inject_wfpc2_psfdb` median 0.44px, `inject_acs_fdpsf` 1.16px, against 0.15-0.32px for
 `inject_stdpsf` and `empirical`). In a kernel swap each band is moved by the OTHER band's
@@ -61,7 +61,7 @@ inner region is subtraction error and the detector proposes nothing there: those
 have to be drawn by hand.
 
 WHERE IT LOOKS IS SET BY THE MEASURED EINSTEIN RADIUS. Candidates are kept only in an annulus
-around the published theta_E for that lens -- `info/lens_einstein_radii.json`, whose rows are
+around the published theta_E for that lens -- `info/catalogues/lens_einstein_radii.json`, whose rows are
 distinguished by their `source`: Auger+2009 (SLACS IX) for the SLACS lenses, fetched from
 VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e` (which merges, never overwrites a non-null
 theta_E); Shu+2016 (BELLS GALLERY IV) Table 2 for the 15 gallery lenses; Brownstein+2012 for
@@ -118,9 +118,9 @@ warnings.filterwarnings('ignore', category=UserWarning, module='autonerves')
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
-import cutout_paths
+import stamp_paths
 
-THETA_E_JSON = os.path.join(ws_path, 'info', 'lens_einstein_radii.json')
+THETA_E_JSON = os.path.join(ws_path, 'info', 'catalogues', 'lens_einstein_radii.json')
 
 #: Bands bluer than the reference band, best first. The blue band carries the source; the red
 #: band carries the deflector and sets the colour reference.
@@ -155,7 +155,7 @@ def fetch_theta_e(sample_lenses=None, timeout=60):
 
     The catalogue column `RE` is in kpc, so it is converted with the angular diameter
     distance to the lens: theta_E["] = RE[kpc] / D_A(z_lens)[kpc] * 206265, on the flat
-    (H0=70, Om=0.3) cosmology the paper assumes. Writes `info/lens_einstein_radii.json`.
+    (H0=70, Om=0.3) cosmology the paper assumes. Writes `info/catalogues/lens_einstein_radii.json`.
 
     **MERGES, never replaces.** Auger+2009 covers SLACS only, so the gallery rows come from
     Shu+2016 and were entered by hand; a wholesale write here would silently delete them and
@@ -252,13 +252,13 @@ def _sentinel_free(noise):
     return var, valid
 
 
-def load_band(cutout_dir, prefix):
-    """sci / variance / valid / psf / header for one band's cutout, PSF normalised to unit sum."""
-    sci = fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'sci')).astype(float)
-    hdr = fits.getheader(cutout_paths.find_stamp(cutout_dir, prefix, 'sci'))
-    var, valid = _sentinel_free(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'noise')))
-    psf = centre_kernel(fits.getdata(os.path.join(cutout_dir, f'{prefix}_psf.fits')))
-    mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
+def load_band(stamp_dir, prefix):
+    """sci / variance / valid / psf / header for one band's stamp, PSF normalised to unit sum."""
+    sci = fits.getdata(stamp_paths.find_stamp(stamp_dir, prefix, 'sci')).astype(float)
+    hdr = fits.getheader(stamp_paths.find_stamp(stamp_dir, prefix, 'sci'))
+    var, valid = _sentinel_free(fits.getdata(stamp_paths.find_stamp(stamp_dir, prefix, 'noise')))
+    psf = centre_kernel(fits.getdata(os.path.join(stamp_dir, f'psf.fits')))
+    mask_path = os.path.join(stamp_dir, f'{prefix}_mask.fits')
     cmask = (np.asarray(fits.getdata(mask_path), dtype=bool) if os.path.exists(mask_path)
              else np.zeros(sci.shape, dtype=bool))
     valid &= np.isfinite(sci)
@@ -274,7 +274,7 @@ def pick_bands(filt_dirs):
 
 
 def regrid(arr, src_hdr, dst_hdr, order=1):
-    """Resample `arr` from the source cutout's WCS onto the target cutout's WCS grid.
+    """Resample `arr` from the source stamp's WCS onto the target stamp's WCS grid.
 
     The same per-pixel sky-position transfer `make_masks.reproject_mask_bool` uses, in
     floating point: bilinear for data, order=0 for anything categorical. The optical bands
@@ -331,7 +331,7 @@ def centre_kernel(psf):
     """Return `psf` shifted so its own centre sits on the array centre, renormalised.
 
     REQUIRED before the PSF swap, because these kernels are NOT centred: measured over the 90
-    slacs_gold cutout PSFs, the median offset from the array centre is 0.2-0.5px by band, 15
+    slacs_gold stamp PSFs, the median offset from the array centre is 0.2-0.5px by band, 15
     are off by >0.5px and 5 by >1px, the worst being f606W kernels at ~1.7px (J0822+2652,
     J2341+0000, J0029-0055) -- on several of them even the BRIGHTEST PIXEL is a whole pixel
     off centre, so this is not an estimator artefact.
@@ -450,7 +450,7 @@ def colour_excess(filt_dirs, prefixes, lens, theta_e, smooth_arcsec=DEFAULTS['sm
     # The bands are already tied astrometrically by `align_wfpc2_to_acs.py` (F606W's CRVAL is
     # shifted onto F814W and stamped GSC240FX/ASTROREF), and that tie holds: cross-matched
     # FIELD SOURCES put f606W within 0.002-0.026" = 0.04-0.5px of f814W on every lens checked,
-    # and the deflector centroids agree to 0.05-0.42px in the mosaics and in the cutouts
+    # and the deflector centroids agree to 0.05-0.42px in the mosaics and in the stamps
     # alike. So there is NO band offset to correct here -- only the last few tenths of a pixel,
     # which still matter because this subtraction is differential on a steep profile.
     #
@@ -747,15 +747,17 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
-                   help=f'sample under data/cutouts/ (default {mast_target_names.DEFAULT_SAMPLE})')
+                   help=f'sample under data/stamps/ (default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--lens', default=None, help='restrict to one lens')
-    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
-                   help=f'cutout tree (default {cutout_paths.DEFAULT_SIZE:g}")')
+    p.add_argument('--size', type=float, default=None,
+                   help='stamp size in arcsec (default: each lens\'s modelling size, its stamp_size in '
+                        'info/samples/lens_samples.json, else 12"). Only modelling-size stamps are '
+                        'tracked, so another size is skipped unless --include-ignored')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
-                   default='auto', help="cutout pass, as make_masks.py (default auto)")
+                   default='auto', help="stamp pass, as make_masks.py (default auto)")
     p.add_argument('--fetch-theta-e', action='store_true',
                    help='merge the VizieR Auger+2009 rows into '
-                        'info/lens_einstein_radii.json and exit (hand-entered rows '
+                        'info/catalogues/lens_einstein_radii.json and exit (hand-entered rows '
                         'from other papers, e.g. the gallery Shu+2016 ones, are kept)')
     p.add_argument('--out-dir', default=None,
                    help='where the QC figures go (default diagnostics/arc_detection/<sample>/)')
@@ -766,20 +768,21 @@ def main():
     a = p.parse_args()
 
     import make_masks                              # discovery + prefix helpers, one source
-    root = cutout_paths.cutouts_root(ws_path, a.size)
+    make_masks.STAMP_SIZE = a.size
+    root = stamp_paths.stamps_root(ws_path)
     lens_filts, lens_prefixes = {}, {}
-    for lens, filt, cutout_dir in make_masks.discover_targets(root, a.sample, a.lens, None):
-        prefix = make_masks.find_prefix(cutout_dir, a.drizzle_pass)
+    for lens, filt, stamp_dir in make_masks.discover_targets(root, a.sample, a.lens, None):
+        prefix = make_masks.find_prefix(stamp_dir, a.drizzle_pass)
         if prefix is None:
             continue
-        lens_filts.setdefault(lens, {})[filt] = cutout_dir
+        lens_filts.setdefault(lens, {})[filt] = stamp_dir
         lens_prefixes.setdefault(lens, {})[filt] = prefix
 
     if a.fetch_theta_e:
         fetch_theta_e(sorted(lens_filts))
         return
     if not lens_filts:
-        raise SystemExit(f'no cutouts under {root} for sample {a.sample}')
+        raise SystemExit(f'no stamps under {root} for sample {a.sample}')
 
     out_dir = a.out_dir or os.path.join(ws_path, 'diagnostics', 'arc_detection', a.sample)
     os.makedirs(out_dir, exist_ok=True)

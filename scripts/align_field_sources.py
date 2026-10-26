@@ -24,22 +24,22 @@ Validate any change by shifting CRVAL by a known amount: the measurement must mo
 
 Apply (`--apply`) shifts CRVAL1/2 of every drizzled product of the target band, so that band's
 sky positions move onto the reference frame. The original CRVALs are kept in FTORIG1/2, and the
-tie is stamped in FTREF/FTDE/FTDN/FTNSRC and recorded in info/lens_field_ties.json. Re-running
+tie is stamped in FTREF/FTDE/FTDN/FTNSRC and recorded in info/provenance/lens_field_ties.json. Re-running
 re-measures the residual, which should be ~0 (idempotent); a tie is skipped if it is smaller than
 `--min-shift` or under 3 sigma.
 
 Re-cut (`--recut`) re-cuts the target band's 12" stamp about the REFERENCE stamp's central-pixel
-sky position (`make_cutouts.py --center-from`), so the reference band's stamp, and every mask
+sky position (`make_stamps.py --center-from`), so the reference band's stamp, and every mask
 drawn on it, is untouched. A mask that already exists on the target band was drawn on that band's
 DATA. It therefore moves with the data, not with the sky: the new stamp is an integer-pixel
 window of the same mosaic, so the shift is recovered exactly by matching the old and new sci
 arrays, and the mask is rolled by it. Pixels shifted in from outside the old stamp become
-unmasked (False) and are counted. Provenance goes to info/lens_masks.json under `field_tie_shift`.
+unmasked (False) and are counted. Provenance goes to info/provenance/lens_masks.json under `field_tie_shift`.
 
     uv run python scripts/align_field_sources.py --sample sl2s_dinos_a --lens J0217-0513 --ref f475X           # measure only
     uv run python scripts/align_field_sources.py --sample sl2s_dinos_a --lens J0217-0513 --ref f475X --apply --recut
 
-Run AFTER the drizzle and any `align_wfpc2_to_acs.py` tie, BEFORE make_cutouts. A re-drizzle
+Run AFTER the drizzle and any `align_wfpc2_to_acs.py` tie, BEFORE make_stamps. A re-drizzle
 resets CRVAL, so re-run this afterwards.
 """
 import argparse
@@ -57,10 +57,10 @@ from scipy import ndimage as ndi
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(WS, 'scripts'))
 import info_json  # noqa: E402
-from cutout_paths import find_prefix  # noqa: E402
+from stamp_paths import find_prefix  # noqa: E402
 
-TIES_JSON = os.path.join(WS, 'info', 'lens_field_ties.json')
-MASKS_JSON = os.path.join(WS, 'info', 'lens_masks.json')
+TIES_JSON = os.path.join(WS, 'info', 'provenance', 'lens_field_ties.json')
+MASKS_JSON = os.path.join(WS, 'info', 'provenance', 'lens_masks.json')
 
 
 def mosaic(sample, lens, band):
@@ -225,13 +225,13 @@ def reset_tie(sample, lens, band):
 
 
 def recut(sample, lens, band, ref):
-    cdir = os.path.join(WS, 'data', 'cutouts', sample, lens, band)
-    rdir = os.path.join(WS, 'data', 'cutouts', sample, lens, ref)
+    cdir = os.path.join(WS, 'data', 'stamps', sample, lens, band)
+    rdir = os.path.join(WS, 'data', 'stamps', sample, lens, ref)
     prefix, rprefix = find_prefix(cdir), find_prefix(rdir)
     old_sci = fits.getdata(os.path.join(cdir, f'{prefix}_sci.fits')).astype(float)
     mpath = os.path.join(cdir, f'{prefix}_mask.fits')
     old_mask = fits.getdata(mpath).astype(bool) if os.path.exists(mpath) else None
-    subprocess.run(['uv', 'run', 'python', os.path.join(WS, 'scripts', 'make_cutouts.py'),
+    subprocess.run(['uv', 'run', 'python', os.path.join(WS, 'scripts', 'make_stamps.py'),
                     '--sample', sample, '--lens', lens, '--filt', band,
                     '--center-from', os.path.join(rdir, f'{rprefix}_sci.fits')],
                    check=True, cwd=WS, stdout=subprocess.DEVNULL)
@@ -300,7 +300,7 @@ def main():
                          'err_mas': round(err, 1), 'n_sources': nk, 'files': n, 'residual_after': resid})
             info_json.update(TIES_JSON, a.sample, a.lens, b, {'ref': a.ref, 'history': hist})
             print(f'    shifted CRVAL of {n} files; residual after: {resid}')
-            if a.recut and os.path.isdir(os.path.join(WS, 'data', 'cutouts', a.sample, a.lens, b)):
+            if a.recut and os.path.isdir(os.path.join(WS, 'data', 'stamps', a.sample, a.lens, b)):
                 recut(a.sample, a.lens, b, a.ref)
 
 

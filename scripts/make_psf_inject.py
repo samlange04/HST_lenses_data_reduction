@@ -16,20 +16,20 @@ the exposure-average weighting -- all produced by the real drizzle rather than e
 For the model-PSF tier, this is now the CANONICAL downstream product -- empirical builds
 already carry the broadening (cut from the drizzled mosaic itself), but a model-tier build
 does not, and the injected kernel is strictly the more correct one when it is available. So
-when the product's primary build (per info/lens_psf.json) is on the model tier, this PROMOTES
+when the product's primary build (per info/provenance/lens_psf.json) is on the model tier, this PROMOTES
 the injected kernel: the existing pre-broadening analytic-model files are moved aside to
 *_analytic (comparison only), and the injected build takes over the canonical names:
 
   data/psf/<sample>/<lens>/<filt>/psf_kernel.fits             canonical (now the injected build)
   data/psf/<sample>/<lens>/<filt>/psf_kernel_analytic.fits    the superseded analytic model
   data/psf/<sample>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
-  <psf cutout dir>/cutout_[cr_]psf.fits                       canonical (injected)
-  <psf cutout dir>/cutout_[cr_]psf_analytic.fits              superseded analytic
-    (<psf cutout dir> = cutout_paths.psf_cutout_dir(): data/cutouts/<sample>/<lens>/<filt>/,
+  <psf stamp dir>/psf.fits                       canonical (injected)
+  <psf stamp dir>/psf_analytic.fits              superseded analytic
+    (<psf stamp dir> = stamp_paths.psf_stamp_dir(): data/stamps/<sample>/<lens>/<filt>/,
      beside the sci/noise/mask that will actually be modelled -- one kernel per band, always
      in the default-size tree since the kernel is not size-keyed)
-  info/lens_psf.json                                          method becomes inject_*
-  info/lens_psf_injected.json                                 {sample:{lens:{filt:{...}}}}
+  info/provenance/lens_psf.json                                          method becomes inject_*
+  info/provenance/lens_psf_injected.json                                 {sample:{lens:{filt:{...}}}}
 
 make_psf.py auto-chains into this (run_injection(..., promote=True)) right after building a
 model-tier product, so a single `make_psf.py --lens X --filt Y` run already leaves the
@@ -83,7 +83,7 @@ from photutils.centroids import centroid_com
 from scipy.ndimage import map_coordinates
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # macOS AstroDrizzle write-hang workaround -- must be installed before AstroDrizzle runs
@@ -98,9 +98,9 @@ import psf_models
 # product is treated identically to the analytic one (importing make_psf is safe: its work
 # is under __main__). instrument_key / representative field sizes also come from there.
 import make_psf
-from make_cutouts import find_products, _has_products, catalogue_coord_for
+from make_stamps import find_products, _has_products, catalogue_coord_for
 import info_json
-import cutout_paths
+import stamp_paths
 
 
 # ── Per-instrument drizzle configuration ─────────────────────────────────────────
@@ -436,23 +436,23 @@ def extract_kernel(out_sci, catalogue_coord, size):
 
 # ── Promotion: make the injected (drizzle-broadened) kernel the canonical product ──
 def _is_model_tier(sample, lens, filt):
-    """True if the CURRENT primary build recorded in info/lens_psf.json for this product is
+    """True if the CURRENT primary build recorded in info/provenance/lens_psf.json for this product is
     on the model tier -- either not yet promoted ('model...') or already promoted
     ('inject...') by a previous run of this function. False for 'empirical' or no record."""
-    psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
+    psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
     rec = info_json.load(psf_json).get(sample, {}).get(lens, {}).get(filt)
     method = str((rec or {}).get('method', ''))
     return method.startswith('model') or method.startswith('inject')
 
 
-def _promote(psf_dir, cutouts_dir, prefix):
+def _promote(psf_dir, stamps_dir):
     """Move the current canonical model-tier files aside to *_analytic (once -- a file
     already carrying PSFINJ=True or PSFBROAD=True is itself a previously-promoted injected
     or analytically-broadened build, not the sharp analytic model, so it is left alone
     rather than clobbering the real analytic backup with a non-analytic file).
 
     Also moves aside any analytic-tier PSF error map (psf_kernel_err.fits /
-    cutout_[cr_]psf_err.fits -- see make_psf.py's ACS focus-diverse / WFPC2 MAST-DB
+    psf_err.fits -- see make_psf.py's ACS focus-diverse / WFPC2 MAST-DB
     ensembles) to *_analytic_err, rather than leaving it under the canonical name where it
     would describe the just-superseded analytic kernel, not the injected one that replaces
     it. The injected kernel has no uncertainty estimate of its own yet, so after promotion
@@ -475,14 +475,14 @@ def _promote(psf_dir, cutouts_dir, prefix):
             png = os.path.join(psf_dir, 'psf.png')
             if os.path.isfile(png):
                 shutil.move(png, os.path.join(psf_dir, 'psf_analytic.png'))
-            cut = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
+            cut = os.path.join(stamps_dir, f'psf.fits')
             if os.path.isfile(cut):
-                shutil.move(cut, os.path.join(cutouts_dir, f'{prefix}_psf_analytic.fits'))
+                shutil.move(cut, os.path.join(stamps_dir, f'psf_analytic.fits'))
             for err, analytic_err in (
                     (os.path.join(psf_dir, 'psf_kernel_err.fits'),
                      os.path.join(psf_dir, 'psf_kernel_analytic_err.fits')),
-                    (os.path.join(cutouts_dir, f'{prefix}_psf_err.fits'),
-                     os.path.join(cutouts_dir, f'{prefix}_psf_analytic_err.fits'))):
+                    (os.path.join(stamps_dir, f'psf_err.fits'),
+                     os.path.join(stamps_dir, f'psf_analytic_err.fits'))):
                 if not os.path.isfile(err):
                     continue
                 if fits.getheader(err).get('PSFINJ', False):
@@ -491,7 +491,7 @@ def _promote(psf_dir, cutouts_dir, prefix):
                     shutil.move(err, analytic_err)
 
 
-def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
+def analytic_broadened_fallback(psf_dir, stamps_dir, sci_hdr, method,
                                 drizzle_pass, trim_threshold=1e-3):
     """Cheap stand-in for a FAILED run_injection(): approximate AstroDrizzle's resampling
     broadening analytically (psf_models.analytic_drop_broaden -- a pixfrac-wide box
@@ -512,7 +512,7 @@ def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
     un-broadened analytic model -- the real injected FWHM, on lenses where both exist, is
     always the one to trust over this approximation.
 
-    Returns the record dict written to info/lens_psf.json (mirroring run_injection's
+    Returns the record dict written to info/provenance/lens_psf.json (mirroring run_injection's
     promoted-record shape, minus the injection-only fields), or raises if there is no
     canonical kernel to broaden.
     """
@@ -534,7 +534,7 @@ def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
     n_chips = 2 if inst_key in ('ACS/WFC', 'WFC3/UVIS') else 1
     n_frames = max(1, int(sci_hdr.get('NDRIZIM', n_chips)) // n_chips)
 
-    _promote(psf_dir, cutouts_dir, prefix)   # moves the sharp analytic files aside (no-op
+    _promote(psf_dir, stamps_dir)   # moves the sharp analytic files aside (no-op
                                               # if already broadened by a prior call)
 
     analytic_kernel_path = os.path.join(psf_dir, 'psf_kernel_analytic.fits')
@@ -575,13 +575,13 @@ def analytic_broadened_fallback(psf_dir, cutouts_dir, prefix, sci_hdr, method,
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
     thdr['PSFTRIM'] = (trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
-    make_psf.write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
+    make_psf.write_fits(trimmed, thdr, os.path.join(stamps_dir, f'psf.fits'))
 
     return {
         'method': f'broadened_{method}',
         'fwhm_pix': round(fwhm_after, 4) if fwhm_after is not None else None,
         'kernel_size': int(broadened.shape[0]),
-        'cutout_kernel_size': int(trim_size),
+        'trimmed_kernel_size': int(trim_size),
         'trim_threshold': trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
         'box_width_px': round(box_width, 4),
@@ -593,11 +593,11 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
                   keep_work=False, promote=None):
     """Build the drizzle-broadened injected PSF for (sample, lens, filt) and, when the
     product's primary build is on the model tier, PROMOTE it to the canonical
-    psf_kernel.fits / cutout_[cr_]psf.fits (the pre-broadening analytic model is moved
+    psf_kernel.fits / psf.fits (the pre-broadening analytic model is moved
     aside to *_analytic for comparison). Returns the record dict written to
-    info/lens_psf_injected.json, or None on a no-data outcome.
+    info/provenance/lens_psf_injected.json, or None on a no-data outcome.
 
-    `promote`: None (default) auto-detects from info/lens_psf.json (True for a model-tier
+    `promote`: None (default) auto-detects from info/provenance/lens_psf.json (True for a model-tier
     primary, False -- i.e. a parallel, non-canonical '*_injected' product -- for an
     empirical primary, matching the --all validation mode). Pass True/False to override,
     e.g. make_psf.py knows definitively it just built a model-tier product."""
@@ -605,8 +605,8 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
     src_dir = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
     psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
-    cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
-    json_path = os.path.join(ws_path, 'info', 'lens_psf_injected.json')
+    stamps_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
+    json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_psf_injected.json')
 
     # No-data outcome: matches the other scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
@@ -614,7 +614,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
         info_json.update(json_path, sample, lens, filt, None)
         return None
 
-    # Resolve the science pass (for the cutout prefix + recentring reference).
+    # Resolve the science pass (recorded in the kernel header + the recentring reference).
     if drizzle_pass == 'auto':
         has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
         drizzle_pass = 'cr' if has_cr else 'nocrrej'
@@ -628,7 +628,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     size = int(make_psf._INSTR[inst_key]['star_size'])
     print(f'{lens} {filt}  [{inst_key}, {drizzle_pass} pass, {scale:.4f}"/px, kernel {size}px]')
 
-    ra, dec = catalogue_coord_for(lens)  # any sample, via info/lens_coords.py
+    ra, dec = catalogue_coord_for(lens)  # any sample, via info/coords/lens_coords.py
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     _set_ref_env()
@@ -677,8 +677,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
         promote = _is_model_tier(sample, lens, filt)
 
     os.makedirs(psf_dir, exist_ok=True)
-    os.makedirs(cutouts_dir, exist_ok=True)
-    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
+    os.makedirs(stamps_dir, exist_ok=True)
 
     khdr = fits.Header()
     khdr['PSFMETH'] = (method, 'injection-drizzled model PSF (Anderson 2016)')
@@ -688,7 +687,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (lens, 'lens')
     khdr['PSFFILT'] = (filt, 'filter')
-    khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in the psf cutout dir)')
+    khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in the psf stamp dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     khdr['PSFINJ'] = (True, 'built by artificial-star injection + re-drizzle')
 
@@ -697,17 +696,17 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
         # under the CANONICAL names -- this is what downstream (and every other script)
         # reads. No separate "_injected"-suffixed files: promotion means there is exactly
         # one canonical kernel again, just now the drizzle-broadened one.
-        _promote(psf_dir, cutouts_dir, prefix)
+        _promote(psf_dir, stamps_dir)
         kernel_path = os.path.join(psf_dir, 'psf_kernel.fits')
         png_path = os.path.join(psf_dir, 'psf.png')
-        cutout_path = os.path.join(cutouts_dir, f'{prefix}_psf.fits')
+        stamp_path = os.path.join(stamps_dir, f'psf.fits')
         title = f'{lens}  {filt}  [{method}]'
     else:
         # Empirical primary (--all validation mode): keep this as a parallel, clearly-named
         # comparison product; nothing canonical changes.
         kernel_path = os.path.join(psf_dir, 'psf_kernel_injected.fits')
         png_path = os.path.join(psf_dir, 'psf_injected.png')
-        cutout_path = os.path.join(cutouts_dir, f'{prefix}_psf_injected.fits')
+        stamp_path = os.path.join(stamps_dir, f'psf_injected.fits')
         title = f'{lens}  {filt}  [{method}]  (injected)'
 
     make_psf.write_fits(kernel, khdr, kernel_path)
@@ -720,13 +719,13 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
     thdr['PSFTRIM'] = (trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
-    make_psf.write_fits(trimmed, thdr, cutout_path)
+    make_psf.write_fits(trimmed, thdr, stamp_path)
 
     record = {
         'method': method,
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'kernel_size': int(kernel.shape[0]),
-        'cutout_kernel_size': int(trim_size),
+        'trimmed_kernel_size': int(trim_size),
         'trim_threshold': trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
         'wing_scatter': round(scat_frac, 6),
@@ -736,8 +735,8 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
 
     if promote:
         # The canonical lens_psf.json entry must describe what's now actually in
-        # cutout_[cr_]psf.fits: the injected build, not the superseded analytic one.
-        psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
+        # psf.fits: the injected build, not the superseded analytic one.
+        psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
         info_json.update(psf_json, sample, lens, filt, dict(record))
         print(f'  promoted: {method} is now the canonical PSF '
               f'(analytic model kept as *_analytic)')
@@ -757,7 +756,7 @@ def main():
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help=f'sample subdirectory (default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
-                   default='auto', help="science pass to match for the trimmed cutout prefix "
+                   default='auto', help="science pass the trimmed kernel is recorded against (PSFPASS) "
                                         "and star recentring (default auto: CR if present).")
     p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
                    help='amplitude fraction of peak at which the trimmed modelling kernel is '

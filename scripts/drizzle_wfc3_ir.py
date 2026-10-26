@@ -44,7 +44,7 @@ _p.add_argument('--lens',        default='J0008-0004')
 _p.add_argument('--filt',        default='f160W')
 _p.add_argument('--sample',      default=mast_target_names.DEFAULT_SAMPLE,
                 help='sample the lens belongs to; sets the <sample> level of every '
-                     'data/ path. Defined in info/lens_samples.json '
+                     'data/ path. Defined in info/samples/lens_samples.json '
                      f'(default {mast_target_names.DEFAULT_SAMPLE})')
 _p.add_argument('--align',       default='mast', choices=['mast', 'tweakreg'],
                 help="'mast' (default) trusts the GSC242/GAIAeDR3-fitted WCS in the "
@@ -64,7 +64,7 @@ _p.add_argument('--cr',          action='store_true', default=False)
 _p.add_argument('--_subprocess', action='store_true', default=False, help=argparse.SUPPRESS)
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
 # inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
-# CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
+# CALIBRATED per-pixel noise map -- what make_stamps uses. AstroDrizzle's own
 # default 'EXP' is only an effective-exposure-time map (uncalibrated, missing
 # source shot noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
@@ -73,7 +73,7 @@ _p.add_argument('--cr-method',   default='drizcr', choices=['lacosmic', 'drizcr'
                      "WFC3/IR -- see the note above run_lacosmic(). 'drizcr' (default) is "
                      "AstroDrizzle's median/blot route; 'lacosmic' flags per frame with "
                      "astroscrappy into DQ 4096, and destroys point sources on this detector.")
-# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# Default None means 'flag not passed' so info/overrides/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
 _p.add_argument('--lacosmic-sigclip', type=float, default=None)
 _p.add_argument('--lacosmic-objlim',  type=float, default=None)
@@ -94,20 +94,20 @@ do_cr          = _a.cr
 _is_subprocess = _a._subprocess
 
 ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# Per-lens LACosmic CR-param overrides (info/overrides/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins. (F160W has no CR pass by default,
 # so this is a no-op here unless CR is explicitly requested -- kept for consistency
 # across the four drizzle scripts.)
 _cr_ovr = info_json.entry(
-    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+    os.path.join(ws_path, 'info', 'overrides', 'lens_cr_params.json'), sample, lens, filt, {})
 if _a.lacosmic_sigclip is None:
     _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
 if _a.lacosmic_objlim is None:
     _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
 if _cr_ovr:
     print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
-          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
+          f'objlim={_a.lacosmic_objlim} (info/overrides/lens_cr_params.json) ===')
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 work_path   = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
@@ -119,9 +119,9 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # not overlay. Pin every band to North-up (final_rot=0) with the tangent point
 # (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
 # and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
-# only rotation and centre are unified. The position comes from info/lens_coords.py,
+# only rotation and centre are unified. The position comes from info/coords/lens_coords.py,
 # which merges every sample's table. Unknown lens -> native WCS (empty dict).
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 try:
     from lens_coords import lens_coords as _lens_coords
     from astropy.coordinates import SkyCoord as _SkyCoord
@@ -136,9 +136,9 @@ except (KeyError, ImportError):
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt
-json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
+json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
 
 # One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
 _owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'WFC3/IR')
@@ -327,13 +327,13 @@ def run_lacosmic(files, sigclip, objlim):
 
 # ── Mixed-length stacks: drizzle with IVM = 1/(ERR*EXPTIME)^2, not ERR weights ──
 # WFC3/IR FLT SCI and ERR are in ELECTRONS/S, so DrizzlePac's ERR weight (EXPTIME/ERR)**2
-# is EXPTIME**2 times the true inverse variance. make_cutouts.weight_to_sigma_scale divides
+# is EXPTIME**2 times the true inverse variance. make_stamps.weight_to_sigma_scale divides
 # that out with one constant K = EXPTIME, which only works when every frame has the same
 # EXPTIME. For an unequal stack (J0959+0206 F160W, GO-14114: 228/253/278 s frames) we drizzle
 # with per-frame IVM = 1/(ERR*EXPTIME)**2 = 1/sigma_counts**2 instead. DrizzlePac's IVM branch
 # applies wt_scl = EXPTIME**2/scale**4 itself (as for WFPC2, see drizzle_wfpc2_wf3.py), so
 # each frame's weight is exactly 1/sigma_rate**2 whatever its length, and 1/sqrt(WHT) is the
-# calibrated sigma (K = 1). The product is stamped IRIVMEXP=T so make_cutouts uses K = 1.
+# calibrated sigma (K = 1). The product is stamped IRIVMEXP=T so make_stamps uses K = 1.
 # Equal-length stacks keep the ERR path unchanged.
 def drizzle_weighting(files):
     """(drizzle input, final_wht_type, is_mixed) for these FLTs (cwd = work dir)."""

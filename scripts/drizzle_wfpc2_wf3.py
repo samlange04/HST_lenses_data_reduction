@@ -37,7 +37,7 @@ from stwcs.updatewcs import updatewcs
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import info_json
-import cutout_paths
+import stamp_paths
 
 # Route large FITS output writes through mmap+memcpy (vm_fault path) instead of
 # fwrite/cluster_write copyin, to dodge the macOS U-state write-path lost-wakeup.
@@ -52,7 +52,7 @@ _p.add_argument('--lens',   default='J0008-0004')
 _p.add_argument('--filt',   default='f606W')
 _p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                 help='sample the lens belongs to; sets the <sample> level of every '
-                     'data/ path. Defined in info/lens_samples.json '
+                     'data/ path. Defined in info/samples/lens_samples.json '
                      f'(default {mast_target_names.DEFAULT_SAMPLE})')
 # WFPC2 runs updatewcs but NOT TweakReg. It is the one instrument here that cannot
 # skip updatewcs -- the NPOL/D2IM distortion arrays are required and the WF3 chip
@@ -61,7 +61,7 @@ _p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
 # Do not "unify" the three scripts on this point.
 #
 # DEFAULT REVERSED 2026-07-26: was 'tweakreg'. The per-lens core-registration audit
-# (info/wfpc2_alignment.json) put ALL 22 lenses on 'mast', but the default was never
+# (info/overrides/wfpc2_alignment.json) put ALL 22 lenses on 'mast', but the default was never
 # changed to match, so any direct run -- and the batch runner, which passed no
 # --align at all -- silently used the mode the audit rejected. TweakReg aligns every
 # frame onto the first, which for a dithered single-visit sequence measures the
@@ -77,7 +77,7 @@ _p.add_argument('--align',   default='mast', choices=['mast', 'tweakreg'],
 # Drizzle output weight type. 'IVM' (default HERE, unlike the other three drizzle
 # scripts which default to 'ERR') makes the WHT extension a full inverse-variance
 # map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a CALIBRATED
-# per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own default 'EXP'
+# per-pixel noise map -- what make_stamps uses. AstroDrizzle's own default 'EXP'
 # is only an effective-exposure-time map (uncalibrated, missing source shot
 # noise). See DrizzlePac Handbook pp.103,139 and Bayer et al. 2023.
 #
@@ -105,12 +105,12 @@ _p.add_argument('--wht-type',    default='IVM', choices=['ERR', 'IVM', 'EXP'])
 # (biased blotted-median reference on a steep core), which spikes the noise map; the
 # per-frame LACosmic route has no stacked reference to bias. See run_lacosmic below.
 _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizcr'])
-# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# Default None means 'flag not passed' so info/overrides/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
 _p.add_argument('--lacosmic-sigclip', type=float, default=None)
 _p.add_argument('--lacosmic-objlim',  type=float, default=None)
 # The LACosmic CR pass is the science product for WFPC2 (LACosmic preserves the core, so
-# the CR mosaic is what make_cutouts --pass auto cuts). The no-CR ("nocrrej") pass used to
+# the CR mosaic is what make_stamps --pass auto cuts). The no-CR ("nocrrej") pass used to
 # run unconditionally as a comparison; it is now opt-in via --nocrrej and off by default —
 # it doubles the drizzle time and nothing downstream reads it.
 _p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=False,
@@ -212,21 +212,21 @@ def dither_phase_counts(flt_files, ext=3, ref_pix=(400.0, 400.0)):
     return norm(fx), norm(fy)
 
 ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# Per-lens LACosmic CR-param overrides (info/overrides/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins. Keyed on the product filt (base
 # filter, or a split-visit key like f606W_v2), matching what --filt receives.
 _cr_ovr = info_json.entry(
-    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+    os.path.join(ws_path, 'info', 'overrides', 'lens_cr_params.json'), sample, lens, filt, {})
 if _a.lacosmic_sigclip is None:
     _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
 if _a.lacosmic_objlim is None:
     _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
 if _cr_ovr:
     print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
-          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
-# The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
-# cutout and mosaic scripts all agree on the suffix (same mechanism as drizzle_acs_wfc.py).
+          f'objlim={_a.lacosmic_objlim} (info/overrides/lens_cr_params.json) ===')
+# The --bcfill reduction is a parallel product tree, keyed via stamp_paths so the drizzle,
+# stamp and mosaic scripts all agree on the suffix (same mechanism as drizzle_acs_wfc.py).
 # The calibrated FLTs are shared (bcfill edits the extracted WF3 copies in the work dir,
 # never data/calibrated/), but the drizzled output and work dir are variant-suffixed so
 # bcfill and the standard reduction never collide.
@@ -234,9 +234,9 @@ _variant    = 'bcfill' if _a.bcfill else ''
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
 # take --out-suffix, so both visits share the one download but write to f606W / _v2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(cutout_paths.drizzled_root(ws_path, _variant),
+output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant),
                            sample, lens, filt + _a.out_suffix)
-work_path   = os.path.join(ws_path, 'data', f'drizzle_files{cutout_paths.variant_tag(_variant)}',
+work_path   = os.path.join(ws_path, 'data', f'drizzle_files{stamp_paths.variant_tag(_variant)}',
                            sample, lens, filt + _a.out_suffix)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
@@ -246,9 +246,9 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # not overlay. Pin every band to North-up (final_rot=0) with the tangent point
 # (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
 # and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
-# only rotation and centre are unified. The position comes from info/lens_coords.py,
+# only rotation and centre are unified. The position comes from info/coords/lens_coords.py,
 # which merges every sample's table. Unknown lens -> native WCS (empty dict).
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 try:
     from lens_coords import lens_coords as _lens_coords
     from astropy.coordinates import SkyCoord as _SkyCoord
@@ -272,9 +272,9 @@ filt_key             = filt  # e.g. 'f606W' — the MAST filter name, used for q
 # now 'f606W', 4400s/4 frames — its 2-frame visit is dropped for want of dither phase).
 # That error was invisible precisely because the key was present and plausible.
 product_key          = filt + _a.out_suffix
-json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
+json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
 
 # One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
 _owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, product_key, 'WFPC2')
@@ -815,7 +815,7 @@ LACOSMIC_DEFAULTS = (4.5, 5.0)   # (sigclip, objlim): the values used without an
 def run_lacosmic(files, sigclip, objlim, relax_radius=None, lens_coord=None):
     """Flag cosmic rays into DQ bit 4096 of each WF3 FLT, in place.
 
-    relax_radius (arcsec, from info/lens_cr_params.json `lacosmic_relax_radius`): apply the
+    relax_radius (arcsec, from info/overrides/lens_cr_params.json `lacosmic_relax_radius`): apply the
     per-lens (relaxed) sigclip/objlim only within this radius of the lens, and the defaults
     everywhere else. A relaxed setting exists to stop LACosmic eroding the deflector core or the
     arc (J1538+5817, J2302-0840, J1420+6019). Applied frame-wide, it also leaves cosmic rays in
@@ -956,7 +956,7 @@ info_json.update(exptime_json_path, sample, lens, product_key, exptime)
 # Stamp the noise model into the products. Nothing else distinguishes a calibrated
 # WFPC2 weight map from the two earlier uncalibrated generations (exptime-only, and
 # IVM built from the bogus ERR=sqrt(SCI) array), and they are not separable by
-# inspection -- so make_cutouts.py keys its "do not use for a likelihood" warning on
+# inspection -- so make_stamps.py keys its "do not use for a likelihood" warning on
 # this keyword rather than on the instrument name.
 _ivm_model = ('SCI/gain+floor^2' if _a.wht_type == 'IVM' else _a.wht_type)
 print('\n=== Copying final products to output directory ===')

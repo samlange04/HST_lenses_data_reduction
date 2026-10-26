@@ -20,7 +20,7 @@ Targets default to every empirical build whose model tier would be STDPSF: F160W
 its model tier is the focus-diverse ePSF, not STDPSF.
 
 The metric of record is `resid` = sqrt(sum((mod-emp)^2)) on aligned, unit-sum kernels
--- the same construction as `psf_err_frac` in info/lens_psf.json, so the two are
+-- the same construction as `psf_err_frac` in info/provenance/lens_psf.json, so the two are
 directly comparable. `corrected` removes the empirical truth's own bootstrap noise in
 quadrature, since a star-poor empirical build is itself uncertain.
 
@@ -151,7 +151,7 @@ def is_stdpsf_tier(sample, filt):
 
 def collect_targets(samples=None, filts=None):
     """Empirical builds on the STDPSF tier, as (sample, lens, filt, json_entry)."""
-    psf_json = json.load(open(os.path.join(ws_path, 'info', 'lens_psf.json')))
+    psf_json = json.load(open(os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')))
     out = []
     for sample, lenses in psf_json.items():
         if samples and sample not in samples:

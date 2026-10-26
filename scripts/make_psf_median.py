@@ -11,8 +11,8 @@ and for J0233-0438 F475X (0 usable stars) until that lens left the roster on 202
 
 Outputs mirror make_psf.py exactly, so everything downstream reads them unchanged:
     data/psf/<sample>/<lens>/<filt>/psf_kernel.fits, psf_kernel_err.fits, psf.png
-    <psf cutout dir>/cutout_[cr_]psf.fits, cutout_[cr_]psf_err.fits
-and info/lens_psf.json gets method 'empirical_median' with the donor list.
+    <psf stamp dir>/psf.fits, psf_err.fits
+and info/provenance/lens_psf.json gets method 'empirical_median' with the donor list.
 
 The error map is the donor-to-donor per-pixel std (NOT the std of the median): the target's
 true PSF is one more draw from that field-to-field spread (focus/breathing, position on the
@@ -43,10 +43,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import info_json
-import cutout_paths
+import stamp_paths
 # make_psf's work is under main(), so importing it only brings in the helpers.
 from make_psf import trim_kernel_to_amplitude, subtract_pedestal, measure_fwhm, write_fits
 
@@ -86,15 +86,14 @@ def main():
                    help='restrict the donor pool to these samples (default: all)')
     a = p.parse_args()
 
-    psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
-    # Pixel scale and drizzle pass come from the target's own cutout, so the kernel matches it.
-    stamp_dir = cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt)
-    sci = (glob.glob(os.path.join(stamp_dir, 'cutout_cr_sci.fits'))
-           or glob.glob(os.path.join(stamp_dir, 'cutout_sci.fits')))
+    psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
+    # Pixel scale and drizzle pass come from the target's own stamp, so the kernel matches it.
+    stamp_dir = stamp_paths.psf_stamp_dir(ws_path, a.sample, a.lens, a.filt)
+    _prefix = stamp_paths.find_prefix(stamp_dir)
+    sci = [p for p in [_prefix and stamp_paths.find_stamp(stamp_dir, _prefix, 'sci')] if p]
     if not sci:
-        sys.exit(f'no cutout for {a.lens} {a.filt} in {stamp_dir}; run make_cutouts.py first')
-    prefix = 'cutout_cr' if os.path.basename(sci[0]).startswith('cutout_cr') else 'cutout'
-    drizzle_pass = 'cr' if prefix == 'cutout_cr' else 'nocrrej'
+        sys.exit(f'no stamp for {a.lens} {a.filt} in {stamp_dir}; run make_stamps.py first')
+    drizzle_pass = stamp_paths.stamp_pass(sci[0])
     from astropy.wcs import WCS
     from astropy.wcs.utils import proj_plane_pixel_scales
     scale = float(proj_plane_pixel_scales(WCS(fits.getheader(sci[0])).celestial)[0] * 3600.0)
@@ -146,7 +145,7 @@ def main():
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (a.lens, 'lens')
     khdr['PSFFILT'] = (a.filt, 'filter')
-    khdr['PSFKIND'] = ('full', 'full footprint (trimmed copy in the psf cutout dir)')
+    khdr['PSFKIND'] = ('full', 'full footprint (trimmed copy in the psf stamp dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'wing pedestal removed (fraction of peak)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
@@ -154,11 +153,11 @@ def main():
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
     thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
-    write_fits(trimmed, thdr, os.path.join(stamp_dir, f'{prefix}_psf.fits'))
+    write_fits(trimmed, thdr, os.path.join(stamp_dir, f'psf.fits'))
 
     for base, kind, arr, dest in (
             (khdr, 'full_err', err_full, os.path.join(output_dir, 'psf_kernel_err.fits')),
-            (thdr, 'trimmed_err', err_trim, os.path.join(stamp_dir, f'{prefix}_psf_err.fits'))):
+            (thdr, 'trimmed_err', err_trim, os.path.join(stamp_dir, f'psf_err.fits'))):
         ehdr = base.copy()
         ehdr['PSFKIND'] = (kind, 'per-pixel donor-to-donor std')
         ehdr['PSFERR'] = ('donor_scatter', 'std of the single-field donor kernels')
@@ -188,7 +187,7 @@ def main():
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'oversample': None,
         'kernel_size': int(kernel.shape[0]),
-        'cutout_kernel_size': int(trim_size),
+        'trimmed_kernel_size': int(trim_size),
         'trim_threshold': a.trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
         'fwhm_pix_err': round(fwhm_err, 4) if fwhm_err is not None else None,

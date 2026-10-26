@@ -8,7 +8,7 @@ title: "HST lens image reduction"
 abstract: >-
   Hubble Space Telescope imaging of 133 galaxy-scale strong gravitational
   lenses from the SLACS, BELLS, BELLS GALLERY, SL2S and Project Dinos samples,
-  reduced from the MAST archive into ready-to-model cutouts: science images,
+  reduced from the MAST archive into ready-to-model stamps: science images,
   noise maps, PSF kernels with uncertainty maps, hand-drawn masks and
   hand-marked multiple-image positions, together with the pipeline that
   produces them.

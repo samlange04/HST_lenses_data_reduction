@@ -1,61 +1,58 @@
 # ── Derived data ───────────────────────────────────────────────────────────────
 # Everything under data/ is reproducible: calibrated/ re-downloads from MAST, and
 # drizzled/ + drizzle_files/ regenerate from the scripts. Provenance lives in the
-# info/*.json tracking files (which obsids produced which product), not in the bytes.
-# ~185 GB across ~3900 FITS files, so it must never enter git history.
+# info/provenance/*.json tracking files (which obsids produced which product), not in the
+# bytes. ~185 GB across ~3900 FITS files, so it must never enter git history.
 #
-# data/cutouts is the deliberate exception: the final science stamps (12" square, the
-# pipeline default -- see scripts/cutout_paths.py) are small (~500 MB) and worth
-# versioning across pipeline changes; it also carries scripts/make_masks.py's hand-drawn
-# GUI masks (cutout_[cr_]mask.fits), which are NOT regenerable by any script, so losing
-# them means redoing manual mask work. data/mosaics is the same deal: small QC grids
-# generated from the cutouts by scripts/make_mosaics.py. The *_<size>arcsec/ size
-# variants (e.g. data/cutouts_20arcsec/, the old default) are NOT versioned: they are
-# regenerable from the same drizzled mosaics by one runner call (run_cutouts_all.sh
-# <sample> <size>), and carry no masks of their own since make_masks.py targets the
-# default (12") tree.
+# data/stamps is the deliberate exception: the final 12" science stamps (stamp12_*; see
+# scripts/stamp_paths.py) and the band's PSF (psf*.fits) are small and worth versioning,
+# and the band dirs carry the hand-drawn masks (stamp12_mask.fits) and hand-marked
+# positions (stamp12_positions.json), which no script can regenerate. data/mosaics is the
+# same deal: small QC grids generated from the stamps by scripts/make_mosaics.py.
 #
-# There is ONE stamp per (sample, lens, filter) in there, and its filename says which
-# reduction it is (2026-09-22): cutout_[cr_]{sci,noise}.fits is the standard drizzle (what
-# main carries, and what the fits use); a variant cut is tagged, cutout_cr_bcfill_sci.fits
-# (the bcfill branch). Masks/positions/PSFs are untagged and shared. The drizzle layer keeps
-# every reduction (data/drizzled[_bcfill][_crfill]/, data/drizzle_files*/), all ignored by
-# the data/* rule.
+# Stamps of any OTHER size (stamp20_* etc.) sit in the same band dirs but are NOT
+# versioned: they are regenerable from the drizzled mosaics by one runner call
+# (run_stamps_all.sh <sample> <size>), and carry no masks of their own since every tool
+# defaults to each lens's MODELLING size. Hence the stamp*/!stamp12_* pair below. A lens
+# given a smaller modelling size (stamp_size in info/samples/lens_samples.json) needs its
+# own !data/stamps/**/stamp<S>_* line here, or its stamps, masks and positions are ignored.
+#
+# There is ONE stamp per (sample, lens, band, size), and its filename says which reduction
+# it is (2026-09-22): stamp12_{sci,noise}.fits is the standard drizzle (what main carries,
+# and what the fits use); a variant cut is tagged, stamp12_bcfill_sci.fits (the bcfill
+# branch). Masks/positions/PSFs are untagged and shared. The drizzle layer keeps every
+# reduction (data/drizzled[_bcfill][_crfill]/, data/drizzle_files*/), all ignored by the
+# data/* rule.
 data/*
-!data/cutouts/
+!data/stamps/
 !data/mosaics/
-# ── Positions QC overlays ──────────────────────────────────────────────────────
-# scripts/make_positions.py writes TWO files per band: cutout_[cr_]positions.json, the
-# hand-marked image positions themselves -- non-regenerable manual work, tracked like the
-# masks -- and cutout_[cr_]positions.png, a QC view OF that JSON. Only the JSON is a
-# product. The PNG is one per band (~160 of them) and is rebuilt from the JSON + the sci
-# stamp with no GUI and no re-clicking:
+data/stamps/**/stamp*
+!data/stamps/**/stamp12_*
+
+# ── QC renders of tracked stamps ───────────────────────────────────────────────
+# stamp12.png is a plain 3-panel render of the tracked sci/noise stamp, rebuilt by
+# make_stamps.py (untracked 2026-10-04, when it had grown to 410 MB of history; the
+# stamp*/!stamp12_* pair above already excludes it, since it has no underscore after the
+# size). stamp12_positions.png is a QC view OF the tracked stamp12_positions.json, rebuilt
+# with no GUI and no re-clicking:
 #     uv run python scripts/make_positions.py --sample <sample> --overlays-only
-# so it is regenerable in the sense this file cares about, and stays out of history.
-# NOTE _dataset.png is still tracked (the QC view people actually open; _mask_arcs.png
-# left git with the arc masks, below); cutout_cr.png / cutout.png were untracked 2026-10-04 -- they are
-# a plain render of the tracked sci stamp, rebuilt by make_cutouts.py, and had grown to
-# 410 MB of history.
-data/cutouts/**/*_positions.png
-data/cutouts/**/cutout_cr.png
-data/cutouts/**/cutout.png
+# stamp12_dataset.png is still tracked (the QC view people actually open).
+data/stamps/**/stamp12.png
+data/stamps/**/*_positions.png
 
 # ── Arc masks: ALL out of git (2026-10-21) ─────────────────────────────────────
-# Every cutout_[cr_]mask_arcs.{fits,png}, in every sample and band, is held OUT of git
-# (their quality is not vouched for; arc masks are optional products anyway).
-# This replaces the 2026-09-21 rule that parked only slacs_gold f606W. Untracked on main
-# and bcfill with `git rm --cached`; the earlier commits keep them in history. Nothing is
-# deleted: the files stay on disk beside the sci they were drawn on, and their provenance
-# stays in the tracked info/lens_arc_masks.json, so make_arc_masks.py still counts them
+# Every stamp12_mask_arcs.{fits,png}, in every sample and band, is held OUT of git (their
+# quality is not vouched for; arc masks are optional products anyway). Nothing is deleted:
+# the files stay on disk beside the sci they were drawn on, and their provenance stays in
+# the tracked info/provenance/lens_arc_masks.json, so make_arc_masks.py still counts them
 # done and skips them (--force to redraw). Drop these two lines to track them again.
-data/cutouts/**/*_mask_arcs.fits
-data/cutouts/**/*_mask_arcs.png
+data/stamps/**/*_mask_arcs.fits
+data/stamps/**/*_mask_arcs.png
 
 # ...and neither is the per-size QC provenance for an untracked size, which would
-# otherwise be a tracked file describing products nobody else has on disk. The default
-# (12") info/lens_cutout_qc.json is tracked as an ordinary info/ file, untouched by this
-# pattern.
-info/lens_cutout_qc_*arcsec.json
+# otherwise be a tracked file describing products nobody else has on disk. The 12"
+# info/provenance/lens_stamp_qc.json is tracked, untouched by this pattern.
+info/provenance/lens_stamp_qc_*arcsec.json
 
 # ── Large external material ────────────────────────────────────────────────────
 # The STScI handbooks and PSF papers the DQ-bit, pixel-scale and read-noise choices

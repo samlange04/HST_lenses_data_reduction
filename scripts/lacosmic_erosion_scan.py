@@ -37,7 +37,7 @@ Usage:
 import os, sys, warnings, glob, numpy as np
 warnings.filterwarnings('ignore')
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 import astroscrappy
 from astropy.io import fits
 from astropy.wcs import WCS

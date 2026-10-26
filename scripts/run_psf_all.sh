@@ -4,7 +4,7 @@
 # LACosmic eats star cores) and --method
 # auto (empirical ePSF, model fallback when a field is too star-poor or its empirical
 # wings are poor). For a model-tier build, make_psf.py auto-chains make_psf_inject.py
-# (promote=True) so the canonical psf_kernel.fits / cutout_[cr_]psf.fits it leaves behind
+# (promote=True) so the canonical psf_kernel.fits / psf.fits it leaves behind
 # is already the drizzle-broadened injected kernel, not the sharper analytic model (which
 # is kept alongside as *_analytic for comparison) -- see make_psf_inject.py's docstring.
 #
@@ -25,7 +25,7 @@
 #                  for the SL2S samples (2026-10-04), whose F475X/F600LP bands have no
 #                  STDPSF grid yet; what to do with the failures is decided afterwards.
 #
-# Like run_cutouts_all.sh -- and unlike the drizzle runners -- this globs data/drizzled/
+# Like run_stamps_all.sh -- and unlike the drizzle runners -- this globs data/drizzled/
 # rather than the roster: a PSF can only be built from a mosaic that exists, so the
 # products on disk are the right thing to iterate. Written for macOS bash 3.2.
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
@@ -44,11 +44,11 @@ done
 SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${SAMPLE_ARG:+"$SAMPLE_ARG"} --print-sample)" || exit 1
 
 # --models-only skip set: "<lens>/<key>" for every product recorded as empirical in
-# info/lens_psf.json (an empirical record implies a built product). Newline-delimited so the
+# info/provenance/lens_psf.json (an empirical record implies a built product). Newline-delimited so the
 # per-product test below is a shell `case` match -- no python/grep spawned inside the loop.
 EMP_SKIP=""
 if [ "$MODE" = models ]; then
-  EMP_SKIP="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and str(v.get('method','')).startswith('empirical')))")" || exit 1
+  EMP_SKIP="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info', 'provenance', 'lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and str(v.get('method','')).startswith('empirical')))")" || exit 1
 fi
 
 # Globs are "$filt"* , not "$filt", so a split lens's secondary-visit dir (f606W_v2) is

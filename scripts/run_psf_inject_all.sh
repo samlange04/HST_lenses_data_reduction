@@ -17,7 +17,7 @@
 #                  or `inject` (STDPSF / focus-diverse / MAST PSF DB, promoted or not) -- the
 #                  tier that lacks drizzle broadening on its analytic build. This PROMOTES:
 #                  the injected kernel becomes the canonical psf_kernel.fits /
-#                  cutout_[cr_]psf.fits, and the current canonical (if not already an
+#                  psf.fits, and the current canonical (if not already an
 #                  injected build) is moved aside to *_analytic.
 #   --all          also run empirical products, so psf_kernel_injected.fits can be compared
 #                  against the empirical truth (validation: injected-model should approach the
@@ -26,7 +26,7 @@
 #                  parallel *_injected-suffixed comparison files instead, as before.
 #
 # Mirrors run_psf_all.sh: globs data/drizzled/ (a PSF needs a mosaic), reads the target set
-# from info/lens_psf.json, writes per-product logs, and reports ok/failed/skipped. Requires
+# from info/provenance/lens_psf.json, writes per-product logs, and reports ok/failed/skipped. Requires
 # the persisted data/drizzle_files/ inputs (present after a normal drizzle run). bash 3.2.
 SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 LOG="$WS/data/run_logs"; mkdir -p "$LOG"
@@ -48,7 +48,7 @@ SAMPLE="$(uv run --project "$WS" python "$SD/mast_target_names.py" ${SAMPLE_ARG:
 # iterate the mosaics directly (below) and let make_psf_inject decide.
 MODEL_RUN=""
 if [ "$MODE" = models ]; then
-  MODEL_RUN="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info','lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and (str(v.get('method','')).startswith('model') or str(v.get('method','')).startswith('inject'))))")" || exit 1
+  MODEL_RUN="$(uv run --project "$WS" python -c "import json,os; p=os.path.join('$WS','info', 'provenance', 'lens_psf.json'); d=json.load(open(p)) if os.path.exists(p) else {}; s=d.get('$SAMPLE', {}); print(chr(10).join(l+'/'+k for l in s for k,v in (s[l] or {}).items() if v and (str(v.get('method','')).startswith('model') or str(v.get('method','')).startswith('inject'))))")" || exit 1
 fi
 
 ok=0; fail=0; skip=0

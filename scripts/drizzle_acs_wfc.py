@@ -40,7 +40,7 @@ import mast_target_names
 import mast_archive
 import visit_wcs
 import info_json
-import cutout_paths
+import stamp_paths
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 _p = argparse.ArgumentParser()
@@ -48,10 +48,10 @@ _p.add_argument('--lens',        default='J0008-0004')
 _p.add_argument('--filt',        default='f814W')
 _p.add_argument('--sample',      default=mast_target_names.DEFAULT_SAMPLE,
                 help='sample the lens belongs to; sets the <sample> level of every '
-                     'data/ path. Defined in info/lens_samples.json '
+                     'data/ path. Defined in info/samples/lens_samples.json '
                      f'(default {mast_target_names.DEFAULT_SAMPLE})')
 # CR rejection is now the science default: the LACosmic CR pass is the product the rest
-# of the pipeline consumes (make_cutouts --pass auto cuts the _cr_ mosaic). Pass --no-cr
+# of the pipeline consumes (make_stamps --pass auto cuts the _cr_ mosaic). Pass --no-cr
 # to skip it. The no-CR ("nocrrej") pass is opt-in for comparison only via --nocrrej;
 # by default it is not produced — it doubles the drizzle time and nothing downstream
 # reads it. (Was the reverse: no-CR always, CR opt-in via --cr.)
@@ -98,7 +98,7 @@ WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 MIN_EXPTIME = 10.0
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
 # inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
-# CALIBRATED per-pixel noise map -- what make_cutouts uses. AstroDrizzle's own
+# CALIBRATED per-pixel noise map -- what make_stamps uses. AstroDrizzle's own
 # default is 'EXP', which is only an effective-exposure-time map (uncalibrated, and
 # missing source shot noise), so 1/sqrt(EXP-WHT) is not a physical noise map. See
 # DrizzlePac Handbook pp.103,139 and Bayer et al. 2023 (sigma=sqrt(N/W+sigma_sky^2)).
@@ -167,7 +167,7 @@ _p.add_argument('--crfill-radius', type=float, default=None, metavar='ARCSEC',
                 help='with --crfill, fill ONLY the cosmic-ray tracks that come within this '
                      'many arcsec of the lens (whole connected tracks, not clipped at the '
                      'circle). Default: no radius, i.e. fill every CR in every frame. Needs a '
-                     'lens with coordinates in info/lens_coords.py.')
+                     'lens with coordinates in info/coords/lens_coords.py.')
 # --crfill-min-area targets the STREAK rather than an aperture. --crfill-radius alone still
 # fills every little CR hit that happens to land near the lens (193 tracks on J1213+6708, 283
 # on J1250+0523 -- almost all of them a few px each), when the thing actually worth repairing
@@ -203,7 +203,7 @@ _p.add_argument('--exclude-frames', default=None, metavar='ROOTNAME[,ROOTNAME...
                      'tree. This is the "drop the CR-affected exposure" option -- it costs '
                      'sqrt(N/(N-1)) noise over the WHOLE stamp, so build it to compare, not '
                      'by default.')
-# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# Default None means 'flag not passed' so info/overrides/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
 _p.add_argument('--lacosmic-sigclip', type=float, default=None)
 _p.add_argument('--lacosmic-objlim',  type=float, default=None)
@@ -234,14 +234,14 @@ if not do_cr and not do_nocrrej:
     _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
 ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# Per-lens LACosmic CR-param overrides (info/overrides/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None here means the flag
 # was not passed, so the JSON (else the default) wins; a passed --lacosmic-* always
 # wins. Persists a tuned lens's CR params so a blind re-drizzle keeps them instead of
 # reverting to the default -- e.g. J1420+6019 f814W, whose default sigclip/objlim
 # eroded a real arc knot (masked in all frames -> weight-0 noise hole).
 _cr_ovr = info_json.entry(
-    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+    os.path.join(ws_path, 'info', 'overrides', 'lens_cr_params.json'), sample, lens, filt, {})
 # --crfill has nothing to act on unless LACosmic actually wrote DQ 4096 this run: driz_cr
 # writes that bit during the drizzle (too late to fill), and --no-cr writes it never. Fail
 # loudly rather than silently producing a 'crfill' tree that is just the standard reduction
@@ -263,9 +263,9 @@ if _a.lacosmic_objlim is None:
     _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
 if _cr_ovr:
     print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
-          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
-# The --bcfill reduction is a parallel product tree, keyed via cutout_paths so the drizzle,
-# cutout and mosaic scripts all agree on the suffix. The calibrated FLCs are shared (bcfill
+          f'objlim={_a.lacosmic_objlim} (info/overrides/lens_cr_params.json) ===')
+# The --bcfill reduction is a parallel product tree, keyed via stamp_paths so the drizzle,
+# stamp and mosaic scripts all agree on the suffix. The calibrated FLCs are shared (bcfill
 # edits copies in the work dir, never data/calibrated/), but the drizzled output and the
 # working dir are variant-suffixed so bcfill and the standard reduction never collide --
 # in particular the work dir must stay separate, or a bcfill run's filled FLCs would be
@@ -273,12 +273,12 @@ if _cr_ovr:
 _variant    = '_'.join([t for t, on in (('bcfill', _a.bcfill), ('crfill', _a.crfill),
                                        ('drop', bool(_excluded))) if on])
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(cutout_paths.drizzled_root(ws_path, _variant), sample, lens, filt)
+output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant), sample, lens, filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
 # output FITS is written) onto a different volume/backing store — used to isolate the
 # APFS-write U-state hang (e.g. point it at a RAM disk). Falls back to the in-repo path.
 _work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(
-    ws_path, 'data', f'drizzle_files{cutout_paths.variant_tag(_variant)}')
+    ws_path, 'data', f'drizzle_files{stamp_paths.variant_tag(_variant)}')
 work_path   = os.path.join(_work_root, sample, lens, filt)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
@@ -288,9 +288,9 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # not overlay. Pin every band to North-up (final_rot=0) with the tangent point
 # (final_ra/dec) at the lens position, so all filters share orientation and WCS centre
 # and the lens sits ~centred. Pixel scale still differs by instrument (intentional);
-# only rotation and centre are unified. The position comes from info/lens_coords.py,
+# only rotation and centre are unified. The position comes from info/coords/lens_coords.py,
 # which merges every sample's table. Unknown lens -> native WCS (empty dict).
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 try:
     from lens_coords import lens_coords as _lens_coords
     from astropy.coordinates import SkyCoord as _SkyCoord
@@ -306,9 +306,9 @@ except (KeyError, ImportError):
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt
-json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
+json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
 
 # One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
 _owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'ACS/')
@@ -910,7 +910,7 @@ ACS_NATIVE_SCALE = 0.05          # arcsec/px, ACS/WFC
 def run_lacosmic(files, sigclip, objlim, relax_radius=None, lens_coord=None):
     """Flag cosmic rays into DQ bit 4096 of each FLC, in place.
 
-    relax_radius (arcsec, info/lens_cr_params.json `lacosmic_relax_radius`): the per-lens
+    relax_radius (arcsec, info/overrides/lens_cr_params.json `lacosmic_relax_radius`): the per-lens
     relaxed sigclip/objlim apply only within this radius of the lens; the defaults apply
     everywhere else. This is the same rule as drizzle_wfpc2_wf3.py, for J1420+6019, whose
     frame-wide relaxed setting left cosmic rays in the blank sky."""
@@ -960,7 +960,7 @@ if do_cr:
             print('\n=== crfill: filling LACosmic cosmic rays (DQ 4096) pre-drizzle ===')
             if _a.crfill_radius is not None and _lc is None:
                 raise SystemExit('--crfill-radius needs the lens coordinate, and this lens is '
-                                 'not in info/lens_coords.py')
+                                 'not in info/coords/lens_coords.py')
             fill_cosmic_rays(flc_files, lens_coord=_lc, radius_arcsec=_a.crfill_radius,
                              min_area=_a.crfill_min_area, n_tracks=_a.crfill_n_tracks)
         print('\n=== AstroDrizzle (LACosmic-masked, plain weighted mean) ===')

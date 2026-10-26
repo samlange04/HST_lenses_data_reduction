@@ -7,7 +7,7 @@
 # No --cr: the IR PSF is ~1 px FWHM at 0.1283"/px, so both LACosmic and driz_cr eat
 # point sources, and the FLTs are already up-the-ramp CR-rejected. See AGENTS.md.
 #
-# The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
+# The lens list comes from info/samples/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/, which only ever re-runs what is already on disk
 # and so does nothing at all after a wipe. Every lens is tried on every run;
 # drizzle_wfc3_ir.py exits 0 having recorded `null` where MAST has no data, so "no data"

@@ -112,7 +112,7 @@ were reduced, found to detect neither deflector nor arc, and deleted (2026-09-29
 | MAST project filter | `CALWF3` | `HAP-MVM`, `HAP-SVM`, `HLA` also appear |
 | Pixel scale | 0.1283 → 0.06″/px | Handbook says 0.13 (WFC3 DHB p16); 0.1283 is the precise value. 0.06″ / pixfrac 1.0 settled by a scale/pixfrac scan (`AGENTS.md` *Output pixel scales*) |
 | `driz_sep_bits` / `final_bits` | `'512'` | Handbook default is `'64,512'` (WFC3 DHB p210); bit 64 is unused on IR, so dropping it changes nothing. Written as `'512'`, never `''` (see below) |
-| ERR units | electrons/s | So `1/sqrt(WHT)` must be rescaled by EXPTIME (`make_cutouts.weight_to_sigma_scale`), or by nothing for unequal-length stacks drizzled with an explicit IVM |
+| ERR units | electrons/s | So `1/sqrt(WHT)` must be rescaled by EXPTIME (`make_stamps.weight_to_sigma_scale`), or by nothing for unequal-length stacks drizzled with an explicit IVM |
 | CR rejection | none | Up-the-ramp fitting in calwf3 already rejects CRs; a CR pass eats the ~1 px PSF of field stars |
 | TweakReg `conv_width` / `ylimit` | 2.5 / 0.2 | Only under `--align tweakreg` |
 
@@ -196,7 +196,7 @@ wrong chip, ~79″ from the lens.
 - Suggested fine output scales (p131): 0.0333″/px for ACS/WFC and WFC3/UVIS, 0.0667″/px for
   WFC3/IR.
 - Weight-map check: rms/median of the weight map should stay below ~0.2–0.3 (p131, p148).
-  `make_cutouts.py` records it per stamp as `WHTUNIF`.
+  `make_stamps.py` records it per stamp as `WHTUNIF`.
 
 **What this repo does with that.** Every band runs at pixfrac 1.0: ACS and UVIS at native
 scale, WFC3/IR at 0.06″ and WFPC2 at 0.05″. Scans on real stamps showed a smaller pixfrac

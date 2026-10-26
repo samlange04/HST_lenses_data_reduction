@@ -67,9 +67,9 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt  # e.g. 'f606W'
-json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
+json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
 
 def _update_info_json(path, lens, filt_key, value):
     try:
