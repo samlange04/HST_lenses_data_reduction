@@ -9,7 +9,7 @@ This repository is dual-licensed:
     the project files (pyproject.toml, uv.lock, ...) -- is under the MIT License, in
     the file LICENSE.
 
-  * The DATA PRODUCTS -- everything under data/ (the image cutouts, noise maps, PSFs,
+  * The DATA PRODUCTS -- everything under data/ (the image stamps, noise maps, PSFs,
     masks, image positions and QC figures) and the JSON, CSV and Markdown records in
     info/ -- are under the Creative Commons Attribution 4.0 International licence,
     whose full legal text follows below. You may share and adapt them for any purpose,

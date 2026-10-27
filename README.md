@@ -5,7 +5,7 @@
 > and Samuel C. Lange (The Chinese University of Hong Kong).**
 
 This repository turns Hubble Space Telescope (HST) archive images of **strong gravitational
-lenses** into clean, ready-to-model image cutouts.
+lenses** into clean, ready-to-model image stamps.
 
 A strong lens is a massive foreground galaxy (the *deflector*) whose gravity bends the light
 of a more distant galaxy (the *source*) behind it, so the source appears as arcs, a ring, or
@@ -15,7 +15,7 @@ uncertain every pixel is, how blurred the telescope makes a point of light, whic
 ignore, and roughly where the multiple images are. This repository produces all of that, for
 133 lenses from five published lens surveys.
 
-**Most people only need the finished products in `data/cutouts/`** — they are in git, so a
+**Most people only need the finished products in `data/stamps/`** — they are in git, so a
 plain clone has them. Re-running the reduction is only needed to change how it was done.
 
 **Recommended analysis tool: [PyAutoLens](https://github.com/PyAutoLabs/PyAutoLens)**, from
@@ -41,35 +41,36 @@ wavelength in nanometres: F438W is blue, F606W and F475X/F600LP are visible ligh
 near-infrared, and F160W is infrared. Seeing the same lens in several colours helps tell the
 (usually blue) lensed source apart from the (red) deflector.
 
-The data come from four HST cameras. They differ in pixel size, so the cutouts do too:
+The data come from four HST cameras. They differ in pixel size, so the stamps do too:
 
-| Camera | Filters here | Pixel size | Cutout size in pixels |
+| Camera | Filters here | Pixel size | Stamp size in pixels |
 |---|---|---|---|
 | ACS/WFC | F814W, F555W, F606W (one lens) | 0.05″ | 240 × 240 |
 | WFPC2 (its WF3 chip) | F606W | 0.05″ (resampled from 0.1″) | 240 × 240 |
 | WFC3/UVIS | F438W, F475X, F600LP, F606W, F814W | 0.0396″ | 303 × 303 |
 | WFC3/IR | F160W | 0.06″ (resampled from 0.13″) | 200 × 200 |
 
-Every cutout covers the same 12″ × 12″ patch of sky, centred on the deflector.
+Every stamp covers the same 12″ × 12″ patch of sky, centred on the deflector.
 
 ## Using the finished products
 
-Each lens and filter has one folder, `data/cutouts/<sample>/<lens>/<filter>/`, for example
-`data/cutouts/slacs_gold/J0008-0004/f814W/`. The files in it are:
+Each lens and filter has one folder, `data/stamps/<sample>/<lens>/<filter>/`, for example
+`data/stamps/slacs_gold/J0008-0004/f814W/`. The files in it are:
 
 | File | What it is |
 |---|---|
-| `cutout_cr_sci.fits` | **The image.** Brightness per pixel, in electrons per second (counts per second for WFPC2 F606W — check the `BUNIT` header keyword before comparing filters). |
-| `cutout_cr_noise.fits` | **The noise map**: the 1σ uncertainty of every pixel, in the same units as the image. |
-| `cutout_cr_psf.fits` | **The PSF** (point-spread function): how the telescope blurs a single point of light, on the same pixel grid and orientation as the image, normalised to sum to 1. A lens model convolves with this. |
-| `cutout_cr_psf_err.fits` | The per-pixel uncertainty of that PSF. |
-| `cutout_cr_mask.fits` | **The mask**: 1 marks a pixel to *exclude* from a fit (nearby galaxies, stars, detector defects), 0 a pixel to use. The lens itself is never masked. Hand-drawn. |
-| `cutout_cr_positions.json` | **Image positions**: where the multiple images of the lensed source are, hand-marked (see below). |
-| `cutout_cr_dataset.png` | A quick-look figure of the image, noise, PSF and mask together — the fastest way to check a lens. |
+| `stamp12_sci.fits` | **The image.** Brightness per pixel, in electrons per second (counts per second for WFPC2 F606W — check the `BUNIT` header keyword before comparing filters). |
+| `stamp12_noise.fits` | **The noise map**: the 1σ uncertainty of every pixel, in the same units as the image. |
+| `psf.fits` | **The PSF** (point-spread function): how the telescope blurs a single point of light, on the same pixel grid and orientation as the image, normalised to sum to 1. A lens model convolves with this. |
+| `psf_err.fits` | The per-pixel uncertainty of that PSF. |
+| `stamp12_mask.fits` | **The mask**: 1 marks a pixel to *exclude* from a fit (nearby galaxies, stars, detector defects), 0 a pixel to use. The lens itself is never masked. Hand-drawn. |
+| `stamp12_positions.json` | **Image positions**: where the multiple images of the lensed source are, hand-marked (see below). |
+| `stamp12_dataset.png` | A quick-look figure of the image, noise, PSF and mask together — the fastest way to check a lens. |
 
-The `cr` in the names means cosmic-ray hits were removed (below). F160W images have no
-cosmic-ray step, so their files are named `cutout_sci.fits`, `cutout_noise.fits` and so on.
-A few lenses carry extra files beside these (for example `cutout_psf_injected.fits`, an
+The `12` in the names is the stamp size: 12 arcseconds on a side. A stamp cut at another size
+(`make_stamps.py --size 20`) is written beside these as `stamp20_*` and is not kept in git.
+The PSF has no size in its name because it does not depend on the stamp size.
+A few lenses carry extra files beside these (for example `psf_injected.fits`, an
 alternative PSF kept for comparison); the files in the table are the ones to use.
 
 **Orientation.** North is towards increasing row number and West towards increasing column
@@ -79,9 +80,9 @@ not a rotation. The FITS headers carry full sky coordinates (WCS) if you need th
 
 **Image positions** are stored in the format of the [PyAutoLens](https://github.com/PyAutoLabs/PyAutoLens)
 lens-modelling software, which reads them directly. Each entry is a `(y, x)` offset in
-arcseconds from the cutout centre. Following PyAutoLens's convention, +y points South and +x
+arcseconds from the stamp centre. Following PyAutoLens's convention, +y points South and +x
 points West. To get pixels: `row = row_centre − y / pixel_size` and
-`col = col_centre + x / pixel_size`, where the centre of a 240-pixel cutout is 119.5.
+`col = col_centre + x / pixel_size`, where the centre of a 240-pixel stamp is 119.5.
 **An empty positions file is deliberate**: on 24 lenses the images were too uncertain to
 mark, or the counter-images are too faint to see. It does not mean the job was skipped.
 
@@ -90,11 +91,11 @@ A minimal example in Python:
 ```python
 from astropy.io import fits
 
-band = "data/cutouts/slacs_gold/J0008-0004/f814W/"
-image = fits.getdata(band + "cutout_cr_sci.fits")
-noise = fits.getdata(band + "cutout_cr_noise.fits")
-psf   = fits.getdata(band + "cutout_cr_psf.fits")
-mask  = fits.getdata(band + "cutout_cr_mask.fits").astype(bool)   # True = exclude
+band = "data/stamps/slacs_gold/J0008-0004/f814W/"
+image = fits.getdata(band + "stamp12_sci.fits")
+noise = fits.getdata(band + "stamp12_noise.fits")
+psf   = fits.getdata(band + "psf.fits")
+mask  = fits.getdata(band + "stamp12_mask.fits").astype(bool)   # True = exclude
 
 signal_to_noise = image / noise
 ```
@@ -115,9 +116,9 @@ signal_to_noise = image / noise
   which nearby objects are contaminants and which are lensed images, which masks are
   provisional, and which lenses need something extra in the model (a second source, a
   nearby perturbing galaxy) — is in [`AGENTS.md`](AGENTS.md) under *Masks → Per-lens
-  verdicts*, and in the `note` fields of `info/lens_masks.json`.
+  verdicts*, and in the `note` fields of `info/provenance/lens_masks.json`.
 - **Einstein radii, redshifts and velocity dispersions** from the survey papers are collected
-  in `info/lens_einstein_radii.json`, each row naming its source.
+  in `info/catalogues/lens_einstein_radii.json`, each row naming its source.
 - **Arc masks** (masks isolating just the lensed light) are optional and not included.
 - **Some lenses were removed** from the published samples, mostly because a nearby galaxy is
   massive enough to need its own lens model, or because no second image of the source can be
@@ -178,7 +179,7 @@ uv run python scripts/regenerate_files.py --sample slacs_gold             # down
 
 ```bash
 uv run python scripts/drizzle_acs_wfc.py --sample slacs_gold --lens J0008-0004 --filt f814W
-uv run python scripts/make_cutouts.py    --sample slacs_gold --lens J0008-0004 --filt f814W
+uv run python scripts/make_stamps.py    --sample slacs_gold --lens J0008-0004 --filt f814W
 ```
 
 There is one combining script per camera (`drizzle_acs_wfc.py`, `drizzle_wfpc2_wf3.py`,
@@ -189,7 +190,7 @@ lens with no data in the requested filter prints `NO DATA` and is skipped; that 
 ## Repository layout
 
 ```
-data/cutouts/<sample>/<lens>/<filter>/   the finished products (in git)
+data/stamps/<sample>/<lens>/<filter>/   the finished products (in git)
 data/mosaics/<sample>/                   overview figures (in git)
 data/...                                 downloads and intermediate files (not in git, rebuildable)
 info/                                    sample lists, lens coordinates, catalogue values, and a
@@ -198,7 +199,7 @@ scripts/                                 the pipeline
 AGENTS.md                                full technical reference
 ```
 
-`info/lens_samples.json` is the master list of which lenses are in which sample.
+`info/samples/lens_samples.json` is the master list of which lenses are in which sample.
 
 **Branches.** `main` holds the standard reduction described here and is the one to use. The
 `bcfill` branch holds an alternative in which dead detector columns are filled in by

@@ -5,7 +5,7 @@ Tile every lens's PSF kernel into per-filter-group QC mosaics.
 Sibling to make_mosaics.py: same 5-wide grid, same filter groups (mosaic_groups.py,
 shared between the two scripts). Reads the trimmed, modelling-ready kernels already
 written by make_psf.py
-(cutout[_cr]_psf.fits, in the band's cutout dir - cutout_paths.psf_cutout_dir, which
+(psf.fits, in the band's stamp dir - stamp_paths.psf_stamp_dir, which
 resolves in the default-size tree whatever size a stamp was cut at) - nothing is rebuilt.
 
 Kernels are unit-sum normalised by construction (make_psf.trim_kernel_to_amplitude), so
@@ -21,7 +21,7 @@ focus-diverse / MAST PSF DB model, injected into the exposures and re-drizzled s
 carries the drizzle broadening), from the PSFMETH keyword make_psf.py stamps on every
 kernel.
 
-Every sample has PSF products (info/lens_psf.json). A sample not listed in
+Every sample has PSF products (info/provenance/lens_psf.json). A sample not listed in
 mosaic_groups.SAMPLE_GROUPS falls back to one group per filter directory found on disk.
 
 Usage:
@@ -40,7 +40,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import mosaic_groups
-import cutout_paths
+import stamp_paths
 from make_mosaics import short_filt, plot_mosaic
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -56,12 +56,9 @@ def pooled_log_norm(arrays):
 
 
 def find_psf_path(filt_dir):
-    """Prefer the CR-pass kernel, matching make_mosaics.find_cutout_pair's precedence."""
-    for prefix in ('cutout_cr', 'cutout'):
-        path = os.path.join(filt_dir, f'{prefix}_psf.fits')
-        if os.path.exists(path):
-            return path
-    return None
+    """The band's psf.fits, or None (one kernel per band, whatever the stamp size)."""
+    path = os.path.join(filt_dir, stamp_paths.psf_name())
+    return path if os.path.exists(path) else None
 
 
 def method_tag(method):
@@ -75,21 +72,21 @@ def build_group(sample, precedence):
     convention. `group` (the per-panel colourbar-split key) is only set for multi-filter
     groups, same reasoning as make_mosaics.py.
 
-    Each kernel is located with cutout_paths.psf_cutout_dir, which pins it to the
-    default-size tree (the kernel is not size-keyed - see cutout_paths.py)."""
+    Each kernel is located with stamp_paths.psf_stamp_dir, which pins it to the
+    default-size tree (the kernel is not size-keyed - see stamp_paths.py)."""
     entries = []
     lenses = sorted({os.path.basename(d)
                      for d in glob.glob(os.path.join(
-                         cutout_paths.cutouts_root(ws_path), sample, '*'))
+                         stamp_paths.stamps_root(ws_path), sample, '*'))
                      if os.path.isdir(d)})
     for lens in lenses:
         for filt in precedence:
-            band_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
+            band_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
             # A gitignored band dir (none today; the deleted slacs_other SNAP f814W diagnostics
             # were the case that motivated this) is not a
             # product: a tracked mosaic must not tile it (AGENTS.md: skip ignored bands in
             # every sweep). Same guard as make_masks.discover_targets.
-            if cutout_paths.gitignored([band_dir], ws_path):
+            if stamp_paths.gitignored([band_dir], ws_path):
                 continue
             path = find_psf_path(band_dir)
             if path is None:
@@ -115,15 +112,15 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
-                   help='sample subdirectory under data/cutouts/ to mosaic. Defined in '
-                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+                   help='sample subdirectory under data/stamps/ to mosaic. Defined in '
+                        f'info/samples/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     a = p.parse_args()
 
-    cutouts_dir = os.path.join(ws_path, 'data', 'cutouts', a.sample)
+    stamps_dir = os.path.join(ws_path, 'data', 'stamps', a.sample)
     out_dir = os.path.join(ws_path, 'data', 'mosaics', a.sample)
     os.makedirs(out_dir, exist_ok=True)
 
-    groups = mosaic_groups.groups_for_sample(a.sample, cutouts_dir)
+    groups = mosaic_groups.groups_for_sample(a.sample, stamps_dir)
     for group_name, precedence in groups.items():
         entries_raw = build_group(a.sample, precedence)
         if not entries_raw:

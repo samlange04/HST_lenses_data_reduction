@@ -1,0 +1,844 @@
+#!/usr/bin/env python
+"""
+Cut science + noise-map postage stamps out of the drizzled mosaics.
+
+Reads the drizzle products from data/drizzled/<sample>/<lens>/<filt>/ (--pass auto takes
+the CR-rejected pass where one exists), centres a stamp on the lens coordinate from
+info/coords/lens_coords.py, then recentres onto the brightest pixel found within the central
+--box (100x100) pixels of the sample's centre band (--center-band, or the stamp named by
+--center-from) and re-cuts so every band shares one centre on the lens galaxy.
+
+The noise map is derived from the drizzle weight map as 1/sqrt(weight), with
+zero-weight pixels mapped to a large value so they are excluded from any fit.
+
+Writes stamp12_sci.fits, stamp12_noise.fits and a 3-panel stamp12.png
+(signal / noise / signal-to-noise) for visual inspection. A cut from a variant drizzle
+(--bcfill / --crfill / --drop) tags the variant into those three names --
+stamp12_bcfill_sci.fits etc. -- so two reductions of one band can never share a
+filename; see stamp_paths.py. The mask/positions/PSF files are NOT tagged (same grid).
+
+Stamps are 12" square by default. A different --size writes stamp<size>_* files into the
+same band directory, so the standard-size products are never overwritten; see
+stamp_paths.py.
+
+Usage:
+    uv run python scripts/make_stamps.py --lens J0008-0004 --filt f814W
+    uv run python scripts/make_stamps.py --lens J0008-0004 --filt f814W --size 20
+"""
+
+import argparse
+import glob
+import os
+import sys
+
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from astropy.coordinates import SkyCoord
+from astropy.io import fits
+from astropy.nddata import Cutout2D
+from astropy.nddata.utils import NoOverlapError
+from astropy.wcs import WCS
+from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
+from astropy.wcs.utils import proj_plane_pixel_scales
+from scipy.ndimage import convolve as ndi_convolve, median_filter
+import astropy.units as u
+
+ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lens_coords import lens_coords
+import mast_target_names
+import info_json
+import stamp_paths
+
+
+def _repo_relative(path):
+    """A path for the tracked provenance JSON: repo-relative inside the checkout, and only
+    the basename outside it, so a scratch reference stamp never records a machine path."""
+    if not path:
+        return None
+    rel = os.path.relpath(os.path.abspath(path), ws_path)
+    return '<outside repo>/' + os.path.basename(path) if rel.startswith('..') else rel
+
+
+def catalogue_coord_for(lens):
+    """(ra, dec) HMS/DMS strings for a lens, from info/coords/lens_coords.py (every sample's
+    table merged)."""
+    try:
+        return lens_coords[lens]
+    except KeyError:
+        raise KeyError(f"{lens} not in any info/coords/*_coords.py table (info/coords/lens_coords.py)") from None
+
+
+# Detectors whose calibrated ERR array is already in ELECTRONS/S rather than counts.
+# This single fact decides whether 1/sqrt(WHT) is a calibrated sigma map or is wrong
+# by a factor of the per-frame exposure time -- see weight_to_sigma_scale().
+_ERR_IN_RATE_UNITS = {('WFC3', 'IR')}
+
+
+def weight_to_sigma_scale(sci_hdr):
+    """
+    Return (K, note) such that the calibrated per-pixel sigma is K / sqrt(WHT).
+
+    `1/sqrt(WHT)` is only a sigma map when WHT is a true inverse-variance map, and
+    with `final_wht_type=ERR` that depends on the *units of the input ERR array*.
+    DrizzlePac computes the per-frame weight as
+
+        weight = (EXPTIME / ERR)**2                  # imageObject.buildERRmask
+
+    For ACS FLC (SCI and ERR both in ELECTRONS) `EXPTIME/ERR` is exactly
+    `1/sigma_rate`, so WHT is a genuine inverse variance of the ELECTRONS/S output
+    and K = 1. For WFC3/IR FLT, SCI and ERR are **already ELECTRONS/S**, so the same
+    expression evaluates to `EXPTIME/sigma_rate`: every weight is inflated by
+    EXPTIME**2 and 1/sqrt(WHT) comes out a factor EXPTIME too small. K = per-frame
+    EXPTIME undoes exactly that.
+
+    Verified on J0841+3824 with a blank-sky block-sum test (scatter of integrated
+    flux in NxN blank blocks against what the noise map predicts, which converges to
+    the truth once the block exceeds the drizzle correlation length):
+
+        F814W (ACS, K=1)          ratio 1.04 at 0.24", 1.24 at 1.44"  -> correct
+        F160W (WFC3/IR, uncorr.)  ratio 477 at 0.24",  725 at 1.44"   -> ~700x low
+
+    and 700 / 599.23 = 1.17, i.e. once K = EXPTIME is applied the residual is a 1.44"
+    block ratio the same size as ACS's (1.24) -- faint-structure noise on that scale, not
+    a units error. (A 1.44" block ratio is NOT the --corr-factor value; see AGENTS.md
+    *Drizzle correlated noise*.) The
+    `D001WTSC = 1/scale**4` term does *not* enter: it cancels against the finer
+    output grid, which is why ACS (native scale, WTSC 1.0) and WFC3/IR (WTSC 20.9)
+    share one formula.
+
+    WFPC2 F606W also takes K = 1, and that is now correct rather than a placeholder.
+    It reaches the same place by a different route: DrizzlePac's IVM branch leaves the
+    supplied IVM unscaled but sets `wt_scl = exptime**2/scale**4` (against the ERR
+    branch's `1/scale**4`), so the exptime**2 the ERR mask carries internally is
+    supplied by wt_scl instead and the two paths agree. With the IVM built as
+    1/(SCI/gain + floor**2) in DN**-2, 1/sqrt(WHT) is a sigma in DN/s, matching the
+    DN/s output. Measured on J0330-0020: block ratio 0.90 / 1.07 / 1.09.
+
+    Products predating that fix are NOT calibrated and cannot be rescued by any K --
+    the error is in the noise model, not the units. The caller warns on IVMMODEL.
+    """
+    inst = (sci_hdr.get('INSTRUME', '').strip(), sci_hdr.get('DETECTOR', '').strip())
+    if sci_hdr.get('IRIVMEXP', False):
+        # drizzle_wfc3_ir.py drizzled an unequal-length stack with IVM = 1/(ERR*EXPTIME)^2,
+        # which DrizzlePac's IVM branch turns into a true 1/sigma_rate^2 per frame.
+        return 1.0, (f'{"/".join(inst)}: IVM-weighted mixed-exposure stack (IRIVMEXP), '
+                     '1/sqrt(WHT) already calibrated')
+    if inst not in _ERR_IN_RATE_UNITS:
+        return 1.0, f'{"/".join(inst)}: ERR in counts, 1/sqrt(WHT) already calibrated'
+
+    # Per-frame exposure times, not EXPTIME/NDRIZIM: the correction is only a single
+    # constant when the frames are equal, so read them and refuse to guess if not.
+    dexp = sorted({round(v, 3) for k, v in sci_hdr.items()
+                   if k.startswith('D') and k.endswith('DEXP')})
+    if not dexp:
+        raise KeyError('no D00nDEXP keywords in the drizzle header; cannot determine '
+                       'the per-frame exposure time needed to calibrate the noise map')
+    if len(dexp) > 1:
+        raise ValueError(
+            f'unequal per-frame exposure times {dexp} for {"/".join(inst)}. The ERR '
+            'units correction is a single constant only for equal-length frames; a '
+            'mixed-exposure stack must be drizzled with drizzle_wfc3_ir.py\'s IVM path '
+            '(IRIVMEXP); re-drizzle this product.')
+
+    return dexp[0], (f'{"/".join(inst)}: ERR in ELECTRONS/S, scaling by per-frame '
+                     f'EXPTIME={dexp[0]:.3f}s')
+
+
+def fold_psf_error_into_noise(noise_map, sci_data, psf_err_kernel):
+    """Fold a per-pixel PSF error map into the pixel-noise map as an effective noise map.
+
+    PyAutoLens has no slot for a PSF error map -- it treats the PSF as a fixed unit-sum
+    Kernel2D -- so, as --corr-factor folds the measured ERR deficit into the noise map, we
+    propagate PSF uncertainty by inflating the noise. The model image is m = s (x) K (source
+    scene s convolved with the kernel K); with independent per-kernel-pixel errors sigma_K the
+    induced variance is Var_psf(ij) = sum_kl s(i-k,j-l)^2 . sigma_K(k,l)^2. We use the observed
+    stamp as a conservative proxy for the pre-convolution scene s (it slightly overestimates
+    at the bright convolved core -- a deliberately conservative choice), so
+    Var_psf = convolve(I^2, sigma_K^2). The effective sigma is sqrt(sigma_pix^2 + Var_psf).
+
+    This is a static, diagonal approximation: leave it off if the PSF covariance is handled
+    at the modelling stage. The zero-weight 1e8 sentinel is preserved.
+    """
+    var_pix = np.asarray(noise_map, dtype=np.float64) ** 2
+    var_psf = ndi_convolve(np.asarray(sci_data, dtype=np.float64) ** 2,
+                           np.asarray(psf_err_kernel, dtype=np.float64) ** 2,
+                           mode='constant', cval=0.0)
+    eff = np.sqrt(var_pix + var_psf)
+    eff[np.asarray(noise_map) >= 1.0e8] = 1.0e8      # keep excluded pixels excluded
+    return eff
+
+
+def noise_map_via_weight_map_from(weight_map, scale=1.0):
+    """
+    Setup the noise-map from a weight map, which is a form of noise-map that comes via HST
+    image-reduction and the software package MultiDrizzle.
+
+    The noise in each pixel is computed as:
+
+    sigma = scale / sqrt(weight_map).
+
+    `scale` is the calibration constant from weight_to_sigma_scale() (times any
+    correlated-noise inflation); it is 1.0 for detectors whose ERR array is in counts,
+    which is the classic MultiDrizzle recipe.
+
+    The weight map may contain zeros, in which case the variances are converted to large
+    values to omit them from the analysis.
+
+    Parameters
+    ----------
+    weight_map
+        The weight-value of each pixel which is converted to a variance.
+    scale
+        Multiplicative constant converting 1/sqrt(weight) into a calibrated sigma.
+    """
+    np.seterr(divide="ignore")
+    noise_map = scale / weight_map ** 0.5
+    noise_map[noise_map > 1.0e8] = 1.0e8
+    return noise_map
+
+
+WEIGHT_UNIFORMITY_LIMIT = 0.2
+
+
+def weight_uniformity(wht):
+    """STScI rule-of-thumb diagnostic: RMS/median of the positive weight-map pixels over
+    a region. Values above ~0.2 mean the pixfrac is too small for the dither pattern
+    (coverage speckle/holes) -- run on the stamp region (not the full mosaic, which mixes
+    coverage tiers across the whole union footprint and would give a misleading verdict for
+    the science region actually being modelled). Returns None if the region has no positive
+    weight pixels (nothing to judge).
+    """
+    good = np.asarray(wht, dtype=np.float64)
+    good = good[np.isfinite(good) & (good > 0.0)]
+    if good.size == 0:
+        return None
+    return float(good.std() / np.median(good))
+
+
+def casertano_r(pixfrac, scale_ratio):
+    """Casertano et al. 2000 correlated-noise factor R = 1/r (DrizzlePac handbook), from the
+    drop size `pixfrac` (p, native input pixels) and the output-to-native pixel `scale_ratio`
+    (s) alone. Per axis r = 1 - p/(3s) (s >= p) or (s/p)(1 - s/(3p)) (s < p); in 2D the
+    per-pixel variance ratio is r**2, so R = 1/sqrt(C(0)) for pure drizzle.
+
+    What R means: the factor by which sqrt(N) * (the drizzled image's own blank-sky per-pixel
+    rms) understates the true noise of an N-pixel aperture -- the correction for anyone who
+    estimates sigma from the image rather than from the weight map. It is NOT a correction to
+    the ERR-weighted noise map, which drizzle already leaves sum-correct (drizzle conserves
+    noise: it lowers C(0) and raises the neighbours by the same total), so R and
+    --corr-factor are different quantities and must not be compared (the 1.17 ACS factor is
+    an ERR-calibration deficit plus faint structure, not drizzle; see AGENTS.md *Drizzle
+    correlated noise*). The right check is R against the measured 1/sqrt(C(0)), which it
+    predicts to ~5%: WFPC2 2.39 vs 2.36, ACS 1.50 vs 1.49, and 1.50/1.30/1.25 vs
+    1.55/1.36/1.31 across the ACS pixfrac scan. Returns None for an out-of-range input rather
+    than raising, since it's informational, not a gate.
+    """
+    if not (0.0 < pixfrac <= 1.0) or scale_ratio <= 0.0:
+        return None
+    p, s = pixfrac, scale_ratio
+    if s < p:
+        # Finer output grid than the drop: correlation grows without bound as s -> 0
+        # (r -> 0, R -> inf); continuous with the s >= p branch at s = p (r = 2/3).
+        r = (s / p) * (1.0 - s / (3.0 * p))
+    else:
+        r = 1.0 - p / (3.0 * s)
+    return 1.0 / r
+
+
+CORR_FACTORS_JSON = 'noise_corr_factors.json'
+
+
+def instrument_key(sci_hdr):
+    """'ACS/WFC', 'WFC3/IR', 'WFC3/UVIS' or 'WFPC2' -- the top-level key of
+    info/overrides/noise_corr_factors.json. Keyed by instrument, not filter alone, because F606W and
+    F814W each occur on two instruments (WFPC2 vs WFC3/UVIS, ACS vs WFC3/UVIS) with
+    different ERR calibration and drizzle geometry."""
+    inst = str(sci_hdr.get('INSTRUME', '')).strip().upper()
+    if inst == 'WFPC2':
+        return 'WFPC2'
+    return f"{inst}/{str(sci_hdr.get('DETECTOR', '')).strip().upper()}"
+
+
+def epoch_factor(value, sci_hdr):
+    """A noise_corr_factors.json band value: a number, or an epoch-keyed entry
+    {"epochs": [{"before_mjd": 54959.0, "factor": 1.18}, ..., {"factor": 1.20}]} whose first
+    entry with EXPSTART < before_mjd wins (the last entry, without before_mjd, catches the rest).
+    Supported since 2026-10-06 for camera ageing (CTE, servicing missions) but unused so far:
+    ACS F814W drifts only 1.18 -> 1.20 from 2004-07 to 2010-11, inside its lens-to-lens scatter.
+    Split a band by epoch only where the break exceeds that scatter (see AGENTS.md)."""
+    if not isinstance(value, dict):
+        return value
+    mjd = float(sci_hdr.get('EXPSTART', 0.0))
+    for e in value['epochs']:
+        if 'before_mjd' not in e or mjd < float(e['before_mjd']):
+            return e['factor']
+    return None
+
+
+def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
+    """Noise-map inflation factor for this stamp, and where it came from.
+
+    Precedence (same idea as info/overrides/lens_cr_params.json): 1.0 < info/overrides/noise_corr_factors.json
+    per instrument/detector and filter < its `_lens_overrides` {sample: {lens: {band: f}}}
+    < an explicit --corr-factor. The values are measured by scripts/measure_corr_factor.py
+    (see its docstring and the JSON's `_method`). They are NOT a drizzle correction -- drizzle
+    conserves noise and 1/sqrt(WHT) is already right on patches >= the drop -- but an
+    ERR-array deficit (~10-20% rms, ACS/UVIS) plus faint unmasked structure. A band missing from
+    the JSON gets 1.0 with a warning, not a guess. `filt` may carry a visit suffix
+    (f606W_v2); it is stripped."""
+    if cli_value is not None:
+        return float(cli_value), 'cli'
+    import info_json
+    table = info_json.load(info_json.path(ws_path, CORR_FACTORS_JSON))
+    band = filt.split('_')[0]
+    override = table.get('_lens_overrides', {}).get(sample, {}).get(lens, {}).get(band)
+    if override is not None:
+        return float(override), 'lens'
+    value = epoch_factor(table.get(instrument_key(sci_hdr), {}).get(band), sci_hdr)
+    if value is None:
+        print(f"  WARNING: no correlated-noise factor for {instrument_key(sci_hdr)} {band} "
+              f"in info/{CORR_FACTORS_JSON}; using 1.0 (uncorrected)")
+        return 1.0, 'none'
+    return float(value), 'json'
+
+
+def find_products(drizzled_dir, drizzle_pass='nocrrej'):
+    """
+    Locate the sci/wht pair for a given drizzle pass in a drizzled output directory.
+
+    `drizzle_pass` is 'nocrrej' (default) or 'cr'. The two patterns are disjoint:
+    '*_cr_*' does not match '..._nocrrej_drc_...' since that has no '_cr_' substring.
+
+    The filename prefix and drizzle suffix vary by instrument (_drw_ for WFPC2 FLT,
+    _drc_ for ACS and WFC3/UVIS FLC, _drz_ for WFC3/IR), so glob rather than hardcode.
+    """
+    sci = glob.glob(os.path.join(drizzled_dir, f'*_{drizzle_pass}_*_sci.fits'))
+    wht = glob.glob(os.path.join(drizzled_dir, f'*_{drizzle_pass}_*_wht.fits'))
+
+    if len(sci) != 1 or len(wht) != 1:
+        raise FileNotFoundError(
+            f"Expected exactly one {drizzle_pass} sci and wht file in {drizzled_dir}, "
+            f"found sci={sci}, wht={wht}"
+        )
+    return sci[0], wht[0]
+
+
+def brightest_pixel_position(stamp, box=100, median_size=5):
+    """
+    Return the (x, y) pixel position of the brightest pixel within the central
+    `box` x `box` pixel region of a Cutout2D, in the stamp's own pixel frame.
+
+    Restricting to the central region stops a bright neighbour or a field star
+    near the stamp edge from stealing the recentre.
+
+    find_peak_coord prefers the CR-rejected mosaic for this search; on a no-CR mosaic
+    cosmic rays are present by construction and a raw brightest-pixel search will happily
+    lock onto a CR spike instead of the galaxy (J0252+0039: raw peak is a CR 48 pix
+    off-centre, galaxy at 9 pix).
+
+    Peak-finding therefore runs on a median-filtered copy. A median is the right tool
+    here and Gaussian smoothing is not: smoothing conserves flux, so a compact 30-count
+    CR still outranks a 1.3-count galaxy peak at any sigma (J0008-0004 fails this way).
+    A rank filter removes any feature narrower than its window outright. Only the search
+    is filtered — the returned position indexes the unmodified data.
+    """
+    data = np.nan_to_num(stamp.data)
+    ny, nx = data.shape
+
+    half = box // 2
+    ylo, yhi = max(0, ny // 2 - half), min(ny, ny // 2 + half)
+    xlo, xhi = max(0, nx // 2 - half), min(nx, nx // 2 + half)
+
+    sub = data[ylo:yhi, xlo:xhi]
+    search = median_filter(sub, median_size) if median_size > 1 else sub
+    iy, ix = np.unravel_index(np.argmax(search), search.shape)
+
+    # A peak pinned to the edge of the search box usually means the true maximum lies
+    # outside it — i.e. we locked onto a neighbour rather than the lens. Worth flagging
+    # rather than silently recentring onto the wrong object.
+    edge = min(ix, iy, sub.shape[1] - 1 - ix, sub.shape[0] - 1 - iy)
+    if edge <= 2:
+        print(f"  WARNING: peak sits {edge} pix from the edge of the {box}x{box} search box "
+              f"- likely a neighbouring source, not the lens. Check this stamp.")
+
+    return xlo + ix, ylo + iy
+
+
+def _has_products(drizzled_dir):
+    return bool(glob.glob(os.path.join(drizzled_dir, '*_sci.fits')))
+
+
+def find_peak_coord(drizzled_dir, catalogue_coord, size, box, median_size):
+    """Deflector brightest-pixel sky position from a band's mosaic.
+
+    Uses the CR-rejected pass when present (no cosmic rays to lock onto), else the
+    no-CR pass. Returns (SkyCoord, path_used). May raise NoOverlapError if the
+    catalogue position is off the mosaic.
+    """
+    try:
+        cen_sci, _ = find_products(drizzled_dir, 'cr')
+    except FileNotFoundError:
+        cen_sci, _ = find_products(drizzled_dir, 'nocrrej')
+    with fits.open(cen_sci) as hdul:
+        cut = make_stamp(hdul[0].data, WCS(hdul[0].header), catalogue_coord, size)
+    x, y = brightest_pixel_position(cut, box=box, median_size=median_size)
+    return cut.wcs.pixel_to_world(x, y), cen_sci
+
+
+def make_stamp(data, wcs, position, size_arcsec):
+    """Cut a square stamp of `size_arcsec` on a side, centred on `position`."""
+    size = u.Quantity((size_arcsec, size_arcsec), u.arcsec)
+    return Cutout2D(data, position=position, size=size, wcs=wcs)
+
+
+def write_stamp(data, stamp_wcs, header, output_path):
+    """Write stamp data to a single-extension FITS file with an updated WCS."""
+    output_hdr = header.copy()
+    output_hdr.update(stamp_wcs.to_header())
+
+    fits.PrimaryHDU(data=data, header=output_hdr).writeto(output_path, overwrite=True)
+    print(f"  wrote {output_path}  shape={data.shape}")
+
+
+def plot_stamps(sci_data, noise_data, output_path, title):
+    """
+    Write a 3-panel PNG of the stamp: signal, noise, and signal-to-noise.
+
+    Zero-weight pixels carry the 1e8 sentinel from noise_map_via_weight_map_from; they
+    are masked out for display so they don't flatten the colour scale of the noise panel.
+
+    Panels use origin='upper' so the orientation matches PyAutoLens, which plots row 0
+    at the top - with origin='lower' the same stamp comes out mirrored in y relative to
+    the autolens plots and it is easy to misidentify which neighbour is which.
+
+    Colour/stretch (inferno + asinh, astropy.visualization) matches scripts/make_mosaics.py:
+    asinh is well-defined through zero and for negative values, so it displays the
+    negative background-noise pixels directly instead of needing them masked to NaN
+    (as a log stretch would), while still showing faint outskirts and bright cores
+    together.
+    """
+    noise_display = np.where(noise_data >= 1.0e8, np.nan, noise_data)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        snr = sci_data / noise_data
+
+    panels = [
+        ('signal',        sci_data),
+        ('noise',         noise_display),
+        ('signal / noise', snr),
+    ]
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5.5))
+    for ax, (label, data) in zip(axes, panels):
+        finite = data[np.isfinite(data)]
+        vmin, vmax = PercentileInterval(99.0).get_limits(finite)
+        norm = ImageNormalize(vmin=vmin, vmax=vmax, stretch=AsinhStretch(0.1))
+        im = ax.imshow(data, norm=norm, origin='upper', cmap='inferno')
+        ax.set_title(label)
+        ax.set_xlabel('pixels')
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=120, bbox_inches='tight')
+    plt.close(fig)
+    print(f"  wrote {output_path}")
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--lens',   default='J0008-0004')
+    p.add_argument('--filt',   default='f814W')
+    p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
+                   help='sample subdirectory of data/drizzled/ and data/stamps/. '
+                        'Defined in info/samples/lens_samples.json '
+                        f'(default {mast_target_names.DEFAULT_SAMPLE})')
+    p.add_argument('--size',   type=float, default=None,
+                   help=f'stamp size in arcsec (square). Default: the lens\'s modelling size, its '
+                        f'stamp_size in info/samples/lens_samples.json, else '
+                        f'{stamp_paths.DEFAULT_SIZE:g}. The size is part of every filename '
+                        f'(stamp<size>_sci.fits), with its own '
+                        f'info/provenance/lens_stamp_qc_<size>arcsec.json, so the standard-size '
+                        f'products are never overwritten -- see stamp_paths.py')
+    p.add_argument('--box',    type=int, default=None,
+                   help='central box size in pixels searched for the brightest pixel. Default: '
+                        'the lens\'s stamp_box quirk in info/samples/lens_samples.json, else 100')
+    p.add_argument('--median-size', type=int, default=5,
+                   help='median filter window (pix) applied before peak-finding, to stop '
+                        'cosmic rays in the no-CR data being mistaken for the galaxy; '
+                        '1 disables')
+    p.add_argument('--pass', dest='drizzle_pass',
+                   choices=['auto', 'cr', 'nocrrej'], default='auto',
+                   help="which drizzle pass to cut from. 'auto' (default) prefers the "
+                        "CR-rejected pass and falls back to no-CR when no CR product "
+                        "exists (e.g. WFC3/IR F160W, which has no CR pass). 'cr' and "
+                        "'nocrrej' force one. The CR pass is the science default: ACS "
+                        # '%%' not '%': argparse runs the help through %-interpolation,
+                        # so a literal percent sign here crashes --help entirely.
+                        "uses LACosmic masking that keeps ~99%% of the deflector core "
+                        "while removing cosmic rays, so the old no-CR default put "
+                        "CR-riddled stamps in front of the user.")
+    p.add_argument('--cr', action='store_true', default=False,
+                   help='deprecated alias for --pass cr')
+    p.add_argument('--center-band', default=None,
+                   help='band whose deflector peak defines the shared stamp centre for '
+                        'ALL bands of a lens, so they co-register. Default: the first band '
+                        'with products in the sample\'s center_bands list '
+                        '(info/samples/lens_samples.json; f814W unless the sample sets one -- highest '
+                        'S/N, GAIA-accurate). Faint bands recentred on their own brightest '
+                        'pixel mis-centre (F606W locks onto a ring knot ~0.45" off).')
+    p.add_argument('--center-self', action='store_true', default=False,
+                   help='recentre each band on its own brightest pixel (old behaviour), '
+                        'not on the shared --center-band centre')
+    p.add_argument('--center-from', default=None, metavar='STAMP.fits',
+                   help='skip peak-finding and centre this cut on the sky position of the '
+                        'central pixel of an EXISTING stamp (any stamp*_sci.fits, e.g. '
+                        'one read out of git). Use it to re-cut a band from a different '
+                        'reduction onto the SAME grid so the hand-drawn masks/positions '
+                        'beside it stay pixel-for-pixel valid: peak-finding on a different '
+                        'mosaic can land a pixel (or a neighbour) away, which a mask cannot '
+                        'tell you. The grid is identical only if the two mosaics share a '
+                        'WCS -- check CRPIX/CRVAL afterwards, do not assume.')
+    p.add_argument('--corr-factor', type=float, default=None,
+                   help='multiply the noise map by this factor so it matches the noise '
+                        'actually present on patches the size of the drizzle drop or larger. '
+                        f'Default: the measured per-instrument/per-filter value in '
+                        f'info/overrides/{CORR_FACTORS_JSON} (1.00-1.26 per band, 1.33-1.43 in the per-lens overrides; 1.0 '
+                        'with a warning for a band not listed). The excess is NOT drizzle '
+                        '(drizzle conserves noise and 1/sqrt(WHT) is already sum-correct): it '
+                        'is an ERR-array deficit of ~10-20%% rms in ACS/UVIS plus a few percent '
+                        'of faint unmasked structure. An explicit value overrides the JSON; '
+                        'pass 1.0 for the raw 1/sqrt(WHT).')
+    p.add_argument('--psf-err', dest='psf_err', action='store_true', default=False,
+                   help='fold the empirical PSF error map (psf_err.fits, built by '
+                        'make_psf.py) into the noise map as an effective noise map: '
+                        'sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)). Off by default; '
+                        'use it to propagate PSF uncertainty into a '
+                        'diagonal-covariance likelihood such as PyAutoLens, which has no '
+                        'native PSF-error input. No-op with a warning if no error map exists.')
+    p.add_argument('--bcfill', action='store_true', default=False,
+                   help='cut from the bad-column-filled re-drizzle (data/drizzled_bcfill/, '
+                        'produced by drizzle_acs_wfc.py / drizzle_wfpc2_wf3.py --bcfill) instead of data/drizzled/. '
+                        'Lands in the SAME stamp dir under a TAGGED name '
+                        '(stamp12_bcfill_{sci,noise}.fits, stamp_paths.py) and carries '
+                        'BCFILL=T from the drizzled header. Removes the ACS dead-column '
+                        'noise stripe from the NOISE map, which is cosmetic: the stripe is '
+                        'the honest coverage penalty, so this is NOT the modelling input '
+                        '(decided 2026-09-22; the bcfill stamps live on the bcfill branch). '
+                        'See AGENTS.md *Bad-column fill*. ACS/WFPC2 bands only.')
+    p.add_argument('--crfill', action='store_true', default=False,
+                   help='cut from the cosmic-ray-filled re-drizzle '
+                        '(data/drizzled_crfill/, or data/drizzled_bcfill_crfill/ with '
+                        '--bcfill, produced by drizzle_acs_wfc.py --crfill). Lands in the '
+                        'SAME stamp dir under a TAGGED name (stamp12_[bcfill_]crfill_*) '
+                        'and carries CRFILL=T from the drizzled header. '
+                        'NOT a science default: it removes a cosmic ray\'s weight/noise '
+                        'residue by fabricating those pixels, which makes the noise map '
+                        'optimistic exactly where the track ran -- read --crfill in '
+                        'drizzle_acs_wfc.py and AGENTS.md before using it.')
+    p.add_argument('--drop', action='store_true', default=False,
+                   help='cut from the frame-dropped re-drizzle (the ..._drop/ tree produced '
+                        'by drizzle_acs_wfc.py --exclude-frames). A comparison product: it '
+                        'has fewer exposures than the science stamp, so it is noisier '
+                        'EVERYWHERE. Which frames were dropped is in the DROPFRMS header '
+                        'card. Cut it to --output, not over the science tree.')
+    p.add_argument('--force', action='store_true', default=False,
+                   help='replace a stamp from another reduction (its sci/noise/png are '
+                        'removed so the band keeps exactly one stamp), or overwrite a '
+                        'legacy untagged bcfill/crfill stamp. Refused without this -- see '
+                        'the checks below.')
+    p.add_argument('--output', default=None,
+                   help='output dir, default '
+                        'data/stamps/<sample>/<lens>/<filt>')
+    a = p.parse_args()
+    # The lens's modelling size unless --size asks for another; the QC record is the
+    # modelling-size one unless this is a re-cut at another size.
+    _modelling = stamp_paths.modelling_size(a.lens, a.sample)
+    a.size = _modelling if a.size is None else a.size
+    qc_size = None if a.size == _modelling else a.size
+
+    variant = stamp_paths.variant_from_flags(bcfill=a.bcfill, crfill=a.crfill, drop=a.drop)
+    drizzled_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant),
+                                a.sample, a.lens, a.filt)
+    output_dir = a.output or stamp_paths.stamp_dir(ws_path, a.sample, a.lens, a.filt)
+
+    # There is ONE stamp per band (stamp_paths.py), and a variant cut (--bcfill/--crfill/
+    # --drop) writes a variant-TAGGED name (stamp12_bcfill_sci.fits), so a different
+    # reduction can never silently overwrite this one -- but it could sit BESIDE it, and
+    # then every reader's find_stamp() refuses to choose. Keep the tree unambiguous at the
+    # source: refuse to add a second reduction's stamp to a dir that already holds another,
+    # unless --force, in which case the other reduction's sci/noise/png are removed (and
+    # said so) rather than left to trip every downstream script.
+    #
+    # Legacy check, same spirit: until 2026-09-22 bcfill/crfill stamps carried the bare
+    # name and were distinguished only by their BCFILL/CRFILL header cards, so a stamp
+    # under the name this cut is about to write may still be one of those. Refuse to
+    # overwrite it without --force too.
+    if not a.force:
+        for _prefix in stamp_paths.prefixes(a.size):
+            _others = {v: p for v, p in stamp_paths.list_stamps(output_dir, _prefix).items()
+                       if v != variant}
+            if _others:
+                _names = ', '.join(os.path.basename(p) for p in _others.values())
+                sys.exit(
+                    f"{a.lens} {a.filt}: this dir already holds a stamp from another "
+                    f"reduction ({_names}); this cut would add a "
+                    f"'{variant or 'standard'}' stamp beside it and leave the band "
+                    f"ambiguous.\n  Pass --force to replace it with the reduction you "
+                    f"asked for (the other's sci/noise/png are deleted).")
+        _asked = {'BCFILL': a.bcfill, 'CRFILL': a.crfill}
+        for existing in sorted(glob.glob(os.path.join(output_dir, f'{stamp_paths.stamp_prefix(a.size)}*_sci.fits'))):
+            if stamp_paths.stamp_variant(existing) != variant:
+                continue
+            _hdr = fits.getheader(existing)
+            for _card, _want in _asked.items():
+                if _hdr.get(_card, False) and not _want:
+                    sys.exit(
+                        f"{a.lens} {a.filt}: {os.path.basename(existing)} is a legacy "
+                        f"untagged {_card.lower()} stamp ({_card}=T) and this cut would "
+                        f"overwrite it.\n  Re-cut it with --{_card.lower()}, or pass "
+                        f"--force to deliberately replace it with the reduction you asked for.")
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Resolve which pass to cut from. --cr is a deprecated alias for --pass cr.
+    requested = 'cr' if a.cr else a.drizzle_pass
+    has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
+    science_pass = 'cr' if has_cr else 'nocrrej'
+    drizzle_pass = science_pass if requested == 'auto' else requested
+
+    # The science stamp is stamp<S>_* whichever pass it came from (the pass goes in the
+    # DRZPASS header card). Only a cut from a pass that is NOT the band's science pass --
+    # a no-CR comparison beside a CR science stamp -- is tagged stamp<S>_nocrrej_*, so the
+    # two never clobber and the comparison can never be read as the science stamp.
+    prefix = stamp_paths.stamp_prefix(a.size, comparison=(drizzle_pass != science_pass))
+
+    # --force: the one-stamp-per-band invariant is kept by removing the OTHER reduction's
+    # products for this pass before writing ours (the guard above already refused without
+    # --force). A comparison stamp (stamp<S>_nocrrej_*) and the science stamp coexist by design.
+    for _v, _sci in stamp_paths.list_stamps(output_dir, prefix).items():
+        if _v == variant:
+            continue
+        for _victim in (_sci, os.path.join(output_dir, stamp_paths.stamp_name(prefix, 'noise', _v)),
+                        os.path.join(output_dir, stamp_paths.stamp_png_name(prefix, _v))):
+            if os.path.exists(_victim):
+                os.remove(_victim)
+                print(f"  --force: removed {os.path.basename(_victim)} "
+                      f"('{_v or 'standard'}' reduction, superseded by '{variant or 'standard'}')")
+
+    sci_file, wht_file = find_products(drizzled_dir, drizzle_pass)
+    print(f"{a.lens} {a.filt}  [{drizzle_pass} pass]")
+    print(f"  sci: {os.path.basename(sci_file)}")
+    print(f"  wht: {os.path.basename(wht_file)}")
+
+    # Drizzled products from this pipeline are single-image files: data in the primary HDU.
+    with fits.open(sci_file) as hdul:
+        sci_hdr = hdul[0].header
+        sci_data = hdul[0].data
+    with fits.open(wht_file) as hdul:
+        wht_hdr = hdul[0].header
+        wht_data = hdul[0].data
+
+    wcs = WCS(sci_hdr)
+
+    ra, dec = catalogue_coord_for(a.lens)
+    catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
+    print(f"  catalogue position: {ra} {dec}")
+
+    # Shared recentre. Every band of a lens is centred on the SAME sky point, taken
+    # from the --center-band mosaic (default F814W: highest S/N, GAIA-accurate, cleanest
+    # deflector peak). Recentring each band on its own brightest pixel mis-centres the
+    # faint bands -- F606W locks onto a lensed-ring knot ~0.45" from the deflector core
+    # -- so the bands would not co-register. --center-self restores per-band recentring.
+    #
+    # Peak-finding uses the CR-rejected pass when present (no cosmic rays to lock onto),
+    # else the no-CR pass; see find_peak_coord.
+    if a.box is None:
+        a.box = mast_target_names.stamp_box(a.lens, a.sample) or 100
+    if a.center_band is None:
+        # First band of the sample's centre-band order that was drizzled for this lens;
+        # if none was, the first one, which then falls through to recentring on this band.
+        _order = mast_target_names.center_bands(a.sample)
+        a.center_band = next(
+            (b for b in _order if _has_products(os.path.join(
+                stamp_paths.drizzled_root(ws_path, variant), a.sample, a.lens, b))),
+            _order[0])
+    center_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant),
+                              a.sample, a.lens, a.center_band)
+    if a.center_self or a.filt == a.center_band or not _has_products(center_dir):
+        peak_dir, peak_src = drizzled_dir, 'this band'
+        if not a.center_self and a.filt != a.center_band:
+            print(f"  WARNING: no {a.center_band} products for a shared centre; "
+                  f"recentring on this band instead")
+    else:
+        peak_dir, peak_src = center_dir, a.center_band
+
+    try:
+        if a.center_from:
+            # The centre make_stamp used for that stamp is its central pixel (Cutout2D
+            # centres the box on `position`), so read it back through the stamp's own WCS.
+            _ch = fits.getheader(a.center_from)
+            _cw = WCS(_ch).celestial
+            peak_coord = _cw.pixel_to_world((_ch['NAXIS1'] - 1) / 2.0, (_ch['NAXIS2'] - 1) / 2.0)
+            cen_used, peak_src = a.center_from, f'stamp {os.path.basename(a.center_from)}'
+        else:
+            peak_coord, cen_used = find_peak_coord(peak_dir, catalogue_coord,
+                                                   a.size, a.box, a.median_size)
+    except NoOverlapError:
+        px, py = wcs.world_to_pixel(catalogue_coord)
+        raise SystemExit(
+            f"ERROR: the catalogue position for {a.lens} falls outside the mosaic.\n"
+            f"       It maps to pixel ({px:.0f}, {py:.0f}) in a "
+            f"{sci_hdr['NAXIS1']}x{sci_hdr['NAXIS2']} image.\n"
+            f"       The mosaic WCS does not cover the target - check the drizzle output."
+        )
+    print(f"  centre from {peak_src}: {os.path.basename(cen_used)}")
+
+    scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
+    offset = catalogue_coord.separation(peak_coord).arcsec
+    print(f"  pixel scale: {scale:.4f}\"/pix")
+    print(f"  recentred: offset {offset:.3f}\" ({offset / scale:.1f} pix) "
+          f"from catalogue position")
+
+    # Second pass: re-cut both sci and weight on the recentred position, so the stamp
+    # keeps its full requested size rather than being shifted and trimmed.
+    sci_stamp = make_stamp(sci_data, wcs, peak_coord, a.size)
+    wht_stamp = make_stamp(wht_data, WCS(wht_hdr), peak_coord, a.size)
+
+    # Calibrate 1/sqrt(WHT) into a real sigma map. This is a units correction, not a
+    # tuning knob: see weight_to_sigma_scale().
+    units_k, note = weight_to_sigma_scale(sci_hdr)
+    print(f"  noise scale: {note}")
+    # WFPC2 weight maps come in three generations and are not separable by inspection,
+    # so key the warning on the IVMMODEL stamp written by drizzle_wfpc2_wf3.py.
+    # Absent = pre-fix product: either exptime-only weighting (block-sum 5e-4) or an
+    # IVM built from the file's ERR array, which is exactly sqrt(SCI) and so overstates
+    # the noise ~2.1x (block-sum 0.46). Both need a re-drizzle, not a scale factor.
+    if sci_hdr.get('INSTRUME', '').strip() == 'WFPC2':
+        model = str(sci_hdr.get('IVMMODEL', '')).strip()
+        if model == 'SCI/gain+floor^2':
+            print(f"  WFPC2 noise model: {model} (calibrated; block-sum 0.90-1.09)")
+        else:
+            print("  WARNING: this WFPC2 product predates the noise-model fix "
+                  f"(IVMMODEL={model or 'absent'}). Its noise map is NOT calibrated -- "
+                  "block-sum 0.46 (old IVM) or 5e-4 (exptime-only) where 1.0 is "
+                  "correct. Re-drizzle before using it for a likelihood.")
+    a.corr_factor, corr_src = resolve_corr_factor(a.corr_factor, sci_hdr, a.sample, a.lens,
+                                                  a.filt, ws_path)
+    print(f"  noise-map inflation: x{a.corr_factor:g} "
+          + {'cli': '(--corr-factor)', 'json': f'(info/{CORR_FACTORS_JSON})',
+             'lens': f'(info/{CORR_FACTORS_JSON} _lens_overrides)', 'none': '(no entry)'}[corr_src])
+    noise_data = noise_map_via_weight_map_from(wht_stamp.data.astype(np.float64),
+                                               scale=units_k * a.corr_factor)
+
+    noise_hdr = wht_hdr.copy()
+    noise_hdr['NOISEK'] = (units_k, 'ERR-units scale applied to 1/sqrt(WHT)')
+    noise_hdr['NOISECOR'] = (a.corr_factor, 'noise-map inflation applied (see NOISECRS)')
+    noise_hdr['NOISECRS'] = (corr_src, 'NOISECOR source: json/lens/cli/none')
+
+    # Weight-map uniformity (STScI RMS/median rule) over the stamp region -- flags a
+    # pixfrac too small for the dither pattern (coverage speckle/holes) for this specific
+    # science stamp, not the whole mosaic. Informational: does not change any output.
+    wu = weight_uniformity(wht_stamp.data)
+    if wu is not None:
+        verdict = 'OK' if wu <= WEIGHT_UNIFORMITY_LIMIT else 'HIGH (coverage speckle/holes)'
+        print(f"  weight-map uniformity (stamp, RMS/median): {wu:.4f} "
+              f"(limit {WEIGHT_UNIFORMITY_LIMIT:g}) -> {verdict}")
+        noise_hdr['WHTUNIF'] = (round(wu, 6), 'weight-map RMS/median over the stamp')
+        noise_hdr['WHTUNIFL'] = (WEIGHT_UNIFORMITY_LIMIT, 'STScI uniformity limit (<=)')
+    else:
+        print("  weight-map uniformity: no positive pixels in the stamp weight map")
+
+    # Analytic Casertano R from the pixfrac/scale ratio AstroDrizzle stamped into the science
+    # header. Informational: it is the rms-relative factor 1/sqrt(C(0)), not comparable to
+    # --corr-factor (map-relative) -- see casertano_r()'s docstring.
+    pixfrac = sci_hdr.get('D001PIXF')
+    iscl, oscl = sci_hdr.get('D001ISCL'), sci_hdr.get('D001SCAL')
+    r_analytic = scale_ratio = None
+    if pixfrac is not None and iscl and oscl:
+        scale_ratio = float(oscl) / float(iscl)
+        r_analytic = casertano_r(float(pixfrac), scale_ratio)
+    if r_analytic is not None:
+        print(f"  Casertano R (analytic, pixfrac={float(pixfrac):g}, "
+              f"scale_ratio={scale_ratio:.3f}): {r_analytic:.3f}"
+              + f"  [applied corr-factor {a.corr_factor:g}]")
+        noise_hdr['CASR'] = (round(r_analytic, 4), 'analytic Casertano correlated-noise R')
+    else:
+        print("  Casertano R: not available (D001PIXF/D001ISCL/D001SCAL missing from header)")
+
+    # Optionally propagate PSF uncertainty into an effective noise map (opt-in). PyAutoLens has no PSF-error input, so fold the PSF error map built by
+    # make_psf.py into the noise: sqrt(sigma_pix^2 + convolve(sci^2, sigma_PSF^2)).
+    if a.psf_err:
+        # The PSF products are not size-keyed: resolve them through
+        # stamp_paths.psf_stamp_dir rather than assuming this run's own output_dir, so a
+        # --size variant cut (and an --output one-off) still folds in the canonical error
+        # map from the default-size tree.
+        psf_err_path = os.path.join(
+            stamp_paths.psf_stamp_dir(ws_path, a.sample, a.lens, a.filt),
+            f'psf_err.fits')
+        if os.path.exists(psf_err_path):
+            with fits.open(psf_err_path) as hdul:
+                psf_err_kernel = np.asarray(hdul[0].data, dtype=np.float64)
+                psf_err_frac = hdul[0].header.get('PSFEFRAC')
+            noise_data = fold_psf_error_into_noise(noise_data, sci_stamp.data,
+                                                   psf_err_kernel)
+            noise_hdr['PSFERRAP'] = (True, 'PSF error map folded into the noise map')
+            if psf_err_frac is not None:
+                noise_hdr['PSFEFRAC'] = (psf_err_frac, 'integrated PSF error fraction folded in')
+            print(f"  PSF error folded into noise map "
+                  f"({os.path.basename(psf_err_path)}, PSFEFRAC={psf_err_frac})")
+        else:
+            print(f"  WARNING: --psf-err set but {os.path.basename(psf_err_path)} not found; "
+                  f"noise map left as pixel-noise only (run make_psf.py first)")
+
+    # Stamp the size and the drizzle pass on both products. The size is in the filename
+    # too, but the pass is not (stamp_paths.py), so DRZPASS is where a reader finds it.
+    sci_hdr = sci_hdr.copy()
+    for hdr in (sci_hdr, noise_hdr):
+        hdr['CUTSIZE'] = (a.size, 'requested stamp size (arcsec, square)')
+        hdr['DRZPASS'] = (drizzle_pass, 'drizzle pass the stamp was cut from')
+
+    sci_out = os.path.join(output_dir, stamp_paths.stamp_name(prefix, 'sci', variant))
+    write_stamp(sci_stamp.data, sci_stamp.wcs, sci_hdr, sci_out)
+    write_stamp(noise_data, wht_stamp.wcs, noise_hdr,
+                 os.path.join(output_dir, stamp_paths.stamp_name(prefix, 'noise', variant)))
+
+    plot_stamps(sci_stamp.data, noise_data,
+                 os.path.join(output_dir, stamp_paths.stamp_png_name(prefix, variant)),
+                 title=f"{a.lens}  {a.filt}  [{drizzle_pass}]  ({a.size:g}\" stamp, "
+                       f"recentred {offset:.2f}\" from catalogue)")
+
+    # Structured provenance: the decisions and diagnostics that shaped this stamp, not
+    # just the raw sci/noise arrays -- so a later audit doesn't have to re-derive them from
+    # the console log. Keyed like every other tracking JSON (info_json.update), one entry
+    # per (sample, lens, filt) product directory.
+    info_json.update(stamp_paths.qc_json_path(ws_path, qc_size), a.sample, a.lens,
+                     a.filt, {
+        'size_arcsec': a.size,
+        'stamp': os.path.basename(sci_out),
+        'variant': variant,
+        'bcfill': bool(a.bcfill),
+        'crfill': bool(a.crfill),
+        'dropped_frames': bool(a.drop),
+        'drizzle_pass': drizzle_pass,
+        'center_source': peak_src,
+        'center_from': _repo_relative(a.center_from),
+        'offset_arcsec': round(offset, 4),
+        'noise_k': units_k,
+        'corr_factor': a.corr_factor,
+        'corr_factor_source': corr_src,
+        'weight_uniformity': round(wu, 6) if wu is not None else None,
+        'weight_uniformity_limit': WEIGHT_UNIFORMITY_LIMIT,
+        'weight_uniformity_ok': (wu is not None and wu <= WEIGHT_UNIFORMITY_LIMIT),
+        'pixfrac': float(pixfrac) if pixfrac is not None else None,
+        'scale_ratio': round(scale_ratio, 6) if scale_ratio is not None else None,
+        'casertano_r_analytic': round(r_analytic, 4) if r_analytic is not None else None,
+    })
+
+
+if __name__ == '__main__':
+    main()

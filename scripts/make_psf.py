@@ -9,12 +9,12 @@ an early exploratory notebook (not tracked), with every manual step of it replac
 by automatic quality cuts plus a per-lens override file:
 
   * the hand-typed NaN rectangles that blanked the lens galaxy / bad regions  ->  an
-    automatic mask (deflector circle from info/lens_coords.py, zero-weight pixels from
+    automatic mask (deflector circle from info/coords/lens_coords.py, zero-weight pixels from
     the drizzle WHT map, and a frame-edge margin);
   * the frame-max detection threshold ->  a background-sigma threshold (threshold_scale x
     the sigma-clipped background std);
   * the hand-deletion of stars 5..48 ->  isolation / sharpness / roundness / bounds cuts,
-    keep the brightest N, plus an optional info/psf_stars.json entry (include / exclude
+    keep the brightest N, plus an optional info/overrides/psf_stars.json entry (include / exclude
     coords, or per-lens parameter overrides) for the few fields the automatics get wrong.
 
 Model route (fallback): when a field has too few usable stars (< --min-stars), a
@@ -30,23 +30,23 @@ Outputs (data/psf/<sample>/<lens>/<filt>/):
                         ePSF, which is not itself written to disk -- nothing reads it back).
   * psf.png          -- QA panel: selected-star montage, the kernel, and a radial profile.
 
-The trimmed, modelling-ready kernel (cutout_[cr_]psf.fits, plus its _err/_analytic
-siblings) goes to cutout_paths.psf_cutout_dir(): the band's cutout dir, beside the
+The trimmed, modelling-ready kernel (psf.fits, plus its _err/_analytic
+siblings) goes to stamp_paths.psf_stamp_dir(): the band's stamp dir, beside the
 sci/noise/mask a fit consumes. One kernel per band, and NOT keyed on stamp size -- it is
 trimmed by amplitude, a property of the band, so a --size variant stamp pairs with this
 same kernel in the default-size tree.
 
 For a MODEL-tier build (method_used starts with 'model'), this auto-chains into
 make_psf_inject.run_injection(..., promote=True): the drizzle-broadened injected kernel
-becomes the canonical psf_kernel.fits / cutout_[cr_]psf.fits, and the analytic model this
-function just wrote is moved aside to psf_kernel_analytic.fits / cutout_[cr_]psf_analytic.fits
+becomes the canonical psf_kernel.fits / psf.fits, and the analytic model this
+function just wrote is moved aside to psf_kernel_analytic.fits / psf_analytic.fits
 (comparison only). See make_psf_inject.py's docstring. If injection fails (e.g. the
 data/drizzle_files/ inputs were cleared), it falls back to
 make_psf_inject.analytic_broadened_fallback() -- a cheap analytic drop-box broadening of the
 analytic kernel, promoted the same way -- and only if THAT also fails does the un-broadened
 analytic model stay canonical.
 
-Records the build in info/lens_psf.json (method, n_stars, fwhm_pix, oversample,
+Records the build in info/provenance/lens_psf.json (method, n_stars, fwhm_pix, oversample,
 kernel_size); no data for a filter records null and exits 0, matching the other scripts.
 
 Usage:
@@ -80,23 +80,23 @@ from photutils.detection import DAOStarFinder
 from photutils.psf import EPSFBuilder, extract_stars
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 # Reuse the canonical product locator and the coordinate resolver rather than
 # re-implementing the instrument-varying prefix/suffix globbing or the per-sample coords
-# lookup (info/lens_coords.py, every sample's table merged). Importing
-# make_cutouts is safe: its work is under __main__.
-from make_cutouts import find_products, _has_products, catalogue_coord_for
+# lookup (info/coords/lens_coords.py, every sample's table merged). Importing
+# make_stamps is safe: its work is under __main__.
+from make_stamps import find_products, _has_products, catalogue_coord_for
 import psf_models
 import info_json
-import cutout_paths
+import stamp_paths
 
 
 # ── Per-instrument defaults ─────────────────────────────────────────────────────
 # Keyed on a normalised instrument label (see instrument_key). WFPC2's drizzled primary
 # header records DETECTOR=PC (the aperture, not the chip -- the lens is on WF3), so WFPC2
-# is keyed on INSTRUME alone. Every value here is overridable by info/psf_stars.json and
+# is keyed on INSTRUME alone. Every value here is overridable by info/overrides/psf_stars.json and
 # then by an explicit CLI flag; the drizzled pixel scale is read from the WCS, not stored.
 _BASE = dict(
     threshold_scale=5.0,     # detection threshold = this x sigma-clipped background std
@@ -138,7 +138,7 @@ _BASE = dict(
 # oversample=2: SLACS fields yield only ~10-20 usable stars, so a 4x-oversampled ePSF
 # has too many pixels per constraining star and comes out noisy. 2x is well-matched to
 # these (near-)critically-sampled drizzled grids and much more robust; raise per lens via
-# --oversample or info/psf_stars.json where a field is unusually star-rich.
+# --oversample or info/overrides/psf_stars.json where a field is unusually star-rich.
 _INSTR = {
     'ACS/WFC': dict(fwhm=2.5, psf_fwhm=2.0, oversample=2, star_size=51, max_stars=25,
                     min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7),
@@ -172,7 +172,7 @@ _INSTR = {
 # WFC3/IR: up-the-ramp fitting handles saturation, no gate. Found 2026-09-29 on the pixfrac
 # 1.0 gallery rebuild: J0742+3341 f814W's 195 e-/s saturated star had failed the shape gate
 # by accident at pixfrac 0.7, passed it at 1.0, set the 2% flux floor (8 -> 4 stars) and
-# went into the ePSF. Overridable via info/psf_stars.json `satlevel` / `max_peak`.
+# went into the ePSF. Overridable via info/overrides/psf_stars.json `satlevel` / `max_peak`.
 _SATLEVEL = {'ACS/WFC': 84700.0, 'WFC3/UVIS': 70000.0, 'WFPC2': 4095.0, 'WFC3/IR': None}
 SAT_PEAK_FRAC = 0.5
 
@@ -325,7 +325,7 @@ def select_stars(data, mask, params, overrides, star_size):
     streaks and cosmic rays. Survivors are ranked by flux and the brightest `max_stars`
     kept.
 
-    `overrides` (from info/psf_stars.json) is applied last: `exclude` points/boxes remove
+    `overrides` (from info/overrides/psf_stars.json) is applied last: `exclude` points/boxes remove
     detected stars, `include` points force extra positions in.
     """
     hsize = (star_size - 1) // 2
@@ -642,7 +642,7 @@ def psf_error_map(kernels, method, trim_half):
     standard error is the replicate std, sqrt(SS/(B-1)). Jackknife: the leave-one-out standard
     error sqrt((n-1)/n . SS). Returns (err_full, err_trim, err_frac, fwhm_err): err_trim is
     err_full cropped to the primary kernel's trim window (same `trim_half`, not a fresh
-    amplitude cut) so it matches cutout_[cr_]psf.fits pixel-for-pixel; err_frac =
+    amplitude cut) so it matches psf.fits pixel-for-pixel; err_frac =
     sqrt(sum(err_full**2)) (integrated relative PSF uncertainty; the kernels sum to 1).
     """
     stack = np.stack(kernels, axis=0)
@@ -798,7 +798,7 @@ def lens_products_rootnames(sample, lens, filt_key):
     Used by the ACS focus-diverse ePSF model to retrieve a focus-matched ePSF per exposure.
     Returns [] if the file or entry is absent.
     """
-    data = info_json.load(os.path.join(ws_path, 'info', 'lens_products.json'))
+    data = info_json.load(os.path.join(ws_path, 'info', 'provenance', 'lens_products.json'))
     val = data.get(sample, {}).get(lens, {}).get(filt_key)
     return list(val) if val else []
 
@@ -811,14 +811,14 @@ def main():
     p.add_argument('--filt', default='f814W')
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory of data/drizzled/ and data/psf/. Defined in '
-                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+                        f'info/samples/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--pass', dest='drizzle_pass',
                    choices=['auto', 'cr', 'nocrrej'], default='auto',
-                   help="drizzle pass the kernel is NAMED for (cutout_cr_psf.fits vs "
-                        "cutout_psf.fits). 'auto' (default) matches the science stamp. Stars "
+                   help="drizzle pass the kernel is NAMED for (psf.fits vs "
+                        "psf.fits). 'auto' (default) matches the science stamp. Stars "
                         "are detected in the no-CR mosaic whenever one exists (LACosmic eats "
                         "star cores), else in this pass; override with psf_star_pass in "
-                        "info/psf_stars.json.")
+                        "info/overrides/psf_stars.json.")
     p.add_argument('--method', choices=['auto', 'empirical', 'model'], default='auto',
                    help="'auto' (default) builds an empirical ePSF and falls back to the "
                         "model tier (focus-diverse / PSF-DB / STDPSF, then injected) when "
@@ -827,7 +827,7 @@ def main():
                         "'model' forces the model tier.")
     p.add_argument('--trim-threshold', dest='trim_threshold', type=float, default=1e-3,
                    help="amplitude fraction of peak at which the trimmed modelling kernel "
-                        "(<psf cutout dir>/<...>_psf.fits) is cut. Default 1e-3 -- an "
+                        "(<psf stamp dir>/<...>_psf.fits) is cut. Default 1e-3 -- an "
                         "amplitude criterion, not enclosed-energy (which under-sizes).")
     p.add_argument('--n-boot', dest='n_boot', type=int, default=None,
                    help='bootstrap resamples for the empirical PSF error map (default 100; '
@@ -835,7 +835,7 @@ def main():
                         'tier only.' % JACKKNIFE_MAX_STARS)
     p.add_argument('--no-psf-err', dest='no_psf_err', action='store_true', default=False,
                    help='skip the PSF error map (psf_kernel_err.fits and '
-                        'cutout_[cr_]psf_err.fits) for any tier -- empirical (star '
+                        'psf_err.fits) for any tier -- empirical (star '
                         'resample), ACS focus-diverse (per-exposure), or WFPC2 MAST-DB '
                         '(bootstrap over DB stars). STDPSF has none regardless. The '
                         'point-estimate kernel is unchanged either way.')
@@ -864,9 +864,9 @@ def main():
 
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
     output_dir = a.output or os.path.join(ws_path, 'data', 'psf', a.sample, a.lens, a.filt)
-    psf_json = os.path.join(ws_path, 'info', 'lens_psf.json')
+    psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
 
-    # No-data outcome: matches the drizzle/cutout scripts -- record null, exit 0.
+    # No-data outcome: matches the drizzle/stamp scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
         print(f'=== NO DATA: {a.lens} {a.filt} (no drizzled products in {drizzled_dir})')
         info_json.update(psf_json, a.sample, a.lens, a.filt, None)
@@ -876,11 +876,11 @@ def main():
 
     # Per-lens overrides (loaded before the pass resolution: an override can redirect
     # which drizzle pass the empirical build reads).
-    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'psf_stars.json'))
+    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'overrides', 'psf_stars.json'))
     overrides = overrides_all.get(a.sample, {}).get(a.lens, {}).get(a.filt, {})
 
-    # Output pass -- names the cutout (cutout_cr_* vs cutout_*) so the PSF matches the
-    # science stamp downstream reads. auto -> cr where a CR pass exists.
+    # Output pass -- the science stamp's pass, recorded in the kernel header (PSFPASS).
+    # auto -> cr where a CR pass exists. The kernel file is psf.fits either way.
     if a.drizzle_pass == 'auto':
         has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
         drizzle_pass = 'cr' if has_cr else 'nocrrej'
@@ -936,7 +936,7 @@ def main():
     if kernel_size % 2 == 0:
         kernel_size += 1
 
-    ra, dec = catalogue_coord_for(a.lens)   # any sample, via info/lens_coords.py
+    ra, dec = catalogue_coord_for(a.lens)   # any sample, via info/coords/lens_coords.py
     catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
 
     # ── Background subtraction and star selection ──────────────────────────────
@@ -965,7 +965,7 @@ def main():
         raise SystemExit(
             f'ERROR: only {n_stars} usable stars for {a.lens} {a.filt} '
             f'(need >= {params["min_stars"]}). Loosen cuts, add include stars to '
-            f'info/psf_stars.json, or use --method model.')
+            f'info/overrides/psf_stars.json, or use --method model.')
 
     star_stamps = []
     method_used = None
@@ -1000,7 +1000,7 @@ def main():
         elif method == 'empirical':
             raise SystemExit(
                 f'ERROR: the empirical ePSF for {a.lens} {a.filt} diverged ({n_stars} '
-                f'stars). Add cleaner include stars to info/psf_stars.json or use '
+                f'stars). Add cleaner include stars to info/overrides/psf_stars.json or use '
                 f'--method model.')
         else:
             print(f'  WARNING: empirical ePSF diverged with {n_stars} stars; '
@@ -1123,7 +1123,7 @@ def main():
                        'fitted kernel FWHM (pixels)')
     khdr['PSFLENS'] = (a.lens, 'lens')
     khdr['PSFFILT'] = (a.filt, 'filter')
-    khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in the psf cutout dir)')
+    khdr['PSFKIND'] = ('full', 'full ePSF footprint (trimmed copy in the psf stamp dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     write_fits(kernel, khdr, os.path.join(output_dir, 'psf_kernel.fits'))
 
@@ -1131,26 +1131,25 @@ def main():
              os.path.join(output_dir, 'psf.png'),
              title=f'{a.lens}  {a.filt}  [{method_used}]  ({n_stars} stars)')
 
-    # ── Write the trimmed modelling kernel to the cutout tree (pass-matched prefix) ─
-    # cutout_paths.psf_cutout_dir pins it to the default-size tree (the kernel is not
+    # ── Write the trimmed modelling kernel (psf.fits) into the band's stamp dir ─────
+    # stamp_paths.psf_stamp_dir pins it to the default-size tree (the kernel is not
     # size-keyed), beside the sci/noise/mask a fit consumes.
-    cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, a.sample, a.lens, a.filt)
-    os.makedirs(cutouts_dir, exist_ok=True)
-    prefix = 'cutout_cr' if drizzle_pass == 'cr' else 'cutout'
+    stamps_dir = stamp_paths.psf_stamp_dir(ws_path, a.sample, a.lens, a.filt)
+    os.makedirs(stamps_dir, exist_ok=True)
     thdr = khdr.copy()
     thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
     thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
     thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
     if star_pass != drizzle_pass:
         thdr['PSFSTARP'] = (star_pass, 'drizzle pass the empirical ePSF was built from')
-    write_fits(trimmed, thdr, os.path.join(cutouts_dir, f'{prefix}_psf.fits'))
+    write_fits(trimmed, thdr, os.path.join(stamps_dir, f'psf.fits'))
 
-    # ── Write the PSF error maps (full to data/psf/, trimmed next to the cutout) ─
+    # ── Write the PSF error maps (full to data/psf/, trimmed next to the stamp) ─
     if err_full is not None:
         for base, kind, arr, dest in (
                 (khdr, 'full_err', err_full, os.path.join(output_dir, 'psf_kernel_err.fits')),
                 (thdr, 'trimmed_err', err_trim,
-                 os.path.join(cutouts_dir, f'{prefix}_psf_err.fits'))):
+                 os.path.join(stamps_dir, f'psf_err.fits'))):
             ehdr = base.copy()
             ehdr['PSFKIND'] = (kind, 'per-pixel PSF std (ensemble)')
             ehdr['PSFERR'] = (err_method, 'bootstrap or jackknife ensemble method')
@@ -1166,7 +1165,7 @@ def main():
         'fwhm_pix': round(fwhm_pix, 4) if fwhm_pix is not None else None,
         'oversample': oversample,
         'kernel_size': int(kernel.shape[0]),
-        'cutout_kernel_size': int(trim_size),
+        'trimmed_kernel_size': int(trim_size),
         'trim_threshold': a.trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
         'fwhm_pix_err': round(fwhm_err, 4) if fwhm_err is not None else None,
@@ -1179,7 +1178,7 @@ def main():
 
     # Model tier lacks drizzle broadening (see make_psf_inject.py docstring) -- auto-chain
     # the injection + promotion so this single command already leaves the drizzle-broadened
-    # kernel as the canonical psf_kernel.fits / cutout_[cr_]psf.fits. Empirical builds are
+    # kernel as the canonical psf_kernel.fits / psf.fits. Empirical builds are
     # already the drizzled PSF (cut from the mosaic), so this is skipped for them. A failed
     # injection (e.g. data/drizzle_files/ was cleared) degrades to the cheap analytic
     # drop-box broadening fallback (psf_models.analytic_drop_broaden) rather than silently
@@ -1198,7 +1197,7 @@ def main():
                   f'drizzle-broadening fallback instead ...')
             try:
                 record = make_psf_inject.analytic_broadened_fallback(
-                    output_dir, cutouts_dir, prefix, sci_hdr, method_used, drizzle_pass,
+                    output_dir, stamps_dir, sci_hdr, method_used, drizzle_pass,
                     trim_threshold=a.trim_threshold)
                 info_json.update(psf_json, a.sample, a.lens, a.filt, dict(record))
                 print(f'  promoted: broadened_{method_used} is now the canonical PSF '

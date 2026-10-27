@@ -6,11 +6,11 @@ with thumbnails, completeness tables and the per-band provenance from the tracki
     uv run python scripts/make_dashboard.py --sample bells  # one sample only
     uv run python scripts/make_dashboard.py --no-thumbs     # rewrite index.html, keep images
 
-Reads ONLY tracked inputs (info/*.json and the data/cutouts stamps, resolved through
-cutout_paths so no stamp name is ever spelled here) plus data/mosaics PNGs. Writes
+Reads ONLY tracked inputs (info/*.json and the data/stamps stamps, resolved through
+stamp_paths so no stamp name is ever spelled here) plus data/mosaics PNGs. Writes
 diagnostics/dashboard/{index.html, thumbs/<sample>/<lens>/<band>.jpg,
 mosaics/<sample>/<group>_<kind>.jpg}. The page opens from disk (relative image paths; the
-lightbox then loads the full `_dataset.png` out of data/cutouts) and is what gets published
+lightbox then loads the full `_dataset.png` out of data/stamps) and is what gets published
 as the shareable artifact (where the lightbox falls back to the thumbnail).
 
 It is a QC/overview product, not a science product: nothing here feeds a fit.
@@ -25,10 +25,10 @@ import numpy as np
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ws_path, 'scripts'))
-import cutout_paths  # noqa: E402
+import stamp_paths  # noqa: E402
 import mast_target_names  # noqa: E402
+import info_json  # noqa: E402
 
-INFO = os.path.join(ws_path, 'info')
 THUMB_PX = 260
 MOSAIC_W = 1600
 
@@ -40,7 +40,7 @@ NOISE_INSTR = {'ACS/WFC': 'ACS/WFC', 'WFPC2/WF3': 'WFPC2', 'WFPC2/PC': 'WFPC2',
 
 
 def load_json(name):
-    path = os.path.join(INFO, name)
+    path = info_json.path(ws_path, name)
     if not os.path.exists(path):
         return {}
     with open(path) as f:
@@ -73,7 +73,7 @@ def collect(samples):
     overrides = noise_j.get('_lens_overrides', {})
     lenses_out = []
     for sample in samples:
-        croot = cutout_paths.cutouts_root(ws_path)
+        croot = stamp_paths.stamps_root(ws_path)
         for lens in mast_target_names.lenses(sample):
             ldir = os.path.join(croot, sample, lens)
             if not os.path.isdir(ldir):
@@ -83,16 +83,16 @@ def collect(samples):
                 bdir = os.path.join(ldir, band)
                 if not os.path.isdir(bdir):
                     continue
-                prefix = cutout_paths.find_prefix(bdir)
+                prefix = stamp_paths.find_prefix(bdir)
                 if prefix is None:
                     continue
-                sci = cutout_paths.find_stamp(bdir, prefix, 'sci')
-                noise = cutout_paths.find_stamp(bdir, prefix, 'noise')
-                variant = cutout_paths.stamp_variant(sci)
+                sci = stamp_paths.find_stamp(bdir, prefix, 'sci')
+                noise = stamp_paths.find_stamp(bdir, prefix, 'noise')
+                variant = stamp_paths.stamp_variant(sci)
                 have = {
                     'noise': noise is not None,
-                    'psf': os.path.exists(os.path.join(bdir, f'{prefix}_psf.fits')),
-                    'psf_err': os.path.exists(os.path.join(bdir, f'{prefix}_psf_err.fits')),
+                    'psf': os.path.exists(os.path.join(bdir, f'psf.fits')),
+                    'psf_err': os.path.exists(os.path.join(bdir, f'psf_err.fits')),
                     'mask': os.path.exists(os.path.join(bdir, f'{prefix}_mask.fits')),
                     'positions_file': os.path.exists(os.path.join(bdir, f'{prefix}_positions.json')),
                     'dataset_png': os.path.exists(os.path.join(bdir, f'{prefix}_dataset.png')),
@@ -111,7 +111,7 @@ def collect(samples):
                 cr = (cr_j.get(sample, {}).get(lens, {}) or {}).get(base_filt(band))
                 bands.append({
                     'band': band, 'prefix': prefix, 'variant': variant,
-                    'cr_pass': prefix == 'cutout_cr',
+                    'cr_pass': stamp_paths.stamp_pass(sci) == 'cr',
                     'instrument': instr, 'n_frames': len(frames), 'exptime': exptime,
                     'have': have,
                     'psf_method': psf.get('method'), 'psf_n_stars': psf.get('n_stars'),
@@ -190,7 +190,7 @@ def downsize_mosaics(samples, out_dir, bands_on_disk):
     from PIL import Image
     found = {}
     for sample in samples:
-        mdir = os.path.join(cutout_paths.mosaics_root(ws_path), sample)
+        mdir = os.path.join(stamp_paths.mosaics_root(ws_path), sample)
         for png in sorted(glob.glob(os.path.join(mdir, '*.png'))):
             base = os.path.splitext(os.path.basename(png))[0]
             if not base.endswith(('_signal', '_snr', '_psf', '_noise')):

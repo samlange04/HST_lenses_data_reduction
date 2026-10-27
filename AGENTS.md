@@ -15,12 +15,14 @@ new evidence.
 > **`main` carries the standard drizzle; the stamp filename carries the reduction.**
 > Since 2026-10-04 the standard noise map also carries the measured ERR-deficit inflation
 > (`NOISECOR`, see *Drizzle correlated noise*): the `corr-factor` branch was merged into
-> `main` and is now redundant. `cutout_[cr_]{sci,noise}.fits` is standard; `cutout_cr_bcfill_sci.fits` /
-> `cutout_cr_bcfill_crfill_sci.fits` are variants that live only on the **`bcfill` branch**
-> (see *Bad-column fill*). Masks, arc masks, positions and PSFs keep the bare `cutout_[cr_]`
-> prefix — they describe the grid, which is identical across reductions — so a mask commit
-> cherry-picks between branches without dragging a stamp along. Readers resolve stamps through
-> `cutout_paths.find_stamp` / `find_prefix`, never by spelling the name, and raise
+> `main` and is now redundant. `stamp12_{sci,noise}.fits` is standard; `stamp12_bcfill_sci.fits` /
+> `stamp12_bcfill_crfill_sci.fits` are the variant names, and those stamps live only on the
+> **`bcfill` branch** (see *Bad-column fill*), which predates the 2026-10-26 rename and still
+> carries the old `data/cutouts/…/cutout_cr_*` names. Masks, arc masks and positions keep the
+> bare `stamp12_` prefix and the PSF is plain `psf.fits` — they describe the grid, which is
+> identical across reductions — so a mask commit cherry-picks between branches without
+> dragging a stamp along. Readers resolve stamps through
+> `stamp_paths.find_stamp` / `find_prefix`, never by spelling the name, and raise
 > `AmbiguousStampError` if two reductions ever share a dir.
 
 ## Current state of the products (verified on disk 2026-10-21)
@@ -45,7 +47,7 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
   step). Contaminant masking is finished everywhere.
 - **Arc masks are optional products, and none is tracked in git** (see *Arc masks*): a band
   or a sample without one is complete, not outstanding. The 10 `slacs_gold` f606W arc masks
-  recorded in `info/lens_arc_masks.json` have no file anywhere; their provenance entries remain.
+  recorded in `info/provenance/lens_arc_masks.json` have no file anywhere; their provenance entries remain.
 - **24 lenses have deliberately EMPTY positions files** (images too uncertain to mark, or
   counter-images below the noise) — see *Image positions*. An empty file means "decided:
   none", not "to do".
@@ -151,18 +153,18 @@ Each runner takes an optional sample arg, defaulting to `slacs_gold`:
 ```bash
 bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
 bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
-bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> cutout
+bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> stamp
 bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F606W/F814W/F438W (gallery only; UV bands dropped 2026-09-29)
-bash scripts/run_cutouts_all.sh              # stamps for whatever products exist (12", default)
-bash scripts/run_cutouts_all.sh slacs_gold 20  # same, at a 20" stamp size (parallel tree)
+bash scripts/run_stamps_all.sh              # stamps for whatever products exist (12", default)
+bash scripts/run_stamps_all.sh slacs_gold 20  # same, at a 20" stamp size (parallel tree)
 bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
 bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
 ```
 
-All runners take the roster from `info/lens_samples.json` via `scripts/mast_target_names.py`
-— **except `run_cutouts_all.sh` and `run_psf_all.sh`, which glob `data/drizzled/`** (a stamp
+All runners take the roster from `info/samples/lens_samples.json` via `scripts/mast_target_names.py`
+— **except `run_stamps_all.sh` and `run_psf_all.sh`, which glob `data/drizzled/`** (a stamp
 or PSF needs a mosaic that exists). They report `ok` / `no data` / `FAILED` separately, so
-the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_cutouts_all.sh`
+the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_stamps_all.sh`
 globs `<filt>*` (not `<filt>`) so per-visit split-visit dirs are included, and covers every
 sample's filters (SLACS `f606W f814W f555W f160W`, gallery's `f438W`, SL2S's `f475X f600LP`)
 in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
@@ -172,11 +174,11 @@ WFC3/UVIS data, but (like the other runners) accepts any sample as its first arg
 
 The wrapper for external users: `uv run python scripts/regenerate_files.py --sample
 <sample>|all` rebuilds everything `.gitignore` excludes from the tracked files, in dependency
-order, by calling the runners above — no reduction logic of its own. Stages: `cutout-pngs`
+order, by calling the runners above — no reduction logic of its own. Stages: `stamp-pngs`
 and `positions-pngs` (LIGHT: re-rendered from the tracked stamps/JSONs, `--light` for just
 these), `drizzle` (HEAVY: only the instrument runners the sample has products for in
 `lens_instrument.json`; `--all-instruments` to try the rest; note `run_wfpc2_wf3.sh` re-cuts
-the F606W stamps as part of its unit), `cutouts` (only with `--size S`, writes the
+the F606W stamps as part of its unit), `stamps` (only with `--size S`, writes the
 `_<S>arcsec` trees; the tracked 12" tree is never re-cut) and `psf` (opt-in via `--stages`,
 because it rewrites the tracked kernels). `--dry-run` prints the plan. Idempotent; re-run to
 resume. Documented for operators in `README.md`.
@@ -184,11 +186,11 @@ resume. Documented for operators in `README.md`.
 ### `run_wfpc2_wf3.sh` — the single WFPC2 driver (three traps it exists to avoid)
 
 It runs the full three-stage order (`drizzle_wfpc2_wf3.py` → `align_wfpc2_to_acs.py` →
-`make_cutouts.py`) for every lens, reads per-lens alignment from
-`info/wfpc2_alignment.json`, expands the two split-visit lenses into per-visit products,
+`make_stamps.py`) for every lens, reads per-lens alignment from
+`info/overrides/wfpc2_alignment.json`, expands the two split-visit lenses into per-visit products,
 and retries failures once. It carries **no exclusion list** — the drizzle script measures
 each lens's dither coverage and skips any that can't reach 0.05″/px, reported as
-`SKIPPED (dither phase)`, not a failure. It stops before align+cutout on a `no data` lens.
+`SKIPPED (dither phase)`, not a failure. It stops before align+stamp on a `no data` lens.
 
 It was rebuilt (2026-07-26) because a prior version drifted into quietly-wrong products.
 The three traps generalise to anything driving this pipeline:
@@ -231,7 +233,7 @@ because `slacs_other` runs generally shorter total exposures than `slacs_gold`.
   data: tracking JSONs get `null`, the script prints `=== BLOCKED (exptime): ... ===`
   and exits 0, so a batch runner counts it separately from a failure (`run_acs_all.sh` /
   `run_wfc3_all.sh` / `run_gallery_uvis_all.sh` track it in a `blocked` counter;
-  `run_wfpc2_wf3.sh` reports `blocked (exptime)` and skips the align/cutout stages, same
+  `run_wfpc2_wf3.sh` reports `blocked (exptime)` and skips the align/stamp stages, same
   as `no data`).
 - **`WARN_EXPTIME = 1200s`** — the drizzle proceeds; the script prints
   `  EXPTIME WARNING: ...` and the batch runners report `OK (low exptime)`.
@@ -248,10 +250,10 @@ S/N −17.7) and deleted 2026-09-26.
 
 ## Data flow and directory layout
 
-**A fresh clone carries only the tracked layers**: `data/cutouts/` (the finished stamps,
+**A fresh clone carries only the tracked layers**: `data/stamps/` (the finished stamps,
 noise maps, PSF kernels, masks and positions for every lens), `data/mosaics/` and `info/`.
-Every FITS layer under `calibrated/`, `drizzle_files*/`, `drizzled*/`, `cutouts_<S>arcsec/`,
-`psf/` and `reference_files/` is gitignored and regenerable (`scripts/regenerate_files.py`,
+Every FITS layer under `calibrated/`, `drizzle_files*/`, `drizzled*/`, `psf/` and
+`reference_files/`, and every stamp of a non-default size (`stamp<S>_*`), is gitignored and regenerable (`scripts/regenerate_files.py`,
 above). Any re-cut (`--center-from`, a new `--size`), a new mask drawn on a fresh stamp, or a
 PSF rebuild needs the lens re-drizzled first: `calibrated/` re-downloads from MAST,
 `reference_files/` re-fetches from CRDS, and the drizzle runners rebuild the rest from
@@ -262,10 +264,11 @@ data/
   calibrated/<sample>/<lens>/<filter>/    ← downloaded FLT/FLC/CAL files
   drizzle_files/<sample>/<lens>/<filter>/ ← working dir; AstroDrizzle runs here (run.log, shift_*.txt, *_single_*.fits, *.png)
   drizzled[_bcfill]/<sample>/<lens>/<filter>/ ← final products (<prefix>_cr_*/_nocrrej_* sci+wht); _bcfill is the bad-column-filled re-drizzle
-  cutouts/<sample>/<lens>/<filter>/       ← THE science tree (git-tracked, except the optional mask_arcs files): one stamp per band — cutout_[cr_]{sci,noise,psf,psf_err,mask,mask_arcs}.fits, cutout_[cr_]positions.json, cutout_[cr_][_dataset].png
-  cutouts_<S>arcsec/<sample>/...          ← the same stamps cut at a non-default --size (see Cutouts)
+  stamps/<sample>/<lens>/<filter>/        ← THE science tree: stamp12_{sci,noise,mask}.fits, stamp12_positions.json,
+                                            stamp12_dataset.png, psf{,_err}.fits (tracked); stamp12.png, stamp12_positions.png,
+                                            stamp12_mask_arcs.*, and stamp<S>_* at any other --size (gitignored; see Stamps)
   psf/<sample>/<lens>/<filter>/           ← archival PSF products (psf_kernel.fits / psf.png; model-tier also carries psf_kernel_analytic.fits / psf_analytic.png)
-  mosaics/<sample>/                       ← QC mosaics tiling every lens's cutouts/PSFs (make_mosaics.py, make_psf_mosaics.py)
+  mosaics/<sample>/                       ← QC mosaics tiling every lens's stamps/PSFs (make_mosaics.py, make_psf_mosaics.py)
   mosaics_<S>arcsec/<sample>/             ← QC mosaics of the <S>" stamps
   run_logs/                               ← per-lens batch-runner logs
   reference_files/                        ← CRDS reference files (auto-downloaded once)
@@ -372,7 +375,7 @@ runs `updatewcs(use_db=True)` (restoring the `GSC240` fit) then stops. `GSC240` 
 which is what the stack needs; the absolute offset is fixed afterwards by
 `align_wfpc2_to_acs.py`. A per-lens core-registration audit (LACosmic-masked) put **all 22
 lenses on `mast`** — TweakReg scatters the mostly-single-visit frames ~0.7″, splitting the
-core into ~4 knots. The choice is stored in `info/wfpc2_alignment.json`.
+core into ~4 knots. The choice is stored in `info/overrides/wfpc2_alignment.json`.
 
 **Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have two
 visits at a ~14–16° roll (two guide-star solutions). They're drizzled as separate per-visit
@@ -383,11 +386,11 @@ visit `_v2` (`_v3`, ... if a lens ever has more). Outcome: **J0822+2652** = `f60
 x-dither-phase, can't reach 0.05″, dropped — never gets a product or suffix at all);
 **J1142+1001 stays combined** (visits share roll, PA 119.00 vs 118.87). Renamed 2026-08-03
 from the original `f606W_v1`/`f606W_v2` (arbitrary visit order, no bare `f606W` key) to this
-exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_cutouts.py --filt
+exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_stamps.py --filt
 f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
 **J1142+1001 is the only combined-visit lens** — verified (2026-08-03) across every WFPC2
-F606W product in `slacs_gold` (38) and `slacs_other` (27): grouping `info/lens_products.json`
+F606W product in `slacs_gold` (38) and `slacs_other` (27): grouping `info/provenance/lens_products.json`
 frame lists by 6-char rootname prefix, only J1142+1001's `f606W` mixes two visits (`ua1l38` +
 `ua1lc8`, 6 frames); the split keys J0728+3835/J0822+2652 are each single-visit. The
 shared-roll combine criterion is a registration-consistency proxy (core-registration scatter),
@@ -407,7 +410,7 @@ TweakReg `threshold` is in **image data units** and does not transfer between de
 (WFPC2/WF3 100, WFC3/IR 20, ACS default). This only takes effect under `--align tweakreg`,
 which only J1213+6708 f814W uses.
 
-### `align_wfpc2_to_acs.py` — F606W absolute astrometry (after drizzle, before cutouts)
+### `align_wfpc2_to_acs.py` — F606W absolute astrometry (after drizzle, before stamps)
 
 WFPC2 F606W carries only GSC 2.4.0, ~0.3–1″ off absolute; ACS F814W and WFC3/IR F160W carry
 GAIA eDR3 / GSC242 (<0.02″, agree to ~0.01″). So F606W sits ~0.5–0.9″ off the other bands —
@@ -421,12 +424,12 @@ F160W as an *independent* check where present. Verified J0252+0039: 0.66″ → 
 uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
 ```
 
-**Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_cutouts.py`.**
+**Run order: ACS + WFPC2 drizzles → `align_wfpc2_to_acs.py` → `make_stamps.py`.**
 
 **`--target`/`--ref`: the mis-fit band is not always F606W.** A GAIA-grade solution is a
 property of the *delivered WCS*, not the instrument, and can fail on ACS/WFC3-IR too.
 J1016+3859 (`slacs_other`) came down with a bare `-GSC240` fit on its ACS F814W (the
-`force_copy` COPY visit), 0.60″ off its own F160W; since `make_cutouts.py` centres every band
+`force_copy` COPY visit), 0.60″ off its own F160W; since `make_stamps.py` centres every band
 on `--center-band f814W`, that dragged all three stamps ~0.6–0.9″ off the deflector (the
 reference-band trap). So `align_lens` takes `--target` (band whose CRVAL moves, default F606W)
 and `--ref` (the frame, default F814W); products record `ASTROREF` alongside `GSC240FX`. Fixed
@@ -443,7 +446,7 @@ exposures and not the F555W ones. **The rule is exact over all 16 F555W products
 carrying `FIT_REL_*`/`FIT_IMG_*` is fine (all 12 within 0.048″); a bare IDCTAB or a `-GSC240`
 suffix is offset (all 4).** J1402+6321's was bare `IDC_4bb1536oj` — no absolute fit at all —
 and its 1.33″ sits close to `MAX_SHIFT = 1.5″`. Fixed with the tool as-is (`--target f555W
---ref f814W`, run in **both** trees, `--bcfill` second), then `make_cutouts.py --lens L --filt
+--ref f814W`, run in **both** trees, `--bcfill` second), then `make_stamps.py --lens L --filt
 f555W` in both — the crop window moves, so the stamps must be re-cut. F606W (0/22, already
 tied) and F160W (0/13, max 0.078″) were clean. **Symptom to recognise:** a mask reprojected
 from F814W lands with the *right shape in the wrong place*, because `reproject_mask_bool`
@@ -458,9 +461,9 @@ position at the wrong pixels — and for the same reason the stamp itself is cut
 - A whole-sample sweep of centroid offset vs `WCSNAME` costs one read-only survey; worth
   re-running after any re-drizzle, and before trusting a cross-band mask broadcast.
 
-## Weight maps and noise: `final_wht_type` and `cutout_noise.fits`
+## Weight maps and noise: `final_wht_type` and `stamp12_noise.fits`
 
-All scripts take `--wht-type {ERR,IVM,EXP}`. `cutout_noise.fits` is `1/sqrt(WHT)`, so the
+All scripts take `--wht-type {ERR,IVM,EXP}`. `stamp12_noise.fits` is `1/sqrt(WHT)`, so the
 weight type *is* the noise model. Default **`ERR`** for ACS/WFC3/NICMOS, **`IVM`** for
 WFPC2 (override below).
 
@@ -485,7 +488,7 @@ resampling — see *Drizzle correlated noise*.
    (overstates true noise 2.11× at sky). Do **not** build IVM from it. The model used is
    `var_DN = SCI/gain + floor²` (Poisson slope from header `ATODGAIN=7.0`; additive floor
    measured per frame from its own blank sky via `measure_noise_floor()`). `K=1` is correct
-   for WFPC2. Products carry `IVMMODEL='SCI/gain+floor^2'`; `make_cutouts.py` warns when the
+   for WFPC2. Products carry `IVMMODEL='SCI/gain+floor^2'`; `make_stamps.py` warns when the
    keyword is absent (three indistinguishable generations of WFPC2 weight map exist). A
    pre-fix product **cannot be rescued by a scale factor** — it needs a re-drizzle.
 
@@ -521,8 +524,8 @@ pixel values.
 Every band is pinned to the same output grid geometry so filters co-register pixel-for-pixel
 with no later reprojection: `final_rot=0.0` (North-up) and `final_ra`/`final_dec` at the
 lens catalogue position go into every AstroDrizzle call. Each sample keeps its own position
-table, transcribed from its source paper (`info/slacs_coords.py`, `info/gallery_coords.py`,
-`info/bells_coords.py`), and every script reads them through **`info/lens_coords.py`**, which
+table, transcribed from its source paper (`info/coords/slacs_coords.py`, `info/coords/gallery_coords.py`,
+`info/coords/bells_coords.py`), and every script reads them through **`info/coords/lens_coords.py`**, which
 merges them and raises on a J-name collision. A new sample's table is added there, not
 imported per script. A lens missing from every table falls back to the native drizzle WCS
 with a warning. This aligns orientation + tangent point, not absolute
@@ -537,17 +540,17 @@ driz_cr=False`); `--cr-method drizcr` restores the old route. WFPC2 uses the sam
 route (`--lacosmic-sigclip 4.5 --lacosmic-objlim 5.0`; gain/readnoise/saturate from the WF3
 header). Mask written to DQ bit 4096 with `resetbits=0`.
 
-**Per-lens LACosmic params: `info/lens_cr_params.json`.** The `--lacosmic-sigclip`/
+**Per-lens LACosmic params: `info/overrides/lens_cr_params.json`.** The `--lacosmic-sigclip`/
 `--lacosmic-objlim` defaults are `None` in all four drizzle scripts, resolved after parse to
 this JSON (`{sample:{lens:{filt:{"lacosmic_sigclip":…,"lacosmic_objlim":…}}}}`) else the
 hardcoded `4.5`/`5.0`; an explicit CLI flag always wins (precedence: default < JSON < CLI,
-same as `info/psf_stars.json`). This **persists** a lens that needed non-default CR tuning so
+same as `info/overrides/psf_stars.json`). This **persists** a lens that needed non-default CR tuning so
 a blind re-drizzle keeps it instead of reverting to the default. Currently one entry:
 **J1420+6019 f814W = `sigclip 10 / objlim 12`**, because the default eroded a real all-frames
 arc knot into a weight-0 noise hole (a
 2026-08-18 sample-wide scan confirmed J1420 is the *only* affected product, so the pipeline
 default is unchanged). A run whose lens/filt has an entry prints `=== LACosmic params for …
-(info/lens_cr_params.json) ===`. Read-only; nothing writes it — edit by hand.
+(info/overrides/lens_cr_params.json) ===`. Read-only; nothing writes it — edit by hand.
 
 `driz_cr` compares each frame to a blotted median; on a steep, undersampled PSF core that
 reference can read low, flagging real core pixels as CRs. **But this erosion is conditional on
@@ -628,7 +631,7 @@ pixfrac 1; 0.652 / 0.074 / 0.982 at pixfrac 0.6). So **for drizzle alone the rig
 R = 1/r (r = 1 − p/3s per axis, C(0) = r² in 2D) is exactly 1/√C(0): it is the factor by
 which √N × the *measured per-pixel rms* of a drizzled image understates an N-pixel
 aperture's noise — the correction for anyone who estimates σ from the image itself (Bolton's
-SLACS reductions do), **not** a correction to the ERR map. `make_cutouts.py` stamps it as
+SLACS reductions do), **not** a correction to the ERR map. `make_stamps.py` stamps it as
 `CASR`; it predicts the measured 1/√C(0) to ~5% (WFPC2 2.39 vs 2.36; ACS 1.50 vs 1.49 once
 the ERR deficit below is divided out; across the ACS pixfrac scan 1.50/1.30/1.25 predicted
 vs 1.55/1.36/1.31 measured).
@@ -654,7 +657,7 @@ out *above* 1, and the excess is in the input frames, not the drizzle:
 The accounting closes: ACS J0008 = 1.24 (white) × 1.00 (drizzle) + 8 lags × ~0.015
 (structure) ≈ 1.36 = the measured ΣC of 1.355.
 
-**The factors: `info/noise_corr_factors.json`, applied by default by `make_cutouts.py`**
+**The factors: `info/overrides/noise_corr_factors.json`, applied by default by `make_stamps.py`**
 (precedence 1.0 < JSON per instrument/filter < its `_lens_overrides` < explicit
 `--corr-factor`; keyed by instrument/detector then filter, because F606W and F814W each occur
 on two instruments; `NOISECRS` = `json`/`lens`/`cli`/`none` says which applied). **Every
@@ -678,7 +681,7 @@ per-lens overrides.** The factor tracks observing conditions (epoch, sky level),
 a per-sample value would only stand in for those conditions, and badly: SL2S spans 2004–2024.
 The 2026-10-06 values come from the camera/bands BELLS and SL2S share with SLACS: ACS F814W
 (69 stamps), WFPC2 F606W (65) and WFC3/IR F160W (21). Getting them took a re-drizzle of the
-SLACS mosaics purged on 2026-10-04 (`run_wfpc2_wf3.sh --no-cutout` keeps the tracked stamps).
+SLACS mosaics purged on 2026-10-04 (`run_wfpc2_wf3.sh --no-stamp` keeps the tracked stamps).
 GALLERY UVIS and SLACS F555W keep their 2026-09-26 values; their mosaics were not rebuilt.
 
 **Statistic: the patch-median ACF** (`measure_corr_factor.py`, `acf_patch`). It is the same
@@ -696,7 +699,7 @@ background by 2023. The 2009–10 GO-11588 snapshots sit at 1.14–1.20 even at 
 
 **Camera ageing:** ACS F814W rises 1.18 (2004–07, n = 42) to 1.20 (2010–11, n = 25). That is
 about 2.5σ but under 2% in the noise map, inside the lens-to-lens scatter, so one value covers
-both. `make_cutouts.epoch_factor` accepts an epoch-keyed entry,
+both. `make_stamps.epoch_factor` accepts an epoch-keyed entry,
 `{"epochs": [{"before_mjd": …, "factor": …}, {"factor": …}]}` picked by `EXPSTART`, for a band
 whose break exceeds its scatter. None uses it yet. **Re-check this when adding a late-epoch
 sample.**
@@ -784,8 +787,8 @@ input frame and clears the DQ bits before drizzling, so the weight map comes out
   `drizzle_wfpc2_wf3.py --bcfill` fills WF3 bits **2|256** in SCI, interior-only, before
   `build_ivm_files`. Both stamp `BCFILL=True`. **Not for WFC3/IR** — no bad columns there.
 - Products go to `data/drizzled_bcfill/` (work dir `data/drizzle_files_bcfill/`, both
-  gitignored); `make_cutouts.py --bcfill` cuts into the same `data/cutouts/` band dir under a
-  **tagged name** (`cutout_cr_bcfill_{sci,noise}.fits`). A second reduction in a dir that
+  gitignored); `make_stamps.py --bcfill` cuts into the same `data/stamps/` band dir under a
+  **tagged name** (`stamp12_bcfill_{sci,noise}.fits`). A second reduction in a dir that
   already holds one is refused unless `--force` (which removes the other's sci/noise/png).
 - `run_acs_all.sh` / `run_wfpc2_wf3.sh` take `--bcfill` as a second arg (after the sample);
   the WFPC2 tie then runs against the bcfill tree's own F814W, so the ACS bcfill drizzle must
@@ -802,7 +805,7 @@ per-pixel √(WHT_filled/WHT_baseline) — which reproduces the standard stripe 
 **Traps learned doing the 2026-09-22 revert** (105 bands re-cut standard):
 - **Peak-finding recentres differently on a filled vs unfilled mosaic** (a pixel or two; on
   J1403+0006 and J1538+5817 f606W it jumped to the neighbour). To re-cut a band onto an
-  existing stamp's grid use **`make_cutouts.py --center-from <stamp>`**, which cuts on that
+  existing stamp's grid use **`make_stamps.py --center-from <stamp>`**, which cuts on that
   stamp's central sky position and skips peak-finding.
 - **`data/drizzled/` is gitignored and can silently be older than a variant tree.** 17 WFPC2
   F606W mosaics were July products on a different frame from the 2026-08-13 bcfill campaign.
@@ -825,7 +828,7 @@ J1250+0523 f814W (2026-09-21), whose tracks cross the ring: both CRs are cleanly
 the science image (on-track flux = off-track, and absent in the other band). Dropping the
 exposure instead costs ~12% of the S/N over the whole stamp.
 
-`--crfill` (`drizzle_acs_wfc.py`, `make_cutouts.py`) exists to measure that trade:
+`--crfill` (`drizzle_acs_wfc.py`, `make_stamps.py`) exists to measure that trade:
 - Requires `--cr --cr-method lacosmic` (hard error otherwise). Fills along whichever axis a
   pixel's own gap is shorter (a CR is an arbitrary blob, not a column); pixels with no
   anchors stay flagged. Stamps carry `CRFILL=True` and a tagged name.
@@ -834,12 +837,12 @@ exposure instead costs ~12% of the S/N over the whole stamp.
   <20 px), `--crfill-n-tracks N` (the N largest, ranked globally). Frame-wide filling lies
   about ~1.4% of all pixels. The run prints every track kept — check it against the noise map.
 - `--exclude-frames ROOTNAME[,...]` builds the frame-drop alternative (`_drop` variant tree,
-  `DROPFRMS` card, `make_cutouts.py --drop`).
-- `info/lens_crfill.json` records the two branch-only streak-repaired stamps (J1213+6708,
+  `DROPFRMS` card, `make_stamps.py --drop`).
+- `info/overrides/lens_crfill.json` records the two branch-only streak-repaired stamps (J1213+6708,
   J1250+0523 f814W; `on_main: false`).
 
 **Two traps from that work, both general:**
-- **`make_cutouts.py` writes `info/lens_cutout_qc.json` even with `--output` pointing
+- **`make_stamps.py` writes `info/provenance/lens_stamp_qc.json` even with `--output` pointing
   elsewhere**, so a scratch cut overwrites the tracked stamp's provenance. Fix the JSON by
   hand afterwards (or make the script skip the update when `--output` is set).
 - **A re-drizzle of J1213+6708 f814W lands 180 mas (3.6 px) from the archived product** — it
@@ -848,46 +851,55 @@ exposure instead costs ~12% of the S/N over the whole stamp.
   fills 0 px) and difference against that. Also check a "control re-run" actually drizzled:
   the script prints *"already exist, skipping"* and exits 0.
 
-## Cutouts (`scripts/make_cutouts.py`)
+## Stamps (`scripts/make_stamps.py`)
 
 ```bash
-uv run python scripts/make_cutouts.py --lens J0029-0055 --filt f606W
+uv run python scripts/make_stamps.py --lens J0029-0055 --filt f606W
 ```
 
-Cuts a square stamp (default 12″) from `data/drizzled/` into `data/cutouts/`: a sci FITS, a
+Cuts a square stamp (default 12″) from `data/drizzled/` into `data/stamps/`: a sci FITS, a
 noise FITS (from the weight map), and a 3-panel PNG.
 
-- **Stamp size is a parallel product tree, not an overwrite (`--size`, `scripts/cutout_paths.py`).**
-  The cutout filenames carry no size, so a re-cut at a different size would be an invisible
-  clobber. `--size` therefore *derives* the output tree: 12″ keeps `data/cutouts/` +
-  `data/mosaics/` + `info/lens_cutout_qc.json`; any other size S writes
-  `data/cutouts_<S>arcsec/`, `data/mosaics_<S>arcsec/` and `info/lens_cutout_qc_<S>arcsec.json`.
-  Both scripts take it (`make_cutouts.py --size`, `make_mosaics.py --size`) and
-  `run_cutouts_all.sh [SAMPLE] [SIZE]` passes it through; every stamp carries `CUTSIZE` in its
-  header. **A 20″ set exists for all three samples alongside the 12″ one** (2026-08-04; 90 +
-  34 + 33 products, 0 failures). PSF kernels are *not* duplicated per size — the kernel is
-  trimmed by amplitude, so it's a property of the band, and a size-variant stamp pairs with
-  the same `cutout_[cr_]psf.fits` from the default tree (`cutout_paths.psf_cutout_dir()`).
-  See *PSF generation*.
-  **`data/cutouts/` (12″) is the tree tracked in git** — it is what the mask/position tools
-  target and what downstream modelling reads, and it holds the hand-drawn masks and
-  hand-marked positions, which no script can regenerate. Other size variants
-  (`data/cutouts_20arcsec/`, `data/mosaics_20arcsec/`) and their QC JSONs are gitignored.
+- **The stamp size is in every filename (`--size`, `scripts/stamp_paths.py`; since 2026-10-26).**
+  All sizes share one band directory, `data/stamps/<sample>/<lens>/<filter>/`: the 12″ stamps
+  are `stamp12_*`, a 20″ re-cut is `stamp20_*`, so a re-cut at another size cannot clobber the
+  standard set. **Each lens has one modelling size**, its `stamp_size` in
+  `info/samples/lens_samples.json` (none set today, so every lens is 12″), and every tool's
+  `--size` defaults to it, so a lens given smaller stamps needs no flag anywhere; its
+  `stamp<S>_*` then needs a `!data/stamps/**/stamp<S>_*` line in `.gitignore` to be tracked.
+  The size also keys the QC mosaics (`data/mosaics/` for the modelling size,
+  `data/mosaics_<S>arcsec/` otherwise) and the stamp-QC record
+  (`info/provenance/lens_stamp_qc[_<S>arcsec].json`). `make_stamps.py`, `make_mosaics.py` and
+  the GUI tools take `--size`, `run_stamps_all.sh [SAMPLE] [SIZE]` passes it through, and every
+  stamp carries `CUTSIZE` in its header. Before 2026-10-26 a non-default size went to a
+  parallel `data/cutouts_<S>arcsec/` tree; its 20″ FITS were purged on 2026-10-04 and only
+  the `stamp20.png` renders remain. The PSF has no size: `psf.fits` is trimmed by amplitude,
+  so it is a property of the band, and every stamp size in the directory pairs with it
+  (`stamp_paths.psf_stamp_dir()`). See *PSF generation*.
+  **Only the 12″ files are tracked in git** — they are what the mask/position tools target
+  and what downstream modelling reads, and the band dirs hold the hand-drawn masks and
+  hand-marked positions, which no script can regenerate. `stamp<S>_*` at any other size, its
+  mosaics and its QC JSON are gitignored, and the GUI tools skip an ignored stamp unless
+  `--include-ignored`.
 - **`--center-from <stamp>`** cuts on the sky position of an existing stamp's central pixel
   instead of peak-finding — use it to re-cut a band onto the grid it already has (masks and
   positions then stay valid).
 
-- **Pass + prefix.** `--pass {auto,cr,nocrrej}` (default `auto`) picks the CR pass when one
-  exists, else no-CR. The prefix encodes it so the two coexist: **`cutout_cr_*` for CR,
-  `cutout_*` for no-CR.** ACS F814W/F555W and WFPC2 F606W now default to a LACosmic CR pass
-  → `auto` cuts `cutout_cr_*`, which is science-grade (LACosmic preserves the core). WFC3/IR
-  F160W has no CR pass, so `auto` falls back to `cutout_*` there.
+- **Pass.** `--pass {auto,cr,nocrrej}` (default `auto`) picks the CR pass when one exists,
+  else no-CR. **The science stamp is `stamp12_*` whichever pass it came from**: ACS
+  F814W/F555W, WFPC2 F606W and WFC3/UVIS cut the LACosmic CR pass (science-grade; LACosmic
+  preserves the core), and WFC3/IR F160W, which has no CR pass, cuts the no-CR one. The pass
+  is recorded in the `DRZPASS` header card (since 2026-10-26; `stamp_paths.stamp_pass()`
+  infers it for older stamps) and in `lens_stamp_qc.json`. Only a no-CR *comparison* cut beside
+  a CR science stamp (`--pass nocrrej` on a band that has a CR pass) is tagged,
+  `stamp12_nocrrej_*`, so it can never be read as the science stamp. Until 2026-10-26 the
+  prefix encoded the pass (`cutout_cr_*` for CR, `cutout_*` for no-CR).
 - **Recentring.** The stamp recentres on the galaxy, and the peak search prefers the CR
   mosaic — a brightest-pixel search on a CR-laden no-CR mosaic locks onto cosmic rays. Don't
   reach for `--median-size` for a bad recentre; check a `*_cr_*` mosaic is present.
   Offsets of 1–2″ aren't always failures — some lenses (J0912+0029, J0956+5100) have genuine
   multi-knot morphology. The peak-search `--box` (default 100 px) can lock onto a bright
-  neighbour instead, and **`info/lens_cutout_qc.json` does not record `--box`**, so a re-cut
+  neighbour instead, and **`info/provenance/lens_stamp_qc.json` does not record `--box`**, so a re-cut
   with a different box is invisible except through `offset_arcsec`/`weight_uniformity`
   changing — compare those against the JSON (or use `--center-from`) when re-cutting.
 - **Shared centre (`--center-band`, default `f814W`).** All bands are cut about a single
@@ -898,13 +910,13 @@ noise FITS (from the weight map), and a 3-panel PNG.
   onto noise or an unrelated field source, not the lens. These bands are in fact unusable
   for lens science sample-wide (confirmed, not just hard to centre) — see *BELLS GALLERY*
   below.
-- **QC diagnostics + provenance (`info/lens_cutout_qc.json`, 2026-07-31).** Every run
+- **QC diagnostics + provenance (`info/provenance/lens_stamp_qc.json`, 2026-07-31).** Every run
   computes and prints two diagnostics (ported from a comparison against the sibling
   `PyAutoReduce` framework), purely informational — neither changes any output:
   - **Weight-map uniformity** (`weight_uniformity()`): the STScI RMS/median rule-of-thumb
-    on the **cutout's** own weight-map region (not the full mosaic, which mixes coverage
+    on the **stamp's** own weight-map region (not the full mosaic, which mixes coverage
     tiers across the whole union footprint). `<=0.2` is the accepted threshold; stamped as
-    `WHTUNIF`/`WHTUNIFL` in `cutout_[cr_]noise.fits`'s header.
+    `WHTUNIF`/`WHTUNIFL` in `stamp12_noise.fits`'s header.
   - **Analytic Casertano R** (`casertano_r(pixfrac, scale_ratio)`): the closed-form
     R = 1/r from `D001PIXF`/`D001ISCL`/`D001SCAL` alone (verified against the textbook
     values: R=1.5 at p=1,s=1; 1.364 at p=0.8,s=1; 1.25 at p=0.6,s=1). It is 1/√C(0) for pure
@@ -915,10 +927,10 @@ noise FITS (from the weight map), and a 3-panel PNG.
     out) — see *Drizzle correlated noise*. Stamped as `CASR`.
   - Both diagnostics, plus the recentring offset, drizzle pass, centring source, and a
     **`bcfill` flag naming the reduction the stamp was cut from** (mirroring its `BCFILL`
-    header card), are recorded per (sample, lens, filt) in `info/lens_cutout_qc.json` —
-    structured provenance for what shaped a given cutout, not just the sci/noise arrays
-    themselves. `info/lens_masks.json`, `info/lens_arc_masks.json` and
-    `info/lens_dataset_subplots.json` carry the same `bcfill` key, for the same reason.
+    header card), are recorded per (sample, lens, filt) in `info/provenance/lens_stamp_qc.json` —
+    structured provenance for what shaped a given stamp, not just the sci/noise arrays
+    themselves. `info/provenance/lens_masks.json`, `info/provenance/lens_arc_masks.json` and
+    `info/provenance/lens_dataset_subplots.json` carry the same `bcfill` key, for the same reason.
 
 ## Masks (`scripts/make_masks.py`)
 
@@ -934,20 +946,20 @@ Interactive, manual tool — not part of the automated per-lens pipeline above. 
 in a sample it opens PyAutoLens's `Scribbler` GUI (a Tk window; scribble the areas to
 **REMOVE** from the fit — painted = excluded, unpainted = kept, the *opposite* polarity to
 `autolens_workspace:scripts/imaging/data_preparation/gui/mask.py`; `Esc` to finish) over the
-cutout's science image, writes `cutout_[cr_]mask.fits`, and records provenance per (sample,
-lens, filt) in `info/lens_masks.json`. A lens that already has a mask is skipped (`--force`
+stamp's science image, writes `stamp12_mask.fits`, and records provenance per (sample,
+lens, filt) in `info/provenance/lens_masks.json`. A lens that already has a mask is skipped (`--force`
 to redraw), so a long GUI session across a sample is resumable.
 
 **GITIGNORED BANDS ARE SKIPPED BY EVERY SWEEP (`--include-ignored` opts back in).**
 `make_masks.discover_targets` — the single discovery used by `make_masks.py`,
 `make_arc_masks.py`, `make_positions.py` and `detect_arcs.py`, with a matching guard in
-`make_dataset_subplots.py`, `make_mosaics.py` and `make_psf_mosaics.py` — drops any cutout
+`make_dataset_subplots.py`, `make_mosaics.py` and `make_psf_mosaics.py` — drops any stamp
 directory that `.gitignore` excludes, and says so. **A gitignored band is by construction not
 a science product**, so hand-drawn work written there would be non-regenerable *and* invisible
 to every clone. No band is ignored today (the three SNAP F814W diagnostics that motivated it
 were deleted 2026-09-26); the guard stays because it already went wrong once — J1538+5817's
 positions were marked on its SNAP band and broadcast across a 688 mas misregistration.
-- `cutout_paths.gitignored(paths)` is one batched `git check-ignore --stdin` call. **Any git
+- `stamp_paths.gitignored(paths)` is one batched `git check-ignore --stdin` call. **Any git
   failure returns the empty set**, so the guard can only narrow a run, never block one; `git
   check-ignore` exits **1** for "nothing matched", so only exit >1 counts as failure.
 
@@ -961,12 +973,12 @@ an empty arc region would mask out the whole stamp.
 
 **State: every science band has a contaminant mask** (see *Current state* at the top). Most
 bands after a lens's first came through the reviewed-proposal route (`edited_from_<band>` /
-`accepted_from_<band>` in `info/lens_masks.json`) rather than fresh draws. The split-visit
+`accepted_from_<band>` in `info/provenance/lens_masks.json`) rather than fresh draws. The split-visit
 `J0822+2652 f606W_v2` is its own product directory and has its own mask. Per-lens notes
 follow, `slacs_gold`/`slacs_other` first, then `gallery`:
 
 **Per-lens verdicts.** The detail is in each band's `note` / `edited` / `CORRECTION` keys in
-`info/lens_masks.json`; what a modeller needs to know:
+`info/provenance/lens_masks.json`; what a modeller needs to know:
 
 *SLACS*
 - **J1451-0239**: the f814W mask was pulled back off lensed image A (masked pixels within
@@ -1084,7 +1096,7 @@ flattened lens light, and lensed light in isophote fits.
   neighbour hijacks the peak (gallery J0201+3228, J0742+3341, J0755+3445).
 - **SL2S: centre on the reddest band, never on F475X**, where the lensed images can outshine
   the deflector (a peak search locked onto the arc on J0904-0059 and J1406+5226). F475X-only
-  lenses carry `cutout_box: 20` in `lens_samples.json` for the same reason. **F606W colour
+  lenses carry `stamp_box: 20` in `lens_samples.json` for the same reason. **F606W colour
   tests are weak on SL2S** (WFPC2 blurs ~1″ arcs into the deflector).
 - **Read the paper's per-lens notes before inferring image pairs from geometry**, and register
   the bands before measuring colours or centres (J1406+5226's "double" was a coincidence
@@ -1101,8 +1113,8 @@ East moves −25.2 columns.) Quote sky offsets (ΔRA/ΔDec), or **(column, row) 
 than compass words, and derive them from the WCS rather than from how the panel looks.
 
 - **Checked across the whole archive (2026-09-15): the orientation is uniform — there is no
-  lens or band that breaks the rule.** All **317** cutouts in `data/cutouts/` *and*
-  `data/cutouts_20arcsec/` (slacs_gold 180, slacs_other 71, gallery 66; ACS/WFC, WFPC2/PC,
+  lens or band that breaks the rule.** All **317** stamps, 12″ and 20″ (then in `data/cutouts/` and
+  `data/cutouts_20arcsec/`; slacs_gold 180, slacs_other 71, gallery 66; ACS/WFC, WFPC2/PC,
   WFC3/IR and WFC3/UVIS) have, from the CD matrix: **PA(+row) = 0.000000° (North),
   PA(+col) = 270.000000° (West), axes orthogonal to 1e-6°, det(CD) < 0 everywhere**, and
   **no SIP or distortion-lookup keywords at all**. Pixel scales are uniform per instrument
@@ -1154,16 +1166,16 @@ substitute where the table has no row — **measured over all 89 rows with a θ_
 runs ~10% low *on average* and is useless per-lens. **Any note claiming a fixed correction —
 e.g. "the SIS runs 30–40% low" — is wrong and is being corrected where it appears.**
 
-**`info/lens_einstein_radii.json` was audited 2026-09-21 and is not stale — don't re-derive
+**`info/catalogues/lens_einstein_radii.json` was audited 2026-09-21 and is not stale — don't re-derive
 it**: 0 differences against a fresh VizieR fetch of all 74 Auger rows with an `RE`; every row
 reproduces its θ_E↔`RE_kpc` conversion on its own cosmology (SLACS Ωm=0.3, gallery Ωm=0.274 —
 deliberate, do not "fix" one to match the other); and every `detector_theta_e_arcsec` in
-`info/lens_arc_masks.json` matches it. Since 2026-09-26 it also carries the 11 Auger rows with
+`info/provenance/lens_arc_masks.json` matches it. Since 2026-09-26 it also carries the 11 Auger rows with
 **no `RE`** (redshifts and σ only, `theta_e_arcsec: null`) — see *Tracking JSONs*.
 
 **A θ_E *inferred* from shear or from σ is not a measurement.** Two hand-written mask notes
 did that before the catalogue existed (J1403+0006 f606W, J1016+3859 f814W) and both were wrong;
-both now carry a dated `CORRECTION` in `info/lens_masks.json`. Look the lens up first.
+both now carry a dated `CORRECTION` in `info/provenance/lens_masks.json`. Look the lens up first.
 
 **Two ways of looking that have each produced a WRONG mask verdict here. Both are easy to
 repeat, so check against them before recommending anything.**
@@ -1240,7 +1252,7 @@ optical bands (f814W/f606W/f555W) share a grid (to <1px); **f160W is a genuinely
 (0.06″/px, 200px vs 240px for a 12″ stamp — a common sky point is ~20px away by index), and only
 reprojection places the mask correctly there (verified: a test box regrids 0.05″→0.06″
 area-preserving, centroid within 0.048″ ≈ sub-pixel).
-- Per band, the mask is written into that band's one cutout dir, beside the sci it was drawn
+- Per band, the mask is written into that band's one stamp dir, beside the sci it was drawn
   on, and a lens is skipped if the *draw band* already has a mask there.
 
 **Side-by-side display (`--side-by-side`, default on, active only with
@@ -1272,17 +1284,18 @@ its own arcsinh stretch about the panel's sky level (median / MAD-scaled, clippe
 `--stretch` / `--asinh-a` / `--vmin-percent` / `--vmax-percent` are gone from `make_masks.py`
 and in `make_arc_masks.py` render only the QC PNG. `stretched_display` (percentile +
 astropy `AsinhStretch(a)`) stays for `make_positions.py`'s Clicker and the QC PNGs, which
-are unchanged. The `display` field in `info/lens_masks.json` now reads
+are unchanged. The `display` field in `info/provenance/lens_masks.json` now reads
 `S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)`.
 
-**Defaults to `cutout_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
-tree**, and the reason `data/cutouts/` is the one size-variant tree kept tracked in git (see
-*Cutouts* above and `.gitignore`): everything else in it is regenerable from the drizzled
-mosaics, but a hand-drawn mask is not, so it needs the same durability as a tracked product.
-Pass `--size 20` to mask the untracked, regenerable `data/cutouts_20arcsec/` tree instead.
+**Defaults to `stamp_paths.DEFAULT_SIZE` (12″) — the pipeline's standard
+stamps**, and the reason the `stamp12_*` files are the ones kept tracked in git (see
+*Stamps* above and `.gitignore`): every stamp is regenerable from the drizzled mosaics, but a
+hand-drawn mask is not, so it needs the same durability as a tracked product. Pass
+`--size 20` (with `--include-ignored`, since `stamp20_*` is untracked) to mask the 20″ stamps
+instead.
 
-**One cutout dir per band, nothing to pick.** The masks were drawn on the bcfill stamps
-(ACS f814W/f555W, WFPC2 f606W — `bcfill: true` in `info/lens_masks.json`) and on standard
+**One stamp dir per band, nothing to pick.** The masks were drawn on the bcfill stamps
+(ACS f814W/f555W, WFPC2 f606W — `bcfill: true` in `info/provenance/lens_masks.json`) and on standard
 ones elsewhere; that key records what was displayed, not a different grid — the standard and
 bcfill stamps share their geometry to <1e-3 px, so every mask is valid on `main`'s standard
 stamps.
@@ -1298,13 +1311,13 @@ Assembles the four FITS products a lens model actually consumes — sci, noise, 
 an `al.Imaging`, applies the mask, and writes PyAutoLens's own 3x3
 `aplt.subplot_imaging_dataset` as `{prefix}_dataset.png` beside the sci it read. **It is the
 only QC PNG in the pipeline that shows the MASK laid over the data/noise/S-N**, i.e. what the
-fit will really see. Provenance per (sample, lens, filt) in `info/lens_dataset_subplots.json`;
+fit will really see. Provenance per (sample, lens, filt) in `info/provenance/lens_dataset_subplots.json`;
 all four components are required, so an unmasked band is reported and skipped, not an error.
 
-- **All four components come from the band's one cutout dir** — there is no per-component
+- **All four components come from the band's one stamp dir** — there is no per-component
   tree search left to get wrong, and no way for the mask to describe a different reduction
   than the sci beside it. **The psf is the one exception, and only along `--size`**: it is
-  resolved through `cutout_paths.psf_cutout_dir()`, which always points at the default-size
+  resolved through `stamp_paths.psf_stamp_dir()`, which always points at the default-size
   tree because the kernel is trimmed by amplitude and is not size-keyed, so a `--size 20` run
   pairs its stamps with that same kernel rather than reporting it missing.
 - Panels use the pipeline's own look (inferno + `PercentileInterval(99)` + `AsinhStretch(0.1)`)
@@ -1315,7 +1328,7 @@ all four components are required, so an unmasked band is reported and skipped, n
   than a previous draw. The hook is deliberately best-effort — the hand-drawn mask is the
   non-regenerable product, so a plotting failure prints the retry command and is swallowed
   rather than costing a mask that was just drawn. `make_arc_masks.py` does **not** trigger it:
-  its product is `cutout_[cr_]mask_arcs.fits`, which the subplot doesn't read.
+  its product is `stamp12_mask_arcs.fits`, which the subplot doesn't read.
 
 ## Image positions (`scripts/make_positions.py`, `scripts/run_positions_all.sh`)
 
@@ -1327,19 +1340,19 @@ bash scripts/run_positions_all.sh slacs_gold --force                   # one sam
 ```
 
 Interactive, manual tool (the positions analogue of `make_masks.py`). For each lens it opens
-PyAutoLens's `al.Clicker` GUI over the lens's best cutout; you **double-click** each lensed
+PyAutoLens's `al.Clicker` GUI over the lens's best stamp; you **double-click** each lensed
 image of the source (2 for a double, 4 for a quad), each click snapping to the brightest pixel
 within `--search-box-size` (default 2). The clicks are saved as an `al.Grid2DIrregular` in
-`cutout_[cr_]positions.json` (via `al.output_to_json`) — the file a modelling script loads to
+`stamp12_positions.json` (via `al.output_to_json`) — the file a modelling script loads to
 build a positions likelihood penalty (`al.PositionsLH`) that rejects mass models mapping the
-images too far apart in the source plane — plus a `cutout_[cr_]positions.png` QC overlay per
-band. Provenance per (sample, lens, marked-filt) in `info/lens_positions.json`.
+images too far apart in the source plane — plus a `stamp12_positions.png` QC overlay per
+band. Provenance per (sample, lens, marked-filt) in `info/provenance/lens_positions.json`.
 
 **One mark per lens, then broadcast to every band, one file per band** under that band's pass
-prefix (f160W → `cutout_positions.json`). There is no per-band judgement to preserve, so
+prefix (f160W → `stamp12_positions.json`). There is no per-band judgement to preserve, so
 unlike the mask tools there is no `--broadcast` switch. Trees/skip/`--size` behave as in
 `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the samples. The JSONs are
-non-regenerable, so they live in the git-tracked `data/cutouts/` tree.
+non-regenerable, so they live in the git-tracked `data/stamps/` tree.
 
 **DELIBERATELY EMPTY positions files.** 24 lenses carry a zero-length
 `Grid2DIrregular` on every band. 2026-09-26 (images too uncertain to mark):
@@ -1348,7 +1361,7 @@ J1213+6708, J1402+6321, J2300+0022; `slacs_other` J0959+4416, J1016+3859, J1134+
 J1403+0006, J1416+5136, J2141-0001, J2321-0939. 2026-10-22: `bells` J0151+0049, J0944-0147,
 J1221+3806, J1234-0241, J1601+2138, J1611+1705. 2026-10-24: `sl2s_wf` J1401+5557 and
 J1419+5117 (arc only; SL2S III's SIE puts their counter-images at 5–13% of the knot flux,
-below our noise). Their `info/lens_positions.json` record has
+below our noise). Their `info/provenance/lens_positions.json` record has
 `n_positions: 0` and a `deliberately_empty` reason. The file's existence is what stops the
 sweep re-offering the lens (`--force` to mark one after all). **Downstream: a modelling
 script must skip the positions likelihood when the grid is empty**, not build an
@@ -1370,7 +1383,7 @@ moved it, recorded as `snap_moved_px_max` / `snap_moved_px_mean`. `al.Clicker`'s
 --target f160W` shifted 8 of the f160W bands (gold, ref f814W: J0029-0055 72 mas, J1430+4105
 83, J1029+0420 51, J1023+4230 49, J1020+1122 35, J1032+5322 34, J0903+4116 21; other, ref
 f606W: J1636+4707 98). MAST's ACS and WFC3/IR WCS do **not** agree to ~0.01″ unless the f160W
-itself carries a GAIA fit, which most SLACS F160W does not. Cutout-level tie across all 19
+itself carries a GAIA fit, which most SLACS F160W does not. Stamp-level tie across all 19
 f160W bands is now median 0.01 px.
 
 **MEASURE A TIE WITH `align_wfpc2_to_acs.stable_centroid`, NOT A FIXED-BOX CENTROID.** A
@@ -1385,11 +1398,11 @@ correction produces a 0–2 px stamp shift, and **the two do not match**. Conseq
   reprojection** (`reproject_mask_bool` assumes only the grid changed; on J1636+4707 it would
   have moved the mask 1.63 px when the pixels had not moved). Shift by the cross-correlation
   integer; the `MASKSHFT` header card records it.
-- **`make_cutouts.py` does NOT write `cutout_dataset.png` — `make_masks.py` does**, so a
+- **`make_stamps.py` does NOT write `stamp12_dataset.png` — `make_masks.py` does**, so a
   re-cut (or any mask edited outside the GUI) leaves that QC subplot stale, silently.
-- **`data/mosaics/` is tracked and is built from the cutouts**, so it goes stale too.
+- **`data/mosaics/` is tracked and is built from the stamps**, so it goes stale too.
 
-  **The full chain after an alignment is: align → `make_cutouts` → mask shift →
+  **The full chain after an alignment is: align → `make_stamps` → mask shift →
   `make_dataset_subplots --force` → `make_mosaics` → `make_positions --rebroadcast`.**
 - `GSC240FX=True` in the drizzled header marks a corrected band. `WCSNAME` does **not** —
   the script shifts CRVAL without renaming. The alignment is idempotent (re-run applies ~0).
@@ -1410,15 +1423,15 @@ J2203 recorded 0.4–1.4″, and the box still pulled the centroid 30–120 mas 
 the search was narrowed. On GALLERY F438W the deflector is not detected (S/N 3–7.5, against
 ≥ 18 in every other band), so its centroid was noise. Those six ties are now null. The
 broadcast positions themselves were never affected; only the recorded check was wrong. All
-90 records in `info/lens_positions.json` were re-measured. **None exceeds 1 px**: the largest
+90 records in `info/provenance/lens_positions.json` were re-measured. **None exceeds 1 px**: the largest
 is 0.97 px (gallery J0918+5104 f814W), f555W/f606W have a median of 0.13 px, and f160W ranges
 3–56 mas. Validation: shifting a stamp's pixels by a known 0.2–0.45″ in four directions is
 recovered exactly, including on F475X. At 0.6″ an arc can win, so a stamp cut with
 `--center-from` through a worse misregistration would read low.
 
 **Of the two files per band, only the JSON is a product: the PNG is gitignored
-(2026-09-17).** `cutout_[cr_]positions.json` is the hand-marked work and is tracked like a
-mask; `cutout_[cr_]positions.png` is a QC *view* of that JSON, one per band (~160), and is
+(2026-09-17).** `stamp12_positions.json` is the hand-marked work and is tracked like a
+mask; `stamp12_positions.png` is a QC *view* of that JSON, one per band (~160), and is
 rebuilt from the JSON plus the sci stamp with **no GUI and no re-clicking**:
 
 ```bash
@@ -1427,8 +1440,8 @@ uv run python scripts/make_positions.py --sample slacs_gold --overlays-only
 
 That flag exists so the ignore rule is honest — without it "regenerable" would have meant
 re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
-GUI wrote. `cutout_cr.png` (and the WFPC2-era `cutout.png`) joined it as an ignored QC
-render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_cutouts.py`);
+GUI wrote. `stamp12.png` (and the WFPC2-era `stamp12.png`) joined it as an ignored QC
+render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_stamps.py`);
 `_dataset.png` is still tracked, so do not generalise the rule (`_mask_arcs.png` left git with
 the arc masks on 2026-10-21, see *Arc masks*).
 
@@ -1446,7 +1459,7 @@ there or is a subtraction artefact. **Double-click either — they are the same 
   its own axes over the *same* arcsec extent means a click already carries panel-local sky
   coordinates and is forwarded untouched. Verified: the same click on the left panel, the right
   panel, and the old single-panel GUI all snap to identical positions.
-- **`--hide-masked` (default ON) blanks what `cutout_[cr_]mask.fits` already calls a
+- **`--hide-masked` (default ON) blanks what `stamp12_mask.fits` already calls a
   contaminant**, outlines it, and drops it from *both* the stretch percentiles and the radial
   profile. Three reasons, not one: a neighbour bright enough to be masked owns the colour
   scale, invites a mis-click as a lensed image, and — the non-obvious one — drags up the
@@ -1469,7 +1482,7 @@ there or is a subtraction artefact. **Double-click either — they are the same 
 2026-09-03). The deflector sets the colour scale on its own, so on most lenses the images
 you are trying to click are the least visible thing on screen. All three transform *only*
 the imshow'd array — `al.Clicker` still snaps on the untouched flux array, so the saved
-positions are bit-identical either way — and each is recorded in `info/lens_positions.json`
+positions are bit-identical either way — and each is recorded in `info/provenance/lens_positions.json`
 so a stamp's provenance says how it was marked:
 - **`--subtract-radial` (DEFAULT ON since 2026-09-03; `--no-subtract-radial` opts out)** —
   subtract the deflector's azimuthally-averaged (median) radial
@@ -1480,7 +1493,7 @@ so a stamp's provenance says how it was marked:
   and J0008-0004. A finding aid, never photometry: real ellipticity leaves a quadrupole
   residual, and an arc biases the median at its own radius (self-subtraction).
 - **`--mask-center ARCSEC`** — blank a disc at the stamp centre (which *is* the deflector,
-  since `make_cutouts.py` recentres there). The blanked pixels are also **dropped from the
+  since `make_stamps.py` recentres there). The blanked pixels are also **dropped from the
   stretch percentiles** — that second half is most of the gain, since the core otherwise
   pins `vmax` far above the arcs. The hidden disc is outlined so it is obvious what it
   covers. Note the snap is flux-based, so a click at the blank's edge can still land on a
@@ -1516,8 +1529,8 @@ measurement, or a source-plane analysis.
 
 | tool | you paint | product |
 |---|---|---|
-| `make_masks.py` | what to REMOVE (contaminants) | `cutout_[cr_]mask.fits` |
-| `make_arc_masks.py` | the ARCS to KEEP | `cutout_[cr_]mask_arcs.fits` |
+| `make_masks.py` | what to REMOVE (contaminants) | `stamp12_mask.fits` |
+| `make_arc_masks.py` | the ARCS to KEEP | `stamp12_mask_arcs.fits` |
 
 - **The saved array is in `al.Mask2D` convention (`True` = EXCLUDED) in both files**, so they
   load through the same reader and can't be swapped by polarity — but that means the arc
@@ -1552,7 +1565,7 @@ measurement, or a source-plane analysis.
   — is `make_masks.py`'s, imported rather than re-implemented. It gets the **black erase
   brush** (`'2'`) for free from the shared GUI helper — the arc region is `painted & ~erased`, so an
   over-painted stroke is trimmed rather than undone whole. Provenance in
-  `info/lens_arc_masks.json`; a per-band QC PNG (`cutout_[cr_]mask_arcs.png`) outlines the
+  `info/provenance/lens_arc_masks.json`; a per-band QC PNG (`stamp12_mask_arcs.png`) outlines the
   region over the radial-subtracted image.
 - **`--propose-from` IS now wired up, default `auto` (2026-09-15; union added 2026-09-16)** — the arc region you
   review comes from the automatic detector (`scripts/detect_arcs.py`, below), so arc masking
@@ -1583,7 +1596,7 @@ measurement, or a source-plane analysis.
 - **The CONTAMINANT mask is outlined while you paint arcs (`--show-contaminants`, default on,
   2026-09-16).** The thing most likely to be mistaken for a lensed image is a neighbour or
   field source that has *already* been judged a contaminant on that very band, so
-  `cutout_[cr_]mask.fits` is shown along its edge — which keeps three annotations apart at a
+  `stamp12_mask.fits` is shown along its edge — which keeps three annotations apart at a
   glance: arc proposal = contour (black on a white halo), marked positions = `+` CROSSES
   (rings until 2026-09-21, see above), contaminants = black `x`s on the edge. The interior is
   deliberately not filled, the same call recorded for `make_masks.py`: blanking hides the
@@ -1603,12 +1616,12 @@ measurement, or a source-plane analysis.
   `extent` defaults to row 0 at the **bottom** while `imshow` puts it at the top, so the QC
   outline needs `origin='upper'` or it is drawn vertically mirrored.
 - **EVERY arc mask is OUT OF GIT (2026-10-21; their quality is not vouched for).** A
-  `.gitignore` rule on `data/cutouts/**/*_mask_arcs.{fits,png}` covers every sample and band,
+  `.gitignore` rule on `data/stamps/**/*_mask_arcs.{fits,png}` covers every sample and band,
   and the 126 previously tracked files (63 FITS + 63 QC PNGs: `slacs_gold` f814W 38,
   `slacs_other` f606W 10, `gallery` f606W 15) were `git rm --cached` on **both `main` and
   `bcfill`**. They remain in the history of earlier commits. This replaces the 2026-09-21 rule
   that parked only `slacs_gold` f606W. **Nothing was deleted**: the files stay on disk beside
-  the sci they were drawn on, and their provenance stays in the tracked `info/lens_arc_masks.json`,
+  the sci they were drawn on, and their provenance stays in the tracked `info/provenance/lens_arc_masks.json`,
   so `make_arc_masks.py` still counts those bands done and skips them (`--force` to redraw). The
   rule governs git, not the campaign. A fresh clone therefore has the provenance but **not the
   masks**. The 10 `slacs_gold` f606W entries already point at files that are gone (see *Current
@@ -1616,7 +1629,7 @@ measurement, or a source-plane analysis.
   a commit or tag from before 2026-10-21 (e.g. the `2026-10-06` release tag) and then
   switching back to `main` makes git **delete the on-disk arc masks**, because they were
   tracked there and are not tracked here. The pre-2026-10-21 blobs are still in history, so
-  `git checkout 87d45bc~1 -- 'data/cutouts/**/*_mask_arcs.*'` followed by
+  `git checkout 87d45bc~1 -- 'data/stamps/**/*_mask_arcs.*'` followed by
   `git rm -q --cached` on the same paths restores them.
 - **Arc masks are optional products.** A band or a whole sample without one (BELLS and all
   of SL2S have none) is complete, not outstanding work.
@@ -1651,7 +1664,7 @@ blue star-forming galaxy, so the detector builds a **blue-excess image** `be = B
   are. Because `k` is a measured ratio, the bands' different units (WFPC2 DN/s vs ACS e/s)
   cancel and are never converted.
 - Candidates are kept only in an annulus around the **measured** θ_E, cached in
-  `info/lens_einstein_radii.json` (see *Tracking JSONs* for the two catalogues and their
+  `info/catalogues/lens_einstein_radii.json` (see *Tracking JSONs* for the two catalogues and their
   differing cosmologies). **All 38 `slacs_gold` and all 15 `gallery` lenses have a row**;
   `slacs_other` is missing three. The same prior kills both classic false positives: the
   central residual inside, field galaxies outside. **No row → `propose()` raises**, so a
@@ -1728,7 +1741,7 @@ Table 2 has θ_E for all 15 if it is ever wanted; 4 of 24 `slacs_other` lenses r
 
 ```bash
 uv run python scripts/make_psf.py --lens J0252+0039 --filt f814W
-bash scripts/run_psf_all.sh            # every drizzled product; globs data/drizzled/ like run_cutouts_all.sh
+bash scripts/run_psf_all.sh            # every drizzled product; globs data/drizzled/ like run_stamps_all.sh
 bash scripts/run_psf_all.sh --models-only   # skip existing empirical builds; rebuild only the model tier
 ```
 
@@ -1744,12 +1757,12 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
   35/41/51; block-reduced from the in-memory oversampled ePSF, which is not itself written to
   disk — nothing reads it back), **`psf.png`** (4-panel QA: star montage · kernel linear ·
   kernel **log** · radial profile).
-- **the band's cutout dir** (modelling-ready): **`cutout_[cr_]psf.fits`** —
+- **the band's stamp dir** (modelling-ready): **`psf.fits`** —
   the **trimmed** kernel, cut to the amplitude-`--trim-threshold` (default 1e-3 of peak)
-  radius and pass-matched to `cutout_[cr_]sci.fits`. Written by `make_psf.py` itself.
+  radius and pass-matched to `stamp12_sci.fits`. Written by `make_psf.py` itself.
 
-  **Which cutout dir is `cutout_paths.psf_cutout_dir()`'s call, not the caller's**: the one
-  cutout dir for the band, `data/cutouts/<sample>/<lens>/<filt>/`, so the four products a fit
+  **Which stamp dir is `stamp_paths.psf_stamp_dir()`'s call, not the caller's**: the one
+  stamp dir for the band, `data/stamps/<sample>/<lens>/<filt>/`, so the four products a fit
   consumes — sci, noise, **psf**, mask — sit together by construction.
   - There is exactly **one kernel per band**, built from `data/drizzled/`, the standard
     mosaic (on the `bcfill` branch the same kernel sits beside the bcfill stamp).
@@ -1761,32 +1774,32 @@ an STScI STDPSF model (`psf_models.py`). **Two products, two homes:**
     empirical build depends on (+74% stars). The injected tier is structurally identical
     (noiseless injected frames ⇒ dropping frames doesn't bias the drizzle mean; 1 of 60
     products has any zero-weight pixel within 1.5″ of the lens).
-  - It is **orthogonal to `--size`**: `psf_cutout_dir()`
+  - It is **orthogonal to `--size`**: `psf_stamp_dir()`
     deliberately takes no size and always resolves in the default-size tree, so a `--size 20`
     stamp still pairs with the one kernel instead of looking for one that by design is not
     there.
   - Every writer and reader goes through it: `make_psf.py`, `make_psf_inject.py` (incl.
-    `_promote`'s move-aside), `make_psf_err_injected.py`, `make_cutouts.py --psf-err`,
+    `_promote`'s move-aside), `make_psf_err_injected.py`, `make_stamps.py --psf-err`,
     `make_psf_mosaics.py`, and `make_dataset_subplots.py` (which resolves the psf component
     through it, so the psf does not obey its `--size`).
 
 For **empirical** builds, `make_psf.py` also writes a per-pixel **PSF error map** alongside
-each kernel — `psf_kernel_err.fits` (full) and `cutout_[cr_]psf_err.fits` (trimmed, same grid
+each kernel — `psf_kernel_err.fits` (full) and `psf_err.fits` (trimmed, same grid
 as the kernel) — from a bootstrap/jackknife over the star sample. See the *PSF uncertainty*
-open-item bullet below for the method, JSON scalars, and the `make_cutouts.py --psf-err`
+open-item bullet below for the method, JSON scalars, and the `make_stamps.py --psf-err`
 effective-noise folding that propagates it into a fit. Model-tier builds do not (yet) carry
 one.
 
 For a **model-tier** build, `make_psf.py` immediately auto-chains
 `make_psf_inject.run_injection(..., promote=True)` (see *Drizzle-broadened model PSF by
-injection* below) — so `psf_kernel.fits` / `cutout_[cr_]psf.fits` end up holding the
+injection* below) — so `psf_kernel.fits` / `psf.fits` end up holding the
 **drizzle-broadened injected kernel**, the more correct product, not the sharper analytic
 model this section just described; that analytic build is kept alongside as
-`psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits` for comparison. An **empirical**
+`psf_kernel_analytic.fits` / `psf_analytic.fits` for comparison. An **empirical**
 build is already the true drizzled PSF (cut from the mosaic) and is never touched by this.
 
-Records `info/lens_psf.json` (`{sample:{lens:{filt:{method,n_stars,fwhm_pix,oversample,
-kernel_size,cutout_kernel_size,trim_threshold}}}}`, `null` + exit 0 on no data). Run
+Records `info/provenance/lens_psf.json` (`{sample:{lens:{filt:{method,n_stars,fwhm_pix,oversample,
+kernel_size,trimmed_kernel_size,trim_threshold}}}}`, `null` + exit 0 on no data). Run
 **after** the drizzles (a PSF needs a mosaic).
 
 **Kernel size is an amplitude cut, not enclosed-energy.** The trimmed modelling kernel is cut
@@ -1797,7 +1810,7 @@ integrates the noisy empirical wing, so it under-sizes — on J0252 F606W it tru
 while the PSF is still ~1% of peak, vs ~31px for amplitude-1e-3. The cut is band-adaptive by
 construction (sharp ACS F814W → 19–27px; broad F160W → 29–41px; F606W → 31px).
 
-**Star selection is fully automatic; per-lens tweaks live in `info/psf_stars.json`**
+**Star selection is fully automatic; per-lens tweaks live in `info/overrides/psf_stars.json`**
 (`{sample:{lens:{filt:{...}}}}`; absent sample/lens/filt ⇒ automatic). Overrides:
 `include`/`exclude` coords or boxes, and any parameter
 (`max_stars`, `threshold_scale`, `min_snr`, `oversample`, …). The same knobs exist as CLI
@@ -1833,8 +1846,8 @@ NaN rectangles and manual star deletion.
   enough for their stamps to overlap and mix a neighbour's flux into the ePSF wings. A
   greedy-by-flux cut (brightest of any pair within `crowd_sep_frac x star_size`, default
   `crowd_sep_frac=1.0` — stamps never overlap) runs after the flux floor. QA'd as
-  `n_crowded_rejected` (console + `info/lens_psf.json`); intended to reduce, not replace,
-  `info/psf_stars.json` manual exclusions on genuinely crowded fields.
+  `n_crowded_rejected` (console + `info/provenance/lens_psf.json`); intended to reduce, not replace,
+  `info/overrides/psf_stars.json` manual exclusions on genuinely crowded fields.
 
 **ACS/WFC model = focus-diverse ePSF, not STDPSF.** When an ACS/WFC field is too star-poor
 for an empirical build (or `--method model`), `psf_models.acs_focus_diverse_psf` retrieves
@@ -1856,8 +1869,8 @@ if a retrieval fails. Verified J0252 F814W: 0.100″ (STDPSF F814W 0.096″, emp
 grid, so the STDPSF path substitutes WFPC2 F555W (right chip, wrong filter) — historically
 the least-verified product in the pipeline. Instead `wfpc2_f606w_db_epsf()` queries the MAST
 PSF database for good-quality (`qfit<0.05`), unsaturated (`n_sat_pixels=0`) **WF3 (chip 3)**
-F606W star cutouts near the lens position (`x_cal/y_cal` within ±200px of ~435,424 — every
-F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` cutouts, gates them
+F606W star stamps near the lens position (`x_cal/y_cal` within ±200px of ~435,424 — every
+F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` stamps, gates them
 (inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
 and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
 `data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_v2`)
@@ -1945,29 +1958,29 @@ WFPC2 broaden more (0.1283→0.06″, 0.0996→0.05″). Since the injected buil
 to the true drizzled PSF, downstream modelling should read it, not the sharp analytic model.
 
 `make_psf_inject.run_injection(lens, filt, sample, promote=None)` decides promotion by
-reading the CURRENT `info/lens_psf.json` method for that product: `promote=True` for a
+reading the CURRENT `info/provenance/lens_psf.json` method for that product: `promote=True` for a
 model-tier primary (`model...` not yet promoted, or `inject...` already promoted — either
 way this is the model tier and injection is what it needs), `promote=False` for an
 `empirical` primary. `make_psf.py` calls it with `promote=True` explicitly right after
 building a model-tier product, so:
 
-- **`data/psf/<...>/psf_kernel.fits` / `<psf cutout dir>/cutout_[cr_]psf.fits`** (the cutout
-  dir being `psf_cutout_dir()`'s — the band's, always default-size; see *PSF generation*) — the
+- **`data/psf/<...>/psf_kernel.fits` / `<psf stamp dir>/psf.fits`** (the stamp
+  dir being `psf_stamp_dir()`'s — the band's, always default-size; see *PSF generation*) — the
   **canonical** files, now the drizzle-broadened injected kernel (`PSFINJ=True` in the
   header) for every model-tier lens.
-- **`data/psf/<...>/psf_kernel_analytic.fits` / `cutout_[cr_]psf_analytic.fits`** — the
+- **`data/psf/<...>/psf_kernel_analytic.fits` / `psf_analytic.fits`** — the
   pre-broadening analytic model (STDPSF / focus-diverse / MAST-DB) this promotion moved
   aside, kept for comparison. `psf.png`/`psf_analytic.png` mirror the split.
-- `info/lens_psf.json`'s `method` for these products is now `inject_acs_fdpsf` /
+- `info/provenance/lens_psf.json`'s `method` for these products is now `inject_acs_fdpsf` /
   `inject_stdpsf` / `inject_wfpc2_psfdb` — it describes what's actually IN
-  `cutout_[cr_]psf.fits`, same rule as every other product in this file.
-- `info/lens_psf_injected.json` still records every injection run's own metadata
+  `psf.fits`, same rule as every other product in this file.
+- `info/provenance/lens_psf_injected.json` still records every injection run's own metadata
   (`fwhm_pix`, `wing_scatter`, `n_frames`, `null`+exit 0 on no data) independent of
   promotion — an audit trail of what injection produced, kept even though its content now
   usually matches `lens_psf.json` for that product.
 
 The **only** case that still gets the old parallel `*_injected`-suffixed names
-(`psf_kernel_injected.fits`, `psf_injected.png`, `cutout_[cr_]psf_injected.fits`, no
+(`psf_kernel_injected.fits`, `psf_injected.png`, `psf_injected.fits`, no
 promotion) is running injection on an **empirical** primary — `run_psf_inject_all.sh --all`,
 purely for the validation comparison above; nothing canonical changes there because the
 empirical build is already correct.
@@ -2022,7 +2035,7 @@ with a clean gap to the three F606W builds dropped to the model (J1110+2808 3.1e
 slightly above native ACS's (kernel factor 1.18–1.26 vs 1.17–1.18, measured 2026-09-26), and its
 clean wings are no noisier than ACS/F555W at the gate. Two
 marginal drops (J0237-0641, J1110+2808) were contaminant/faint-star problems, not a too-strict
-gate: both were rescued to clean empirical builds via `info/psf_stars.json` (leave-one-out
+gate: both were rescued to clean empirical builds via `info/overrides/psf_stars.json` (leave-one-out
 method).
 
 ### Saturated stars are rejected explicitly (`_SATLEVEL`, 2026-09-29)
@@ -2036,7 +2049,7 @@ was: J0742+3341 f814W's 195 e⁻/s star (>10⁵ e⁻ in a 600 s frame) had faile
 pixfrac 0.7, passed it at 1.0, set the 2% flux floor (8 → 4 stars) and went into the ePSF.
 Verified on J0201+3228 f606W: the one star the gate removed peaks at 68 845 e⁻ (98% of full
 well) in a frame; every kept star is <10 000 e⁻. Logged per build as `N saturated`; override
-with `satlevel` / `max_peak` in `info/psf_stars.json`. **Every sample was rebuilt with it
+with `satlevel` / `max_peak` in `info/overrides/psf_stars.json`. **Every sample was rebuilt with it
 (gallery 2026-09-29, slacs_gold/slacs_other 2026-09-30; 124/124 ok).** In SLACS the gate
 fired on 50 fields and, unlike gallery, the old ACS builds *had* let the saturated star
 through the shape gate — it sat in the ePSF and set the 2% flux floor high. Removing it: no
@@ -2073,8 +2086,8 @@ deflector is preserved (why LACosmic beats driz_cr), so the CR *science* image k
 true PSF while the CR-*built* star PSF is the corrupted one (J0008 f814W: 3 stars + a core
 hole vs 11 clean stars from no-CR). So `make_psf.py` builds the empirical ePSF from the
 **least-CR-rejected mosaic on disk**: `star_pass` defaults to a `*_nocrrej_*` pass when
-present, else the output pass. It's decoupled from the cutout name — the kernel is still
-`cutout_cr_psf.fits` (`PSFPASS=cr, PSFSTARP=nocrrej`) because the point-source PSF is
+present, else the output pass. It's decoupled from the stamp name — the kernel is still
+`psf.fits` (`PSFPASS=cr, PSFSTARP=nocrrej`) because the point-source PSF is
 **pass-independent** (verified: CR/no-CR sky identical, deflector core byte-identical, only
 CR-hit pixels differ — so the no-CR PSF is the *correct*, consistent PSF for the CR
 science). A per-lens `"psf_star_pass"` override forces a pass. This default is the **standard for
@@ -2092,11 +2105,11 @@ A **no-CR pass exists for every ACS product** (generated 2026-07-29 by the safe 
 method — `mv` the cr files out, drizzle `--no-cr --nocrrej`, `mv` back; **never** run
 `--no-cr` on a lens whose cr you want kept in place, the drizzle script `rmtree`s its output
 dir on every non-skipped run). Grids are pixel-identical between passes (crop = dither
-footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/psf_stars.json`
+footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/overrides/psf_stars.json`
 (was empty) now carries per-lens star exclusions/overrides — box order is
 `[xmin,xmax,ymin,ymax]`.
 
-**Current state (checked against `info/lens_psf.json` 2026-09-26): 151 PSF products, every
+**Current state (checked against `info/provenance/lens_psf.json` 2026-09-26): 151 PSF products, every
 science band has one, 0 failures.** By method: `slacs_gold` 56 empirical + 23
 `inject_wfpc2_psfdb` (all F606W) + 10 `inject_stdpsf` (F160W) + 1 `inject_acs_fdpsf`
 (J1213+6708 f814W, 2 stars); `slacs_other` 6 empirical + 23 `inject_wfpc2_psfdb` + 4
@@ -2128,9 +2141,9 @@ core ≥15× outskirt, flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC
   `< JACKKNIFE_MAX_STARS`=6 stars (bootstrap draws degenerate at tiny N) — and the per-pixel
   std of the (unit-sum, co-registered) ensemble is the error map. Written as parallel
   single-HDU files, *not* an ERR extension (keeps every `[0]`/`al.Kernel2D` reader intact):
-  `data/psf/.../psf_kernel_err.fits` (full) and `data/cutouts/.../cutout_[cr_]psf_err.fits`
-  (trimmed, cropped to the primary kernel's own trim window so it matches `cutout_[cr_]psf.fits`
-  pixel-for-pixel). `info/lens_psf.json` empirical entries gain `err_method`, `err_source`
+  `data/psf/.../psf_kernel_err.fits` (full) and `data/stamps/.../psf_err.fits`
+  (trimmed, cropped to the primary kernel's own trim window so it matches `psf.fits`
+  pixel-for-pixel). `info/provenance/lens_psf.json` empirical entries gain `err_method`, `err_source`
   (`stars`/`exposures`/`db_stars`), `n_boot_valid`, `psf_err_frac` (integrated `sqrt(Σ err²)`)
   and `fwhm_pix_err`. **The scalar tracks star count as intended** — J0008 f814W (11 stars)
   `psf_err_frac`≈0.013, J0029 f814W (3 stars)≈0.103, ~8× larger, so a star-poor build is now
@@ -2155,11 +2168,11 @@ core ≥15× outskirt, flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC
     estimate. Verified: `J1213+6708 f814W` (ACS, 4 exposures, jackknife) `psf_err_frac`
     3.83e-04; all 23 WFPC2 F606W lenses cluster tightly at 0.0555–0.0593 (expected — same
     shared ensemble, only the per-lens North-up rotation differs).
-  - **These write to `psf_kernel_analytic_err.fits` / `cutout_[cr_]psf_analytic_err.fits`,
+  - **These write to `psf_kernel_analytic_err.fits` / `psf_analytic_err.fits`,
     not the canonical `_err` names** — because a model-tier build immediately auto-chains the
     injection promotion (see *Drizzle-broadened model PSF by injection* below), which replaces
     the canonical kernel with the drizzle-broadened injected one. `make_psf_inject._promote`
-    now moves the analytic error files aside alongside the analytic kernel/PNG/cutout it
+    now moves the analytic error files aside alongside the analytic kernel/PNG/stamp it
     already moved, so a stale `_err` file never sits under the canonical name describing a
     kernel it doesn't match. Rolled out sample-wide via `run_psf_all.sh
     slacs_gold --models-only` (2026-07-31): 24/34 model-tier products got an error map (1
@@ -2167,7 +2180,7 @@ core ≥15× outskirt, flux floor 5%, `fwhm_tol_hi=1.4`, `star_size=35` for WFPC
   - **The injected (canonical) kernel now has its own error map too** —
     `scripts/make_psf_err_injected.py`, 2026-08-02, closing what this file previously called
     a deliberate gap. Every injected product carries `psf_kernel_err.fits` +
-    `cutout_[cr_]psf_err.fits` describing the *canonical* kernel (same single-HDU,
+    `psf_err.fits` describing the *canonical* kernel (same single-HDU,
     non-renormalised convention as the empirical tier). **Two sources, never
     interchangeable — the header `PSFERR`/`PSFEBND` and the JSON `err_method`/
     `err_lower_bound` always say which:**
@@ -2271,7 +2284,7 @@ Updated automatically by every run:
   `WFPC2/WF3` for F606W (the chip), not MAST's `WFPC2/PC`.
 - **`lens_exptime.json`** — `{sample: {lens: {key: seconds}}}` — from the CR-rejected
   drizzle header.
-- Per-stage provenance: `lens_cutout_qc.json`, `lens_masks.json`, `lens_arc_masks.json`,
+- Per-stage provenance: `lens_stamp_qc.json`, `lens_masks.json`, `lens_arc_masks.json`,
   `lens_positions.json`, `lens_dataset_subplots.json`, `lens_psf.json`,
   `lens_psf_injected.json`. The `bcfill` key in the mask/arc/subplot records says which stamp
   was *displayed*, not a different grid (see *Masks*).
@@ -2284,7 +2297,7 @@ Written by hand:
   rejection*, *PSF generation*).
 - **`noise_corr_factors.json`** — `{instrument/detector: {filter: factor}}` plus
   `_lens_overrides: {sample: {lens: {filter: factor}}}` (the 9 low-sky GO-17130 F475X fields): the
-  noise-map inflation `make_cutouts.py` applies by default — an ERR deficit plus faint
+  noise-map inflation `make_stamps.py` applies by default — an ERR deficit plus faint
   structure, not drizzle. Values are copied in from `measure_corr_factor.py`'s printed
   summary (see *Drizzle correlated noise*); its `_method` key records how they were measured.
 
@@ -2313,7 +2326,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     that paper is **not on VizieR** (only Shu+2016a, the parent candidate list, is), so
     `--fetch-theta-e` can never supply them. `RE_kpc` is *derived* here, on Shu's own flat
     H0=70/**Ωm=0.274**, the reverse of the SLACS rows where kpc is native and arcsec derived.
-    The join was made on the full SDSS names already in `info/gallery_coords.py`, not by hand
+    The join was made on the full SDSS names already in `info/coords/gallery_coords.py`, not by hand
     — Table 2 also lists **J0918+4518**, one digit from gallery's **J0918+5104**, and both are
     grade-A. Values validated end-to-end: every detected gallery component lands at
     0.64–1.37 θ_E, and the dashed θ_E circle traces the arcs on all 6 contact-sheet panels.
@@ -2355,7 +2368,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
 
   Tracked in git so the detector runs offline. Every lens in the three samples has a row and
   redshifts. Two `slacs_other` lenses have **no θ_E** (no Auger lens model):
-  **`J1259+6134`, `J2302-0840`** (only the second has cutouts). `J2141-0001` was the third
+  **`J1259+6134`, `J2302-0840`** (only the second has stamps). `J2141-0001` was the third
   until its Brewer+2012 θ_E went in on 2026-10-21.
 
 No data for a filter → value `null`.
@@ -2388,7 +2401,7 @@ Sonnenfeld+2013, …), and every catalogue value in `info/` names its source tab
 
 ## Lens Samples
 
-**`info/lens_samples.json` is the single source of truth** for sample membership and per-lens
+**`info/samples/lens_samples.json` is the single source of truth** for sample membership and per-lens
 MAST quirks (`mast_target`, `force_copy`). Read it only through
 `scripts/mast_target_names.py` — never parse it elsewhere, never keep a second lens list
 (`info/list_of_lenses.txt` was exactly that and was deleted 2026-07-26).
@@ -2421,7 +2434,7 @@ exposure-time gate*; `J1016+3859` recovered 2026-08-03 via `force_copy`, see abo
 10494/10798). 4 lenses (J0959+4416, J1016+3859, J1153+4612, J1416+5136) have both F606W and
 F814W; `align_wfpc2_to_acs.py` has tied all 4 (`J1016+3859` on 2026-08-04, and it also needed
 its *F814W* tied to F160W first — see the `--target`/`--ref` note in *align_wfpc2_to_acs.py*)
-— the other 21 F606W products carry their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/wfpc2_alignment.json` has no
+— the other 21 F606W products carry their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/overrides/wfpc2_alignment.json` has no
 per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses);
 every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
 All 34 science bands have PSF products (see *PSF generation* for the method split).
@@ -2431,8 +2444,8 @@ All 34 science bands have PSF products (see *PSF generation* for the method spli
 existed until 2026-09-29, when every UV product — drizzles, work dirs, calibrated FLCs, stamps,
 JSON entries — was deleted; their QC mosaics followed on 2026-10-25.) See *BELLS GALLERY:
 WFC3/UVIS reduction* below for the pipeline and its caveats. Gallery positions live in
-`info/gallery_coords.py` (Shu+2016 Table 1), reached like every sample's through
-`info/lens_coords.py` (see *Common output WCS across filters*). PSF products exist for all 27 science bands (WFC3/UVIS
+`info/coords/gallery_coords.py` (Shu+2016 Table 1), reached like every sample's through
+`info/coords/lens_coords.py` (see *Common output WCS across filters*). PSF products exist for all 27 science bands (WFC3/UVIS
 is keyed in `make_psf.py`/`psf_models.py`). **F225W/F275W are confirmed
 unusable for lens science across the whole sample** (arc undetected, not just the deflector
 — see *BELLS GALLERY* below); **J1110+2808's F275W is pure noise, but its F814W/F438W DO show the lensed
@@ -2474,7 +2487,7 @@ archive:**
 ### SL2S samples (roster agreed 2026-10-04; reduced, masked and positions marked by 2026-10-24)
 
 35 lenses in four samples (39 until J0233-0438 and J0213-0743 were removed 2026-10-14, and J0848-0351 and J1423+5722 on 2026-10-24), grouped by which HST bands exist. Every per-lens `note` in
-`info/lens_samples.json` says why that lens is in. Selection:
+`info/samples/lens_samples.json` says why that lens is in. Selection:
 - **Sonnenfeld+2013 (SL2S III) Table 6:** grade A, HST = Y, and not the one "double"
   (J1405+5502), giving 29 lenses. SL2S has no E-S-A-style classification. Table 6's morphology
   note is the nearest thing, and the three "disky" lenses are kept.
@@ -2512,8 +2525,8 @@ Bands and how each is taken (depths from the MAST product lists):
 
 Every SL2S lens is archived as `SL2SJhhmmss±ddmmss`, so each entry carries that as
 `mast_target`. **The designations are truncated**, so their RA is only good to 1 s of time
-(up to ~15″). Used as positions, they put the J0959+0206 pilot's cutout search and its
-WFPC2-tie centroids on a neighbour 2.6″ away. `info/sl2s_coords.py` therefore holds the
+(up to ~15″). Used as positions, they put the J0959+0206 pilot's stamp search and its
+WFPC2-tie centroids on a neighbour 2.6″ away. `info/coords/sl2s_coords.py` therefore holds the
 **Gavazzi+2014 Tables 1 and 3 decimal-degree positions**, matched on the full designation (the
 short J-name is not unique there). They agree with the GO-17130 and GO-11588 target positions to
 under 0.7″. J0858-0143 is not in Gavazzi+2014, so it uses the one SDSS DR16 galaxy in its
@@ -2584,7 +2597,7 @@ reproject_mask_bool` is exact; the bands' WCSs disagreed.
   (S/N>15, self-re-centring centroids). The catalogues are matched one-to-one within 0.3″, and
   the sigma-clipped median gives the offset (error 1–13 mas, 12–330 sources). `--apply` shifts
   CRVAL of the band's drizzled products, keeps the originals in `FTORIG1/2` (`--reset` restores
-  them), and records the tie in `info/lens_field_ties.json`. `--recut` re-cuts the band's stamp
+  them), and records the tie in `info/provenance/lens_field_ties.json`. `--recut` re-cuts the band's stamp
   about the F475X stamp's centre (`--center-from`), so the F475X stamps and masks are untouched.
   It moves an existing mask with its DATA (an exact integer-pixel roll, recovered from the
   old/new sci; edge strips filled from the edge), and logs it as `field_tie_shift` in
@@ -2606,7 +2619,7 @@ reproject_mask_bool` is exact; the bands' WCSs disagreed.
   (0–9 px), and the shift is logged in `lens_masks.json` under `recentred`. **Pixel positions
   quoted for these nine lenses in notes written BEFORE this are on the old grid**: add
   `recentred.drow_px/dcol_px` to convert.
-- **Run order:** after any re-drizzle and `align_wfpc2_to_acs.py`, BEFORE `make_cutouts`. A
+- **Run order:** after any re-drizzle and `align_wfpc2_to_acs.py`, BEFORE `make_stamps`. A
   re-drizzle resets CRVAL, so the tie must be re-run.
 - **Two methods that FAIL — don't reuse them:**
   - **(a) Cross-correlating deflector-subtracted stamps** reads colour as shift. It gave a
@@ -2632,7 +2645,7 @@ not notice. A lens whose only visits are GSC240-only keeps them.
 
 **Unequal-length WFC3/IR stacks** (`drizzle_wfc3_ir.py`). These are drizzled with
 IVM = 1/(ERR·EXPTIME)², which gives each frame a true 1/σ²_rate weight. They are stamped
-`IRIVMEXP` and `make_cutouts.py` then uses K = 1. Equal-length stacks keep the ERR path. On
+`IRIVMEXP` and `make_stamps.py` then uses K = 1. Equal-length stacks keep the ERR path. On
 J0959+0206 F160W (GO-14114, 228/253/278 s frames) the blank-sky block-sum ratio is 1.009 at
 1.44″, which is calibrated. That F160W also had unfitted per-frame WCSs, and was dropped on
 2026-10-14 (see above). The IVM weighting rule stands; J0959 was only its test case.
@@ -2646,19 +2659,19 @@ SLACS and BELLS tie to F814W as before. **J1405+5243 and J0219-0829** get F475X 
 and F600LP from GO-11588, on WCSs of different quality, so their F475X is tied to F600LP
 (`--target f475X --ref f600LP`) before the WFPC2 stage.
 
-**Cutout centring** follows the sample's `center_bands` list in `lens_samples.json`
+**Stamp centring** follows the sample's `center_bands` list in `lens_samples.json`
 (`mast_target_names.center_bands`): the first band drizzled for the lens wins. SL2S samples
 set f814W > f606W > f600LP > f475X. Samples without the key keep the old default, F814W, and
 fall back to centring each band on itself. A BELLS re-cut was byte-identical after the change.
 
-**Run order for SL2S.** The WFPC2 tie runs inside `run_wfpc2_wf3.sh`, and the cutouts centre on
+**Run order for SL2S.** The WFPC2 tie runs inside `run_wfpc2_wf3.sh`, and the stamps centre on
 whichever bands exist. So the order is:
 1. `run_gallery_uvis_all.sh <sample>` (F475X, F600LP).
 2. The F475X-to-F600LP ties for J1405+5243 and J0219-0829.
 3. `run_acs_all.sh` and `run_wfc3_all.sh`, plus J0217-0513's direct ACS F606W call.
-4. `run_wfpc2_wf3.sh` (drizzle, tie, cutout).
+4. `run_wfpc2_wf3.sh` (drizzle, tie, stamp).
 5. The F160W-to-F814W tie for J0217-0513 (J0959+0206's F160W was dropped 2026-10-14).
-6. `run_cutouts_all.sh`.
+6. `run_stamps_all.sh`.
 
 **BELLS J0830+5116 F814W PSF: borrowed from J0747+4448** (`make_psf_median.py --donor`, method
 `empirical_donor`; 2026-10-05). The field has 2 usable stars, and STScI's focus-diverse
@@ -2709,7 +2722,7 @@ treat it as a bug/regression to investigate, not a new legitimate case.
 
 `gallery` (BELLS GALLERY) has a separate, also-verified naming mismatch: those targets sit on
 MAST under their **full SDSS coordinate designation** (e.g. `SDSSJ002927.38+254401.7`), not a
-short name at all — `GAL-*` doesn't apply here. `info/lens_samples.json`'s `gallery.lenses`
+short name at all — `GAL-*` doesn't apply here. `info/samples/lens_samples.json`'s `gallery.lenses`
 entries carry that full designation as `mast_target` for every one of the 15 lenses (queried
 by `drizzle_wfc3_uvis.py` via `mast_target_names.py`, same mechanism as SLACS `GAL-*`), while
 `info/`, `data/`, and every output path stay keyed on the short J-name (`J0029+2544`),
@@ -2726,7 +2739,7 @@ matching the SLACS convention.
   wht>0 boxes) so they register pixel-for-pixel.
 
 ACS, WFPC2, and WFC3/UVIS default to **CR-only** (`--nocrrej` adds the no-CR pass; ACS/UVIS
-`--no-cr` skips CR). WFC3/IR F160W has no CR pass at all — `make_cutouts.py` falls back to
+`--no-cr` skips CR). WFC3/IR F160W has no CR pass at all — `make_stamps.py` falls back to
 the science pass for recentring (acceptable: FLTs are already up-the-ramp CR-rejected;
 re-run with `--cr` if a recentre looks wrong).
 
@@ -2782,7 +2795,7 @@ bash scripts/run_gallery_uvis_all.sh                   # all 15 lenses, all 5 fi
 ```
 
 `run_gallery_uvis_all.sh` iterates `f606W f814W f438W` in that order (the UV filters were
-dropped from it 2026-09-29) — F606W first (the primary band and cutout `--center-band` proxy
+dropped from it 2026-09-29) — F606W first (the primary band and stamp `--center-band` proxy
 target), F814W second, and does **not** `rm` the output dir first (unlike
 `run_acs_all.sh`), relying on the idempotent skip so a multi-GB campaign is resumable.
 
@@ -2815,7 +2828,7 @@ target), F814W second, and does **not** `rm` the output dir first (unlike
   track `FINAL_PIXFRAC`, or model-tier injections get a different drop from the science
   mosaic. The pixfrac-0.7 mosaics were deleted 2026-10-01. Excess noise is only slightly
   above native ACS at the drop scale (1.18–1.26 visible UVIS vs 1.17–1.18 ACS; the old
-  "~1.5–1.6" was that same rms-relative scan number). `make_cutouts.py` applies the measured
+  "~1.5–1.6" was that same rms-relative scan number). `make_stamps.py` applies the measured
   factor by default — see *Drizzle correlated noise*.
 - **CR pass, ERR weighting**: same LACosmic-then-plain-mean route as ACS/WFPC2
   (`resetbits=0` on the CR pass, `4096` on no-CR), same `--wht-type ERR` with `K=1` (UVIS
@@ -2826,7 +2839,7 @@ target), F814W second, and does **not** `rm` the output dir first (unlike
   lens; J0742+3341's deflector+ring sits at S/N~2.5 (vs ~14 in F606W); J2342-0120 F225W shows
   nothing at the lens centroid. **Do not spend further effort on F225W/F275W** — no PSF work,
   no recentring/alignment tuning. Products stay on disk as a correctly-reduced record, not
-  science-ready cutouts.
+  science-ready stamps.
   - The centring mechanism that motivated the original caveat is still real if these are
     ever re-cut: **never use `--center-self`** on F225W/F275W — a self-centred peak search
     locks onto noise or a field source, not the lens. Cut with `--center-band f814W`
@@ -2953,7 +2966,7 @@ light or for anything keyed on the deflector centroid — including the tie chec
 Current state (reduced 2026-07-29, re-drizzled at pixfrac 1.0 on 2026-09-29): all 15 lenses
 have F606W; F814W/F438W on 6 each — matches the sparse per-lens filter coverage BELLS
 GALLERY actually has on MAST, not a pipeline gap. (F275W on 5 / F225W on 1 were reduced and
-then deleted 2026-09-29.) `run_cutouts_all.sh` globs `f438W f275W f225W` alongside the SLACS
+then deleted 2026-09-29.) `run_stamps_all.sh` globs `f438W f275W f225W` alongside the SLACS
 filters so it stays one runner for every sample; the UV entries now glob to nothing. **F225W/F275W across every lens are not lensing-useful** (see bullets
 above) — treat F606W (all 15 lenses) and F814W/F438W (**all 6** of the lenses that have them,
 J1110+2808 included — see its corrected per-lens bullet above) as science-ready, with the
@@ -2967,10 +2980,10 @@ uv run python scripts/make_mosaics.py --sample slacs_gold --size 20   # the 20" 
 uv run python scripts/make_psf_mosaics.py --sample slacs_gold
 ```
 
-Read-only QC: tile every lens's existing cutout (or trimmed PSF kernel) onto a 5-wide grid,
+Read-only QC: tile every lens's existing stamp (or trimmed PSF kernel) onto a 5-wide grid,
 one mosaic per (filter group, panel type), written to `data/mosaics/<sample>/`. Nothing is
 re-drizzled, re-cut, or rebuilt — pure visualization over what's already on disk in
-`data/cutouts/`.
+`data/stamps/`.
 
 - **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
   stay in sync. For `slacs_gold`/`slacs_other`: `f814W`, `f606W_f555W` (WFPC2 F606W —
@@ -3001,9 +3014,9 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
 `uv run python scripts/make_dashboard.py [--sample S] [--no-thumbs] [--force]` writes
 `diagnostics/dashboard/index.html` (gitignored with the rest of `diagnostics/`): stat tiles,
 per-sample and sample×band completeness, the applied noise factors, a filterable card per lens
-with one thumbnail per band (rendered from the sci stamp via `cutout_paths`, mask outlined),
+with one thumbnail per band (rendered from the sci stamp via `stamp_paths`, mask outlined),
 and the QC mosaics downsized. The page opens from disk (its lightbox then loads the full
-`_dataset.png` out of `data/cutouts/`). All counts come from `info/*.json` plus a disk scan, so it
+`_dataset.png` out of `data/stamps/`). All counts come from `info/*.json` plus a disk scan, so it
 reflects uncommitted work too; a missing `psf_err` or a per-lens noise/LACosmic override is
 flagged on the card. It is an overview, not a science product — nothing reads it. The
 template is `scripts/dashboard_template.html`.

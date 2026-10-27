@@ -3,7 +3,7 @@
 # each product to the lens's reddest fitted band (ACS F814W, else F600LP, else F475X), and
 # cut the stamps.
 #
-# The full documented run order is drizzle -> align_wfpc2_to_acs.py -> make_cutouts.py.
+# The full documented run order is drizzle -> align_wfpc2_to_acs.py -> make_stamps.py.
 # The align step is NOT optional and was missing from this script until 2026-07-26:
 # WFPC2 F606W carries only a GSC240 solution, ~0.3-0.9" off in absolute astrometry, so
 # skipping it yields stamps that look perfect in isolation (right centre, calibrated
@@ -11,12 +11,12 @@
 # discards any previous tie, because align_wfpc2_to_acs.py edits CRVAL1/2 in the
 # drizzled product -- so the tie must be re-applied after every drizzle, not once.
 #
-# Usage: run_wfpc2_wf3.sh [SAMPLE] [--bcfill] [--no-cutout]   (default: mast_target_names.DEFAULT_SAMPLE)
+# Usage: run_wfpc2_wf3.sh [SAMPLE] [--bcfill] [--no-stamp]   (default: mast_target_names.DEFAULT_SAMPLE)
 #
 # --bcfill runs the bad-column-filled reduction through all three stages: drizzle into the
 # parallel data/drizzled_bcfill/ tree, tie F606W within that tree (against its OWN F814W --
 # so run_acs_all.sh --bcfill must have produced the bcfill F814W products FIRST), and cut
-# into data/cutouts/ under a tagged name (make_cutouts refuses a second reduction in a dir
+# into data/stamps/ under a tagged name (make_stamps refuses a second reduction in a dir
 # that already holds one unless --force). See AGENTS.md *Bad-column fill*. Logs are
 # _bcfill-tagged.
 #
@@ -34,16 +34,16 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$(dirname "$SCRIPT_DIR")"
 LOGDIR="$WS/data/run_logs"; mkdir -p "$LOGDIR"
-ALIGN_JSON="$WS/info/wfpc2_alignment.json"
+ALIGN_JSON="$WS/info/overrides/wfpc2_alignment.json"
 
 # Pull the optional --bcfill flag out of the args, leaving SAMPLE as $1. bcfill threads
-# through all three stages (drizzle/align/cutout) and _bcfill-tags the logs.
-# --no-cutout stops after the tie: rebuilds the mosaics (e.g. after a data/ purge) without
+# through all three stages (drizzle/align/stamp) and _bcfill-tags the logs.
+# --no-stamp stops after the tie: rebuilds the mosaics (e.g. after a data/ purge) without
 # re-cutting tracked stamps whose hand-drawn masks are pixel-aligned to them.
 BCFILL=""; NOCUT=""; ARGS=()
 for _arg in "$@"; do
   if [ "$_arg" = "--bcfill" ]; then BCFILL="--bcfill"
-  elif [ "$_arg" = "--no-cutout" ]; then NOCUT=1
+  elif [ "$_arg" = "--no-stamp" ]; then NOCUT=1
   else ARGS+=("$_arg"); fi
 done
 set -- ${ARGS[@]+"${ARGS[@]}"}
@@ -96,7 +96,7 @@ align_for() {
   [ -n "$a" ] && echo "$a" || echo mast
 }
 
-# drizzle -> align -> cutout for one product (one lens, one visit).
+# drizzle -> align -> stamp for one product (one lens, one visit).
 # $1 lens, $2 align mode, $3 PA_V3 (may be empty: non-split lens), $4 output dir suffix
 # (may be empty: the primary visit of a split lens, or a non-split lens).
 run_product() {
@@ -123,13 +123,13 @@ run_product() {
 
   # A lens with no WFPC2 data exits 0 without writing a product -- the common case here,
   # since only 22 of the 38 slacs_gold lenses have F606W. Stop before the align and
-  # cutout stages, which would both fail on a product that does not exist.
+  # stamp stages, which would both fail on a product that does not exist.
   if grep -q '^=== NO DATA:' "$log"; then
     echo "no data"; return 0
   fi
 
   # A lens whose surviving frames total below BLOCK_EXPTIME also exits 0 without a
-  # product -- same reason: stop before align/cutout, which have nothing to work on.
+  # product -- same reason: stop before align/stamp, which have nothing to work on.
   if grep -q '^=== BLOCKED (exptime):' "$log"; then
     echo "blocked (exptime)"; return 0
   fi
@@ -142,9 +142,9 @@ run_product() {
   fi
 
   if [ -n "$NOCUT" ]; then
-    echo "OK (no cutout)"; return 0
+    echo "OK (no stamp)"; return 0
   fi
-  if ! uv run --project "$WS" python "$SCRIPT_DIR/make_cutouts.py" --lens "$lens" \
+  if ! uv run --project "$WS" python "$SCRIPT_DIR/make_stamps.py" --lens "$lens" \
          --filt "$key" --sample "$SAMPLE" $BCFILL >> "$log" 2>&1; then
     echo "CUTOUT FAILED (see $log)"; return 1
   fi

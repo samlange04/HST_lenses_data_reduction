@@ -2,9 +2,9 @@
 
 Archive data taken by other surveys (CANDELS, COSMOS, ...) is filed under their own target
 names -- 'ANY', 'COSMOS33-11', 'UDS-V0R' -- so the drizzle scripts' SDSS/SL2S name query
-never sees it. A lens's ``archive_proposals`` quirk in info/lens_samples.json names the
+never sees it. A lens's ``archive_proposals`` quirk in info/samples/lens_samples.json names the
 programs to take for a filter; this queries those programs and keeps the observations whose
-footprint (``s_region``) contains the lens's catalogue position (info/lens_coords.py).
+footprint (``s_region``) contains the lens's catalogue position (info/coords/lens_coords.py).
 
 A position search alone is not used because MAST matches it on footprint centres: on the
 SL2S inventory (2026-10-04) a 10" cone missed most calibrated visits that do cover the lens.
@@ -17,7 +17,7 @@ from matplotlib.path import Path
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'info'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'info', 'coords'))
 from lens_coords import lens_coords
 import mast_target_names
 

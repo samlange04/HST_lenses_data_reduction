@@ -170,7 +170,7 @@ def _grid_path(inst_key, stdpsf_filt):
             f'ERROR: could not obtain the STDPSF model grid {fname}.\n'
             f'       Tried: {url}\n       Reason: {exc}\n'
             f'       Download it by hand into {_CACHE}/ and re-run, or build an\n'
-            f'       empirical PSF instead (add include stars to info/psf_stars.json).')
+            f'       empirical PSF instead (add include stars to info/overrides/psf_stars.json).')
     return local
 
 
@@ -267,7 +267,7 @@ def analytic_drop_broaden(kernel, pixfrac, native_scale, out_scale, n_frames=1):
     `n_frames` (contributing dithered exposures) matters: a single frame's drop-box is the
     full `pixfrac * native_scale / out_scale` box, but with N frames at different sub-pixel
     dither phases the box averages down -- the same "interlacing limit" (r -> 1, R -> 1 as
-    dithering gets dense) casertano_r assumes in make_cutouts.py -- so the effective box is
+    dithering gets dense) casertano_r assumes in make_stamps.py -- so the effective box is
     scaled by `1/sqrt(n_frames)`. This is calibrated, not guessed: on J0008-0004 F606W
     (pixfrac=1, native/out=1.99, 4 frames) the n=1 box overshoots the real injected FWHM
     (4.35 -> 4.67px analytic vs the true re-drizzled 4.42px); n=4 lands at 4.43px, matching
@@ -624,7 +624,7 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
                           oversample, size, out_scale, return_ensemble=False):
     """Focus-diverse ACS/WFC ePSF model stamp, averaged over the contributing exposures.
 
-    `rootnames` are the exposures that reached the drizzle (from info/lens_products.json);
+    `rootnames` are the exposures that reached the drizzle (from info/provenance/lens_products.json);
     `calibrated_dir` holds their FLCs (for the per-exposure detector position). Returns an
     oversampled stamp on the same grid as model_psf(). Raises RuntimeError if no exposure's
     focus-diverse ePSF could be retrieved, so make_psf falls back to the STDPSF model.
@@ -641,7 +641,7 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
     from astropy.io import fits
 
     if not rootnames:
-        raise RuntimeError('no exposure rootnames in info/lens_products.json for '
+        raise RuntimeError('no exposure rootnames in info/provenance/lens_products.json for '
                            f'{lens} {filt}; cannot build a focus-diverse ePSF')
     os.makedirs(_ACS_FD_CACHE, exist_ok=True)
     src_scale = _DET_SCALE['ACS/WFC'] / _ACS_FD_SUPERSAMPLE   # arcsec per supersampled pixel

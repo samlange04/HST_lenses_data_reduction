@@ -55,11 +55,11 @@ from astropy.wcs import WCS
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
-import cutout_paths
+import stamp_paths
 import make_masks
 import detect_arcs
 
-# Central wavelength (nm) of every filter in the cutout tree; unknown filters are dropped
+# Central wavelength (nm) of every filter in the stamp tree; unknown filters are dropped
 # with a note. f606W_v2 is the shorter second visit of the split-visit lens J0822+2652 (AGENTS.md).
 WAVELENGTH_NM = {
     'f275W': 275, 'f438W': 438, 'f475X': 475, 'f555W': 555, 'f606W': 606,
@@ -160,23 +160,26 @@ def pick_rgb_bands(filts, requested=None):
     return red, green, blue
 
 
-def load_band(cutout_dir, drizzle_pass):
+STAMP_SIZE = None   # main() sets it from --size; None: each lens's modelling size
+
+
+def load_band(stamp_dir, drizzle_pass):
     """sci / header / contaminant mask / arc region for one band, via detect_arcs.load_band
     when the band has a PSF stamp (it centres the kernel) and directly otherwise."""
-    prefix = cutout_paths.find_prefix(cutout_dir, drizzle_pass)
+    prefix = stamp_paths.find_prefix(stamp_dir, drizzle_pass, STAMP_SIZE)
     if prefix is None:
         return None
-    if os.path.exists(os.path.join(cutout_dir, f'{prefix}_psf.fits')):
-        band = detect_arcs.load_band(cutout_dir, prefix)
+    if os.path.exists(os.path.join(stamp_dir, f'psf.fits')):
+        band = detect_arcs.load_band(stamp_dir, prefix)
         sci, hdr, cmask = band['sci'], band['hdr'], band['cmask']
     else:
-        sci_path = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+        sci_path = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
         sci = np.nan_to_num(fits.getdata(sci_path).astype(float))
         hdr = fits.getheader(sci_path)
-        mask_path = os.path.join(cutout_dir, f'{prefix}_mask.fits')
+        mask_path = os.path.join(stamp_dir, f'{prefix}_mask.fits')
         cmask = (np.asarray(fits.getdata(mask_path), dtype=bool) if os.path.exists(mask_path)
                  else np.zeros(sci.shape, dtype=bool))
-    arc_path = os.path.join(cutout_dir, f'{prefix}_mask_arcs.fits')
+    arc_path = os.path.join(stamp_dir, f'{prefix}_mask_arcs.fits')
     arcs = (~np.asarray(fits.getdata(arc_path), dtype=bool) if os.path.exists(arc_path)
             else None)   # the file stores the inverse: True = NOT arc
     return dict(prefix=prefix, sci=sci, hdr=hdr, cmask=cmask, arcs=arcs)
@@ -241,8 +244,10 @@ def main():
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE)
     p.add_argument('--lens', default=None, help='one lens (default: every lens in the sample)')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'], default='auto')
-    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
-                   help='stamp size in arcsec, selects the cutout tree (default: the 12" tree)')
+    p.add_argument('--size', type=float, default=None,
+                   help='stamp size in arcsec (default: each lens\'s modelling size, its stamp_size in '
+                        'info/samples/lens_samples.json, else 12"). Only modelling-size stamps are '
+                        'tracked, so another size is skipped unless --include-ignored')
     p.add_argument('--ref-band', default=None,
                    help='band whose grid the composite is on (default: make_masks priority, f475X then f814W)')
     p.add_argument('--bands', default=None, help='explicit R,G,B band names; G may be "none"')
@@ -250,22 +255,24 @@ def main():
     p.add_argument('--no-arcs', action='store_true', help='do not outline arc masks')
     p.add_argument('--include-ignored', action='store_true')
     args = p.parse_args()
+    global STAMP_SIZE
+    STAMP_SIZE = args.size
 
-    root = cutout_paths.cutouts_root(ws_path, args.size)
+    root = stamp_paths.stamps_root(ws_path)
     per_lens = {}
-    for lens, filt, cutout_dir in make_masks.discover_targets(root, args.sample, args.lens,
+    for lens, filt, stamp_dir in make_masks.discover_targets(root, args.sample, args.lens,
                                                                 include_ignored=args.include_ignored):
-        per_lens.setdefault(lens, {})[filt] = cutout_dir
+        per_lens.setdefault(lens, {})[filt] = stamp_dir
     if not per_lens:
-        raise SystemExit(f'no cutouts under {root}/{args.sample}' + (f'/{args.lens}' if args.lens else ''))
+        raise SystemExit(f'no stamps under {root}/{args.sample}' + (f'/{args.lens}' if args.lens else ''))
 
     for lens, filt_dirs in per_lens.items():
         if len(filt_dirs) < 2:
             print(f'{lens}: only {", ".join(filt_dirs)}, no colour -- skipped')
             continue
         bands = {}
-        for filt, cutout_dir in filt_dirs.items():
-            band = load_band(cutout_dir, args.drizzle_pass)
+        for filt, stamp_dir in filt_dirs.items():
+            band = load_band(stamp_dir, args.drizzle_pass)
             if band is not None:
                 bands[filt] = band
         rgb_names = pick_rgb_bands(list(bands), args.bands)

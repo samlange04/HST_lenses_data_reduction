@@ -21,5 +21,5 @@
 echo "run_all_lenses.sh is retired: it ran TweakReg alignment (rejected by the" >&2
 echo "per-lens audit), skipped the astrometric tie to ACS, and mishandled the" >&2
 echo "split-visit lenses. Use scripts/run_wfpc2_wf3.sh, which does drizzle ->" >&2
-echo "align_wfpc2_to_acs -> make_cutouts per lens and retries failures." >&2
+echo "align_wfpc2_to_acs -> make_stamps per lens and retries failures." >&2
 exit 1

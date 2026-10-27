@@ -3,12 +3,12 @@
 Interactive GUI for marking multiply-imaged (lensed) source positions, per lens.
 
 For each lens in a sample this launches PyAutoLens's `al.Clicker` GUI over the lens's
-best-available cutout -- the same tool as
+best-available stamp -- the same tool as
 autolens_workspace:scripts/imaging/data_preparation/gui/positions.py -- so you can
 DOUBLE-CLICK each lensed image of the source (2 for a double, 4 for a quad, ...). Each
 click snaps to the brightest pixel within `--search-box-size` and is recorded in
 arcsec relative to the stamp centre; the collected clicks are saved as an
-`al.Grid2DIrregular` in `cutout_[cr_]positions.json` (via `al.output_to_json`), the file a
+`al.Grid2DIrregular` in `stamp12_positions.json` (via `al.output_to_json`), the file a
 modelling script loads to build a positions likelihood penalty (`al.PositionsLH`) that
 rejects mass models mapping the images too far apart in the source plane.
 
@@ -17,28 +17,28 @@ the LEFT, the band as observed on the RIGHT -- because each answers a different 
 subtracted panel is where an image buried in the galaxy envelope shows up at all, the
 as-observed panel is where you judge whether that blob is really there or is a subtraction
 artefact. They are separate axes over the same arcsec extent, so DOUBLE-CLICK EITHER and the
-snap is identical. Anything this band's `cutout_[cr_]mask.fits` already calls a contaminant is
+snap is identical. Anything this band's `stamp12_mask.fits` already calls a contaminant is
 blanked (and outlined) on both, and dropped from the stretch and the radial profile: that
 verdict is already in, and a masked neighbour otherwise owns the colour scale, invites a
 mis-click, and stamps a dark ring across the arcs at its own radius. All of it is display
 only -- the snap runs on true flux and the saved positions do not depend on any of it.
 
 WHY ONE BAND PER LENS, THEN BROADCAST. Image positions are band-INDEPENDENT sky
-coordinates: every band is cut about the same shared centre (`make_cutouts.py
+coordinates: every band is cut about the same shared centre (`make_stamps.py
 --center-band`, the sample's first available centre band) and pinned to the same output WCS geometry (`final_rot=0`, tangent
 point at the lens position), so a position measured in ARCSEC relative to the stamp centre
 is identical in every band -- even where the pixel scales differ (f160W 0.06" vs 0.05" for
 the optical bands), because arcsec, not pixels, is the shared frame PyAutoLens works in. So
 you mark ONCE, on the highest-priority band available (f475X > f814W > f606W > f555W >
 f160W > ...), and
-the same Grid2DIrregular is broadcast into every band's cutout dir under that band's own
+the same Grid2DIrregular is broadcast into every band's stamp dir under that band's own
 pass prefix, so any per-band modelling script finds a local positions.json next to its
 sci/noise/psf/mask. `--filt` forces which band you mark on.
 
-Trees mirror make_masks.py exactly: `--size` selects the cutout tree (default 12",
-data/cutouts/, the git-tracked one -- and, like hand-drawn masks, these hand-marked
+Trees mirror make_masks.py exactly: `--size` selects the stamp tree (default 12",
+data/stamps/, the git-tracked one -- and, like hand-drawn masks, these hand-marked
 positions are a NON-regenerable product, so they belong in the tracked tree). There is one
-cutout dir per band (cutout_paths.py), so each band's file lands beside the sci it was
+stamp dir per band (stamp_paths.py), so each band's file lands beside the sci it was
 marked on, with nothing to choose and no second copy to keep in step.
 
 This is a manual, one-lens-at-a-time tool (not a batch driver): each lens blocks on its own
@@ -84,12 +84,12 @@ ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import info_json
-import cutout_paths
+import stamp_paths
 # Reuse make_masks' display/tree/discovery helpers so the two GUIs stay in lock-step
 # (same pass-prefix rule, same tree discovery, same stretched display).
 import make_masks
 
-POSITIONS_JSON = os.path.join(ws_path, 'info', 'lens_positions.json')
+POSITIONS_JSON = os.path.join(ws_path, 'info', 'provenance', 'lens_positions.json')
 
 # "Best band to mark on" is shared with make_masks so the two tools pick the same primary
 # band per lens (f475X>f814W>f606W>f555W>f160W>...).
@@ -115,7 +115,7 @@ def reproject_positions(positions, src_hdr, dst_hdr):
     WHY NOT JUST COPY THE ARCSEC. The old broadcast wrote the same (y, x) into every band,
     on the reasoning that all stamps share a centre and an output WCS, so an arcsec offset
     is band-independent. That is *nearly* true and not exactly true: the stamps' tangent
-    points differ by a measured 21-56 mas on the f160W pairs (make_cutouts recentres per
+    points differ by a measured 21-56 mas on the f160W pairs (make_stamps recentres per
     band, and 0.06"/px f160W cannot land on the same sky point as 0.05"/px ACS anyway), so
     the same arcsec offset is a DIFFERENT sky position in each band -- up to a whole f160W
     pixel. Going pixel -> sky -> pixel removes that term exactly, for any pixel scale,
@@ -145,7 +145,7 @@ DEFLECTOR_WINDOW_SIGMA = 0.1  # arcsec: Gaussian window of the centroid
 DEFLECTOR_MIN_SNR = 10.0      # below this the deflector is not detected; tie unmeasured
 
 
-def deflector_sky(cutout_dir, prefix):
+def deflector_sky(stamp_dir, prefix):
     """Sky position of the deflector in this band, by windowed centroid at the stamp centre.
 
     Used only to CHECK the band tie: every stamp is recentred on the deflector, so the same
@@ -167,10 +167,10 @@ def deflector_sky(cutout_dir, prefix):
         fix). Hence the S/N floor.
     """
     from scipy import ndimage
-    sci_path = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+    sci_path = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
     hdr = fits.getheader(sci_path)
     sci = np.asarray(fits.getdata(sci_path), float)
-    noise = np.asarray(fits.getdata(cutout_paths.find_stamp(cutout_dir, prefix, 'noise')), float)
+    noise = np.asarray(fits.getdata(stamp_paths.find_stamp(stamp_dir, prefix, 'noise')), float)
     ps = make_masks.pixel_scale_from_header(hdr)
     n_y, n_x = sci.shape
     cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
@@ -271,7 +271,7 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
     Three DISPLAY-ONLY levers make the source arcs readable under the deflector light, which
     otherwise sets the colour scale on its own:
       * `contaminants` (bool array, True = masked) blanks everything this band's
-        `cutout_[cr_]mask.fits` already calls a contaminant, and drops it from the stretch
+        `stamp12_mask.fits` already calls a contaminant, and drops it from the stretch
         percentiles. A neighbour bright enough to be masked is also bright enough to own the
         colour scale and to be mis-clicked as an image, and it is the one region whose verdict
         is already in. Outlined, so a blank is never mistaken for empty sky.
@@ -382,19 +382,19 @@ def rebuild_overlays(lens, filt_dirs, drizzle_pass, stretch, vmin_percent,
     """
     n = 0
     for filt in sorted(filt_dirs):
-        cutout_dir = filt_dirs[filt]
-        prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
+        stamp_dir = filt_dirs[filt]
+        prefix = make_masks.find_prefix(stamp_dir, drizzle_pass)
         if prefix is None:
             continue
-        json_path = os.path.join(cutout_dir, f'{prefix}_positions.json')
+        json_path = os.path.join(stamp_dir, f'{prefix}_positions.json')
         if not os.path.exists(json_path):
             continue
         grid = al.from_json(file_path=json_path)
         positions = [(float(y), float(x)) for (y, x) in np.asarray(grid)]
-        sci_path = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+        sci_path = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
         ps = make_masks.pixel_scale_from_header(fits.getheader(sci_path))
         sci_native = al.Array2D.from_fits(file_path=sci_path, pixel_scales=ps).native
-        out_png = os.path.join(cutout_dir, f'{prefix}_positions.png')
+        out_png = os.path.join(stamp_dir, f'{prefix}_positions.png')
         save_overlay_png(sci_native, ps, positions, out_png, stretch=stretch,
                          vmin_percent=vmin_percent, vmax_percent=vmax_percent,
                          asinh_a=asinh_a, vmax_value=vmax_value)
@@ -428,7 +428,7 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
     marked_json = os.path.join(marked_dir, f'{marked_prefix}_positions.json')
     if not os.path.exists(marked_json):
         # Provenance says this lens WAS marked but the product is gone. The clicks are not
-        # lost -- info/lens_positions.json keeps `positions_arcsec` -- but restoring them
+        # lost -- info/provenance/lens_positions.json keeps `positions_arcsec` -- but restoring them
         # here would be wrong: the skip-if-exists rule means a restored file silently
         # prevents the re-mark the deletion may have been for. Report, don't guess.
         n_rec = prov[marked_filt].get('n_positions')
@@ -439,21 +439,21 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
         return 0
     positions = [(float(y), float(x))
                  for (y, x) in np.asarray(al.from_json(file_path=marked_json))]
-    marked_hdr = fits.getheader(cutout_paths.find_stamp(marked_dir, marked_prefix, 'sci'))
+    marked_hdr = fits.getheader(stamp_paths.find_stamp(marked_dir, marked_prefix, 'sci'))
     print(f"\n{lens}: re-deriving {len(positions)} position(s) from {marked_filt}")
     n = 0
     for filt in sorted(filt_dirs):
         if filt == marked_filt:
             continue
-        cutout_dir = filt_dirs[filt]
-        prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
+        stamp_dir = filt_dirs[filt]
+        prefix = make_masks.find_prefix(stamp_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_sci = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+        band_sci = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
         band_hdr = fits.getheader(band_sci)
         band_ps = make_masks.pixel_scale_from_header(band_hdr)
         new = reproject_positions(positions, marked_hdr, band_hdr)
-        json_path = os.path.join(cutout_dir, f'{prefix}_positions.json')
+        json_path = os.path.join(stamp_dir, f'{prefix}_positions.json')
         old = None
         if os.path.exists(json_path):
             old = [(float(y), float(x))
@@ -461,7 +461,7 @@ def rebroadcast(lens, filt_dirs, sample, drizzle_pass, stretch, vmin_percent,
         al.output_to_json(obj=al.Grid2DIrregular(values=new), file_path=json_path)
         band_native = al.Array2D.from_fits(file_path=band_sci, pixel_scales=band_ps).native
         save_overlay_png(band_native, band_ps, new,
-                         os.path.join(cutout_dir, f'{prefix}_positions.png'),
+                         os.path.join(stamp_dir, f'{prefix}_positions.png'),
                          stretch=stretch, vmin_percent=vmin_percent,
                          vmax_percent=vmax_percent, asinh_a=asinh_a, vmax_value=vmax_value)
         moved = ('' if old is None or len(old) != len(new) or not new else
@@ -478,7 +478,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                  side_by_side=True, hide_masked=True):
     """Mark positions once for one lens and broadcast the result to every band.
 
-    `filt_dirs` maps filt -> cutout_dir for that lens, from make_masks.discover_targets.
+    `filt_dirs` maps filt -> stamp_dir for that lens, from make_masks.discover_targets.
     Returns True if positions were written.
     """
     filts = sorted(filt_dirs)
@@ -488,10 +488,10 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
               f"(have {', '.join(filts)}), skipping")
         return False
 
-    display_dir = filt_dirs[display_filt]                # cutout dir of the marked band
+    display_dir = filt_dirs[display_filt]                # stamp dir of the marked band
     display_prefix = make_masks.find_prefix(display_dir, drizzle_pass)
     if display_prefix is None:
-        print(f"{lens} {display_filt}: no cutout sci for --pass {drizzle_pass}, skipping")
+        print(f"{lens} {display_filt}: no stamp sci for --pass {drizzle_pass}, skipping")
         return False
 
     # Skip if the marked band already carries positions (one file per lens), unless --force.
@@ -500,7 +500,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         print(f"{lens}: positions already exist ({display_filt}), skipping (--force to re-mark)")
         return False
 
-    sci_path = cutout_paths.find_stamp(display_dir, display_prefix, 'sci')
+    sci_path = stamp_paths.find_stamp(display_dir, display_prefix, 'sci')
     with fits.open(sci_path) as hdul:
         sci_hdr = hdul[0].header
     pixel_scales = make_masks.pixel_scale_from_header(sci_hdr)
@@ -581,15 +581,15 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
     marked_sky, _ = deflector_sky(display_dir, display_prefix)
 
     # Broadcast THROUGH SKY, not by copying arcsec (see reproject_positions). Each band gets
-    # its own Grid2DIrregular in its own frame, one file per band into that band's cutout
-    # dir, under that dir's own pass prefix (f160W has no CR pass -> cutout_positions.json).
+    # its own Grid2DIrregular in its own frame, one file per band into that band's stamp
+    # dir, under that dir's own pass prefix (f160W has no CR pass -> stamp12_positions.json).
     written = []
     for filt in filts:
-        cutout_dir = filt_dirs[filt]
-        prefix = make_masks.find_prefix(cutout_dir, drizzle_pass)
+        stamp_dir = filt_dirs[filt]
+        prefix = make_masks.find_prefix(stamp_dir, drizzle_pass)
         if prefix is None:
             continue
-        band_sci = cutout_paths.find_stamp(cutout_dir, prefix, 'sci')
+        band_sci = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
         band_hdr = fits.getheader(band_sci)
         band_ps = make_masks.pixel_scale_from_header(band_hdr)
         if filt == display_filt:
@@ -603,7 +603,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         # broadcast cannot fix a misregistered band; it can only be honest about it.
         tie_mas = None
         if marked_sky is not None and filt != display_filt:
-            band_sky, _ = deflector_sky(cutout_dir, prefix)
+            band_sky, _ = deflector_sky(stamp_dir, prefix)
             if band_sky is None:
                 print(f"  {filt}: deflector not detected (windowed S/N < "
                       f"{DEFLECTOR_MIN_SNR:g}), band tie unmeasured")
@@ -616,11 +616,11 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                           f"SKY but will sit that far off this band's images. Fix the "
                           f"astrometry, don't re-mark.")
 
-        json_path = os.path.join(cutout_dir, f'{prefix}_positions.json')
+        json_path = os.path.join(stamp_dir, f'{prefix}_positions.json')
         al.output_to_json(obj=al.Grid2DIrregular(values=band_positions), file_path=json_path)
         band_native = al.Array2D.from_fits(file_path=band_sci, pixel_scales=band_ps).native
         save_overlay_png(band_native, band_ps, band_positions,
-                         os.path.join(cutout_dir, f'{prefix}_positions.png'),
+                         os.path.join(stamp_dir, f'{prefix}_positions.png'),
                          stretch=stretch, vmin_percent=vmin_percent,
                          vmax_percent=vmax_percent, asinh_a=asinh_a,
                          vmax_value=vmax_value)
@@ -637,7 +637,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         'positions_arcsec': [[round(y, 6), round(x, 6)] for (y, x) in positions],
         'marked_filt': display_filt,
         'marked_prefix': display_prefix,
-        'drizzle_pass': 'cr' if display_prefix == 'cutout_cr' else 'nocrrej',
+        'drizzle_pass': make_masks.stamp_pass_of(display_dir, display_prefix),
         'pixel_scale_arcsec': round(pixel_scales, 6),
         'search_box_size': search_box_size,
         'snap_moved_px_max': (round(max(moved)/pixel_scales, 2) if moved else None),
@@ -660,25 +660,23 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
-                   help=f'sample subdirectory of data/cutouts/ (default '
+                   help=f'sample subdirectory of data/stamps/ (default '
                         f'{mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--lens', default=None,
-                   help='restrict to one lens; default every lens with cutouts in --sample')
+                   help='restrict to one lens; default every lens with stamps in --sample')
     p.add_argument('--filt', default=None,
                    help='force which band you mark on (e.g. f606W); default the best '
                         'available band per lens (f475X>f814W>f606W>f555W>f160W>...). The marked '
                         'positions are broadcast to every band regardless')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
-                   help="which cutout pass to mark on, matching make_cutouts.py/make_masks.py: "
-                        "'auto' (default) prefers cutout_cr_*, falling back to cutout_* where "
-                        "no CR pass exists (F160W)")
-    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
-                   help=f'cutout tree to mark positions in (default {cutout_paths.DEFAULT_SIZE:g}", '
-                        'data/cutouts/ -- the git-tracked tree; the hand-marked '
-                        '_positions.json is non-regenerable, like masks, so it belongs here. '
-                        'Its _positions.png is a QC view of that JSON and IS regenerable '
-                        '(--overlays-only), so it is gitignored)')
+                   help="which stamp pass to mark on, matching make_stamps.py/make_masks.py: "
+                        "'auto' (default) uses the band's science stamp (stamp<S>_*: the CR pass, "
+                        "or the no-CR pass where none exists, F160W); 'cr'/'nocrrej' ask for one pass")
+    p.add_argument('--size', type=float, default=None,
+                   help='stamp size in arcsec (default: each lens\'s modelling size, its stamp_size in '
+                        'info/samples/lens_samples.json, else 12"). Only modelling-size stamps are '
+                        'tracked, so another size is skipped unless --include-ignored')
     p.add_argument('--force', action='store_true', default=False,
                    help='re-mark a lens that already has positions (default: skip it)')
     p.add_argument('--search-box-size', type=int, default=2,
@@ -738,7 +736,7 @@ def main():
                         'subtracted panel')
     p.add_argument('--hide-masked', action=argparse.BooleanOptionalAction, default=True,
                    help="BLANK this band's already-masked contaminants "
-                        '(cutout_[cr_]mask.fits) in the DISPLAY, outlining what was hidden, '
+                        '(stamp12_mask.fits) in the DISPLAY, outlining what was hidden, '
                         'and drop them from both the stretch percentiles and the radial '
                         'profile (default on). A neighbour bright enough to be masked is also '
                         'bright enough to own the colour scale, to be mis-clicked as a lensed '
@@ -756,7 +754,7 @@ def main():
                         'and treat it as a finding aid, not photometry. Display only -- pass '
                         '--no-subtract-radial to click on the raw image instead')
     p.add_argument('--include-ignored', action='store_true', default=False,
-                   help='also offer bands whose cutout directory is GITIGNORED. Off by '
+                   help='also offer bands whose stamp directory is GITIGNORED. Off by '
                         'default: such a band is not a science product (the three 420 s '
                         'SLACS SNAP f814W diagnostics, since deleted, are why the rule exists), and hand-marked '
                         'positions written there are non-regenerable and invisible to every '
@@ -765,18 +763,19 @@ def main():
                         '688 mas (13.8 px) misregistration; both copies were deleted 2026-09-22.')
     a = p.parse_args()
 
-    root = cutout_paths.cutouts_root(ws_path, a.size)
+    make_masks.STAMP_SIZE = a.size
+    root = stamp_paths.stamps_root(ws_path)
 
-    # discover_targets yields per (lens, filt); regroup to filt -> cutout_dir per lens so we
+    # discover_targets yields per (lens, filt); regroup to filt -> stamp_dir per lens so we
     # mark once and broadcast across the lens's bands.
     lens_filts = {}
-    for lens, filt, cutout_dir in make_masks.discover_targets(
+    for lens, filt, stamp_dir in make_masks.discover_targets(
             root, a.sample, a.lens, None,     # filt=None: consider all bands, pick best below
             include_ignored=a.include_ignored):
-        lens_filts.setdefault(lens, {})[filt] = cutout_dir
+        lens_filts.setdefault(lens, {})[filt] = stamp_dir
 
     if not lens_filts:
-        raise SystemExit(f"no cutouts found under {root} for sample {a.sample} matching "
+        raise SystemExit(f"no stamps found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")

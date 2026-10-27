@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Bring stamp noise maps in line with info/noise_corr_factors.json without re-cutting.
+"""Bring stamp noise maps in line with info/overrides/noise_corr_factors.json without re-cutting.
 
-make_cutouts.py writes noise = NOISEK * NOISECOR / sqrt(WHT) and records NOISECOR/NOISECRS in
+make_stamps.py writes noise = NOISEK * NOISECOR / sqrt(WHT) and records NOISECOR/NOISECRS in
 the noise header. When the JSON's factor for a stamp changes, multiplying the noise map by
 new/old is exact, and the science pixels, pixel grid, masks and positions are untouched. A
 re-cut, by contrast, would re-read the mosaic. A stamp with the PSF error folded in (PSFERRAP)
-is NOT linear in the factor and is skipped with a message; re-cut it with make_cutouts.py
+is NOT linear in the factor and is skipped with a message; re-cut it with make_stamps.py
 --center-from instead.
 
     uv run python scripts/rescale_noise_factor.py --sample slacs_gold bells    # dry run
@@ -20,11 +20,11 @@ import numpy as np
 from astropy.io import fits
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(WS, 'info'))
+sys.path.insert(0, os.path.join(WS, 'info', 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cutout_paths                                   # noqa: E402
+import stamp_paths                                   # noqa: E402
 import mast_target_names                              # noqa: E402
-from make_cutouts import resolve_corr_factor          # noqa: E402
+from make_stamps import resolve_corr_factor          # noqa: E402
 
 
 def main():
@@ -32,10 +32,10 @@ def main():
     p.add_argument('--sample', nargs='+', default=mast_target_names.samples())
     p.add_argument('--apply', action='store_true', help='write (default: dry run)')
     a = p.parse_args()
-    root = cutout_paths.cutouts_root(WS)
+    root = stamp_paths.stamps_root(WS)
     n_change = n_skip = 0
     for sample in a.sample:
-        for nf in sorted(glob.glob(os.path.join(root, sample, '*', '*', 'cutout*_noise.fits'))):
+        for nf in sorted(glob.glob(os.path.join(root, sample, '*', '*', 'stamp*_noise.fits'))):
             lens, filt = nf.split(os.sep)[-3:-1]
             sci_hdr = fits.getheader(nf.replace('_noise.fits', '_sci.fits'))
             with fits.open(nf, mode='update' if a.apply else 'readonly') as h:

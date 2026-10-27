@@ -98,7 +98,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 12px; border-top: 1px
 <h2>Band coverage (lenses with a finished stamp set per sample and band)</h2>
 <div class="tablewrap"><table id="matrix"></table></div>
 
-<h2>Noise-map inflation factors applied (info/noise_corr_factors.json)</h2>
+<h2>Noise-map inflation factors applied (info/overrides/noise_corr_factors.json)</h2>
 <div class="tablewrap"><table id="noise-table"></table></div>
 <p class="sub" id="noise-note"></p>
 
@@ -205,7 +205,7 @@ const complete = (b) => b.have.noise && b.have.psf && b.have.psf_err && b.have.m
   const body = Object.keys(nf).map(i => `<tr><td>${i}</td>${filts.map(f => `<td class="num">${nf[i][f] != null ? fmt(nf[i][f]) : '<span class="sub">·</span>'}</td>`).join('')}</tr>`).join('');
   $('#noise-table').innerHTML = head + `<tbody>${body}</tbody>`;
   const ov = Object.entries(META.noise_overrides).flatMap(([s, d]) => Object.entries(d).flatMap(([l, f]) => Object.entries(f).map(([b, v]) => `${l} ${b} ${fmt(v)}`)));
-  $('#noise-note').textContent = `Applied to cutout_[cr_]noise.fits at cut time. Not a drizzle correction: drizzle conserves noise. The excess is an ERR-array deficit in the FLC frames plus CTE-correction noise at low sky. Per-lens overrides (low-sky GO-17130 F475X): ${ov.length ? ov.join(' · ') : 'none'}.`;
+  $('#noise-note').textContent = `Applied to stamp12_noise.fits at cut time. Not a drizzle correction: drizzle conserves noise. The excess is an ERR-array deficit in the FLC frames plus CTE-correction noise at low sky. Per-lens overrides (low-sky GO-17130 F475X): ${ov.length ? ov.join(' · ') : 'none'}.`;
 })();
 
 // ── lens grid
@@ -259,7 +259,7 @@ $('#grid').addEventListener('click', (ev) => {
   ];
   if (b.mask_note) rows.push(['mask note', b.mask_note]);
   $('#lb-body').innerHTML = `<dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` +
-    `<div class="note">${useFull ? 'Full dataset QC figure from data/cutouts (sci, noise, PSF, S/N, mask).' : 'Thumbnail shown; the full dataset QC figure is in the repo at ' + esc(b.dataset_rel || 'data/cutouts/…') + '.'}</div>`;
+    `<div class="note">${useFull ? 'Full dataset QC figure from data/stamps (sci, noise, PSF, S/N, mask).' : 'Thumbnail shown; the full dataset QC figure is in the repo at ' + esc(b.dataset_rel || 'data/stamps/…') + '.'}</div>`;
   $('#lightbox').hidden = false;
 });
 const closeLb = () => { $('#lightbox').hidden = true; $('#lb-img').src = ''; };
@@ -278,5 +278,5 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeLb(
   });
 })();
 
-$('#foot').textContent = `Built by scripts/make_dashboard.py from info/*.json and data/cutouts; conclusions behind every number live in AGENTS.md. ${OFFLINE ? 'Opened from disk: lightbox shows the full dataset figures.' : 'Published copy: thumbnails only.'}`;
+$('#foot').textContent = `Built by scripts/make_dashboard.py from info/*.json and data/stamps; conclusions behind every number live in AGENTS.md. ${OFFLINE ? 'Opened from disk: lightbox shows the full dataset figures.' : 'Published copy: thumbnails only.'}`;
 </script>

@@ -1,9 +1,9 @@
 """Lens samples and MAST target-name resolution.
 
-``info/lens_samples.json`` is the single source of truth for *which lenses exist in which
+``info/samples/lens_samples.json`` is the single source of truth for *which lenses exist in which
 sample* and for the per-lens MAST quirks. This module is the only reader of it; nothing
 else should parse that file or keep a second copy of a lens list. Eight samples are
-defined (catalogue positions for all of them are merged in ``info/lens_coords.py``):
+defined (catalogue positions for all of them are merged in ``info/coords/lens_coords.py``):
 
   ``slacs_gold``   the 38 SLACS lenses reduced first -- the working sample, and the
                    default ``--sample`` of every script.
@@ -32,9 +32,12 @@ quirks, query MAST as ``SDSS<LENS>``". Six keys are understood:
                    target-name query and take the lens's data from these programs, keeping
                    the visits whose footprint covers the lens (``mast_archive.py``). For
                    survey data filed under other target names (CANDELS 'ANY', COSMOS ...).
-  ``cutout_box``   side (px) of make_cutouts.py's brightest-pixel search box around the
+  ``stamp_box``   side (px) of make_stamps.py's brightest-pixel search box around the
                    catalogue position, overriding the default 100. For a lens whose arc
                    outshines the deflector in its centre band (SL2S J0904-0059 in F606W).
+  ``stamp_size``   the lens's MODELLING stamp side in arcsec, overriding the default 12".
+                   Every tool's --size defaults to it (stamp_paths.modelling_size), and its
+                   stamp<S>_* files need a !data/stamps/**/stamp<S>_* line in .gitignore.
   ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
@@ -53,7 +56,7 @@ import json
 import os
 
 _INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'info')
-SAMPLES_JSON = os.path.join(_INFO_DIR, 'lens_samples.json')
+SAMPLES_JSON = os.path.join(_INFO_DIR, 'samples', 'lens_samples.json')
 
 DEFAULT_SAMPLE = 'slacs_gold'
 
@@ -136,7 +139,7 @@ def uvis_filters(sample):
 
 
 def center_bands(sample):
-    """Ordered bands whose mosaic may define a lens's shared cutout centre: make_cutouts.py
+    """Ordered bands whose mosaic may define a lens's shared stamp centre: make_stamps.py
     uses the first one drizzled for that lens. A sample-level ``center_bands`` list in
     lens_samples.json overrides the default ``["f814W"]`` (which keeps the old behaviour: a
     lens without F814W centres each band on itself). The SL2S samples set
@@ -158,10 +161,16 @@ def archive_proposals(lens, filt, sample=None):
     return [str(p) for p in props] if props else None
 
 
-def cutout_box(lens, sample=None):
-    """Per-lens cutout search-box override (px), or None."""
-    box = _entry(lens, sample).get('cutout_box')
+def stamp_box(lens, sample=None):
+    """Per-lens stamp search-box override (px), or None."""
+    box = _entry(lens, sample).get('stamp_box')
     return int(box) if box else None
+
+
+def stamp_size(lens, sample=None):
+    """Per-lens modelling stamp side (arcsec), or None for the default."""
+    size = _entry(lens, sample).get('stamp_size')
+    return float(size) if size else None
 
 
 def target_patterns(lens, sample=None):

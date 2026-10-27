@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-Tile every lens's cutout into per-filter-group QC mosaics.
+Tile every lens's stamp into per-filter-group QC mosaics.
 
-Reads the postage stamps already written by make_cutouts.py
-(data/cutouts/<sample>/<lens>/<filt>/cutout[_cr]_{sci,noise}.fits) and lays every
+Reads the postage stamps already written by make_stamps.py
+(data/stamps/<sample>/<lens>/<filt>/stamp12_{sci,noise}.fits) and lays every
 available lens out on a 5-wide grid, one mosaic per (filter group, data type). Nothing
-is re-drizzled or re-cut - this only reads existing cutout FITS files.
+is re-drizzled or re-cut - this only reads existing stamp FITS files.
 
 Filter groups come from mosaic_groups.py, shared with make_psf_mosaics.py, so both
 scripts stay in sync. For slacs_gold/slacs_other (SLACS: WFPC2 F606W and ACS F555W
@@ -17,15 +17,15 @@ gallery (WFC3/UVIS, no cross-filter merging) gets one group per filter: f438W, f
 f814W. A sample not listed in mosaic_groups.py (bells is; the SL2S samples are not) falls
 back to one group per filter subdirectory found on disk.
 
-Each mosaic panel shows the full cutout as cut by make_cutouts.py (12" square by
+Each mosaic panel shows the full stamp as cut by make_stamps.py (12" square by
 default). Colour/stretch is inferno + an asinh stretch (astropy.visualization), the
 standard astronomy image convention: it handles the negative background-noise pixels
 smoothly (no NaN-masking artifacts) while still showing faint outskirts and bright
 cores together.
 
---size mosaics a size-variant cutout tree (data/cutouts_<size>arcsec/) into its own
-data/mosaics_<size>arcsec/ instead, mirroring make_cutouts.py so the two sizes' QC PNGs
-never overwrite each other -- see cutout_paths.py.
+--size mosaics the stamp<size>_* stamps of another size into their own
+data/mosaics_<size>arcsec/ instead, mirroring make_stamps.py so the two sizes' QC PNGs
+never overwrite each other -- see stamp_paths.py.
 
 Usage:
     uv run python scripts/make_mosaics.py --sample slacs_gold
@@ -51,7 +51,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 import mosaic_groups
-import cutout_paths
+import stamp_paths
 
 NCOLS = 5
 CMAP = 'inferno'
@@ -72,12 +72,18 @@ MIN_CBAR_TICKS = 3
 CBAR_TICK_MIN_FONTSIZE = 8
 
 
-def find_cutout_pair(filt_dir):
-    """Return (sci_path, noise_path) for a cutout dir, preferring the CR pass. Whichever
-    reduction the band carries (the names are variant-tagged, cutout_paths.find_stamp)."""
-    for prefix in cutout_paths.PREFIXES:
-        sci = cutout_paths.find_stamp(filt_dir, prefix, 'sci')
-        noise = cutout_paths.find_stamp(filt_dir, prefix, 'noise')
+# The stamp size being mosaicked; main() sets it from --size. Every size shares one band
+# directory, so the size picks the prefix (stamp12_*, stamp20_*).
+STAMP_SIZE = None   # None: each lens's modelling size
+
+
+def find_stamp_pair(filt_dir):
+    """Return (sci_path, noise_path) for a band dir at STAMP_SIZE, preferring the science
+    stamp over a comparison one. Whichever reduction the band carries (the names are
+    variant-tagged, stamp_paths.find_stamp)."""
+    for prefix in stamp_paths.prefixes(stamp_paths.resolve_size(filt_dir, STAMP_SIZE)):
+        sci = stamp_paths.find_stamp(filt_dir, prefix, 'sci')
+        noise = stamp_paths.find_stamp(filt_dir, prefix, 'noise')
         if sci is not None and noise is not None:
             return sci, noise
     return None, None
@@ -88,7 +94,7 @@ def short_filt(filt):
     return filt.replace('f606W', 'f6').replace('f555W', 'f5')
 
 
-def build_group(cutouts_dir, precedence):
+def build_group(stamps_dir, precedence):
     """Entries for one mosaic group. `precedence` is a list of filter-dir names tried
     in order per lens, so every lens contributes exactly one panel - needed for groups
     that merge filters from mutually-exclusive instruments (SLACS' WFPC2 F606W / ACS
@@ -98,16 +104,16 @@ def build_group(cutouts_dir, precedence):
     F606W is itself far noisier than ACS F555W), so those mosaics split the colourbar
     per instrument rather than share one."""
     entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(cutouts_dir, '*'))):
+    for lens_dir in sorted(glob.glob(os.path.join(stamps_dir, '*'))):
         lens = os.path.basename(lens_dir)
         for filt in precedence:
             band_dir = os.path.join(lens_dir, filt)
             # Gitignored band dirs (none today; the deleted SNAP f814W diagnostics were the
             # motivating case) are not products
             # and must not appear in a tracked mosaic -- same guard as every other sweep.
-            if cutout_paths.gitignored([band_dir], ws_path):
+            if stamp_paths.gitignored([band_dir], ws_path):
                 continue
-            sci, noise = find_cutout_pair(band_dir)
+            sci, noise = find_stamp_pair(band_dir)
             if sci is None:
                 continue
             if len(precedence) > 1:
@@ -121,11 +127,11 @@ def build_group(cutouts_dir, precedence):
 
 
 def load_signal_noise_snr(sci_path, noise_path):
-    """Load a cutout pair and derive signal-to-noise.
+    """Load a stamp pair and derive signal-to-noise.
 
     Zero-weight pixels carry the 1e8 sentinel from noise_map_via_weight_map_from
-    (make_cutouts.py); they're masked to NaN here, same convention as
-    make_cutouts.plot_cutouts. Wherever noise is NaN, snr is forced to 0 rather than
+    (make_stamps.py); they're masked to NaN here, same convention as
+    make_stamps.plot_stamps. Wherever noise is NaN, snr is forced to 0 rather than
     NaN, so a masked pixel reads as "no signal" instead of "no data" on the SNR panel.
     """
     sci = fits.getdata(sci_path).astype(np.float64)
@@ -399,24 +405,25 @@ def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
-                   help='sample subdirectory under data/cutouts/ to mosaic. Defined in '
-                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
-    p.add_argument('--size', type=float, default=cutout_paths.DEFAULT_SIZE,
-                   help='cutout size in arcsec to mosaic, matching make_cutouts.py --size '
-                        f'(default {cutout_paths.DEFAULT_SIZE:g}). A non-default size reads '
-                        'data/cutouts_<size>arcsec/ and writes data/mosaics_<size>arcsec/')
+                   help='sample subdirectory under data/stamps/ to mosaic. Defined in '
+                        f'info/samples/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+    p.add_argument('--size', type=float, default=None,
+                   help='stamp size in arcsec to mosaic (default: each lens\'s modelling size, written to '
+                        'data/mosaics/); another size writes data/mosaics_<size>arcsec/')
     a = p.parse_args()
 
-    cutouts_dir = os.path.join(cutout_paths.cutouts_root(ws_path, a.size), a.sample)
-    out_dir = os.path.join(cutout_paths.mosaics_root(ws_path, a.size), a.sample)
+    global STAMP_SIZE
+    STAMP_SIZE = a.size
+    stamps_dir = os.path.join(stamp_paths.stamps_root(ws_path), a.sample)
+    out_dir = os.path.join(stamp_paths.mosaics_root(ws_path, a.size), a.sample)
     os.makedirs(out_dir, exist_ok=True)
-    print(f"cutouts: {cutouts_dir}\nmosaics: {out_dir}")
+    print(f"stamps: {stamps_dir}\nmosaics: {out_dir}")
 
-    groups = mosaic_groups.groups_for_sample(a.sample, cutouts_dir)
+    groups = mosaic_groups.groups_for_sample(a.sample, stamps_dir)
     for group_name, precedence in groups.items():
-        entries_raw = build_group(cutouts_dir, precedence)
+        entries_raw = build_group(stamps_dir, precedence)
         if not entries_raw:
-            print(f"{group_name}: no cutouts found under {cutouts_dir}, skipping")
+            print(f"{group_name}: no stamps found under {stamps_dir}, skipping")
             continue
 
         entries = [{'lens': lens, 'label': label} for lens, label, _, _, _ in entries_raw]

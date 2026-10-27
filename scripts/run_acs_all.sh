@@ -9,7 +9,7 @@
 # tree (see AGENTS.md *Bad-column fill*); the standard tree is untouched. Logs are tagged
 # _bcfill so they don't clobber the standard run's.
 #
-# The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
+# The lens list comes from info/samples/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/. That matters: globbing the download directory only
 # ever re-runs lenses already on disk, so after a wipe it silently does nothing, and a
 # lens newly added to the sample is never picked up. Every lens is tried on every run and

@@ -92,7 +92,7 @@ _p.add_argument('--lens',        default='J1110+3649')
 _p.add_argument('--filt',        default='f606W')
 _p.add_argument('--sample',      default='gallery',
                 help='sample the lens belongs to; sets the <sample> level of every '
-                     'data/ path. Defined in info/lens_samples.json (default gallery, '
+                     'data/ path. Defined in info/samples/lens_samples.json (default gallery, '
                      'the WFC3/UVIS BELLS GALLERY sample)')
 # CR rejection is the science default: the LACosmic CR pass is the product the rest of
 # the pipeline consumes. Pass --no-cr to skip it. The no-CR ("nocrrej") pass is opt-in
@@ -120,11 +120,11 @@ WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 MIN_EXPTIME = 10.0
 # Drizzle output weight type. 'ERR' (default) makes the WHT extension a full
 # inverse-variance map (source Poisson + sky + read + dark), so 1/sqrt(WHT) is a
-# CALIBRATED per-pixel noise map -- what make_cutouts uses. The UVIS FLC ERR array is
+# CALIBRATED per-pixel noise map -- what make_stamps uses. The UVIS FLC ERR array is
 # in electrons (like ACS FLC), so 1/sqrt(WHT) is a sigma map with K=1 (no per-frame
 # EXPTIME rescale, unlike WFC3/IR whose ERR is in electrons/s). See noise_map_err_units.
 _p.add_argument('--wht-type',    default='ERR', choices=['ERR', 'IVM', 'EXP'])
-# Default None means 'flag not passed' so info/lens_cr_params.json (else the 4.5/5.0
+# Default None means 'flag not passed' so info/overrides/lens_cr_params.json (else the 4.5/5.0
 # hardcoded default) is used; an explicit flag always wins. See the resolution below.
 _p.add_argument('--lacosmic-sigclip', type=float, default=None)
 _p.add_argument('--lacosmic-objlim',  type=float, default=None)
@@ -150,18 +150,18 @@ if not do_cr and not do_nocrrej:
     _p.error('nothing to do: --no-cr given without --nocrrej (no drizzle pass requested)')
 
 ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Per-lens LACosmic CR-param overrides (info/lens_cr_params.json): precedence
+# Per-lens LACosmic CR-param overrides (info/overrides/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins.
 _cr_ovr = info_json.entry(
-    os.path.join(ws_path, 'info', 'lens_cr_params.json'), sample, lens, filt, {})
+    os.path.join(ws_path, 'info', 'overrides', 'lens_cr_params.json'), sample, lens, filt, {})
 if _a.lacosmic_sigclip is None:
     _a.lacosmic_sigclip = _cr_ovr.get('lacosmic_sigclip', 4.5)
 if _a.lacosmic_objlim is None:
     _a.lacosmic_objlim = _cr_ovr.get('lacosmic_objlim', 5.0)
 if _cr_ovr:
     print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
-          f'objlim={_a.lacosmic_objlim} (info/lens_cr_params.json) ===')
+          f'objlim={_a.lacosmic_objlim} (info/overrides/lens_cr_params.json) ===')
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
@@ -174,9 +174,9 @@ ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 # ── Common output WCS across filters (orientation + centre) ────────────────────
 # Pin every band to North-up (final_rot=0) with the tangent point (final_ra/dec) at the
 # lens position, so every filter shares orientation and WCS centre and the
-# lens sits ~centred. The position comes from info/lens_coords.py, which merges every
+# lens sits ~centred. The position comes from info/coords/lens_coords.py, which merges every
 # sample's table. Unknown lens -> native drizzle WCS (empty dict), with a warning.
-sys.path.insert(0, os.path.join(ws_path, 'info'))
+sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
 try:
     from lens_coords import lens_coords as _coords
     from astropy.coordinates import SkyCoord as _SkyCoord
@@ -192,9 +192,9 @@ except (KeyError, ImportError):
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt
-json_path            = os.path.join(ws_path, 'info', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'lens_instrument.json')
+json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
 
 # One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
 _owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'WFC3/UVIS')

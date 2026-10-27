@@ -12,7 +12,7 @@ injected build exists.
 **Producing the injected builds first.** On an EMPIRICAL primary, injection is
 non-destructive: `make_psf_inject.run_injection(lens, filt, sample)` auto-detects
 `promote=False` and writes only the parallel `*_injected` names, leaving the canonical
-`psf_kernel.fits` / `cutout_[cr_]psf.fits` untouched (verified by mtime). That is what
+`psf_kernel.fits` / `psf.fits` untouched (verified by mtime). That is what
 `run_psf_inject_all.sh --all` does. Requires `data/drizzle_files/<sample>/<lens>/<filt>/`
 to still hold the science drizzle inputs -- re-run the band's drizzle first if cleared.
 

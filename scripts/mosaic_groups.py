@@ -24,7 +24,7 @@ SAMPLE_GROUPS = {
 }
 
 
-def groups_for_sample(sample, cutouts_dir):
+def groups_for_sample(sample, stamps_dir):
     """(group_name -> precedence list) for `sample`. Falls back to one singleton group
     per filter subdirectory actually found on disk, so a sample not yet in
     SAMPLE_GROUPS -- or a new filter added later -- still produces mosaics instead of
@@ -32,7 +32,7 @@ def groups_for_sample(sample, cutouts_dir):
     if sample in SAMPLE_GROUPS:
         return SAMPLE_GROUPS[sample]
     filts = set()
-    for lens_dir in glob.glob(os.path.join(cutouts_dir, '*')):
+    for lens_dir in glob.glob(os.path.join(stamps_dir, '*')):
         for filt_dir in glob.glob(os.path.join(lens_dir, '*')):
             if os.path.isdir(filt_dir):
                 filts.add(os.path.basename(filt_dir))

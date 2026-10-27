@@ -31,7 +31,7 @@ shifts the F606W CRVAL so the two coincide. Verified on J0252+0039: F606W went f
 0.66" to 0.009" of F814W, and independently to 0.009" of F160W (F160W is not used in
 the fit, so it is a clean check that F606W landed on the GAIA frame).
 
-Run AFTER both the ACS and WFPC2 drizzles exist, BEFORE make_cutouts. Idempotent:
+Run AFTER both the ACS and WFPC2 drizzles exist, BEFORE make_stamps. Idempotent:
 re-running re-measures the residual and applies ~0.
 
     uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039
@@ -42,7 +42,7 @@ correcting is not *always* F606W. The assumption in the paragraphs above -- that
 WFC3/IR always carry a GAIA-grade solution -- is a property of the delivered WCS, not of
 the instrument, and it does fail: J1016+3859's ACS F814W (the force_copy COPY visit) came
 down with a bare `-GSC240` fit and sits 0.60" off its own F160W, which is what makes it
-the reference-band trap for make_cutouts' shared --center-band. Check WCSNAME before
+the reference-band trap for make_stamps' shared --center-band. Check WCSNAME before
 assuming which band is the truth; the defaults (target F606W, ref auto = F814W first)
 remain right for every other SLACS lens.
 
@@ -74,11 +74,11 @@ from scipy.ndimage import median_filter
 from photutils.centroids import centroid_com
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(WS, 'info'))
+sys.path.insert(0, os.path.join(WS, 'info', 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lens_coords import lens_coords
 import mast_target_names
-import cutout_paths
+import stamp_paths
 
 MAX_SHIFT = 1.5   # arcsec; a larger apparent offset means the tie failed -> skip
 
@@ -139,7 +139,7 @@ def stable_centroid(path, cat, box=2.5, niter=8, tol=0.003):
 def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE, variant=''):
     """The CR-pass sci product for a band (falls back to no-CR). `variant` selects the
     drizzled tree (e.g. 'bcfill' -> data/drizzled_bcfill/)."""
-    d = os.path.join(cutout_paths.drizzled_root(WS, variant), sample, lens, filt)
+    d = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, filt)
     for tag in ('cr', 'nocrrej'):
         hit = glob.glob(os.path.join(d, f'{prefix}_{tag}_*_sci.fits'))
         if hit:
@@ -186,7 +186,7 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     dra = cref.ra.deg - ctgt.ra.deg
     ddec = cref.dec.deg - ctgt.dec.deg
     # apply to every product of the target band (both passes, sci + wht)
-    d = os.path.join(cutout_paths.drizzled_root(WS, variant), sample, lens, target)
+    d = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, target)
     n = 0
     for fn in glob.glob(os.path.join(d, f'{band_prefix(target)}_*.fits')):
         with fits.open(fn, mode='update') as h:
@@ -225,7 +225,7 @@ if __name__ == '__main__':
                         'Set to f160W where ACS itself carries only a GSC240 fit')
     p.add_argument('--sample', default=mast_target_names.DEFAULT_SAMPLE,
                    help='sample subdirectory of data/drizzled/. Defined in '
-                        f'info/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
+                        f'info/samples/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     p.add_argument('--bcfill', action='store_true', default=False,
                    help='tie the bad-column-filled F606W product in data/drizzled_bcfill/ '
                         '(against that tree\'s own F814W), matching drizzle_wfpc2_wf3.py '
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         # drizzled F606W product can be tied, and split-visit lenses have no bare f606W.
         lenses = sorted(
             os.path.basename(os.path.dirname(d))
-            for d in glob.glob(os.path.join(cutout_paths.drizzled_root(WS, variant),
+            for d in glob.glob(os.path.join(stamp_paths.drizzled_root(WS, variant),
                                             a.sample, '*', 'f606W'))
         )
         for lens in lenses:

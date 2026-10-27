@@ -4,13 +4,13 @@ The injected kernel is canonical for every model-tier product (see
 make_psf_inject.py), but until now it carried no uncertainty of its own: the
 model-tier ensemble maps describe the pre-broadening analytic kernel and are parked
 under `*_analytic_err.fits`, and the STDPSF tier had nothing at all. This writes
-`psf_kernel_err.fits` (full) and `cutout_[cr_]psf_err.fits` (trimmed) describing the
+`psf_kernel_err.fits` (full) and `psf_err.fits` (trimmed) describing the
 kernel that is actually canonical, in the same single-HDU, non-renormalised,
 `sqrt(sum(err**2))`-scalar convention make_psf.py uses for the empirical tier -- so
 any `[0]` / `al.Kernel2D` reader keeps working.
 
 **Two sources, because the tiers differ in what is measurable. The header and
-info/lens_psf.json always say which one a given map came from -- they are NOT
+info/provenance/lens_psf.json always say which one a given map came from -- they are NOT
 interchangeable.**
 
 `ensemble` (WFPC2 MAST-DB, ACS focus-diverse) -- the existing analytic ensemble map
@@ -36,7 +36,7 @@ interchangeable.**
     deficit. Measured 2026-08-02: ~4x the bootstrap scatter it replaces.
 
 Empirical-tier products are never touched -- their `psf_kernel_err.fits` already
-describes their canonical kernel. Only products whose info/lens_psf.json `method`
+describes their canonical kernel. Only products whose info/provenance/lens_psf.json `method`
 starts with `inject` are considered.
 
     uv run python scripts/make_psf_err_injected.py --dry-run
@@ -54,13 +54,13 @@ from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 
 import info_json
-import cutout_paths
+import stamp_paths
 import make_psf
 import psf_models
 from psf_model_error import (align_resid, build_model_kernel, collect_targets,
                              split_residuals, unit, ws_path)
 
-PSF_JSON = os.path.join(ws_path, 'info', 'lens_psf.json')
+PSF_JSON = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
 
 
 # ── Target selection ────────────────────────────────────────────────────────────
@@ -84,13 +84,6 @@ def injected_products(samples=None, filts=None):
 def calibration_group(sample, filt):
     """Group key a product's calibrated error map is transferred from."""
     return 'f160W' if filt.lower() == 'f160w' else f'{sample}:{filt}'
-
-
-def cutout_prefix(cutouts_dir):
-    """'cutout_cr' where a CR-pass kernel exists, else 'cutout' (F160W has no CR pass)."""
-    return ('cutout_cr'
-            if os.path.isfile(os.path.join(cutouts_dir, 'cutout_cr_psf.fits'))
-            else 'cutout')
 
 
 # ── Source 1: propagate the analytic ensemble through the broadening ────────────
@@ -228,7 +221,7 @@ def calibrated_err(calib, shape):
 
 
 # ── Write ───────────────────────────────────────────────────────────────────────
-def write_maps(psf_dir, cutouts_dir, prefix, err_full, trim_half, meta, dry_run):
+def write_maps(psf_dir, stamps_dir, err_full, trim_half, meta, dry_run):
     """Write the full + trimmed error maps; returns (err_frac, core, wing, trim_size)."""
     ny, nx = err_full.shape
     cy, cx = ny // 2, nx // 2
@@ -245,7 +238,7 @@ def write_maps(psf_dir, cutouts_dir, prefix, err_full, trim_half, meta, dry_run)
         for kind, arr, dest in (
                 ('full_err', err_full, os.path.join(psf_dir, 'psf_kernel_err.fits')),
                 ('trimmed_err', err_trim,
-                 os.path.join(cutouts_dir, f'{prefix}_psf_err.fits'))):
+                 os.path.join(stamps_dir, f'psf_err.fits'))):
             hdr = fits.Header()
             hdr['PSFKIND'] = (kind, 'per-pixel PSF std for the injected kernel')
             hdr['PSFERR'] = (meta['err_method'], 'error-map construction')
@@ -284,7 +277,7 @@ def main():
     n_written, n_skipped, counts = 0, [], {}
     for sample, lens, filt, entry in targets:
         psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
-        cutouts_dir = cutout_paths.psf_cutout_dir(ws_path, sample, lens, filt)
+        stamps_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
         kernel_path = os.path.join(psf_dir, 'psf_kernel.fits')
         if not os.path.isfile(kernel_path):
             n_skipped.append(f'{sample}/{lens}/{filt} (no psf_kernel.fits)')
@@ -309,11 +302,10 @@ def main():
                         err_source=f'empirical_calibration/{calib["source"]}',
                         lower_bound=False, calib_group=g, calib_n=calib['n_lens'])
 
-        trim_size = int(entry.get('cutout_kernel_size') or kernel.shape[0])
+        trim_size = int(entry.get('trimmed_kernel_size') or kernel.shape[0])
         trim_half = (trim_size - 1) // 2
-        os.makedirs(cutouts_dir, exist_ok=True)
-        err_frac, core, wing, tsz = write_maps(psf_dir, cutouts_dir,
-                                               cutout_prefix(cutouts_dir), err_full,
+        os.makedirs(stamps_dir, exist_ok=True)
+        err_frac, core, wing, tsz = write_maps(psf_dir, stamps_dir, err_full,
                                                trim_half, meta, a.dry_run)
 
         if not a.dry_run:

@@ -1,5 +1,5 @@
 """
-Measure the noise-map inflation factor for every cutout -> info/noise_corr_factors.json.
+Measure the noise-map inflation factor for every stamp -> info/overrides/noise_corr_factors.json.
 
 Drizzle correlates neighbouring output pixels but conserves noise: for white input noise
 the sigma-normalised ACF has C(0) < 1, positive neighbours, and sum C = 1 over the drop
@@ -14,7 +14,7 @@ per stamp, on blank sky in its own mosaic:
     drizzle's redistribution has summed back to 1), less the far floor, computed over the
     whole region. Since 2026-10-06 the ADOPTED statistic is its patch-median form
     (patch_acf: the same window on every 10" sub-patch, medianed), which localised structure
-    cannot pull up; that is what make_cutouts.py applies via info/noise_corr_factors.json.
+    cannot pull up; that is what make_stamps.py applies via info/overrides/noise_corr_factors.json.
   * the blank-sky block-sum ratio at 0.05-2" (block_ratio) -- a diagnostic only. It never
     plateaus: past the kernel a weak, environment-dependent long-range floor (faint
     wings, sky/flat residuals) keeps adding up, so it has no single right answer. See
@@ -28,11 +28,11 @@ Per stamp:
     3 sigma is the one used, 1.5 sigma is the sensitivity check.
 
 Writes every measurement to diagnostics/corr_factor/ and prints the per-(instrument,
-filter) medians in the shape of info/noise_corr_factors.json (which it does NOT write --
+filter) medians in the shape of info/overrides/noise_corr_factors.json (which it does NOT write --
 copy the values in by hand after reading them).
 
 **The full record, corr_factor_measurements.json, is written only by a complete run:** every
-sample in info/lens_samples.json, no --lens, and no stamp that failed (e.g. a purged mosaic).
+sample in info/samples/lens_samples.json, no --lens, and no stamp that failed (e.g. a purged mosaic).
 Anything less goes to corr_factor_measurements_<samples>.json. On 2026-10-05 an SL2S-only run
 overwrote the 157-stamp SLACS/GALLERY record, which could not be rebuilt because those mosaics
 had been purged. --sample defaults to every sample.
@@ -54,9 +54,9 @@ from astropy.convolution import Gaussian2DKernel, convolve
 from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cutout_paths                                  # noqa: E402
+import stamp_paths                                  # noqa: E402
 import mast_target_names                            # noqa: E402
-from make_cutouts import find_products              # noqa: E402
+from make_stamps import find_products              # noqa: E402
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HALF = 30.0                              # arcsec half-width of the measurement region
@@ -149,10 +149,9 @@ def measure(job):
     out = dict(sample=sample, lens=lens, filt=filt, stamp=os.path.basename(stamp),
                lens_r=lens_r, half=half)
     try:
-        prefix = 'cutout_cr' if os.path.basename(stamp).startswith('cutout_cr') else 'cutout'
-        variant = cutout_paths.stamp_variant(stamp)
-        ddir = os.path.join(cutout_paths.drizzled_root(WS, variant), sample, lens, filt)
-        sci_f, wht_f = find_products(ddir, 'cr' if prefix == 'cutout_cr' else 'nocrrej')
+        variant = stamp_paths.stamp_variant(stamp)
+        ddir = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, filt)
+        sci_f, wht_f = find_products(ddir, stamp_paths.stamp_pass(stamp))
         stamp_sci = fits.getdata(stamp).astype(np.float64)
         nh = fits.getheader(stamp.replace('_sci.fits', '_noise.fits'))
         k = float(nh.get('NOISEK', 1.0))
@@ -270,13 +269,13 @@ def summarise(results, thr='thr3'):
                       f'(band {m:.2f}, {pa["n"]} patches)')
 
 def jobs_for(samples, filts=None):
-    root = cutout_paths.cutouts_root(WS)
+    root = stamp_paths.stamps_root(WS)
     for sample in samples:
         for d in sorted(glob.glob(os.path.join(root, sample, '*', '*'))):
             if filts and os.path.basename(d) not in filts:
                 continue
-            for prefix in cutout_paths.PREFIXES:
-                stamps = list(cutout_paths.list_stamps(d, prefix).values())
+            for prefix in stamp_paths.prefixes(stamp_paths.resolve_size(d)):
+                stamps = list(stamp_paths.list_stamps(d, prefix).values())
                 if stamps:
                     lens, filt = d.split(os.sep)[-2:]
                     yield sample, lens, filt, stamps[0]

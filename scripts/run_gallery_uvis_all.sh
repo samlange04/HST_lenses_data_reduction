@@ -10,11 +10,11 @@
 # on 6 each (its F225W/F275W products were deleted 2026-09-29). Every
 # lens is tried in every filter; drizzle_wfc3_uvis.py exits 0 having recorded `null`
 # where MAST has no data, so the many empty lens+filter combos report as "no data", not
-# failures. F606W is drizzled first (the primary band and the cutout --center-band).
+# failures. F606W is drizzled first (the primary band and the stamp --center-band).
 # The SL2S samples (sl2s_dinos_a/x, sl2s_wf, sl2s_snap) add F475X (GO-17130 Dinos II, or
 # the GO-11588 snapshot) and F600LP (GO-11588 snapshot); each sample just reports "no
 # data" for the other set's filters. Which program's F475X is used is decided per lens by
-# the `proposals` quirk in info/lens_samples.json, not here. The filter list itself comes
+# the `proposals` quirk in info/samples/lens_samples.json, not here. The filter list itself comes
 # from the sample's `uvis_filters` (mast_target_names.uvis_filters; default f606W f814W
 # f438W): SL2S runs only f475X f600LP, because its F606W/F814W belong to WFPC2/ACS and one
 # filter key holds one instrument per lens. Looping F814W over SL2S on 2026-10-04 drizzled
@@ -25,7 +25,7 @@
 # is resumable after an interruption. To force a re-run, delete the lens's dir under
 # data/drizzled/ (and data/drizzle_files/) as AGENTS.md describes.
 #
-# The lens list comes from info/lens_samples.json via scripts/mast_target_names.py --
+# The lens list comes from info/samples/lens_samples.json via scripts/mast_target_names.py --
 # NOT from globbing data/calibrated/, which does nothing after a wipe.
 #
 # Written for macOS's bash 3.2: no `mapfile`, no associative arrays, no `[[ -v ]]`.
