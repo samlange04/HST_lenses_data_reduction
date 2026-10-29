@@ -168,7 +168,7 @@ WF3_NATIVE_SCALE = 0.0996
 MIN_EXPTIME = 10.0
 
 # Total-exposure-time gate, checked on the surviving (post-MIN_EXPTIME, post--pa)
-# frame set. slacs_other runs generally shorter total exposures than slacs_gold;
+# frame set. non-Gold SLACS runs generally shorter total exposures than SLACS Gold;
 # below BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
@@ -312,7 +312,7 @@ else:
             print(f'  MAST target {_pat}: no observations')
         if obs_table is None or len(obs_table) == 0:
             # Not an error: this lens simply has no WFPC2 data in this filter. 16 of the
-            # 38 slacs_gold lenses are in exactly this position.
+            # 38 SLACS Gold lenses are in exactly this position.
             _mast_empty = True
             raise mast_target_names.NoMastData()
         # Keep COPY *and* non-COPY. For WFPC2 SLACS these are genuine repeat visits

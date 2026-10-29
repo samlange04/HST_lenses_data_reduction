@@ -1,11 +1,9 @@
 {
-    "slacs_gold": {
-        "description": "The 38 SLACS lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), which is where the name comes from: the working sample and the default --sample. Every lens here has ACS/WFC F814W; 22 have WFPC2 F606W, 16 have ACS F555W, 13 have WFC3/IR F160W.",
+    "slacs_a": {
+        "description": "SLACS (Bolton et al. 2008) lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), with marked image positions and no morphology difficulty flagged by eye. The working sample and the default --sample. Split from slacs_gold on 2026-10-29: Gold minus the lenses with deliberately empty positions (-> slacs_c), minus those judged by eye to have potentially difficult morphology such as a source overlapping the lens centre (-> slacs_b), minus late-type (-> slacs_late) and SWELLS (-> swells) deflectors.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
-            "J0008-0004": {},
             "J0029-0055": {},
-            "J0157-0056": {},
             "J0216-0813": {
                 "mast_target": "GAL-0668-52162-428"
             },
@@ -16,12 +14,7 @@
                 "mast_target": "GAL-0541-51959-145"
             },
             "J0822+2652": {},
-            "J0841+3824": {},
             "J0903+4116": {},
-            "J0912+0029": {
-                "mast_target": "GAL-0472-51955-429"
-            },
-            "J0936+0913": {},
             "J0946+1006": {},
             "J0956+5100": {
                 "mast_target": "GAL-0902-52409-068"
@@ -31,28 +24,13 @@
             },
             "J1020+1122": {},
             "J1023+4230": {},
-            "J1029+0420": {},
-            "J1032+5322": {
-                "force_copy": true
-            },
-            "J1142+1001": {},
-            "J1143-0144": {},
             "J1205+4910": {
                 "mast_target": "GAL-0969-52442-134"
             },
-            "J1213+6708": {},
-            "J1218+0830": {},
             "J1250+0523": {
                 "mast_target": "GAL-0847-52426-549"
             },
-            "J1402+6321": {
-                "mast_target": "GAL-0605-52353-503"
-            },
-            "J1420+6019": {
-                "mast_target": "GAL-0788-52338-605"
-            },
             "J1430+4105": {},
-            "J1432+6317": {},
             "J1451-0239": {},
             "J1525+3327": {},
             "J1627-0053": {
@@ -64,35 +42,54 @@
             "J2238-0754": {
                 "mast_target": "GAL-0722-52224-442"
             },
-            "J2300+0022": {
-                "mast_target": "GAL-0677-52606-520"
-            },
             "J2303+1422": {
                 "mast_target": "GAL-0743-52262-304"
             },
             "J2341+0000": {}
         }
     },
-    "slacs_other": {
-        "description": "The remaining SLACS lenses from Bolton et al. 2008 Table 4 (info/coords/slacs_coords.py) that are not in slacs_gold. Restricted to Bolton et al. 2008 Table 4 classification E-S-A or L-S-A (early-type or late-type, single lens, clear multiple imaging; the '*' variants E-S-A*/L-S-A* count too -- Bolton's footnote confirms them as definite lenses, just excluded from their own lens modeling) -- all other classifications (X, B, M, U) excluded. Reduced 2026-07-29; 24 of the 27 have usable HST imaging. Every lens resolves on MAST under its plain SDSS<LENS> name (no GAL-* overrides needed), so a no-data result is a real absence.",
+    "slacs_b": {
+        "description": "SLACS lenses with marked image positions whose morphology was judged by eye (2026-10-29) to be potentially difficult, e.g. a source overlapping the lens centre: Gold lenses J0008-0004, J1218+0830, J1420+6019. Also the non-Gold SLACS lenses (Bolton et al. 2008 Table 4, E-S-A) that have marked positions and ACS F814W plus F555W or F606W: J1153+4612. Split from slacs_gold/slacs_other on 2026-10-29.",
+        "coords": "info/coords/slacs_coords.py",
+        "lenses": {
+            "J0008-0004": {},
+            "J1153+4612": {},
+            "J1218+0830": {},
+            "J1420+6019": {
+                "mast_target": "GAL-0788-52338-605"
+            }
+        }
+    },
+    "slacs_c": {
+        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
             "J0037-0942": {},
             "J0044+0113": {},
             "J0109+1500": {},
+            "J0157-0056": {},
             "J0405-0455": {},
+            "J0912+0029": {
+                "mast_target": "GAL-0472-51955-429"
+            },
             "J0935-0003": {},
-            "J0955+0101": {},
+            "J0936+0913": {},
             "J0959+4416": {},
-            "J1016+3859": {"force_copy": true},
+            "J1016+3859": {
+                "force_copy": true
+            },
             "J1100+5329": {},
             "J1106+5228": {},
             "J1112+0826": {},
             "J1134+6027": {},
-            "J1153+4612": {},
+            "J1142+1001": {},
+            "J1143-0144": {},
             "J1204+0358": {},
-            "J1251-0208": {},
+            "J1213+6708": {},
             "J1259+6134": {},
+            "J1402+6321": {
+                "mast_target": "GAL-0605-52353-503"
+            },
             "J1403+0006": {},
             "J1416+5136": {},
             "J1436-0000": {},
@@ -101,9 +98,32 @@
             "J1538+5817": {},
             "J1621+3931": {},
             "J1636+4707": {},
-            "J2141-0001": {},
+            "J2300+0022": {
+                "mast_target": "GAL-0677-52606-520"
+            },
             "J2302-0840": {},
             "J2321-0939": {}
+        }
+    },
+    "slacs_late": {
+        "description": "SLACS lenses whose deflector is late-type (Bolton et al. 2008 Table 4 morphology L, Sa and later) and which are not SWELLS lenses: J1432+6317 (Gold). Created 2026-10-29.",
+        "coords": "info/coords/slacs_coords.py",
+        "lenses": {
+            "J1432+6317": {}
+        }
+    },
+    "swells": {
+        "description": "SWELLS lenses (Treu et al. 2011; Brewer et al. 2012): high-inclination disk deflectors, lenticular to late-type spiral. Today only the six that SLACS also found and that were already reduced here: J0841+3824, J1029+0420, J1032+5322 (Etherington Gold), J0955+0101, J1251-0208, J2141-0001. Bolton et al. 2008 classes all but J1029+0420 as late-type. The other SWELLS grade-A lenses (J1103+5322 and the GO-11978 WFPC2-only systems) are not yet reduced. Created 2026-10-29.",
+        "coords": "info/coords/slacs_coords.py",
+        "lenses": {
+            "J0841+3824": {},
+            "J0955+0101": {},
+            "J1029+0420": {},
+            "J1032+5322": {
+                "force_copy": true
+            },
+            "J1251-0208": {},
+            "J2141-0001": {}
         }
     },
     "gallery": {
@@ -158,7 +178,7 @@
         }
     },
     "bells": {
-        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as slacs_other. J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Reduced, masked and positions marked (2026-10-22). J1337+3620 was REMOVED 2026-10-14: a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14: a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22: its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
+        "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as the non-Gold SLACS lenses (originally the slacs_other sample). J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Reduced, masked and positions marked (2026-10-22). J1337+3620 was REMOVED 2026-10-14: a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14: a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22: its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
         "coords": "info/coords/bells_coords.py",
         "lenses": {
             "J0151+0049": {},
@@ -215,17 +235,17 @@
                     ]
                 },
                 "archive_proposals": {
-                        "f814W": [
-                            "12064"
-                        ],
-                        "f606W": [
-                            "12064"
-                        ],
-                        "f160W": [
-                            "12064"
-                        ]
-                    },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
+                    "f814W": [
+                        "12064"
+                    ],
+                    "f606W": [
+                        "12064"
+                    ],
+                    "f160W": [
+                        "12064"
+                    ]
+                },
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
             },
             "J0226-0420": {
                 "mast_target": "SL2SJ022610-042011",
@@ -263,11 +283,11 @@
                     ]
                 },
                 "archive_proposals": {
-                        "f814W": [
-                            "9822"
-                        ]
-                    },
-                    "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: WFPC2 F606W was chosen (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14: the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
+                    "f814W": [
+                        "9822"
+                    ]
+                },
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: WFPC2 F606W was chosen (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14: the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
             },
             "J1359+5535": {
                 "mast_target": "SL2SJ135949+553550",

@@ -25,7 +25,7 @@ new evidence.
 > `stamp_paths.find_stamp` / `find_prefix`, never by spelling the name, and raise
 > `AmbiguousStampError` if two reductions ever share a dir.
 
-## Current state of the products (verified on disk 2026-10-21)
+## Current state of the products (verified on disk 2026-10-21; SLACS rows 2026-10-29)
 
 Science bands only — gallery's F225W/F275W were reduced, found unusable, and **every UV
 product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
@@ -33,8 +33,11 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 
 | sample | bands | stamps + PSF + psf_err + dataset | contaminant masks | positions JSON | arc masks (optional, untracked) |
 |---|---|---|---|---|---|
-| `slacs_gold` | f814W 38, f606W 23 (incl. `f606W_v2`), f555W 16, f160W 13 | all 90 | all 90 | all 90 | f814W 38 |
-| `slacs_other` | f606W 24, f814W 4, f160W 6 | all 34 | all 34 | all 34 | f606W 10 |
+| `slacs_a` | f814W 23, f606W 13 (incl. `f606W_v2`), f555W 11, f160W 9 | all 56 | all 56 | all 56 | f814W 23 |
+| `slacs_b` | f814W 4, f606W 3, f555W 1, f160W 1 | all 9 | all 9 | all 9 | f814W 3 |
+| `slacs_c` | f606W 24, f814W 11, f555W 4, f160W 5 | all 44 | all 44 | all 44 (14 deliberately empty) | f606W 10, f814W 8 |
+| `slacs_late` | f814W 1, f606W 1 | all 2 | all 2 | all 2 | f814W 1 |
+| `swells` | f606W 6, f160W 4, f814W 3 | all 13 | all 13 | all 13 (2 deliberately empty) | f814W 3 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | all 22 (2026-10-24) | — |
@@ -42,16 +45,22 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 | `sl2s_wf` | f606W 10, f475X 2, f600LP 2 | all 14 | all 14 | all 14 (J1401+5557, J1419+5117 deliberately empty, 2026-10-24) | — |
 | `sl2s_snap` | f475X 5, f600LP 5 | all 10 | all 10 | all 10 (2026-10-24) | — |
 
+- **The SLACS samples were re-cut on 2026-10-29** (see *Lens Samples → SLACS samples*):
+  `slacs_gold` and `slacs_other` were split into `slacs_a`, `slacs_b`, `slacs_c`,
+  `slacs_late` and `swells`. Products moved unchanged. **In older notes in this file and in
+  the dated provenance text, `slacs_gold` means the 38 Etherington+2022 Gold lenses and
+  `slacs_other` the 27 other SLACS lenses**; the rewritten parts say "SLACS Gold" and
+  "non-Gold SLACS".
 - **No product is outstanding (2026-10-24).** Image positions were the last stage finished:
   BELLS 2026-10-22, all four SL2S samples 2026-10-24 (`run_positions_all.sh <sample>`, a GUI
   step). Contaminant masking is finished everywhere.
 - **Arc masks are optional products, and none is tracked in git** (see *Arc masks*): a band
-  or a sample without one is complete, not outstanding. The 10 `slacs_gold` f606W arc masks
+  or a sample without one is complete, not outstanding. The 10 SLACS Gold f606W arc masks
   recorded in `info/provenance/lens_arc_masks.json` have no file anywhere; their provenance entries remain.
 - **24 lenses have deliberately EMPTY positions files** (images too uncertain to mark, or
   counter-images below the noise) — see *Image positions*. An empty file means "decided:
   none", not "to do".
-- The three 420 s SNAP F814W diagnostics (`slacs_other` J1134+6027, J1403+0006, J1538+5817)
+- The three 420 s SNAP F814W diagnostics (`slacs_c` J1134+6027, J1403+0006, J1538+5817)
   were **deleted 2026-09-26**; those lenses have no F814W. `drizzle_acs_wfc.py
   --block-exptime 400` would recreate one, but it is not a science product.
 
@@ -123,7 +132,7 @@ HST image reduction for gravitational-lens samples (SLACS, BELLS). Per lens+filt
 
 ## Running a single lens
 
-`--sample` defaults to **`slacs_gold`** everywhere; it sets the `<sample>` level of every
+`--sample` defaults to **`slacs_a`** everywhere; it sets the `<sample>` level of every
 `data/` path, so a wrong value silently writes a correct product into the wrong tree.
 
 ```bash
@@ -148,7 +157,7 @@ rejection*).
 
 ## Running all lenses
 
-Each runner takes an optional sample arg, defaulting to `slacs_gold`:
+Each runner takes an optional sample arg, defaulting to `slacs_a`:
 
 ```bash
 bash scripts/run_acs_all.sh                  # ACS/WFC F814W + F555W
@@ -156,15 +165,15 @@ bash scripts/run_wfc3_all.sh                 # WFC3/IR F160W
 bash scripts/run_wfpc2_wf3.sh                # WFPC2/WF3 F606W: drizzle -> align -> stamp
 bash scripts/run_gallery_uvis_all.sh         # WFC3/UVIS F606W/F814W/F438W (gallery only; UV bands dropped 2026-09-29)
 bash scripts/run_stamps_all.sh              # stamps for whatever products exist (12", default)
-bash scripts/run_stamps_all.sh slacs_gold 20  # same, at a 20" stamp size (parallel tree)
+bash scripts/run_stamps_all.sh slacs_a 20     # same, at a 20" stamp size (parallel tree)
 bash scripts/run_psf_all.sh                  # PSF kernels for whatever products exist
-bash scripts/run_acs_all.sh slacs_other      # any runner, any sample
+bash scripts/run_acs_all.sh slacs_c          # any runner, any sample
 ```
 
 All runners take the roster from `info/samples/lens_samples.json` via `scripts/mast_target_names.py`
 — **except `run_stamps_all.sh` and `run_psf_all.sh`, which glob `data/drizzled/`** (a stamp
 or PSF needs a mosaic that exists). They report `ok` / `no data` / `FAILED` separately, so
-the 16 `slacs_gold` lenses with no WFPC2 data aren't mistaken for errors. `run_stamps_all.sh`
+the 16 SLACS Gold lenses with no WFPC2 data aren't mistaken for errors. `run_stamps_all.sh`
 globs `<filt>*` (not `<filt>`) so per-visit split-visit dirs are included, and covers every
 sample's filters (SLACS `f606W f814W f555W f160W`, gallery's `f438W`, SL2S's `f475X f600LP`)
 in one runner. `run_gallery_uvis_all.sh` defaults to `gallery`, the only sample with
@@ -227,7 +236,7 @@ All four drizzle scripts (`drizzle_acs_wfc.py`, `drizzle_wfc3_ir.py`,
 `drizzle_wfpc2_wf3.py`, `drizzle_wfc3_uvis.py`) sum `EXPTIME` over the frames that would
 actually reach the drizzle (post `EXPTIME=0`/`MIN_EXPTIME` filtering, post `--pa` visit
 selection for WFPC2) and gate on the total before doing the expensive drizzle work — added
-because `slacs_other` runs generally shorter total exposures than `slacs_gold`.
+because non-Gold SLACS runs generally shorter total exposures than SLACS Gold.
 
 - **`BLOCK_EXPTIME = 500s`** — no product is written. Same outcome/shape as no MAST
   data: tracking JSONs get `null`, the script prints `=== BLOCKED (exptime): ... ===`
@@ -238,9 +247,9 @@ because `slacs_other` runs generally shorter total exposures than `slacs_gold`.
 - **`WARN_EXPTIME = 1200s`** — the drizzle proceeds; the script prints
   `  EXPTIME WARNING: ...` and the batch runners report `OK (low exptime)`.
 
-No current `slacs_gold` or `gallery` product falls under either threshold. The gate has
-fired for real in `slacs_other`: its F814W visits are mostly Bolton-era legacy exposures,
-and **16 of the 27 `slacs_other` lenses are `BLOCK_EXPTIME`-gated at F814W** (3 succeed, 8
+No current SLACS Gold or `gallery` product falls under either threshold. The gate has
+fired for real in non-Gold SLACS: its F814W visits are mostly Bolton-era legacy exposures,
+and **16 of the 27 non-Gold SLACS lenses are `BLOCK_EXPTIME`-gated at F814W** (3 succeed, 8
 have no ACS data at all; `J1016+3859` is the fourth F814W, recovered via `force_copy`). F606W
 (24/27), F160W (6/27) and gallery's five UVIS bands cleared the gate everywhere they had data.
 `drizzle_acs_wfc.py --block-exptime 400` lowers the gate to admit a single 420 s SLACS SNAP
@@ -390,7 +399,7 @@ exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_stamps.py
 f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
 **J1142+1001 is the only combined-visit lens** — verified (2026-08-03) across every WFPC2
-F606W product in `slacs_gold` (38) and `slacs_other` (27): grouping `info/provenance/lens_products.json`
+F606W product in SLACS Gold (38) and non-Gold SLACS (27): grouping `info/provenance/lens_products.json`
 frame lists by 6-char rootname prefix, only J1142+1001's `f606W` mixes two visits (`ua1l38` +
 `ua1lc8`, 6 frames); the split keys J0728+3835/J0822+2652 are each single-visit. The
 shared-roll combine criterion is a registration-consistency proxy (core-registration scatter),
@@ -428,7 +437,7 @@ uv run python scripts/align_wfpc2_to_acs.py --lens J0252+0039   # or --all
 
 **`--target`/`--ref`: the mis-fit band is not always F606W.** A GAIA-grade solution is a
 property of the *delivered WCS*, not the instrument, and can fail on ACS/WFC3-IR too.
-J1016+3859 (`slacs_other`) came down with a bare `-GSC240` fit on its ACS F814W (the
+J1016+3859 (non-Gold SLACS) came down with a bare `-GSC240` fit on its ACS F814W (the
 `force_copy` COPY visit), 0.60″ off its own F160W; since `make_stamps.py` centres every band
 on `--center-band f814W`, that dragged all three stamps ~0.6–0.9″ off the deflector (the
 reference-band trap). So `align_lens` takes `--target` (band whose CRVAL moves, default F606W)
@@ -438,7 +447,7 @@ and `--ref` (the frame, default F814W); products record `ASTROREF` alongside `GS
 `-FIT_REL_GSC242`/`-GAIAeDR3`) means that band is the ~0.5″ one, whatever the instrument.
 Defaults are unchanged and stay correct for every other lens.
 
-**It varies per FILTER within one visit, and `WCSNAME` predicts it exactly — 4 `slacs_gold`
+**It varies per FILTER within one visit, and `WCSNAME` predicts it exactly — 4 SLACS Gold
 F555W products were tied 2026-09-05.** J1402+6321 (1.327″), J1205+4910 (0.605″), J1420+6019
 (0.546″) and J0959+0410 (0.464″) each sat that far off their *own lens's* F814W despite being
 the same day, same visit, same proposal (10494): MAST fitted an absolute solution to the F814W
@@ -935,10 +944,10 @@ noise FITS (from the weight map), and a 3-panel PNG.
 ## Masks (`scripts/make_masks.py`)
 
 ```bash
-uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
+uv run python scripts/make_masks.py --sample slacs_a                   # best band per lens
 uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
 uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-uv run python scripts/make_masks.py --sample slacs_gold --filt f555W   # review f814W's mask
+uv run python scripts/make_masks.py --sample slacs_a --filt f555W      # review f814W's mask
 uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
 ```
 
@@ -975,7 +984,7 @@ an empty arc region would mask out the whole stamp.
 bands after a lens's first came through the reviewed-proposal route (`edited_from_<band>` /
 `accepted_from_<band>` in `info/provenance/lens_masks.json`) rather than fresh draws. The split-visit
 `J0822+2652 f606W_v2` is its own product directory and has its own mask. Per-lens notes
-follow, `slacs_gold`/`slacs_other` first, then `gallery`:
+follow, SLACS first, then `gallery`:
 
 **Per-lens verdicts.** The detail is in each band's `note` / `edited` / `CORRECTION` keys in
 `info/provenance/lens_masks.json`; what a modeller needs to know:
@@ -989,23 +998,23 @@ follow, `slacs_gold`/`slacs_other` first, then `gallery`:
   galaxies contaminate the right side of the frame. The BOUNDARY is uncertain in every band,
   f160W most: each band was drawn fresh and they exclude 67.9 / 53.4 / 66.1 arcsec²
   (f814W / f606W / f160W). Treat as provisional; refit with the mask varied.
-- **J1016+3859** (`slacs_other`): the compact red object at 3.68″ (A) and the object at 3.94″
+- **J1016+3859** (`slacs_c`): the compact red object at 3.68″ (A) and the object at 3.94″
   (B, sky NW) are **weakly sheared background galaxies, not lensed images** — no
   counter-images, and A is redder than the deflector while B is bluer, so they cannot be two
   images of one source. Both are masked (B in f606W only; add it to f814W if that mask is
   redrawn). The real lensed features are faint f606W knots at r = 1.4–1.8″ (θ_E 1.09″).
-- **J1538+5817** (`slacs_other`, f606W only): a ring at θ_E ≈ 1.0″, cleared by the mask. Two
+- **J1538+5817** (`slacs_c`, f606W only): a ring at θ_E ≈ 1.0″, cleared by the mask. Two
   marginal features outside it, C1 (col 136, row 143; r = 1.44″) and C2 (col 117, row 161;
   r = 2.08″), are unresolved (deflector spiral arm vs lensed emission) and left unmasked.
-- **J1416+5136** (`slacs_other`): θ_E 1.37″. Whether the two bright objects at 2.2″ and 2.6″
+- **J1416+5136** (`slacs_c`): θ_E 1.37″. Whether the two bright objects at 2.2″ and 2.6″
   (1.6–1.9 θ_E, no counter-images) and the faint bridge between them are extended source
   emission is **open** — fit with them included and excluded. Keep any mask outside ~1.6″.
 - **J1213+6708 f814W**: the faint arc at r = 1.85″ (1.30 θ_E, peak 13σ, tangential, not
   mirror-symmetric) is real; a counter-image candidate sits at 0.68 θ_E on the opposite side.
-- **J1134+6027, J1251-0208** (`slacs_other` f606W): both masks are clear of the ring. J1251's
+- **J1134+6027** (`slacs_c`), **J1251-0208** (`swells`) f606W: both masks are clear of the ring. J1251's
   deflector is a **spiral**; the two-armed structure at r = 3.3–4.3″ is left unmasked, so its
   light model has to cope with spiral structure.
-- **J1403+0006** (`slacs_other`, f606W only): the mask's inner edge stops at 1.00″ = 1.20 θ_E,
+- **J1403+0006** (`slacs_c`, f606W only): the mask's inner edge stops at 1.00″ = 1.20 θ_E,
   with the close neighbour's 1σ isophote added (+308 px; `MASKEDIT`/`MASKEDDT`/`MASKEDPX`/
   `MASKEDRI` header cards). Inside 1.2″ the residuals are 3.2× the photon noise
   (galaxy-model-limited), so whether an arc is present cannot be settled from this data.
@@ -1114,7 +1123,7 @@ than compass words, and derive them from the WCS rather than from how the panel 
 
 - **Checked across the whole archive (2026-09-15): the orientation is uniform — there is no
   lens or band that breaks the rule.** All **317** stamps, 12″ and 20″ (then in `data/cutouts/` and
-  `data/cutouts_20arcsec/`; slacs_gold 180, slacs_other 71, gallery 66; ACS/WFC, WFPC2/PC,
+  `data/cutouts_20arcsec/`; SLACS Gold 180, non-Gold SLACS 71, gallery 66; ACS/WFC, WFPC2/PC,
   WFC3/IR and WFC3/UVIS) have, from the CD matrix: **PA(+row) = 0.000000° (North),
   PA(+col) = 270.000000° (West), axes orthogonal to 1e-6°, det(CD) < 0 everywhere**, and
   **no SIP or distortion-lookup keywords at all**. Pixel scales are uniform per instrument
@@ -1303,7 +1312,7 @@ stamps.
 ### Dataset QC subplots (`scripts/make_dataset_subplots.py`) — auto-rebuilt with every mask
 
 ```bash
-uv run python scripts/make_dataset_subplots.py --sample slacs_gold           # all lenses
+uv run python scripts/make_dataset_subplots.py --sample slacs_a              # all lenses
 uv run python scripts/make_dataset_subplots.py --lens J1451-0239 --filt f814W --force
 ```
 
@@ -1333,10 +1342,10 @@ all four components are required, so an unmasked band is reported and skipped, n
 ## Image positions (`scripts/make_positions.py`, `scripts/run_positions_all.sh`)
 
 ```bash
-uv run python scripts/make_positions.py --sample slacs_gold            # best band per lens
+uv run python scripts/make_positions.py --sample slacs_a               # best band per lens
 uv run python scripts/make_positions.py --lens J0008-0004 --filt f606W # force the band
 bash scripts/run_positions_all.sh                                      # every sample
-bash scripts/run_positions_all.sh slacs_gold --force                   # one sample, re-mark
+bash scripts/run_positions_all.sh slacs_a --force                      # one sample, re-mark
 ```
 
 Interactive, manual tool (the positions analogue of `make_masks.py`). For each lens it opens
@@ -1356,9 +1365,9 @@ non-regenerable, so they live in the git-tracked `data/stamps/` tree.
 
 **DELIBERATELY EMPTY positions files.** 24 lenses carry a zero-length
 `Grid2DIrregular` on every band. 2026-09-26 (images too uncertain to mark):
-`slacs_gold` J0157-0056, J0841+3824, J0912+0029, J0936+0913, J1142+1001, J1143-0144,
-J1213+6708, J1402+6321, J2300+0022; `slacs_other` J0959+4416, J1016+3859, J1134+6027,
-J1403+0006, J1416+5136, J2141-0001, J2321-0939. 2026-10-22: `bells` J0151+0049, J0944-0147,
+`slacs_c` J0157-0056, J0912+0029, J0936+0913, J0959+4416, J1016+3859, J1134+6027,
+J1142+1001, J1143-0144, J1213+6708, J1402+6321, J1403+0006, J1416+5136, J2300+0022,
+J2321-0939; `swells` J0841+3824, J2141-0001. 2026-10-22: `bells` J0151+0049, J0944-0147,
 J1221+3806, J1234-0241, J1601+2138, J1611+1705. 2026-10-24: `sl2s_wf` J1401+5557 and
 J1419+5117 (arc only; SL2S III's SIE puts their counter-images at 5–13% of the knot flux,
 below our noise). Their `info/provenance/lens_positions.json` record has
@@ -1435,7 +1444,7 @@ mask; `stamp12_positions.png` is a QC *view* of that JSON, one per band (~160), 
 rebuilt from the JSON plus the sci stamp with **no GUI and no re-clicking**:
 
 ```bash
-uv run python scripts/make_positions.py --sample slacs_gold --overlays-only
+uv run python scripts/make_positions.py --sample slacs_a --overlays-only
 ```
 
 That flag exists so the ignore rule is honest — without it "regenerable" would have meant
@@ -1516,7 +1525,7 @@ has it **on**.
 ## Arc masks (`scripts/make_arc_masks.py`)
 
 ```bash
-uv run python scripts/make_arc_masks.py --sample slacs_gold            # best band per lens
+uv run python scripts/make_arc_masks.py --sample slacs_a               # best band per lens
 uv run python scripts/make_arc_masks.py --lens J0330-0020 --force      # one lens, redraw
 uv run python scripts/make_arc_masks.py --lens J0330-0020 --detect-snr 3.0   # looser proposal
 uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from none  # blank canvas
@@ -1617,14 +1626,14 @@ measurement, or a source-plane analysis.
   outline needs `origin='upper'` or it is drawn vertically mirrored.
 - **EVERY arc mask is OUT OF GIT (2026-10-21; their quality is not vouched for).** A
   `.gitignore` rule on `data/stamps/**/*_mask_arcs.{fits,png}` covers every sample and band,
-  and the 126 previously tracked files (63 FITS + 63 QC PNGs: `slacs_gold` f814W 38,
-  `slacs_other` f606W 10, `gallery` f606W 15) were `git rm --cached` on **both `main` and
+  and the 126 previously tracked files (63 FITS + 63 QC PNGs: SLACS Gold f814W 38,
+  non-Gold SLACS f606W 10, `gallery` f606W 15) were `git rm --cached` on **both `main` and
   `bcfill`**. They remain in the history of earlier commits. This replaces the 2026-09-21 rule
-  that parked only `slacs_gold` f606W. **Nothing was deleted**: the files stay on disk beside
+  that parked only SLACS Gold f606W. **Nothing was deleted**: the files stay on disk beside
   the sci they were drawn on, and their provenance stays in the tracked `info/provenance/lens_arc_masks.json`,
   so `make_arc_masks.py` still counts those bands done and skips them (`--force` to redraw). The
   rule governs git, not the campaign. A fresh clone therefore has the provenance but **not the
-  masks**. The 10 `slacs_gold` f606W entries already point at files that are gone (see *Current
+  masks**. The 10 SLACS Gold f606W entries already point at files that are gone (see *Current
   state*). Delete the two `.gitignore` lines to track arc masks again. **Trap:** checking out
   a commit or tag from before 2026-10-21 (e.g. the `2026-10-06` release tag) and then
   switching back to `main` makes git **delete the on-disk arc masks**, because they were
@@ -1637,7 +1646,7 @@ measurement, or a source-plane analysis.
 ## Automatic arc detection (`scripts/detect_arcs.py`)
 
 ```bash
-uv run python scripts/detect_arcs.py --sample slacs_gold      # QC figures + summary, no products
+uv run python scripts/detect_arcs.py --sample slacs_a         # QC figures + summary, no products
 uv run python scripts/detect_arcs.py --lens J0330-0020 --snr 3.0   # tune one lens
 uv run python scripts/detect_arcs.py --fetch-theta-e          # refresh the Einstein-radius cache
 ```
@@ -1665,8 +1674,8 @@ blue star-forming galaxy, so the detector builds a **blue-excess image** `be = B
   cancel and are never converted.
 - Candidates are kept only in an annulus around the **measured** θ_E, cached in
   `info/catalogues/lens_einstein_radii.json` (see *Tracking JSONs* for the two catalogues and their
-  differing cosmologies). **All 38 `slacs_gold` and all 15 `gallery` lenses have a row**;
-  `slacs_other` is missing three. The same prior kills both classic false positives: the
+  differing cosmologies). **All 38 SLACS Gold and all 15 `gallery` lenses have a row**;
+  non-Gold SLACS is missing three. The same prior kills both classic false positives: the
   central residual inside, field galaxies outside. **No row → `propose()` raises**, so a
   missing θ_E takes the whole sample's `--propose-from detect` down rather than degrading.
 - Components are judged on **peak per-pixel S/N and connected area**, never an aperture sum,
@@ -1704,11 +1713,11 @@ PSF cannot catch a transposition.
 **One more data fact, silent and general:**
 - **A few noise maps flag zero-coverage pixels with `1e8`** — 12 products repo-wide, a handful
   of pixels each (J0252+0039 f606W, J0728+3835 both bands, J0737+3216 f814W, J1451-0239 f814W,
-  and 5 in `slacs_other`). Squared and pushed through an FFT that one value **destroys the
+  and 5 in non-Gold SLACS). Squared and pushed through an FFT that one value **destroys the
   whole frame**. Any convolution or smoothing of a noise map here must detect and heal them
   first (`SENTINEL_FACTOR`).
 
-**What it achieves on `slacs_gold` (38/38 run, ~15 s for the sample), measured after the PSF
+**What it achieves on SLACS Gold (38/38 run, ~15 s for the sample), measured after the PSF
 kernel fix:** every lens gets a proposal; **27/38 have their largest component at 0.6–1.5 θ_E**,
 and the median lens has **100%** of its proposed area in that range — the proposal is the ring
 and little else. Median proposal 501 px = 1.25 arcsec². The PSF fix moved these: before it,
@@ -1735,7 +1744,7 @@ flagged rather than corrected).
 
 **Other samples degrade gracefully, not silently:** a lens with no blue band or no measured
 θ_E is reported and skipped (`gallery` is f606W-only and is not in Auger+2009 — Shu+2016
-Table 2 has θ_E for all 15 if it is ever wanted; 4 of 24 `slacs_other` lenses run today).
+Table 2 has θ_E for all 15 if it is ever wanted; 4 of 24 non-Gold SLACS lenses run today).
 
 ## PSF generation (`scripts/make_psf.py`, `scripts/psf_models.py`)
 
@@ -2050,7 +2059,7 @@ pixfrac 0.7, passed it at 1.0, set the 2% flux floor (8 → 4 stars) and went in
 Verified on J0201+3228 f606W: the one star the gate removed peaks at 68 845 e⁻ (98% of full
 well) in a frame; every kept star is <10 000 e⁻. Logged per build as `N saturated`; override
 with `satlevel` / `max_peak` in `info/overrides/psf_stars.json`. **Every sample was rebuilt with it
-(gallery 2026-09-29, slacs_gold/slacs_other 2026-09-30; 124/124 ok).** In SLACS the gate
+(gallery 2026-09-29, SLACS Gold/non-Gold 2026-09-30; 124/124 ok).** In SLACS the gate
 fired on 50 fields and, unlike gallery, the old ACS builds *had* let the saturated star
 through the shape gate — it sat in the ePSF and set the 2% flux floor high. Removing it: no
 tier changed, every wing gate still passes, star counts mostly rose (42 builds changed; e.g.
@@ -2110,9 +2119,9 @@ footprint), so `psf_stars.json` exclude boxes transfer unchanged. `info/override
 `[xmin,xmax,ymin,ymax]`.
 
 **Current state (checked against `info/provenance/lens_psf.json` 2026-09-26): 151 PSF products, every
-science band has one, 0 failures.** By method: `slacs_gold` 56 empirical + 23
+science band has one, 0 failures.** By method: SLACS Gold 56 empirical + 23
 `inject_wfpc2_psfdb` (all F606W) + 10 `inject_stdpsf` (F160W) + 1 `inject_acs_fdpsf`
-(J1213+6708 f814W, 2 stars); `slacs_other` 6 empirical + 23 `inject_wfpc2_psfdb` + 4
+(J1213+6708 f814W, 2 stars); non-Gold SLACS 6 empirical + 23 `inject_wfpc2_psfdb` + 4
 `inject_stdpsf` + 1 `inject_acs_fdpsf` (J1016+3859 f814W); `gallery` 19 empirical + 8
 `inject_stdpsf`. ACS empirical PSFs are built from the no-CR pass. Each product carries
 `pedestal_frac`; the model tier is rotated to North-up. Vet after any no-CR rebuild: more
@@ -2367,7 +2376,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     mocked fetch).
 
   Tracked in git so the detector runs offline. Every lens in the three samples has a row and
-  redshifts. Two `slacs_other` lenses have **no θ_E** (no Auger lens model):
+  redshifts. Two `slacs_c` lenses have **no θ_E** (no Auger lens model):
   **`J1259+6134`, `J2302-0840`** (only the second has stamps). `J2141-0001` was the third
   until its Brewer+2012 θ_E went in on 2026-10-21.
 
@@ -2408,26 +2417,71 @@ MAST quirks (`mast_target`, `force_copy`). Read it only through
 
 ```bash
 uv run python scripts/mast_target_names.py --list        # samples + sizes
-uv run python scripts/mast_target_names.py slacs_gold    # lens names
+uv run python scripts/mast_target_names.py slacs_a       # lens names
 ```
 
 | Sample | Lenses | What it is |
 |---|---|---|
-| **`slacs_gold`** | 38 | The working sample; **default `--sample` of every script**. Exactly the 38 SLACS lenses graded "Gold" by Etherington et al. 2022 (MNRAS 517, 3275; automated PyAutoLens modelling of 43 SLACS + 16 GALLERY), which is where the name comes from. Four of that paper's 5 non-Gold SLACS lenses are in `slacs_other` |
-| **`slacs_other`** | 27 | Rest of SLACS restricted to Bolton et al. 2008 Table 4 class E-S-A/L-S-A (incl. the `*` variants). Reduced |
+| **`slacs_a`** | 23 | The working sample; **default `--sample` of every script**. Etherington+2022 Gold lenses with marked positions and no flagged morphology difficulty. See *SLACS samples* below |
+| **`slacs_b`** | 4 | Positioned SLACS lenses whose morphology was judged by eye to be potentially difficult (e.g. a source overlapping the lens centre) |
+| **`slacs_c`** | 31 | The remaining early-type SLACS lenses: Gold with deliberately empty positions, and non-Gold without both positions and F814W + an optical band. 3 have no usable HST data |
+| **`slacs_late`** | 1 | Late-type deflectors (Bolton+2008 class L) not in SWELLS: J1432+6317 |
+| **`swells`** | 6 | SWELLS disk-deflector lenses (Treu+2011; Brewer+2012) that SLACS also found. The other SWELLS grade-A lenses are not yet reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_dinos_x`** | 11 (J0233-0438 removed 2026-10-14, J0848-0351 2026-10-24) | SL2S whose only deep band is GO-17130 F475X (3 also keep a snapshot F600LP). Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_wf`** | 10 (J0213-0743 dropped 2026-10-14) | SL2S with GO-11289 WFPC2 F606W (on WF3) and no GO-17130 F475X. Reduced and masked; positions marked 2026-10-24 |
 | **`sl2s_snap`** | 5 (J1423+5722 removed 2026-10-24) | SL2S with only the GO-11588 F475X + F600LP snapshot. Reduced and masked; positions marked 2026-10-24 |
-| **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as `slacs_other`; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
+| **`bells`** | 21 | BELLS (GO-12209), restricted to Brownstein et al. 2012 Table 3 class E-S-A/L-S-A (21 + 3), the same rule as the original non-Gold SLACS sample; **J1337+3620 and J1349+3612 removed 2026-10-14** (multi-deflector: same-z companions at 5.24″ and 3.9″ need their own mass); **J1542+1629 removed 2026-10-22** (its neighbour's mask reaches past θ_E); ACS/WFC F814W only, ~2200–2400 s per lens. Added 2026-10-04. Reduced, masked and positions marked (2026-10-22; 6 deliberately empty) |
 
-`slacs_gold` coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
+### SLACS samples (split 2026-10-29)
+
+The SLACS lenses were reduced as two samples: `slacs_gold`, exactly the 38 lenses graded
+"Gold" by Etherington et al. 2022 (MNRAS 517, 3275; automated PyAutoLens modelling of 43
+SLACS + 16 GALLERY), and `slacs_other`, the other 27 Bolton et al. 2008 Table 4 grade-A
+lenses of class E-S-A or L-S-A (the `*` variants included). On 2026-10-29 they were re-cut
+into five samples by these rules, applied in this order:
+
+1. **`swells`**: the lens is a SWELLS grade-A lens (Treu+2011, Brewer+2012). These are
+   high-inclination disk deflectors: J0841+3824, J1029+0420, J1032+5322 (Gold), J0955+0101,
+   J1251-0208, J2141-0001.
+2. **`slacs_late`**: Bolton+2008 Table 4 morphology `L` (late-type, Sa and later): J1432+6317.
+   All six of Bolton's L-class lenses in our rosters were late-type by eye or already known
+   disks; the other five are SWELLS lenses.
+3. **`slacs_a`**: Gold, with marked positions, and not on the by-eye list of potentially
+   difficult morphology (J0008-0004, J1218+0830, J1420+6019, J1142+1001, J1143-0144, plus
+   J0841+3824, J1029+0420, J1032+5322 and J1432+6317, which rules 1–2 already took).
+4. **`slacs_b`**: Gold lenses on that list that have marked positions, plus non-Gold lenses
+   with marked positions and F814W + (F555W or F606W): J0008-0004, J1218+0830, J1420+6019,
+   J1153+4612.
+5. **`slacs_c`**: everything else. That is the Gold lenses whose positions are deliberately
+   empty (J1142+1001 and J1143-0144 included), and the non-Gold lenses without both positions
+   and two bands (mostly WFPC2 F606W only).
+
+**Why late-type deflectors had sat in both samples:** Gold is a modelling grade with no
+morphology cut, and `slacs_other`'s rule admitted `L-S-A` on purpose; Bolton's E/L class was
+never copied into `lens_samples.json`, so nothing displayed it. The class is in Bolton+2008
+Table 4 (the `L` first letter).
+
+**Planned, not yet in the roster** (both have usable HST data on MAST, checked 2026-10-29):
+- `slacs_multi` (group-scale or multi-galaxy deflectors) from the Bolton+2008 grade-A lenses
+  of class `E-M-A*` that our rule excluded: **J0808+4706** (GO-10886 ACS F814W, WFPC2
+  F606W 4 × 1100 s, WFC3/IR F160W; Bolton: "nearby companion prevents simple SIE modeling")
+  and **J1718+6424** (WFPC2 F606W 4 × 1100 s only; "double foreground galaxy").
+  **J1618+4353** (E-M-A*, "double foreground galaxy") has only the 420 s SNAP F814W/F435W,
+  below `BLOCK_EXPTIME`. No lens already in the five samples qualifies: the brightest masked
+  neighbour within 6″ holds 18% of the deflector's light (J1436-0000, 3.7″), against
+  35–80% for the BELLS lenses removed under the single-deflector rule.
+- `slacs_late`: **J1250-0135** (Bolton U-S-A*, "spiral structure and asymmetric bulge";
+  WFPC2 F606W 4 × 1100 s only). `swells`: **J1103+5322** (Bolton U-S-A; ACS F814W, WFPC2
+  F606W + F450W) and the other SWELLS grade-A lenses (see the candidate-sample notes).
+
+SLACS Gold coverage: **F814W** (ACS/WFC, all 38), **F606W** (WFPC2/WF3, 22 — the other 16
 have no WFPC2 data), **F555W** (ACS/WFC, 16 — exactly those 16), **F160W** (WFC3/IR, 13 —
 prop 11202). NICMOS F160W (24 lenses) is deprioritised and its data deleted. HST props:
 10886, 11202, 10494, 10798.
 
-`slacs_other` coverage (27 lenses, reduced 2026-07-29): **F606W** (WFPC2/WF3, 24/27),
+Non-Gold SLACS coverage (27 lenses, reduced 2026-07-29): **F606W** (WFPC2/WF3, 24/27),
 **F814W** (ACS/WFC, 4/27 — the rest are `BLOCK_EXPTIME`-gated or absent, see *Total-
 exposure-time gate*; `J1016+3859` recovered 2026-08-03 via `force_copy`, see above),
 **F160W** (WFC3/IR, 6/27), **F555W** (ACS/WFC, 0/27 — none of these lenses fall in props
@@ -2435,9 +2489,11 @@ exposure-time gate*; `J1016+3859` recovered 2026-08-03 via `force_copy`, see abo
 F814W; `align_wfpc2_to_acs.py` has tied all 4 (`J1016+3859` on 2026-08-04, and it also needed
 its *F814W* tied to F160W first — see the `--target`/`--ref` note in *align_wfpc2_to_acs.py*)
 — the other 21 F606W products carry their delivered GSC240 absolute WCS (~0.3–1″ off) untied. `info/overrides/wfpc2_alignment.json` has no
-per-lens `--align` audit for `slacs_other` (it only covers the 22 `slacs_gold` WFPC2 lenses);
-every `slacs_other` WFPC2 lens falls back to the documented default, `mast`.
+per-lens `--align` audit for the non-Gold SLACS lenses (it only covers the 22 Gold WFPC2 lenses);
+every non-Gold WFPC2 lens falls back to the documented default, `mast`.
 All 34 science bands have PSF products (see *PSF generation* for the method split).
+
+### Coverage per sample, MAST names and COPY handling
 
 `gallery` coverage (15 lenses, reduced 2026-07-29, re-drizzled at pixfrac 1.0 on 2026-09-29):
 **F606W** on all 15 (the primary band), **F814W**/**F438W** on 6. (F275W on 5 and F225W on 1
@@ -2452,7 +2508,7 @@ unusable for lens science across the whole sample** (arc undetected, not just th
 images** — the older "F606W only" claim was wrong and is corrected below. The F225W/F275W
 products were deleted 2026-09-29 (not science-worthy, so not carried).
 
-Caveat carried over from before both samples were reduced: `slacs_other`'s naming is
+Caveat carried over from before both samples were reduced: the non-Gold SLACS naming is
 settled — all lenses resolve under plain `SDSS{lens}%`, no `GAL-*` overrides needed
 (verified; see *Non-standard MAST target names*), so a "no observations" result there is a
 real absence, not a naming gap.
@@ -2714,10 +2770,10 @@ resolve this via `mast_target_names.py`: a lens with a `mast_target` in `lens_sa
 queries the `GAL-*` name first, falls back to `SDSS{lens}%`. **Output/directory names stay
 in the J convention.** The live values are the `mast_target` entries in the JSON — edit
 those, not any table. **Verified fact, not just current state:** all 14 `GAL-*` overrides are
-in `slacs_gold`, and `slacs_other` (surveyed at its original 93-lens definition, before the
+in SLACS Gold, and non-Gold SLACS (surveyed at its original 93-lens definition, before the
 2026-07-29 restriction to the 27-lens Bolton E-S-A/L-S-A subset — a strict subset, so the
-survey still covers it) has been confirmed to need none — no SLACS lens outside `slacs_gold`
-should ever need a `mast_target` override for this reason. If one shows up in `slacs_other`,
+survey still covers it) has been confirmed to need none — no SLACS lens outside SLACS Gold
+should ever need a `mast_target` override for this reason. If one shows up in non-Gold SLACS,
 treat it as a bug/regression to investigate, not a new legitimate case.
 
 `gallery` (BELLS GALLERY) has a separate, also-verified naming mismatch: those targets sit on
@@ -2924,7 +2980,7 @@ predict a real offset.
 
 **CR rejection: the LACosmic default stands; no per-lens tuning is warranted.** Core flux
 (r<1″) is preserved to a median **0.985** of the no-CR pass across F606W/F814W. The arc
-annulus (1–2″) sits at 0.932 vs 0.989 for a slacs_gold F814W control, which looked like
+annulus (1–2″) sits at 0.932 vs 0.989 for a SLACS Gold F814W control, which looked like
 erosion and is **fully explained by the arcs being fainter** (see next bullet) — a
 `scripts/lacosmic_erosion_scan.py` sweep over
 sigclip 4.5–10 / objlim 5–12 on the two worst lenses (J2228+1205, J0237-0641) shows their
@@ -2942,7 +2998,7 @@ across instruments — only the *response* to the thresholds is.
   and **slacs median 1.11** (0.64–1.76, n=6): the source region loses exactly what empty sky
   loses, in both samples, and gallery is if anything the cleaner of the two. So the numerator
   is cosmic rays, uniformly distributed. What differs is the **denominator** — annulus surface
-  brightness is **5.8 e/s/arcsec² on gallery vs 38.5 on slacs_gold, 6.7× fainter** — while the
+  brightness is **5.8 e/s/arcsec² on gallery vs 38.5 on SLACS Gold, 6.7× fainter** — while the
   CR flux removed is essentially the same (0.38 vs 0.48 e/s/arcsec² in blank sky). Same
   subtraction, much smaller thing to subtract it from. Independent confirmation from frame
   count: a CR is diluted 1/N by the drizzle average, and the two NDRIZIM=24 gallery lenses
@@ -2975,9 +3031,9 @@ F438W qualification from the audit above: **arc yes, deflector no.**
 ## QC mosaics (`scripts/make_mosaics.py`, `scripts/make_psf_mosaics.py`)
 
 ```bash
-uv run python scripts/make_mosaics.py --sample slacs_gold
-uv run python scripts/make_mosaics.py --sample slacs_gold --size 20   # the 20" stamp tree
-uv run python scripts/make_psf_mosaics.py --sample slacs_gold
+uv run python scripts/make_mosaics.py --sample slacs_a
+uv run python scripts/make_mosaics.py --sample slacs_a --size 20   # the 20" stamp tree
+uv run python scripts/make_psf_mosaics.py --sample slacs_a
 ```
 
 Read-only QC: tile every lens's existing stamp (or trimmed PSF kernel) onto a 5-wide grid,
@@ -2986,7 +3042,7 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
 `data/stamps/`.
 
 - **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
-  stay in sync. For `slacs_gold`/`slacs_other`: `f814W`, `f606W_f555W` (WFPC2 F606W —
+  stay in sync. For the SLACS samples and `swells`: `f814W`, `f606W_f555W` (WFPC2 F606W —
   including the split-visit `f606W_v2` key, tried only if the lens has no bare `f606W` —
   merged with ACS F555W per lens, since no SLACS lens has both), `f160W`. For `gallery`: one
   group per UVIS filter (no

@@ -8,8 +8,8 @@ psf_stars.json) is nested {sample: {lens: {key: value}}}, mirroring both
 info/samples/lens_samples.json's own top-level-by-sample layout and the
 data/<sample>/<lens>/<filt>/ directory convention every script already uses. Before
 this module, the tracking JSONs were flat {lens: {...}} with no sample namespace --
-harmless only because no lens name has ever collided across slacs_gold/slacs_other/
-gallery; nesting by sample removes that latent trap and lets a JSON diff show which
+harmless only because no lens name has ever collided across the SLACS and
+gallery samples; nesting by sample removes that latent trap and lets a JSON diff show which
 sample changed.
 
 **Where each file lives (2026-10-26).** info/ is split by who writes a file, and `path()`

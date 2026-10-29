@@ -46,7 +46,7 @@ the reference-band trap for make_stamps' shared --center-band. Check WCSNAME bef
 assuming which band is the truth; the defaults (target F606W, ref auto = F814W first)
 remain right for every other SLACS lens.
 
-    uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_other \
+    uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_c \
         --target f814W --ref f160W
 
 **Default reference band (2026-10-04): F814W, then F600LP, then F475X** (`--ref auto`): the
@@ -97,7 +97,7 @@ BAND_PREFIX = {
 }
 
 # --ref auto: the first of these bands with a drizzled product is the reference frame.
-# F160W last: a lens with no optical reference band (slacs_other J1134+6027, J1251-0208) ties
+# F160W last: a lens with no optical reference band (slacs_c J1134+6027, swells J1251-0208) ties
 # its F606W to its F160W, whose WCS carries a fitted GSC242 solution -- the tie fa7d094 made by
 # hand on 2026-09-14, which the 2026-10-05 re-drizzle silently dropped before this fallback.
 AUTO_REF_ORDER = ('f814W', 'f600LP', 'f475X', 'f160W')

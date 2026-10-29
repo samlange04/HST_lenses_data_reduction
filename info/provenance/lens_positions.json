@@ -3001,63 +3001,7 @@
             }
         }
     },
-    "slacs_gold": {
-        "J0008-0004": {
-            "f814W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        -0.225,
-                        -0.925
-                    ],
-                    [
-                        -0.775,
-                        1.275
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 2.03,
-                "snap_moved_px_mean": 1.11,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 5080,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 42.99,
-                        "deflector_tie_mas": 27.1,
-                        "deflector_tie_px": 0.542
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ],
-                "edits": [
-                    {
-                        "date": "2026-10-04",
-                        "removed_arcsec": [
-                            0.425,
-                            2.125
-                        ],
-                        "reason": "Not an image of the same source point as the other two. The compact knot at r = 2.17\" (S/N 4.6) drove the SOURCE LP fit in the downstream lens modelling to theta_E = 1.47\" (Auger+09: 1.16\"), reproduced as a double with the 0.95\" counter-image while the 1.49\" image was held only at the 0.4\" threshold. The remaining pair (0.95\", 1.49\") implies theta_E ~ 1.22\" for an SIS. Removed by the user's decision."
-                    }
-                ]
-            }
-        },
+    "slacs_a": {
         "J0029-0055": {
             "f814W": {
                 "n_positions": 2,
@@ -3107,26 +3051,6 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J0157-0056": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 3.6,
-                        "deflector_tie_px": 0.072
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
                     }
                 ]
             }
@@ -3447,32 +3371,6 @@
                 ]
             }
         },
-        "J0841+3824": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 27.7,
-                        "deflector_tie_px": 0.462
-                    },
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 10.2,
-                        "deflector_tie_px": 0.205
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
         "J0903+4116": {
             "f814W": {
                 "n_positions": 2,
@@ -3522,52 +3420,6 @@
                         "reprojection_shift_mas": 0.0,
                         "deflector_tie_mas": null,
                         "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J0912+0029": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f555W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 2.1,
-                        "deflector_tie_px": 0.042
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
-        "J0936+0913": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 16.0,
-                        "deflector_tie_px": 0.267
-                    },
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 6.0,
-                        "deflector_tie_px": 0.12
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
                     }
                 ]
             }
@@ -3835,152 +3687,6 @@
                 ]
             }
         },
-        "J1029+0420": {
-            "f814W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        -0.375,
-                        -0.225
-                    ],
-                    [
-                        1.125,
-                        1.075
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 2.5,
-                "snap_moved_px_mean": 2.28,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 1276,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 44.67,
-                        "deflector_tie_mas": 3.0,
-                        "deflector_tie_px": 0.05
-                    },
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 38.89,
-                        "deflector_tie_mas": 7.2,
-                        "deflector_tie_px": 0.144
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J1032+5322": {
-            "f814W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        -0.375,
-                        -0.275
-                    ],
-                    [
-                        1.375,
-                        1.225
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 1.99,
-                "snap_moved_px_mean": 1.49,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 163,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 61.11,
-                        "deflector_tie_mas": 13.2,
-                        "deflector_tie_px": 0.22
-                    },
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 19.06,
-                        "deflector_tie_mas": 8.3,
-                        "deflector_tie_px": 0.165
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J1142+1001": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 11.8,
-                        "deflector_tie_px": 0.235
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
-        "J1143-0144": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f555W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 33.6,
-                        "deflector_tie_px": 0.672
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
         "J1205+4910": {
             "f814W": {
                 "n_positions": 3,
@@ -4020,72 +3726,6 @@
                         "reprojection_shift_mas": 44.03,
                         "deflector_tie_mas": 23.9,
                         "deflector_tie_px": 0.478
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J1213+6708": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 5.9,
-                        "deflector_tie_px": 0.118
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
-        "J1218+0830": {
-            "f814W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        -0.625,
-                        0.575
-                    ],
-                    [
-                        1.725,
-                        -1.375
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 2.42,
-                "snap_moved_px_mean": 1.68,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 911,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 53.43,
-                        "deflector_tie_mas": 1.4,
-                        "deflector_tie_px": 0.028
                     },
                     {
                         "filt": "f814W",
@@ -4151,80 +3791,6 @@
                 ]
             }
         },
-        "J1402+6321": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f555W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 2.9,
-                        "deflector_tie_px": 0.058
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
-        "J1420+6019": {
-            "f814W": {
-                "n_positions": 4,
-                "positions_arcsec": [
-                    [
-                        0.825,
-                        0.475
-                    ],
-                    [
-                        -1.125,
-                        -0.375
-                    ],
-                    [
-                        0.425,
-                        -0.725
-                    ],
-                    [
-                        -0.225,
-                        0.875
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 2.74,
-                "snap_moved_px_mean": 1.63,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 1549,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f555W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 60.86,
-                        "deflector_tie_mas": 4.7,
-                        "deflector_tie_px": 0.094
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
         "J1430+4105": {
             "f814W": {
                 "n_positions": 2,
@@ -4267,52 +3833,6 @@
                         "reprojection_shift_mas": 51.77,
                         "deflector_tie_mas": 42.1,
                         "deflector_tie_px": 0.843
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ]
-            }
-        },
-        "J1432+6317": {
-            "f814W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        0.175,
-                        1.725
-                    ],
-                    [
-                        -0.075,
-                        -0.775
-                    ]
-                ],
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 1.95,
-                "snap_moved_px_mean": 1.71,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 160,
-                "n_positions_on_contaminant": 0,
-                "broadcast_to": [
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 49.99,
-                        "deflector_tie_mas": 21.4,
-                        "deflector_tie_px": 0.427
                     },
                     {
                         "filt": "f814W",
@@ -4570,26 +4090,6 @@
                 ]
             }
         },
-        "J2300+0022": {
-            "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
-                "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
-                "broadcast_to": [
-                    {
-                        "filt": "f555W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 2.4,
-                        "deflector_tie_px": 0.048
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12"
-                    }
-                ]
-            }
-        },
         "J2303+1422": {
             "f814W": {
                 "n_positions": 3,
@@ -4695,7 +4195,226 @@
             }
         }
     },
-    "slacs_other": {
+    "slacs_b": {
+        "J0008-0004": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.225,
+                        -0.925
+                    ],
+                    [
+                        -0.775,
+                        1.275
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.03,
+                "snap_moved_px_mean": 1.11,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 5080,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 42.99,
+                        "deflector_tie_mas": 27.1,
+                        "deflector_tie_px": 0.542
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ],
+                "edits": [
+                    {
+                        "date": "2026-10-04",
+                        "removed_arcsec": [
+                            0.425,
+                            2.125
+                        ],
+                        "reason": "Not an image of the same source point as the other two. The compact knot at r = 2.17\" (S/N 4.6) drove the SOURCE LP fit in the downstream lens modelling to theta_E = 1.47\" (Auger+09: 1.16\"), reproduced as a double with the 0.95\" counter-image while the 1.49\" image was held only at the 0.4\" threshold. The remaining pair (0.95\", 1.49\") implies theta_E ~ 1.22\" for an SIS. Removed by the user's decision."
+                    }
+                ]
+            }
+        },
+        "J1153+4612": {
+            "f814W": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.075,
+                        -0.875
+                    ],
+                    [
+                        0.975,
+                        0.875
+                    ],
+                    [
+                        -0.625,
+                        -0.475
+                    ],
+                    [
+                        0.025,
+                        1.225
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.05,
+                "snap_moved_px_mean": 1.78,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2426,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 48.92,
+                        "deflector_tie_mas": 24.5,
+                        "deflector_tie_px": 0.409
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 36.0,
+                        "deflector_tie_mas": 2.8,
+                        "deflector_tie_px": 0.055
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1218+0830": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.625,
+                        0.575
+                    ],
+                    [
+                        1.725,
+                        -1.375
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.42,
+                "snap_moved_px_mean": 1.68,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 911,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 53.43,
+                        "deflector_tie_mas": 1.4,
+                        "deflector_tie_px": 0.028
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1420+6019": {
+            "f814W": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.825,
+                        0.475
+                    ],
+                    [
+                        -1.125,
+                        -0.375
+                    ],
+                    [
+                        0.425,
+                        -0.725
+                    ],
+                    [
+                        -0.225,
+                        0.875
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.74,
+                "snap_moved_px_mean": 1.63,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1549,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 60.86,
+                        "deflector_tie_mas": 4.7,
+                        "deflector_tie_px": 0.094
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        }
+    },
+    "slacs_c": {
         "J0037-0942": {
             "f606W": {
                 "n_positions": 2,
@@ -4774,6 +4493,46 @@
                 ]
             }
         },
+        "J0157-0056": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 3.6,
+                        "deflector_tie_px": 0.072
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J0912+0029": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 2.1,
+                        "deflector_tie_px": 0.042
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
         "J0935-0003": {
             "f606W": {
                 "n_positions": 2,
@@ -4813,41 +4572,28 @@
                 ]
             }
         },
-        "J0955+0101": {
-            "f606W": {
-                "n_positions": 2,
-                "positions_arcsec": [
-                    [
-                        0.475,
-                        -1.675
-                    ],
-                    [
-                        1.075,
-                        0.775
-                    ]
-                ],
-                "marked_filt": "f606W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 1.23,
-                "snap_moved_px_mean": 1.15,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 5731,
-                "n_positions_on_contaminant": 0,
+        "J0936+0913": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 16.0,
+                        "deflector_tie_px": 0.267
+                    },
                     {
                         "filt": "f606W",
                         "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
+                        "deflector_tie_mas": 6.0,
+                        "deflector_tie_px": 0.12
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
                     }
                 ]
             }
@@ -5049,63 +4795,42 @@
                 ]
             }
         },
-        "J1153+4612": {
+        "J1142+1001": {
             "f814W": {
-                "n_positions": 4,
-                "positions_arcsec": [
-                    [
-                        0.075,
-                        -0.875
-                    ],
-                    [
-                        0.975,
-                        0.875
-                    ],
-                    [
-                        -0.625,
-                        -0.475
-                    ],
-                    [
-                        0.025,
-                        1.225
-                    ]
-                ],
+                "n_positions": 0,
+                "positions_arcsec": [],
                 "marked_filt": "f814W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 2.05,
-                "snap_moved_px_mean": 1.78,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 2426,
-                "n_positions_on_contaminant": 0,
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 48.92,
-                        "deflector_tie_mas": 24.5,
-                        "deflector_tie_px": 0.409
-                    },
                     {
                         "filt": "f606W",
                         "prefix": "stamp12",
-                        "reprojection_shift_mas": 36.0,
-                        "deflector_tie_mas": 2.8,
-                        "deflector_tie_px": 0.055
+                        "deflector_tie_mas": 11.8,
+                        "deflector_tie_px": 0.235
                     },
                     {
                         "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J1143-0144": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
                         "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
+                        "deflector_tie_mas": 33.6,
+                        "deflector_tie_px": 0.672
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
                     }
                 ]
             }
@@ -5149,52 +4874,42 @@
                 ]
             }
         },
-        "J1251-0208": {
-            "f606W": {
-                "n_positions": 3,
-                "positions_arcsec": [
-                    [
-                        -1.225,
-                        -0.075
-                    ],
-                    [
-                        0.375,
-                        0.175
-                    ],
-                    [
-                        0.375,
-                        0.175
-                    ]
-                ],
-                "marked_filt": "f606W",
-                "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
-                "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 1.67,
-                "snap_moved_px_mean": 1.54,
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 10419,
-                "n_positions_on_contaminant": 0,
+        "J1213+6708": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
-                    {
-                        "filt": "f160W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 93.66,
-                        "deflector_tie_mas": 55.8,
-                        "deflector_tie_px": 0.93
-                    },
                     {
                         "filt": "f606W",
                         "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
+                        "deflector_tie_mas": 5.9,
+                        "deflector_tie_px": 0.118
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J1402+6321": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f555W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 2.9,
+                        "deflector_tie_px": 0.058
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
                     }
                 ]
             }
@@ -5474,15 +5189,21 @@
                 ]
             }
         },
-        "J2141-0001": {
-            "f606W": {
+        "J2300+0022": {
+            "f814W": {
                 "n_positions": 0,
                 "positions_arcsec": [],
-                "marked_filt": "f606W",
+                "marked_filt": "f814W",
                 "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
                 "broadcast_to": [
                     {
-                        "filt": "f606W",
+                        "filt": "f555W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 2.4,
+                        "deflector_tie_px": 0.048
+                    },
+                    {
+                        "filt": "f814W",
                         "prefix": "stamp12"
                     }
                 ]
@@ -5528,6 +5249,291 @@
             }
         },
         "J2321-0939": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        }
+    },
+    "slacs_late": {
+        "J1432+6317": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.175,
+                        1.725
+                    ],
+                    [
+                        -0.075,
+                        -0.775
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.95,
+                "snap_moved_px_mean": 1.71,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 160,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 49.99,
+                        "deflector_tie_mas": 21.4,
+                        "deflector_tie_px": 0.427
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        }
+    },
+    "swells": {
+        "J0841+3824": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 27.7,
+                        "deflector_tie_px": 0.462
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "deflector_tie_mas": 10.2,
+                        "deflector_tie_px": 0.205
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J0955+0101": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.475,
+                        -1.675
+                    ],
+                    [
+                        1.075,
+                        0.775
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.23,
+                "snap_moved_px_mean": 1.15,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 5731,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1029+0420": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.375,
+                        -0.225
+                    ],
+                    [
+                        1.125,
+                        1.075
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.5,
+                "snap_moved_px_mean": 2.28,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 1276,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 44.67,
+                        "deflector_tie_mas": 3.0,
+                        "deflector_tie_px": 0.05
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 38.89,
+                        "deflector_tie_mas": 7.2,
+                        "deflector_tie_px": 0.144
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1032+5322": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.375,
+                        -0.275
+                    ],
+                    [
+                        1.375,
+                        1.225
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.99,
+                "snap_moved_px_mean": 1.49,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 163,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 61.11,
+                        "deflector_tie_mas": 13.2,
+                        "deflector_tie_px": 0.22
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 19.06,
+                        "deflector_tie_mas": 8.3,
+                        "deflector_tie_px": 0.165
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1251-0208": {
+            "f606W": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        -1.225,
+                        -0.075
+                    ],
+                    [
+                        0.375,
+                        0.175
+                    ],
+                    [
+                        0.375,
+                        0.175
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.67,
+                "snap_moved_px_mean": 1.54,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 10419,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 93.66,
+                        "deflector_tie_mas": 55.8,
+                        "deflector_tie_px": 0.93
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J2141-0001": {
             "f606W": {
                 "n_positions": 0,
                 "positions_arcsec": [],

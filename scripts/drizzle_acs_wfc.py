@@ -80,14 +80,14 @@ _p.add_argument('--cr-method',   default='lacosmic', choices=['lacosmic', 'drizc
 ALIGN_OVERRIDES = {('J1213+6708', 'f814W'): 'tweakreg'}
 _p.add_argument('--align',       default=None, choices=['mast', 'tweakreg'])
 # Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>MIN_EXPTIME
-# only). slacs_other runs generally shorter total exposures than slacs_gold; below
+# only). non-Gold SLACS runs generally shorter total exposures than SLACS Gold; below
 # BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0
 # --block-exptime overrides the block threshold for one run, default unchanged. It exists
 # because the SLACS ACS SNAP programme (10587) delivered a SINGLE 420s F814W frame per
 # lens -- the very imaging Bolton et al. classified these systems from -- which sits just
-# under the 500s floor, so 15 slacs_other lenses have their discovery band gated out. Such
+# under the 500s floor, so 15 non-Gold SLACS lenses have their discovery band gated out. Such
 # a product is a ONE-FRAME drizzle: no dither, and no frame-to-frame CR rejection, so it
 # leans entirely on LACosmic (per-frame and object-protected, which is why it is the
 # default). Check the CR pass before trusting one.

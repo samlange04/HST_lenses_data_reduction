@@ -123,7 +123,7 @@ file name to its folder.
 ## Alignment records (`overrides/` and `provenance/`)
 
 - **`wfpc2_alignment.json`**: `{sample: {lens: "mast" | "tweakreg"}}`, the per-lens choice
-  `run_wfpc2_wf3.sh` passes as `--align`. Only `slacs_gold` was audited lens by lens; every
+  `run_wfpc2_wf3.sh` passes as `--align`. Only the 22 SLACS Gold WFPC2 lenses (Etherington et al. 2022) were audited lens by lens; every
   other WFPC2 lens falls back to `mast`, which is also every audited lens's value.
 - **`lens_field_ties.json`**: the field-source ties `align_field_sources.py --apply` made
   between an SL2S lens's secondary bands and its F475X: `ref`, and a `history` of each pass

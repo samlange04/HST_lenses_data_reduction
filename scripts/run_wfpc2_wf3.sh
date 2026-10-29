@@ -21,7 +21,7 @@
 # _bcfill-tagged.
 #
 # EVERY lens in the sample is tried, not a hand-maintained subset. Only 22 of the 38
-# slacs_gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and
+# SLACS Gold lenses have WFPC2 F606W at all; the other 16 cost one MAST query each and
 # exit 0 as "no data", which is cheaper than keeping a second list in sync with the
 # archive. No exclusion list is needed for dither coverage either -- the drizzle script
 # measures each lens's phase coverage itself and skips any lens that cannot reach
@@ -122,7 +122,7 @@ run_product() {
   fi
 
   # A lens with no WFPC2 data exits 0 without writing a product -- the common case here,
-  # since only 22 of the 38 slacs_gold lenses have F606W. Stop before the align and
+  # since only 22 of the 38 SLACS Gold lenses have F606W. Stop before the align and
   # stamp stages, which would both fail on a product that does not exist.
   if grep -q '^=== NO DATA:' "$log"; then
     echo "no data"; return 0

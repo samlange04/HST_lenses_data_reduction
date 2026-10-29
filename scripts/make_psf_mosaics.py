@@ -25,7 +25,7 @@ Every sample has PSF products (info/provenance/lens_psf.json). A sample not list
 mosaic_groups.SAMPLE_GROUPS falls back to one group per filter directory found on disk.
 
 Usage:
-    uv run python scripts/make_psf_mosaics.py --sample slacs_gold
+    uv run python scripts/make_psf_mosaics.py --sample slacs_a
 """
 
 import argparse
@@ -82,7 +82,7 @@ def build_group(sample, precedence):
     for lens in lenses:
         for filt in precedence:
             band_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
-            # A gitignored band dir (none today; the deleted slacs_other SNAP f814W diagnostics
+            # A gitignored band dir (none today; the deleted non-Gold SLACS SNAP f814W diagnostics
             # were the case that motivated this) is not a
             # product: a tracked mosaic must not tile it (AGENTS.md: skip ignored bands in
             # every sweep). Same guard as make_masks.discover_targets.

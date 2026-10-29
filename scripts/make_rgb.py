@@ -33,7 +33,7 @@ read off it as (column, row).
 
 Usage:
     uv run python scripts/make_rgb.py --sample gallery --lens J0029+2544
-    uv run python scripts/make_rgb.py --sample slacs_gold --lens J0008-0004   # two bands
+    uv run python scripts/make_rgb.py --sample slacs_a --lens J0008-0004   # two bands
     uv run python scripts/make_rgb.py --sample sl2s_dinos_a                   # whole sample
     uv run python scripts/make_rgb.py --lens J0959+0206 --sample sl2s_dinos_a --bands f814W,f606W,f475X
 """

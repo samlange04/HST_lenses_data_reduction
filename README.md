@@ -27,8 +27,11 @@ tools drew the masks and marked the positions.
 
 | Sample folder | Lenses | Survey | HST filters (number of lenses with each) |
 |---|---|---|---|
-| `slacs_gold` | 38 | SLACS (Bolton et al. 2008; Auger et al. 2009), the Etherington et al. (2022) "Gold" lenses | F814W (38), F606W (22), F555W (16), F160W (13) |
-| `slacs_other` | 24 | SLACS, the remaining lenses with a clean early-type deflector | F606W (24), F160W (6), F814W (4) |
+| `slacs_a` | 23 | SLACS (Bolton et al. 2008; Auger et al. 2009): Etherington et al. (2022) "Gold" lenses with marked image positions and no flagged morphology difficulty | F814W (23), F606W (12), F555W (11), F160W (9) |
+| `slacs_b` | 4 | SLACS lenses with image positions whose morphology looks potentially difficult (e.g. the source overlapping the lens centre) | F814W (4), F606W (3), F555W (1), F160W (1) |
+| `slacs_c` | 28 | The remaining early-type SLACS lenses (no marked positions, or a single band) | F606W (24), F814W (11), F160W (5), F555W (4) |
+| `slacs_late` | 1 | SLACS lens with a late-type (spiral) deflector | F814W (1), F606W (1) |
+| `swells` | 6 | SWELLS (Treu et al. 2011): disk-galaxy deflectors that SLACS also found | F606W (6), F160W (4), F814W (3) |
 | `gallery` | 15 | BELLS GALLERY (Shu et al. 2016) | F606W (15), F814W (6), F438W (6) |
 | `bells` | 21 | BELLS (Brownstein et al. 2012) | F814W (21) |
 | `sl2s_dinos_a` | 9 | SL2S (Sonnenfeld et al. 2013) + Project Dinos (Sheu et al. 2025) | F475X (9), F606W (8), F814W (3), F600LP (1), F160W (1) |
@@ -55,7 +58,7 @@ Every stamp covers the same 12″ × 12″ patch of sky, centred on the deflecto
 ## Using the finished products
 
 Each lens and filter has one folder, `data/stamps/<sample>/<lens>/<filter>/`, for example
-`data/stamps/slacs_gold/J0008-0004/f814W/`. The files in it are:
+`data/stamps/slacs_a/J0029-0055/f814W/`. The files in it are:
 
 | File | What it is |
 |---|---|
@@ -91,7 +94,7 @@ A minimal example in Python:
 ```python
 from astropy.io import fits
 
-band = "data/stamps/slacs_gold/J0008-0004/f814W/"
+band = "data/stamps/slacs_a/J0029-0055/f814W/"
 image = fits.getdata(band + "stamp12_sci.fits")
 noise = fits.getdata(band + "stamp12_noise.fits")
 psf   = fits.getdata(band + "psf.fits")
@@ -170,16 +173,16 @@ and takes hours per sample. One command rebuilds the missing layers in the right
 can be re-run to resume after an interruption:
 
 ```bash
-uv run python scripts/regenerate_files.py --sample slacs_gold --dry-run   # show the plan, run nothing
-uv run python scripts/regenerate_files.py --sample slacs_gold --light     # quick-look PNGs only: minutes, no download
-uv run python scripts/regenerate_files.py --sample slacs_gold             # download + full re-reduction
+uv run python scripts/regenerate_files.py --sample slacs_a --dry-run      # show the plan, run nothing
+uv run python scripts/regenerate_files.py --sample slacs_a --light        # quick-look PNGs only: minutes, no download
+uv run python scripts/regenerate_files.py --sample slacs_a                # download + full re-reduction
 ```
 
-**Reduce one lens in one filter**, e.g. lens J0008-0004 in F814W:
+**Reduce one lens in one filter**, e.g. lens J0029-0055 in F814W:
 
 ```bash
-uv run python scripts/drizzle_acs_wfc.py --sample slacs_gold --lens J0008-0004 --filt f814W
-uv run python scripts/make_stamps.py    --sample slacs_gold --lens J0008-0004 --filt f814W
+uv run python scripts/drizzle_acs_wfc.py --sample slacs_a --lens J0029-0055 --filt f814W
+uv run python scripts/make_stamps.py    --sample slacs_a --lens J0029-0055 --filt f814W
 ```
 
 There is one combining script per camera (`drizzle_acs_wfc.py`, `drizzle_wfpc2_wf3.py`,
@@ -219,7 +222,7 @@ in `data/`, and the JSON/CSV/Markdown records in `info/` — are under
 credit as above.
 
 Please also cite the survey papers for the lenses you use (SLACS: Bolton et al. 2008, Auger
-et al. 2009, and Etherington et al. 2022 for the `slacs_gold` selection; BELLS: Brownstein et
+et al. 2009, and Etherington et al. 2022 for the Gold selection behind `slacs_a`; SWELLS: Treu et al. 2011; BELLS: Brownstein et
 al. 2012; BELLS GALLERY: Shu et al. 2016; SL2S:
 Sonnenfeld et al. 2013; Project Dinos: Sheu et al. 2025), and acknowledge the HST data, e.g.
 *"Based on observations made with the NASA/ESA Hubble Space Telescope, obtained from the

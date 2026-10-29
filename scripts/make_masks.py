@@ -65,14 +65,14 @@ Tk window until you press Esc. A lens that already has a mask is skipped so a ru
 across a sample; --force redraws.
 
 Usage:
-    uv run python scripts/make_masks.py --sample slacs_gold                # best band per lens
+    uv run python scripts/make_masks.py --sample slacs_a                # best band per lens
     uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-    uv run python scripts/make_masks.py --sample slacs_gold --filt f555W    # review f814W's
+    uv run python scripts/make_masks.py --sample slacs_a --filt f555W    # review f814W's
     uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
     uv run python scripts/make_masks.py --lens J0008-0004 --broadcast --propose-from none
-    uv run python scripts/make_masks.py --sample slacs_gold --force        # redraw everything
+    uv run python scripts/make_masks.py --sample slacs_a --force        # redraw everything
 """
 
 import argparse

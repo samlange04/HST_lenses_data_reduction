@@ -37,7 +37,7 @@ given). --light runs only the two LIGHT stages (minutes, no network). --stages p
 subset explicitly. --dry-run prints every command without running anything.
 
 Usage:
-    uv run python scripts/regenerate_files.py --sample slacs_gold --light
+    uv run python scripts/regenerate_files.py --sample slacs_a --light
     uv run python scripts/regenerate_files.py --sample gallery
     uv run python scripts/regenerate_files.py --sample all --size 20
     uv run python scripts/regenerate_files.py --sample bells --stages drizzle psf
