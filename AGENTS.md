@@ -33,11 +33,11 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 
 | sample | bands | stamps + PSF + psf_err + dataset | contaminant masks | positions JSON | arc masks (optional, untracked) |
 |---|---|---|---|---|---|
-| `slacs_prime` | f814W 23, f606W 13 (incl. `f606W_v2`), f555W 11, f160W 9 | all 56 | all 56 | all 56 | f814W 23 |
+| `slacs_prime` | f814W 23, f606W 13 (incl. `f606W_visit2`), f555W 11, f160W 9 | all 56 | all 56 | all 56 | f814W 23 |
 | `slacs_complex` | f814W 4, f606W 3, f555W 1, f160W 1 | all 9 | all 9 | all 9 | f814W 3 |
-| `slacs_sparse` | f606W 32, f814W 16 (5 WFPC2), f160W 7, f555W 4 | all 59 | 44 of 59 | 44 of 59 (14 deliberately empty) | f606W 10, f814W 8 |
+| `slacs_sparse` | f606W 41 (incl. 5 `f606W_visit2`), f814W 16 (5 WFPC2), f160W 7, f555W 4 | all 68 | 45 of 68 | 45 of 68 (14 lenses deliberately empty) | f606W 10, f814W 8 |
 | `slacs_late` | f606W 2, f814W 1 | all 3 | 2 of 3 | 2 of 3 | f814W 1 |
-| `slacs_multi` | f606W 2, f814W 2 (1 WFPC2), f160W 2 | all 6 | 0 of 6 | 0 of 6 | — |
+| `slacs_multi` | f606W 6 (incl. 2 `f606W_visit2`), f814W 2 (1 WFPC2), f160W 2 | all 10 | 0 of 10 | 0 of 10 | — |
 | `swells` | f606W 8, f160W 4, f814W 4, f450W 1 (WFPC2) | all 17 | 13 of 17 | 13 of 17 (2 deliberately empty) | f814W 3 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
@@ -53,7 +53,7 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
   `slacs_other` the 27 other SLACS lenses**; the rewritten parts say "SLACS Gold" and
   "non-Gold SLACS".
 - **Outstanding (2026-10-29): contaminant masks and image positions for the 19 SLACS lenses
-  added on 2026-10-29** (26 bands: `slacs_sparse` 15, `slacs_multi` 6, `swells` 4,
+  added on 2026-10-29** (38 bands: `slacs_sparse` 23, `slacs_multi` 10, `swells` 4,
   `slacs_late` 1; see *SLACS samples*). Both are GUI steps (`make_masks.py --sample <s>`, then
   `run_positions_all.sh <s>`); their stamps, noise maps and PSFs with error maps are done.
 - **Before that, no product was outstanding (2026-10-24).** Image positions were the last stage finished:
@@ -393,17 +393,18 @@ core into ~4 knots. The choice is stored in `info/overrides/wfpc2_alignment.json
 
 **Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have two
 visits at a ~14–16° roll (two guide-star solutions). They're drizzled as separate per-visit
-datasets (`--pa <PA_V3> --out-suffix ''/_v2`, each single-guide-star → `mast`); the
+datasets (`--pa <PA_V3> --out-suffix ''/_visit2`, each single-guide-star → `mast`); the
 **longer-exptime visit is the primary product, keyed bare `f606W`** (no suffix), any shorter
-visit `_v2` (`_v3`, ... if a lens ever has more). Outcome: **J0822+2652** = `f606W` (4×1100s)
-+ `f606W_v2` (2×1100s); **J0728+3835** = `f606W` only (its other, 2-frame visit has 1
+visit `_visit2` (`_visit3`, ... if a lens ever has more; the suffix was `_v2` until 2026-10-29). Outcome: **J0822+2652** = `f606W` (4×1100s)
++ `f606W_visit2` (2×1100s); **J0728+3835** = `f606W` only (its other, 2-frame visit has 1
 x-dither-phase, can't reach 0.05″, dropped — never gets a product or suffix at all);
-**J1142+1001 stays combined** (visits share roll, PA 119.00 vs 118.87). Renamed 2026-08-03
+**J1142+1001 was combined until 2026-10-29** (visits share roll, PA 119.00 vs 118.87; now split,
+see the combine criterion below). Renamed 2026-08-03
 from the original `f606W_v1`/`f606W_v2` (arbitrary visit order, no bare `f606W` key) to this
 exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_stamps.py --filt
-f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
+f606W_visit2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
-**J1142+1001 is the only combined-visit lens among the original SLACS samples** (J1719+2939, added 2026-10-29, is the other) — verified (2026-08-03) across every WFPC2
+**J1142+1001 was the only combined-visit lens** (until 2026-10-29; J1719+2939 is the only one now) — verified (2026-08-03) across every WFPC2
 F606W product in SLACS Gold (38) and non-Gold SLACS (27): grouping `info/provenance/lens_products.json`
 frame lists by 6-char rootname prefix, only J1142+1001's `f606W` mixes two visits (`ua1l38` +
 `ua1lc8`, 6 frames); the split keys J0728+3835/J0822+2652 are each single-visit. The
@@ -412,6 +413,42 @@ not a PSF/noise-homogeneity check — those are handled separately (per-frame IV
 noisier visit; the PSF is measured *after* combination from the actual stack). A one-off
 spot-check put J1142's injected-kernel FWHM/pedestal/scatter within the single-visit spread —
 no smearing penalty.
+
+**The combine criterion is the MEASURED visit-to-visit WCS offset, not the roll (2026-10-29).**
+Two visits may be drizzled together only when their delivered WCSs agree to **< 0.03″**, the
+frame-to-frame scatter the core-registration audit accepted. Roll is a poor proxy: what matters is
+the guide-star solution, and visits from different programs (or years) disagree at any roll, while
+two Gaia-fitted visits agree at any roll. `--pa`'s 1° window only picks out one visit's frames;
+it is not a combine rule. Measure with `scripts/measure_visit_offset.py --sample S --lens L`:
+compact sources in the distortion-corrected drizzle inputs, each visit against each other, with a
+within-visit control (~0.01″). It reproduces the deflector-centroid tie to a few mas (J1318
+0.365″ vs 0.366″). Measured on every multi-visit WFPC2 lens:
+
+| lens | roll difference | visit offset | product |
+|---|---|---|---|
+| J0728+3835 | 15.5° | 0.638″ (GSC240 vs Gaia SVM) | primary visit only (other visit has 1 dither phase) |
+| J0822+2652 | 13.9° | 0.196″ | split, `f606W` + `f606W_visit2` |
+| **J1142+1001** | **0.13°** | **0.212″** | **split 2026-10-29** (was combined; see below) |
+| J1306+0600 | 39.5° | 0.484″ | split |
+| J1313+4615 | 126° | 0.877″ | split |
+| J1318-0313 | 0.97° | 0.365″ | split |
+| J1319+1504 | 9.1° | 0.36″ (tie; frame match too sparse) | split |
+| J1436+3640 | 68° | 0.258″ | split |
+| J1644+2625 | 18.6° | 0.059″ | split |
+| J1719+2939 | 1.7° | 0.010″ | **combined** (both visits Gaia-fitted), 8 × 400 s |
+
+**J1142+1001 F606W is a combined stack of two visits 0.21″ apart** (`ua1l38` 2 × 1100 s, one
+frame GSC240 and one GSC242, vs `ua1lc8` 4 × 400 s, GSC240; within-visit 0.016″ and 0.004″). The
+2026-08-03 "no smearing" spot-check could not see it: the injected PSF star is placed through each
+frame's own WCS, so it is registered by construction whatever the real sky does. Its positions
+file is deliberately empty ("images too uncertain to mark"), possibly for this reason. **Split
+2026-10-29** (`--visit`): `f606W` = `ua1l38` (2 × 1100 s, the longer, primary) and `f606W_visit2`
+= `ua1lc8` (4 × 400 s); both have 2 × 2 dither phases. Tied to F814W, the visits moved by
+(0.594″, 0.294″) and (0.381″, 0.259″), i.e. 0.216″ apart, as measured. The combined stack's core
+was ~4% broader (second-moment σ 0.166″ vs 0.160″ in either visit). Its f606W mask (drawn on
+the smeared stack) was carried to both visit stamps by sky reprojection and is flagged for
+review (`note` in `lens_masks.json`). Figure:
+`diagnostics/cr_defects/J1142+1001_f606W_visit_split.png`.
 
 **Diagnosing this class of bug:** compare the *spread* of per-frame WCS error, not its
 magnitude — a common offset is a harmless absolute-astrometry shift; frame-to-frame scatter
@@ -729,7 +766,7 @@ files.
 
 **Stamps whose mosaic changed under them, and how they were re-cut (2026-10-06).** A re-drizzle
 reproduces a stamp to ~10⁻⁵ of the sky noise (floating point), *unless the input changed*:
-- **J1204+0358, J2141-0001 and J0822+2652 `f606W_v2` (WFPC2):** MAST re-solved these frames'
+- **J1204+0358, J2141-0001 and J0822+2652 `f606W_visit2` (WFPC2):** MAST re-solved these frames'
   astrometry (new per-image `FIT_IMG_GSC242`/`FIT_IMG_GAIAeDR3` headerlets; CRDS context 1358
   became 1361). The frames register differently, so the deflector moves by under 0.5 px and the
   mosaic WCS shifts.
@@ -988,7 +1025,7 @@ an empty arc region would mask out the whole stamp.
 **State: every science band has a contaminant mask** (see *Current state* at the top). Most
 bands after a lens's first came through the reviewed-proposal route (`edited_from_<band>` /
 `accepted_from_<band>` in `info/provenance/lens_masks.json`) rather than fresh draws. The split-visit
-`J0822+2652 f606W_v2` is its own product directory and has its own mask. Per-lens notes
+`J0822+2652 f606W_visit2` is its own product directory and has its own mask. Per-lens notes
 follow, SLACS first, then `gallery`:
 
 **Per-lens verdicts.** The detail is in each band's `note` / `edited` / `CORRECTION` keys in
@@ -1887,7 +1924,7 @@ F606W star stamps near the lens position (`x_cal/y_cal` within ±200px of ~435,4
 F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` stamps, gates them
 (inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
 and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
-`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_v2`)
+`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_visit2`)
 reuses it; records method `model_wfpc2_psfdb`. The cached ePSF is detector-frame; each lens
 **rotates it to North-up at resample time via that lens's WF3 exposure CD** (so one shared
 build serves every roll — see *Model PSFs are rotated to North-up*), and the pedestal
@@ -1896,7 +1933,7 @@ the lens's-own-field empirical build is preferred where stars exist — this is 
 **fallback, slotted ABOVE the STDPSF F555W proxy** (now fallback-of-the-fallback). **Traps:**
 the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext (1=PC…4=WF4) — **query chip 3 for
 WF3**, not chip 1 (PC has a different pixel scale *and* PSF); split-visit filter keys
-(`f606W_v2`) must be normalised to the base filter before any STDPSF/pivot lookup
+(`f606W_visit2`) must be normalised to the base filter before any STDPSF/pivot lookup
 (`_base_filter`), or the model path KeyErrors. FWHM ~0.22″ (post-rotation).
 
 **STDPSF fallback (`psf_models.py`, Anderson & King 2000; Dauphin et al. 2021; Anderson
@@ -2389,7 +2426,7 @@ No data for a filter → value `null`.
 
 - **The key is the product directory, not the filter.** Usually they coincide (`f606W`), but
   a split-visit lens is keyed per visit: `f606W` for its primary (longer-exptime) visit,
-  `f606W_v2` for a shorter one — so a bare `f606W` key does not by itself mean "the whole
+  `f606W_visit2` for a shorter one — so a bare `f606W` key does not by itself mean "the whole
   filter, unsplit" for J0728+3835/J0822+2652 the way it does for every other WFPC2 lens.
   Check keys against product directories, not against the filter name, when auditing these
   two. This once caught a live error (pre-2026-08-03 naming): both split lenses had recorded
@@ -2507,11 +2544,14 @@ Bolton-B promotions and the Bolton excluded lenses have WFPC2 F606W 4 × 1100 s 
 J1103+5322's WFPC2 F450W (GO-11978, 4 × 1100 s) is the repo's only F450W: tied to its ACS F814W
 by the deflector centroid (0.45″), PSF from the MAST PSF database (F450W added to
 `WFPC2_DB_FILTERS`), noise factor 1.08 measured on this one stamp.
-- **Not yet reduced here: the F606W of the six two-program lenses** J1306+0600, J1313+4615,
-  J1318-0313, J1644+2625 (`slacs_sparse`), J1319+1504 and J1436+3640 (`slacs_multi`). Their two
-  visits (GO-10886, GO-11202) sit on different guide-star solutions, so they must be drizzled
-  per visit, and `--pa` cannot do that for J1318-0313 (its visits are 0.97° apart in roll).
-  J1719+2939's two visits both carry Gaia-fitted WCSs and are drizzled together (8 × 400 s).
+- **Split visits by visit.** Six of the seven two-program lenses are drizzled per visit with
+  `drizzle_wfpc2_wf3.py --visit <rootname prefix>` (added 2026-10-29), because their visits are
+  0.06–0.88″ apart (see the combine criterion under *WCS alignment*). PA cannot separate them:
+  J1318-0313's two visits are 0.97° apart in roll. J1719+2939's visits agree to 0.010″, so it is
+  drizzled as one combined `f606W` (8 × 400 s). **The GO-11202 visit is the primary** (`f606W`),
+  being the visit of the lens's F814W (or J1436's F160W program), and the GO-10886 visit is
+  `f606W_visit2`. The split is in `run_wfpc2_wf3.sh`'s `split_visits_for` table, e.g.
+  `J1318-0313) echo "vua1l41: vu9op54:_visit2"`.
 - **WFPC2 F814W** is new to the repo. It is drizzled by `drizzle_wfpc2_wf3.py --filt f814W`
   (same WF3 extraction, IVM model and 0.05″ grid as F606W), takes the `f814W` band key (none
   of these lenses has ACS F814W), and is the F606W tie reference (`align_wfpc2_to_acs.py`
@@ -3088,7 +3128,7 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
 
 - **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
   stay in sync. For the SLACS samples and `swells`: `f814W`, `f606W_f555W` (WFPC2 F606W —
-  including the split-visit `f606W_v2` key, tried only if the lens has no bare `f606W` —
+  including the split-visit `f606W_visit2` key, tried only if the lens has no bare `f606W` —
   merged with ACS F555W per lens, since no SLACS lens has both), `f160W`. For `gallery`: one
   group per UVIS filter (no
   cross-filter merging). A sample not listed there falls back to one group per filter

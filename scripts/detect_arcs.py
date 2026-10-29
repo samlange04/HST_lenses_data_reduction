@@ -124,7 +124,7 @@ THETA_E_JSON = os.path.join(ws_path, 'info', 'catalogues', 'lens_einstein_radii.
 
 #: Bands bluer than the reference band, best first. The blue band carries the source; the red
 #: band carries the deflector and sets the colour reference.
-BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_v2', 'f438W', 'f450W']
+BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_visit2', 'f438W', 'f450W']
 #: Reference (red, deflector-dominated) bands, best first. f160W is redder still but sits on a
 #: different grid and a much broader PSF, so it is not used as the reference.
 RED_PRIORITY = ['f814W', 'f555W']

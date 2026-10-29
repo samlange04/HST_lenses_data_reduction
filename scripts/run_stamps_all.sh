@@ -41,7 +41,7 @@ TAG=""; [ -z "$SIZE" ] || TAG="_${SIZE}arcsec"
 TAG="${TAG}${BCFILL:+_bcfill}"
 #
 # The globs are "$filt"* , not "$filt", so a split lens's secondary-visit product
-# directory (f606W_v2 on J0822+2652; its primary visit and J0728+3835's sole visit are
+# directory (f606W_visit2 on J0822+2652; its primary visit and J0728+3835's sole visit are
 # now bare f606W, matched by either form) is still included. With a bare "$filt" the
 # v2 dir matched nothing and its stamps were silently never regenerated -- no error,
 # just left on stale stamps. The stamp --filt is taken from the directory name for

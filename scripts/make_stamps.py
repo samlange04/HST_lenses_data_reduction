@@ -289,7 +289,7 @@ def resolve_corr_factor(cli_value, sci_hdr, sample, lens, filt, ws_path):
     conserves noise and 1/sqrt(WHT) is already right on patches >= the drop -- but an
     ERR-array deficit (~10-20% rms, ACS/UVIS) plus faint unmasked structure. A band missing from
     the JSON gets 1.0 with a warning, not a guess. `filt` may carry a visit suffix
-    (f606W_v2); it is stripped."""
+    (f606W_visit2); it is stripped."""
     if cli_value is not None:
         return float(cli_value), 'cli'
     import info_json

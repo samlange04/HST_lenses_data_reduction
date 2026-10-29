@@ -3622,7 +3622,7 @@
                         "deflector_tie_px": 0.092
                     },
                     {
-                        "filt": "f606W_v2",
+                        "filt": "f606W_visit2",
                         "prefix": "stamp12",
                         "reprojection_shift_mas": 55.41,
                         "deflector_tie_mas": 3.3,
@@ -4858,6 +4858,10 @@
                     },
                     {
                         "filt": "f814W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f606W_visit2",
                         "prefix": "stamp12"
                     }
                 ]

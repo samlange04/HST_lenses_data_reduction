@@ -2077,7 +2077,7 @@
                 "n_erased_px": 496,
                 "bcfill": true
             },
-            "f606W_v2": {
+            "f606W_visit2": {
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
@@ -2952,16 +2952,19 @@
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
-                "source": "edited_from_f814W",
+                "bcfill": false,
+                "source": "reprojected_from_f606W_combined",
+                "n_excluded_px": 1990,
+                "note": "2026-10-29: J1142 F606W was a combined stack of two visits 0.212\" apart (scripts/measure_visit_offset.py), now split by visit (f606W = ua1l38 2x1100s, f606W_visit2 = ua1lc8 4x400s). This mask is the 2026-09 f606W mask (edited_from_f814W, 2011 px) reprojected by sky; it was drawn on the smeared stack, so REVIEW it (make_masks.py --filt <band> --force). Pre-split files: local/mask_backups/pre_visit_split_J1142_2026-10-29/."
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "bcfill": false,
+                "source": "reprojected_from_f606W_combined",
                 "n_excluded_px": 2011,
-                "brush_width": 0.025,
-                "brush_radius_px": 6,
-                "proposal_from": "f814W",
-                "proposal_px": 1924,
-                "n_added_px": 272,
-                "n_erased_px": 0,
-                "bcfill": true
+                "note": "2026-10-29: J1142 F606W was a combined stack of two visits 0.212\" apart (scripts/measure_visit_offset.py), now split by visit (f606W = ua1l38 2x1100s, f606W_visit2 = ua1lc8 4x400s). This mask is the 2026-09 f606W mask (edited_from_f814W, 2011 px) reprojected by sky; it was drawn on the smeared stack, so REVIEW it (make_masks.py --filt <band> --force). Pre-split files: local/mask_backups/pre_visit_split_J1142_2026-10-29/."
             },
             "f814W": {
                 "brush_radius_px": 6,
