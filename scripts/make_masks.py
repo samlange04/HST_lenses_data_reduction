@@ -65,14 +65,14 @@ Tk window until you press Esc. A lens that already has a mask is skipped so a ru
 across a sample; --force redraws.
 
 Usage:
-    uv run python scripts/make_masks.py --sample slacs_a                # best band per lens
+    uv run python scripts/make_masks.py --sample slacs_prime                # best band per lens
     uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-    uv run python scripts/make_masks.py --sample slacs_a --filt f555W    # review f814W's
+    uv run python scripts/make_masks.py --sample slacs_prime --filt f555W    # review f814W's
     uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
     uv run python scripts/make_masks.py --lens J0008-0004 --broadcast --propose-from none
-    uv run python scripts/make_masks.py --sample slacs_a --force        # redraw everything
+    uv run python scripts/make_masks.py --sample slacs_prime --force        # redraw everything
 """
 
 import argparse
@@ -300,7 +300,7 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
 # sampling, bright blue arcs), so every Dinos lens -- including J0959+0206, which also has
 # F814W -- opens on F475X; snapshot-only lenses open on F475X over F600LP. No SLACS, GALLERY
 # or BELLS lens has either band, so their primary is unchanged.
-_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_v2', 'f555W', 'f160W', 'f438W', 'f275W',
+_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_v2', 'f555W', 'f160W', 'f438W', 'f450W', 'f275W',
                   'f225W', 'f600LP']
 
 

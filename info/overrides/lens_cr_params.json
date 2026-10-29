@@ -1,5 +1,5 @@
 {
-    "slacs_b": {
+    "slacs_complex": {
         "J1420+6019": {
             "f814W": {
                 "lacosmic_sigclip": 10.0,
@@ -8,7 +8,7 @@
             }
         }
     },
-    "slacs_c": {
+    "slacs_sparse": {
         "J1538+5817": {
             "f606W": {
                 "lacosmic_sigclip": 10.0,

@@ -28,8 +28,8 @@ data/mosaics_<size>arcsec/ instead, mirroring make_stamps.py so the two sizes' Q
 never overwrite each other -- see stamp_paths.py.
 
 Usage:
-    uv run python scripts/make_mosaics.py --sample slacs_a
-    uv run python scripts/make_mosaics.py --sample slacs_a --size 20
+    uv run python scripts/make_mosaics.py --sample slacs_prime
+    uv run python scripts/make_mosaics.py --sample slacs_prime --size 20
 """
 
 import argparse

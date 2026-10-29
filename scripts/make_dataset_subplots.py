@@ -31,9 +31,9 @@ reduction the stamp came from, pixel scale, masked-pixel fraction) is recorded p
 
 Usage:
     uv run python scripts/make_dataset_subplots.py --lens J0008-0004 --filt f814W
-    uv run python scripts/make_dataset_subplots.py --sample slacs_a
-    uv run python scripts/make_dataset_subplots.py --sample slacs_a --filt f814W
-    uv run python scripts/make_dataset_subplots.py --sample slacs_a --force
+    uv run python scripts/make_dataset_subplots.py --sample slacs_prime
+    uv run python scripts/make_dataset_subplots.py --sample slacs_prime --filt f814W
+    uv run python scripts/make_dataset_subplots.py --sample slacs_prime --force
 """
 
 import argparse

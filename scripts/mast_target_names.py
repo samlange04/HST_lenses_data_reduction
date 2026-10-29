@@ -2,17 +2,19 @@
 
 ``info/samples/lens_samples.json`` is the single source of truth for *which lenses exist in which
 sample* and for the per-lens MAST quirks. This module is the only reader of it; nothing
-else should parse that file or keep a second copy of a lens list. Eleven samples are
+else should parse that file or keep a second copy of a lens list. Twelve samples are
 defined (catalogue positions for all of them are merged in ``info/coords/lens_coords.py``).
-The five SLACS samples were split out of ``slacs_gold`` (Etherington et al. 2022 Gold) and
-``slacs_other`` (the rest of Bolton et al. 2008 Table 4 class E-S-A/L-S-A) on 2026-10-29:
+The six SLACS samples were split out of ``slacs_gold`` (Etherington et al. 2022 Gold) and
+``slacs_other`` (the rest of Bolton et al. 2008 Table 4 class E-S-A/L-S-A) on 2026-10-29,
+which also added the 19 other Auger et al. 2009 grade-A lenses with usable data:
 
-  ``slacs_a``      23 Gold lenses with marked positions and no flagged morphology
-                   difficulty -- the working sample, and the default ``--sample``.
-  ``slacs_b``      4 positioned lenses with potentially difficult morphology (by eye).
-  ``slacs_c``      31 remaining early-type SLACS lenses (no positions, or one band).
-  ``slacs_late``   1 late-type (Bolton class L) deflector not in SWELLS.
-  ``swells``       6 SWELLS disk-deflector lenses that SLACS also found.
+  ``slacs_prime``   23 Gold lenses with marked positions and no flagged morphology
+                    difficulty -- the working sample, and the default ``--sample``.
+  ``slacs_complex``  4 positioned lenses with potentially difficult morphology (by eye).
+  ``slacs_sparse``  43 remaining early-type SLACS lenses (no positions, or one band).
+  ``slacs_late``     2 late-type deflectors not in SWELLS.
+  ``slacs_multi``    4 lenses with more than one deflector galaxy.
+  ``swells``         8 SWELLS disk-deflector lenses that SLACS also found.
   ``gallery``      15 BELLS GALLERY lenses (HST proposals 14189, 16734), class E-S-A.
   ``bells``        21 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
   ``sl2s_dinos_a`` 9 SL2S lenses with GO-17130 WFC3/UVIS F475X plus WFPC2 F606W or ACS F814W.
@@ -63,7 +65,7 @@ import os
 _INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'info')
 SAMPLES_JSON = os.path.join(_INFO_DIR, 'samples', 'lens_samples.json')
 
-DEFAULT_SAMPLE = 'slacs_a'
+DEFAULT_SAMPLE = 'slacs_prime'
 
 
 class NoMastData(Exception):

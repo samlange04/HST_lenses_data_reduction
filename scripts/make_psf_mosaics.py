@@ -25,7 +25,7 @@ Every sample has PSF products (info/provenance/lens_psf.json). A sample not list
 mosaic_groups.SAMPLE_GROUPS falls back to one group per filter directory found on disk.
 
 Usage:
-    uv run python scripts/make_psf_mosaics.py --sample slacs_a
+    uv run python scripts/make_psf_mosaics.py --sample slacs_prime
 """
 
 import argparse

@@ -136,7 +136,7 @@ const OFFLINE = location.protocol === 'file:';
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt = (x, d = 2) => (x == null ? '–' : Number(x).toFixed(d));
-const BAND_ORDER = ['f814W','f606W','f606W_v2','f555W','f475X','f600LP','f438W','f160W'];
+const BAND_ORDER = ['f814W','f606W','f606W_v2','f555W','f475X','f600LP','f438W','f450W','f160W'];
 const bandSort = (a, b) => (BAND_ORDER.indexOf(a) + 99) % 99 - (BAND_ORDER.indexOf(b) + 99) % 99 || a.localeCompare(b);
 const POS_LABEL = { marked: ['ok', 'positions marked'], empty: ['warn', 'positions: none by decision'], none: ['bad', 'positions outstanding'] };
 

@@ -1,6 +1,6 @@
 {
-    "slacs_a": {
-        "description": "SLACS (Bolton et al. 2008) lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), with marked image positions and no morphology difficulty flagged by eye. The working sample and the default --sample. Split from slacs_gold on 2026-10-29: Gold minus the lenses with deliberately empty positions (-> slacs_c), minus those judged by eye to have potentially difficult morphology such as a source overlapping the lens centre (-> slacs_b), minus late-type (-> slacs_late) and SWELLS (-> swells) deflectors.",
+    "slacs_prime": {
+        "description": "SLACS (Bolton et al. 2008) lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), with marked image positions and no morphology difficulty flagged by eye. The working sample and the default --sample. Split from slacs_gold on 2026-10-29: Gold minus the lenses with deliberately empty positions (-> slacs_sparse), minus those judged by eye to have potentially difficult morphology such as a source overlapping the lens centre (-> slacs_complex), minus late-type (-> slacs_late) and SWELLS (-> swells) deflectors.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
             "J0029-0055": {},
@@ -48,7 +48,7 @@
             "J2341+0000": {}
         }
     },
-    "slacs_b": {
+    "slacs_complex": {
         "description": "SLACS lenses with marked image positions whose morphology was judged by eye (2026-10-29) to be potentially difficult, e.g. a source overlapping the lens centre: Gold lenses J0008-0004, J1218+0830, J1420+6019. Also the non-Gold SLACS lenses (Bolton et al. 2008 Table 4, E-S-A) that have marked positions and ACS F814W plus F555W or F606W: J1153+4612. Split from slacs_gold/slacs_other on 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
@@ -60,8 +60,8 @@
             }
         }
     },
-    "slacs_c": {
-        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
+    "slacs_sparse": {
+        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Also the 12 early-type (E, S0, E/S0) Auger et al. 2009 grade-A lenses added 2026-10-29: five Bolton grade-B lenses Auger promoted (J0819+4534, J1029+6115, J1330-0148, J1614+4522, J2347-0005) and seven of Auger's new WFPC2 targets (J1306+0600, J1313+4615, J1318-0313, J1644+2625, J1709+2324, J1719+2939, J2343-0030). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
             "J0037-0942": {},
@@ -69,6 +69,9 @@
             "J0109+1500": {},
             "J0157-0056": {},
             "J0405-0455": {},
+            "J0819+4534": {
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
+            },
             "J0912+0029": {
                 "mast_target": "GAL-0472-51955-429"
             },
@@ -77,6 +80,9 @@
             "J0959+4416": {},
             "J1016+3859": {
                 "force_copy": true
+            },
+            "J1029+6115": {
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A (IFU-confirmed; Auger has no lens model); Auger morph E."
             },
             "J1100+5329": {},
             "J1106+5228": {},
@@ -87,6 +93,18 @@
             "J1204+0358": {},
             "J1213+6708": {},
             "J1259+6134": {},
+            "J1306+0600": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1313+4615": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1318-0313": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1330-0148": {
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph S0."
+            },
             "J1402+6321": {
                 "mast_target": "GAL-0605-52353-503"
             },
@@ -96,24 +114,63 @@
             "J1443+0304": {},
             "J1531-0105": {},
             "J1538+5817": {},
+            "J1614+4522": {
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
+            },
             "J1621+3931": {},
             "J1636+4707": {},
+            "J1644+2625": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1709+2324": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1719+2939": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0."
+            },
             "J2300+0022": {
                 "mast_target": "GAL-0677-52606-520"
             },
             "J2302-0840": {},
-            "J2321-0939": {}
+            "J2321-0939": {},
+            "J2343-0030": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0."
+            },
+            "J2347-0005": {
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
+            }
         }
     },
     "slacs_late": {
-        "description": "SLACS lenses whose deflector is late-type (Bolton et al. 2008 Table 4 morphology L, Sa and later) and which are not SWELLS lenses: J1432+6317 (Gold). Created 2026-10-29.",
+        "description": "SLACS lenses whose deflector is late-type and which are not SWELLS lenses: J1432+6317 (Bolton et al. 2008 Table 4 morphology L, Sa and later) and J1250-0135 (Bolton U-S-A*, Table 6: 'complicated by spiral structure and asymmetric bulge'; Auger et al. 2009 morph S0/SA; added 2026-10-29). Created 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
+            "J1250-0135": {
+                "note": "Bolton 2008 U-S-A*; Table 6: complicated by spiral structure and asymmetric bulge in the foreground galaxy. Auger morph S0/SA. WFPC2 F606W only (GO-10798)."
+            },
             "J1432+6317": {}
         }
     },
+    "slacs_multi": {
+        "description": "SLACS lenses with more than one deflector galaxy (group-scale or multi-galaxy): the Bolton et al. 2008 Table 4 grade-A lenses of class E-M-A* (early-type, multiple foreground galaxies, definite lens), which the original E/L-S-A selection excluded. J0808+4706 (Bolton Table 6: 'nearby companion prevents simple SIE modeling'; ACS F814W GO-10886, WFPC2 F606W and WFC3/IR F160W GO-11202) and J1718+6424 ('double foreground galaxy'; WFPC2 F606W GO-10798 only). The third, J1618+4353 ('double foreground galaxy'), has only the 420 s SNAP F814W/F435W (GO-10174), below BLOCK_EXPTIME, so it is not in the roster. Also two Auger et al. 2009 grade-A lenses with companions: J1436+3640 (Auger morph E*, 'at least one close companion galaxy') and J1319+1504 (Auger: needs special subtraction for nearby galaxies); both WFPC2 F606W from GO-10886 and GO-11202 (split by program), plus WFPC2 F814W (J1319) or WFC3/IR F160W (J1436). Created 2026-10-29.",
+        "coords": "info/coords/slacs_coords.py",
+        "lenses": {
+            "J0808+4706": {
+                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: nearby companion prevents simple SIE modeling."
+            },
+            "J1319+1504": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger: needs special subtraction for nearby galaxies in the field. Auger morph E/S0."
+            },
+            "J1436+3640": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger morph E* (at least one close companion galaxy) and needs special subtraction for nearby galaxies."
+            },
+            "J1718+6424": {
+                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: double foreground galaxy. WFPC2 F606W only (GO-10798)."
+            }
+        }
+    },
     "swells": {
-        "description": "SWELLS lenses (Treu et al. 2011; Brewer et al. 2012): high-inclination disk deflectors, lenticular to late-type spiral. Today only the six that SLACS also found and that were already reduced here: J0841+3824, J1029+0420, J1032+5322 (Etherington Gold), J0955+0101, J1251-0208, J2141-0001. Bolton et al. 2008 classes all but J1029+0420 as late-type. The other SWELLS grade-A lenses (J1103+5322 and the GO-11978 WFPC2-only systems) are not yet reduced. Created 2026-10-29.",
+        "description": "SWELLS lenses (Treu et al. 2011; Brewer et al. 2012): high-inclination disk deflectors, lenticular to late-type spiral. Today only the six that SLACS also found and that were already reduced here: J0841+3824, J1029+0420, J1032+5322 (Etherington Gold), J0955+0101, J1251-0208, J2141-0001. Bolton et al. 2008 classes all but J1029+0420 as late-type. J1103+5322 (Bolton U-S-A, excluded by the original class rule) and J1313+0506 (Bolton L-S-B, promoted to grade A by Auger et al. 2009) were added 2026-10-29. The SWELLS-only grade-A lenses (GO-11978 WFPC2, GO-12292 ACS) are not yet reduced. Created 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
             "J0841+3824": {},
@@ -122,7 +179,13 @@
             "J1032+5322": {
                 "force_copy": true
             },
+            "J1103+5322": {
+                "note": "Bolton 2008 U-S-A; SWELLS grade A. Auger morph S0/SA."
+            },
             "J1251-0208": {},
+            "J1313+0506": {
+                "note": "Bolton 2008 L-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A (spectroscopically confirmed; no Auger lens model); SWELLS grade A. Auger morph S."
+            },
             "J2141-0001": {}
         }
     },

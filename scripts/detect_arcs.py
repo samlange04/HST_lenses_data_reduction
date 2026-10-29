@@ -93,7 +93,7 @@ Usage:
     uv run python scripts/detect_arcs.py --fetch-theta-e
 
     # test the detector over a sample: QC figure per lens + a summary JSON, no products
-    uv run python scripts/detect_arcs.py --sample slacs_a
+    uv run python scripts/detect_arcs.py --sample slacs_prime
     uv run python scripts/detect_arcs.py --lens J0330-0020 --snr 3.0    # tune one lens
 
     # then review/correct the proposals by hand, one lens at a time:
@@ -124,7 +124,7 @@ THETA_E_JSON = os.path.join(ws_path, 'info', 'catalogues', 'lens_einstein_radii.
 
 #: Bands bluer than the reference band, best first. The blue band carries the source; the red
 #: band carries the deflector and sets the colour reference.
-BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_v2', 'f438W']
+BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_v2', 'f438W', 'f450W']
 #: Reference (red, deflector-dominated) bands, best first. f160W is redder still but sits on a
 #: different grid and a much broader PSF, so it is not used as the reference.
 RED_PRIORITY = ['f814W', 'f555W']

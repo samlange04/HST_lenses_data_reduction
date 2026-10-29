@@ -136,12 +136,27 @@ _raw = [
     "234728.08-000521.3",
 ]
 
+# The nine Auger et al. 2009 (SLACS IX; doi:10.1088/0004-637X/705/2/1099) grade-A lenses that
+# are not in Bolton et al. 2008 Table 4 (Auger's new WFPC2 targets). Source: Auger Table 3,
+# RA/Dec columns, same raw format as above. Added 2026-10-29.
+_raw_auger2009 = [
+    "130613.65+060022.1",
+    "131302.93+461513.6",
+    "131839.33-031334.2",
+    "131932.50+150426.0",
+    "143605.63+364047.1",
+    "164443.09+262525.4",
+    "170938.96+232408.4",
+    "171934.16+293926.4",
+    "234358.87-003022.4",
+]
+
 _COORD_RE = re.compile(r'^(\d{2})(\d{2})(\d{2}\.\d+)([+-])(\d{2})(\d{2})(\d{2}\.\d+)$')
 
 
 def _build():
     result = {}
-    for raw in _raw:
+    for raw in _raw + _raw_auger2009:
         m = _COORD_RE.match(raw)
         if not m:
             raise ValueError(f"Could not parse coordinate: {raw!r}")

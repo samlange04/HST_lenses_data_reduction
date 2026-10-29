@@ -1,5 +1,12 @@
 {
-    "slacs_a": {
+    "slacs_complex": {
+        "J0008-0004": "mast",
+        "J1218+0830": "mast"
+    },
+    "slacs_late": {
+        "J1432+6317": "mast"
+    },
+    "slacs_prime": {
         "J0029-0055": "mast",
         "J0252+0039": "mast",
         "J0330-0020": "mast",
@@ -13,18 +20,11 @@
         "J1525+3327": "mast",
         "J2341+0000": "mast"
     },
-    "slacs_b": {
-        "J0008-0004": "mast",
-        "J1218+0830": "mast"
-    },
-    "slacs_c": {
+    "slacs_sparse": {
         "J0157-0056": "mast",
         "J0936+0913": "mast",
         "J1142+1001": "mast",
         "J1213+6708": "mast"
-    },
-    "slacs_late": {
-        "J1432+6317": "mast"
     },
     "swells": {
         "J0841+3824": "mast",

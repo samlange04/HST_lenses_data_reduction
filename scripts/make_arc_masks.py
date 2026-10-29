@@ -74,10 +74,10 @@ outside-footprint pixels then default to 'not arc', which is the safe side -- re
 the inverted array would instead leave stamp-edge slivers unmasked.
 
 Usage:
-    uv run python scripts/make_arc_masks.py --sample slacs_a             # best band per lens
+    uv run python scripts/make_arc_masks.py --sample slacs_prime             # best band per lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020               # one lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --filt f606W  # force the band
-    uv run python scripts/make_arc_masks.py --sample slacs_a --filt f606W  # 2nd band sweep
+    uv run python scripts/make_arc_masks.py --sample slacs_prime --filt f606W  # 2nd band sweep
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from detect,f814W
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --detect-snr 3.0  # looser detect
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from none  # blank

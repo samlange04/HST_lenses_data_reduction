@@ -25,7 +25,7 @@ the earlier prototype's 3.93px injected FWHM exactly. See memory:
 stdpsf_model_error_measured.
 
     uv run python scripts/psf_model_error_injected.py
-    uv run python scripts/psf_model_error_injected.py --sample slacs_a --filt f160W
+    uv run python scripts/psf_model_error_injected.py --sample slacs_prime --filt f160W
 """
 import argparse
 import json

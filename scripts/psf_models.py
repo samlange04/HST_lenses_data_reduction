@@ -83,7 +83,7 @@ _LIB = {
 # Filter pivot wavelengths (nm), enough to pick a nearest neighbour.
 _PIVOT = {
     'F225W': 236, 'F275W': 271, 'F336W': 335, 'F390W': 392, 'F410M': 411,
-    'F435W': 431, 'F438W': 433, 'F467M': 468, 'F475W': 477, 'F555W': 539,
+    'F435W': 431, 'F438W': 433, 'F450W': 456, 'F467M': 468, 'F475W': 477, 'F555W': 539,
     'F606W': 589, 'F621M': 622, 'F625W': 632,
     'F658N': 658, 'F675W': 673, 'F775W': 765, 'F814W': 802, 'F850L': 917,
     'F098M': 986, 'F105W': 1055, 'F110W': 1153, 'F125W': 1248, 'F127M': 1274,
@@ -300,7 +300,18 @@ def analytic_drop_broaden(kernel, pixfrac, native_scale, out_scale, n_frames=1):
 # lens's-own-field empirical build is preferred where stars exist; this is the model
 # FALLBACK, slotted ABOVE the STDPSF F555W proxy.
 
-_WFPC2_F606W_DB_CACHE = os.path.join(ws_path, 'data', 'reference_files', 'wfpc2_f606w_psfdb')
+# The same build serves any WF3 filter the DB carries (`filt=`); F814W was added 2026-10-29
+# for the Auger+2009 SLACS targets whose only red band is WFPC2. STDPSF does have a WFPC2
+# F814W grid, but no error calibration exists for it, while the DB bootstrap gives one.
+# F606W keeps its original cache paths; other filters get wfpc2_<filt>_psfdb/.
+WFPC2_DB_FILTERS = ('F450W', 'F606W', 'F814W')   # F450W: J1103+5322 (SWELLS GO-11978)
+
+
+def _wfpc2_db_cache(filt):
+    f = filt.upper()
+    if f not in WFPC2_DB_FILTERS:
+        raise ValueError(f'no WFPC2 PSF-DB build configured for {filt}')
+    return os.path.join(ws_path, 'data', 'reference_files', f'wfpc2_{f.lower()}_psfdb')
 _WF3_LENS_XY = (435, 424)     # lens galaxy position on WF3 (chip 3); see AGENTS.md
 _F606W_DB = dict(
     qfit_max=0.05,        # low qfit == good template fit; ~8.6k WF3 F606W stars qualify
@@ -315,8 +326,8 @@ _F606W_DB = dict(
 
 
 def wfpc2_f606w_db_epsf(oversample, size, out_scale, cd_detector=None,
-                        force_rebuild=False, return_ensemble=False):
-    """Native WF3 F606W ePSF (MAST PSF database) on the make_psf output grid.
+                        force_rebuild=False, return_ensemble=False, filt='F606W'):
+    """Native WF3 ePSF (F606W by default; any `WFPC2_DB_FILTERS` band) (MAST PSF database) on the make_psf output grid.
 
     Returns an array `oversample` times finer than `out_scale`, spanning `size` output
     pixels -- the same convention as model_psf(). Builds+caches a single shared *detector-
@@ -332,23 +343,23 @@ def wfpc2_f606w_db_epsf(oversample, size, out_scale, cd_detector=None,
     together in the exact (members, method) convention make_psf.psf_error_map expects. An
     ensemble-build failure degrades to an empty list (point estimate is unaffected).
     """
-    data, samp = _wfpc2_f606w_db_build(force_rebuild=force_rebuild)
+    data, samp = _wfpc2_f606w_db_build(force_rebuild=force_rebuild, filt=filt)
     point = _resample_centered(data, samp, out_scale, oversample, size,
                                cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
     if not return_ensemble:
         return point
     try:
-        members, msamp, method = _wfpc2_f606w_db_ensemble(force_rebuild=force_rebuild)
+        members, msamp, method = _wfpc2_f606w_db_ensemble(force_rebuild=force_rebuild, filt=filt)
         ensemble = [_resample_centered(m, msamp, out_scale, oversample, size,
                                        cd_detector=cd_detector, det_scale=_DET_SCALE['WFPC2'])
                    for m in members]
     except Exception as exc:
-        print(f'  WARNING: WFPC2 F606W DB error ensemble unavailable ({exc})')
+        print(f'  WARNING: WFPC2 {filt} DB error ensemble unavailable ({exc})')
         ensemble, method = [], None
     return point, ensemble, method
 
 
-def _wfpc2_f606w_collect_stars(force_rebuild=False):
+def _wfpc2_f606w_collect_stars(force_rebuild=False, filt='F606W'):
     """Query + download (cached) the WF3 F606W MAST PSF-DB star cutouts as EPSFStars.
 
     Shared by the point-estimate build and the bootstrap/jackknife error ensemble so both
@@ -364,19 +375,19 @@ def _wfpc2_f606w_collect_stars(force_rebuild=False):
     r = cfg['radius']
     cols = ['id', 'rootname', 'filter_1', 'chip', 'x_cal', 'y_cal', 'qfit',
             'n_sat_pixels', 'subarray']
-    params = {'filter_1': ['F606W'], 'chip': ['3'], 'n_sat_pixels': ['0'],
+    params = {'filter_1': [filt.upper()], 'chip': ['3'], 'n_sat_pixels': ['0'],
               'qfit': [{'min': 0.0, 'max': cfg['qfit_max']}],
               'x_cal': [{'min': lx - r, 'max': lx + r}],
               'y_cal': [{'min': ly - r, 'max': ly + r}]}
     obs = mast_api_psf.mast_query_psf_database(
         'WFPC2', mast_api_psf.set_filters(params), columns=cols)
     if len(obs) == 0:
-        raise RuntimeError('MAST PSF DB returned no WF3 F606W stars')
+        raise RuntimeError(f'MAST PSF DB returned no WF3 {filt} stars')
     obs.sort('qfit')
     obs = obs[:cfg['n_download']]
     uris = mast_api_psf.make_dataURIs(obs, 'WFPC2', file_suffix=['c0m'])
 
-    cutdir = os.path.join(_WFPC2_F606W_DB_CACHE, 'cutouts')
+    cutdir = os.path.join(_wfpc2_db_cache(filt), 'cutouts')
     os.makedirs(cutdir, exist_ok=True)
     half = cfg['inner_half']
     stars = []
@@ -404,37 +415,37 @@ def _wfpc2_f606w_collect_stars(force_rebuild=False):
             continue
         stars.append(EPSFStar(sub / peak, cutout_center=(float(c[0]), float(c[1]))))
     if len(stars) < cfg['min_stars']:
-        raise RuntimeError(f'only {len(stars)} usable WF3 F606W DB stars '
+        raise RuntimeError(f'only {len(stars)} usable WF3 {filt} DB stars '
                            f'(<{cfg["min_stars"]})')
     return stars
 
 
-def _wfpc2_f606w_db_build(force_rebuild=False):
+def _wfpc2_f606w_db_build(force_rebuild=False, filt='F606W'):
     """(oversampled ePSF array, arcsec/pixel sampling) for WF3 F606W, cached to FITS."""
     from astropy.io import fits
     from photutils.psf import EPSFStars, EPSFBuilder
 
     cfg = _F606W_DB
     samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
-    os.makedirs(_WFPC2_F606W_DB_CACHE, exist_ok=True)
-    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf.fits')
+    os.makedirs(_wfpc2_db_cache(filt), exist_ok=True)
+    cache = os.path.join(_wfpc2_db_cache(filt), f'wf3_{filt.lower()}_epsf.fits')
     if os.path.exists(cache) and not force_rebuild:
         return np.asarray(fits.getdata(cache), float), samp
 
-    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild)
+    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild, filt=filt)
     builder = EPSFBuilder(oversampling=cfg['build_oversample'], maxiters=cfg['maxiters'],
                           recentering_maxiters=8, progress_bar=False)
     epsf, _ = builder(EPSFStars(stars))
     data = np.nan_to_num(np.asarray(epsf.data, float))
 
     hdr = fits.Header()
-    hdr['PSFSRC'] = ('MAST_PSF_DB', 'WFPC2 F606W PSF DB (Dauphin ISR WFC3 2021-12)')
-    hdr['NSTARS'] = (len(stars), 'WF3 F606W star cutouts used')
+    hdr['PSFSRC'] = ('MAST_PSF_DB', f'WFPC2 {filt} PSF DB (Dauphin ISR WFC3 2021-12)')
+    hdr['NSTARS'] = (len(stars), f'WF3 {filt} star cutouts used')
     hdr['QFITMAX'] = (cfg['qfit_max'], 'max qfit selected')
     hdr['BUILDOVR'] = (cfg['build_oversample'], 'EPSFBuilder oversampling vs WF3 scale')
     hdr['PIXSCALE'] = (round(samp, 5), 'ePSF arcsec/pixel')
     fits.writeto(cache, data, hdr, overwrite=True)
-    print(f'    built WF3 F606W MAST-PSF-DB ePSF from {len(stars)} stars -> {cache}')
+    print(f'    built WF3 {filt} MAST-PSF-DB ePSF from {len(stars)} stars -> {cache}')
     return data, samp
 
 
@@ -471,7 +482,7 @@ def _reduce_ensemble(items, n_boot=100, rng=None):
     return members, method
 
 
-def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None):
+def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None, filt='F606W'):
     """Bootstrap (or jackknife if star-poor) ensemble of the detector-frame, oversampled
     WF3 F606W DB ePSF, over the shared DB star sample -- cached to FITS (one 3D cube) like
     the point estimate. Returns (list_of_arrays, arcsec/pixel sampling, method).
@@ -486,13 +497,13 @@ def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None):
 
     cfg = _F606W_DB
     samp = _DET_SCALE['WFPC2'] / cfg['build_oversample']
-    cache = os.path.join(_WFPC2_F606W_DB_CACHE, 'wf3_f606w_epsf_ensemble.fits')
+    cache = os.path.join(_wfpc2_db_cache(filt), f'wf3_{filt.lower()}_epsf_ensemble.fits')
     if os.path.exists(cache) and not force_rebuild:
         cube = np.asarray(fits.getdata(cache), float)
         method = fits.getheader(cache).get('ENSMETH', 'bootstrap')
         return [cube[i] for i in range(cube.shape[0])], samp, method
 
-    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild)
+    stars = _wfpc2_f606w_collect_stars(force_rebuild=force_rebuild, filt=filt)
     n = len(stars)
     rng = rng if rng is not None else np.random.default_rng(0)
     if n < _JACKKNIFE_MAX_STARS:
@@ -516,17 +527,17 @@ def _wfpc2_f606w_db_ensemble(force_rebuild=False, n_boot=100, rng=None):
         except Exception:
             continue                       # a degenerate resample is dropped, not fatal
     if len(members) < 2:
-        raise RuntimeError(f'only {len(members)} valid WF3 F606W DB ensemble member(s)')
+        raise RuntimeError(f'only {len(members)} valid WF3 {filt} DB ensemble member(s)')
 
     cube = np.stack(members, axis=0)
     hdr = fits.Header()
-    hdr['PSFSRC'] = ('MAST_PSF_DB_ENS', 'WF3 F606W PSF DB error ensemble')
+    hdr['PSFSRC'] = ('MAST_PSF_DB_ENS', f'WF3 {filt} PSF DB error ensemble')
     hdr['ENSMETH'] = (method, 'bootstrap or jackknife over DB stars')
     hdr['NMEMBER'] = (len(members), 'valid ensemble members')
     hdr['NSTARS'] = (n, 'DB stars in the shared sample')
     hdr['PIXSCALE'] = (round(samp, 5), 'ePSF arcsec/pixel')
     fits.writeto(cache, cube, hdr, overwrite=True)
-    print(f'    built WF3 F606W DB error ensemble: {len(members)} members '
+    print(f'    built WF3 {filt} DB error ensemble: {len(members)} members '
           f'({method}) -> {cache}')
     return members, samp, method
 

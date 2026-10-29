@@ -1,5 +1,5 @@
 {
-    "slacs_a": {
+    "slacs_prime": {
         "J1250+0523": {
             "f814W": {
                 "astrometry_changed": false,
@@ -61,7 +61,7 @@
             }
         }
     },
-    "slacs_c": {
+    "slacs_sparse": {
         "J1213+6708": {
             "f814W": {
                 "astrometry_changed": true,
