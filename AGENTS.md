@@ -446,8 +446,8 @@ file is deliberately empty ("images too uncertain to mark"), possibly for this r
 = `ua1lc8` (4 × 400 s); both have 2 × 2 dither phases. Tied to F814W, the visits moved by
 (0.594″, 0.294″) and (0.381″, 0.259″), i.e. 0.216″ apart, as measured. The combined stack's core
 was ~4% broader (second-moment σ 0.166″ vs 0.160″ in either visit). Its f606W mask (drawn on
-the smeared stack) was carried to both visit stamps by sky reprojection and is flagged for
-review (`note` in `lens_masks.json`). Figure:
+the smeared stack) was carried to both visit stamps by sky reprojection, then reviewed and
+redrawn on 2026-10-30 (`f606W` edited, +705 px; `f606W_visit2` accepted from it). Figure:
 `diagnostics/cr_defects/J1142+1001_f606W_visit_split.png`.
 
 **Diagnosing this class of bug:** compare the *spread* of per-frame WCS error, not its
