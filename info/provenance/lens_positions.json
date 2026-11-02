@@ -3221,6 +3221,23 @@
         }
     },
     "slacs_late": {
+        "J1250-0135": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "deliberately_empty": "review 2026-11-01 (accepted by Sam): no lensed candidate separable from the deflector spiral structure; empty Grid2DIrregular written so the lens is not re-offered"
+            }
+        },
         "J1432+6317": {
             "f814W": {
                 "n_positions": 2,
@@ -3265,6 +3282,172 @@
                         "deflector_tie_px": null
                     }
                 ]
+            }
+        }
+    },
+    "slacs_multi": {
+        "J0808+4706": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.975,
+                        -1.075
+                    ],
+                    [
+                        1.475,
+                        0.275
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.56,
+                "snap_moved_px_mean": 1.55,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 162845,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 27.74,
+                        "deflector_tie_mas": 34.0,
+                        "deflector_tie_px": 0.566
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 32.89,
+                        "deflector_tie_mas": 7.8,
+                        "deflector_tie_px": 0.157
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1436+3640": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -2.175,
+                        0.875
+                    ],
+                    [
+                        1.525,
+                        1.425
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.21,
+                "snap_moved_px_mean": 1.04,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 69792,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 16.79,
+                        "deflector_tie_mas": 166.0,
+                        "deflector_tie_px": 2.766
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 36.55,
+                        "deflector_tie_mas": 41.0,
+                        "deflector_tie_px": 0.82
+                    }
+                ]
+            }
+        },
+        "J1718+6424": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp30",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp30"
+                    }
+                ],
+                "deliberately_empty": "review 2026-11-01 (accepted by Sam): residual dominated by the companion galaxy (a member, not an image); empty Grid2DIrregular written so the lens is not re-offered"
+            }
+        },
+        "J2343-0030": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.075,
+                        0.475
+                    ],
+                    [
+                        -1.325,
+                        -0.825
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.33,
+                "snap_moved_px_mean": 1.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 6261,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ],
+                "prefix": "stamp30",
+                "note": "2026-11-01: marked on the 12\" stamp, carried through sky coordinates to the 30\" group-centred stamp after the move to slacs_multi."
             }
         }
     },
@@ -3583,59 +3766,37 @@
                 "n_positions": 2,
                 "positions_arcsec": [
                     [
-                        -1.075,
-                        -0.975
+                        -0.275,
+                        1.725
                     ],
                     [
-                        -0.375,
-                        1.725
+                        -0.025,
+                        -0.525
                     ]
                 ],
                 "marked_filt": "f814W",
                 "marked_prefix": "stamp12",
-                "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "search_box_size": 2,
-                "snap_moved_px_max": 0.85,
-                "snap_moved_px_mean": 0.63,
                 "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_mask_center_arcsec": null,
-                "display_vmax_value": null,
-                "display_subtract_radial": true,
-                "display_side_by_side": true,
-                "display_hidden_contaminant_px": 2266,
-                "n_positions_on_contaminant": 0,
                 "broadcast_to": [
                     {
                         "filt": "f160W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 50.04,
-                        "deflector_tie_mas": 4.4,
-                        "deflector_tie_px": 0.074
+                        "prefix": "stamp12"
                     },
                     {
                         "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 37.74,
-                        "deflector_tie_mas": 4.6,
-                        "deflector_tie_px": 0.092
+                        "prefix": "stamp12"
                     },
                     {
                         "filt": "f606W_visit2",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 55.41,
-                        "deflector_tie_mas": 3.3,
-                        "deflector_tie_px": 0.067
+                        "prefix": "stamp12"
                     },
                     {
                         "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
+                        "prefix": "stamp12"
                     }
-                ]
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
             }
         },
         "J0903+4116": {
@@ -4561,6 +4722,36 @@
                 ]
             }
         },
+        "J0819+4534": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.225,
+                        0.325
+                    ],
+                    [
+                        -0.375,
+                        -0.175
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
+            }
+        },
         "J0912+0029": {
             "f814W": {
                 "n_positions": 0,
@@ -4693,6 +4884,20 @@
                     },
                     {
                         "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J1029+6115": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "deliberately_empty": "deliberately left without image positions (Sam, 2026-11-01): the marked features at 1.38\"/1.85\" sit ~3x the SIS theta_E (~0.5\": sigma 228 km/s, z_s only 0.251) and Auger+2009 had no HST lens model; previously marked [[-1.375, -0.075], [1.625, 0.875]]. Empty Grid2DIrregular written so the lens is not re-offered",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
                         "prefix": "stamp12"
                     }
                 ]
@@ -4845,26 +5050,36 @@
         },
         "J1142+1001": {
             "f814W": {
-                "n_positions": 0,
-                "positions_arcsec": [],
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.475,
+                        -0.525
+                    ],
+                    [
+                        -0.375,
+                        0.275
+                    ]
+                ],
                 "marked_filt": "f814W",
-                "deliberately_empty": "image positions too uncertain to mark (2026-09-26); empty Grid2DIrregular written so the lens is not re-offered",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
                 "broadcast_to": [
                     {
                         "filt": "f606W",
-                        "prefix": "stamp12",
-                        "deflector_tie_mas": 11.8,
-                        "deflector_tie_px": 0.235
-                    },
-                    {
-                        "filt": "f814W",
                         "prefix": "stamp12"
                     },
                     {
                         "filt": "f606W_visit2",
                         "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
                     }
-                ]
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
             }
         },
         "J1143-0144": {
@@ -4944,6 +5159,205 @@
                         "prefix": "stamp12"
                     }
                 ]
+            }
+        },
+        "J1306+0600": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.925,
+                        -0.025
+                    ],
+                    [
+                        -1.625,
+                        -0.325
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 0.65,
+                "snap_moved_px_mean": 0.45,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 378,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 60.07,
+                        "deflector_tie_mas": 5.6,
+                        "deflector_tie_px": 0.111
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 30.97,
+                        "deflector_tie_mas": 7.2,
+                        "deflector_tie_px": 0.144
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1313+4615": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        1.425,
+                        -1.125
+                    ],
+                    [
+                        -0.675,
+                        0.425
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 2.47,
+                "snap_moved_px_mean": 2.35,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 750,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 21.56,
+                        "deflector_tie_mas": 37.6,
+                        "deflector_tie_px": 0.753
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 25.04,
+                        "deflector_tie_mas": 15.9,
+                        "deflector_tie_px": 0.318
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1318-0313": {
+            "f814W": {
+                "n_positions": 4,
+                "positions_arcsec": [
+                    [
+                        0.425,
+                        -1.375
+                    ],
+                    [
+                        -1.425,
+                        0.075
+                    ],
+                    [
+                        0.375,
+                        2.025
+                    ],
+                    [
+                        1.475,
+                        1.575
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px; J1318: Sam's own position near image 2 kept exactly"
+            }
+        },
+        "J1319+1504": {
+            "f814W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "deliberately_empty": "review 2026-11-01 (accepted by Sam): the strongest residual is the red satellite at 1.77\"; no lensed candidate; empty Grid2DIrregular written so the lens is not re-offered"
+            }
+        },
+        "J1330-0148": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.475,
+                        1.025
+                    ],
+                    [
+                        -0.025,
+                        -0.475
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
             }
         },
         "J1402+6321": {
@@ -5156,6 +5570,27 @@
                 ]
             }
         },
+        "J1614+4522": {
+            "f606W": {
+                "n_positions": 0,
+                "positions_arcsec": [],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f160W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "deliberately_empty": "Sam 2026-11-01: blue tangential arc at 1.49 thE, but its SIS counter-image (0.51 thE opposite) is not detected; empty Grid2DIrregular written so the lens is not re-offered"
+            }
+        },
         "J1621+3931": {
             "f606W": {
                 "n_positions": 2,
@@ -5200,12 +5635,12 @@
                 "n_positions": 2,
                 "positions_arcsec": [
                     [
-                        0.375,
-                        -0.725
+                        -1.225,
+                        0.275
                     ],
                     [
-                        -0.125,
-                        1.125
+                        0.525,
+                        0.075
                     ]
                 ],
                 "marked_filt": "f606W",
@@ -5213,15 +5648,16 @@
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
                 "search_box_size": 2,
-                "snap_moved_px_max": 2.47,
-                "snap_moved_px_mean": 2.22,
+                "snap_moved_px_max": 1.36,
+                "snap_moved_px_mean": 1.31,
                 "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display": "S/N, as-observed + isophote-subtracted (contaminants blanked)",
                 "display_mask_center_arcsec": null,
                 "display_vmax_value": null,
-                "display_subtract_radial": true,
+                "display_subtract": "isophote",
+                "display_subtract_radial": false,
                 "display_side_by_side": true,
-                "display_hidden_contaminant_px": 1032,
+                "display_hidden_contaminant_px": 1740,
                 "n_positions_on_contaminant": 0,
                 "broadcast_to": [
                     {
@@ -5239,6 +5675,132 @@
                         "deflector_tie_px": null
                     }
                 ]
+            }
+        },
+        "J1644+2625": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.975,
+                        0.125
+                    ],
+                    [
+                        1.725,
+                        0.375
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.93,
+                "snap_moved_px_mean": 1.54,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 4159,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 33.4,
+                        "deflector_tie_mas": 0.8,
+                        "deflector_tie_px": 0.016
+                    },
+                    {
+                        "filt": "f606W_visit2",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 51.36,
+                        "deflector_tie_mas": 3.2,
+                        "deflector_tie_px": 0.063
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1709+2324": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.625,
+                        -0.275
+                    ],
+                    [
+                        -1.025,
+                        0.825
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.83,
+                "snap_moved_px_mean": 1.37,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 10726,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
+        "J1719+2939": {
+            "f814W": {
+                "n_positions": 3,
+                "positions_arcsec": [
+                    [
+                        -0.125,
+                        -1.325
+                    ],
+                    [
+                        -0.525,
+                        1.175
+                    ],
+                    [
+                        -1.225,
+                        0.225
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
             }
         },
         "J2300+0022": {
@@ -5310,6 +5872,45 @@
                     {
                         "filt": "f606W",
                         "prefix": "stamp12"
+                    }
+                ]
+            }
+        },
+        "J2347-0005": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -1.025,
+                        -1.275
+                    ],
+                    [
+                        0.175,
+                        1.375
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.1,
+                "snap_moved_px_mean": 0.82,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 3587,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
                     }
                 ]
             }
@@ -5487,6 +6088,59 @@
                 ]
             }
         },
+        "J1103+5322": {
+            "f814W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        -0.725,
+                        1.125
+                    ],
+                    [
+                        0.925,
+                        0.225
+                    ]
+                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "search_box_size": 2,
+                "snap_moved_px_max": 1.75,
+                "snap_moved_px_mean": 1.67,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract_radial": true,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 2934,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f450W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 7.03,
+                        "deflector_tie_mas": 21.9,
+                        "deflector_tie_px": 0.438
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 16.49,
+                        "deflector_tie_mas": 3.2,
+                        "deflector_tie_px": 0.064
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp12",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
+            }
+        },
         "J1251-0208": {
             "f606W": {
                 "n_positions": 3,
@@ -5535,6 +6189,32 @@
                         "deflector_tie_px": null
                     }
                 ]
+            }
+        },
+        "J1313+0506": {
+            "f606W": {
+                "n_positions": 2,
+                "positions_arcsec": [
+                    [
+                        0.125,
+                        0.425
+                    ],
+                    [
+                        -0.125,
+                        -0.425
+                    ]
+                ],
+                "marked_filt": "f606W",
+                "marked_prefix": "stamp12",
+                "pixel_scale_arcsec": 0.05,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "broadcast_to": [
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp12"
+                    }
+                ],
+                "source": "review 2026-11-01 suggestions accepted by Sam, written by local/scripts/write_review_positions_2026-11-01.py: each suggested pixel snapped to the isophote-subtracted residual peak within +-2 px"
             }
         },
         "J2141-0001": {

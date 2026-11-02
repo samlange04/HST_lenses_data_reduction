@@ -455,38 +455,6 @@
                 "n_frames": 4
             }
         },
-        "J1319+1504": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.7464,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 35,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002777,
-                "wing_scatter": 0.008414,
-                "n_frames": 4
-            },
-            "f606W_visit2": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.5968,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001763,
-                "wing_scatter": 0.001952,
-                "n_frames": 4
-            },
-            "f814W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.7467,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 25,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001699,
-                "wing_scatter": 0.006779,
-                "n_frames": 4
-            }
-        },
         "J1436+3640": {
             "f160W": {
                 "method": "inject_stdpsf",
@@ -528,6 +496,18 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.002066,
                 "wing_scatter": 0.006603,
+                "n_frames": 4
+            }
+        },
+        "J2343-0030": {
+            "f606W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 5.2799,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 31,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.002095,
+                "wing_scatter": 0.005606,
                 "n_frames": 4
             }
         }
@@ -1147,6 +1127,38 @@
                 "n_frames": 4
             }
         },
+        "J1319+1504": {
+            "f606W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 5.7464,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 35,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.002777,
+                "wing_scatter": 0.008414,
+                "n_frames": 4
+            },
+            "f606W_visit2": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.5968,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 31,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001763,
+                "wing_scatter": 0.001952,
+                "n_frames": 4
+            },
+            "f814W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.7467,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 25,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001699,
+                "wing_scatter": 0.006779,
+                "n_frames": 4
+            }
+        },
         "J1330-0148": {
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -1374,18 +1386,6 @@
                 "trim_threshold": 0.001,
                 "pedestal_frac": 0.000742,
                 "wing_scatter": 0.000489,
-                "n_frames": 4
-            }
-        },
-        "J2343-0030": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.2799,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002095,
-                "wing_scatter": 0.005606,
                 "n_frames": 4
             }
         },

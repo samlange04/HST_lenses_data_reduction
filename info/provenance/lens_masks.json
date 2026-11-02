@@ -1799,6 +1799,19 @@
         }
     },
     "slacs_late": {
+        "J1250-0135": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 1628,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
         "J1432+6317": {
             "f606W": {
                 "prefix": "stamp12",
@@ -1825,6 +1838,136 @@
                 "prefix": "stamp12",
                 "source": "drawn",
                 "bcfill": true
+            }
+        }
+    },
+    "slacs_multi": {
+        "J0808+4706": {
+            "f160W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 127812,
+                "brush_width": 0.012,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 112638,
+                "n_added_px": 29499,
+                "n_erased_px": 13410
+            },
+            "f606W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 159600,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 162600,
+                "n_added_px": 31707,
+                "n_erased_px": 30650
+            },
+            "f814W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 162845,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 53399,
+                "n_added_px": 162845,
+                "n_erased_px": 0
+            }
+        },
+        "J1436+3640": {
+            "f160W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 53203,
+                "brush_width": 0.012,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 48232,
+                "n_added_px": 4971,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W_visit2 mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W_visit2",
+                "n_excluded_px": 69792,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W_visit2",
+                "proposal_px": 67546,
+                "n_added_px": 2434,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 69792,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 69792,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            }
+        },
+        "J1718+6424": {
+            "f606W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 21191,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 3746,
+                "n_added_px": 17445,
+                "n_erased_px": 0
+            }
+        },
+        "J2343-0030": {
+            "f606W": {
+                "prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 56858,
+                "brush_width": 0.01,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 6205,
+                "n_added_px": 56858,
+                "n_erased_px": 0
             }
         }
     },
@@ -2676,16 +2819,16 @@
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
-                "source": "edited_from_f814W",
-                "n_excluded_px": 4067,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 5362,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "proposal_from": "f814W",
-                "proposal_px": 3609,
-                "n_added_px": 959,
-                "n_erased_px": 0,
-                "bcfill": true
+                "proposal_from": "f606W",
+                "proposal_px": 4067,
+                "n_added_px": 2982,
+                "n_erased_px": 0
             },
             "f814W": {
                 "brush_radius_px": 6,
@@ -2697,6 +2840,38 @@
                 "prefix": "stamp12",
                 "source": "drawn",
                 "bcfill": true
+            }
+        },
+        "J0819+4534": {
+            "f160W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f160W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f160W",
+                "n_excluded_px": 7202,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f160W",
+                "proposal_px": 6828,
+                "n_added_px": 374,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 9745,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 9001,
+                "n_added_px": 744,
+                "n_erased_px": 0
             }
         },
         "J0912+0029": {
@@ -2788,42 +2963,46 @@
                 "prefix": "stamp12",
                 "drizzle_pass": "nocrrej",
                 "pixel_scale_arcsec": 0.06,
-                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
-                "source": "accepted_from_f814W",
-                "n_excluded_px": 283,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f160W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f160W",
+                "n_excluded_px": 2520,
                 "brush_width": 0.03,
                 "brush_radius_px": 6,
-                "proposal_from": "f814W",
-                "proposal_px": 283,
-                "n_added_px": 0,
-                "n_erased_px": 0,
-                "bcfill": false
+                "proposal_from": "f160W",
+                "proposal_px": 2409,
+                "n_added_px": 111,
+                "n_erased_px": 0
             },
             "f606W": {
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed (f814W mask outlined)",
-                "source": "edited_from_f814W",
-                "n_excluded_px": 419,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f814W",
+                "n_excluded_px": 3669,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
                 "proposal_from": "f814W",
-                "proposal_px": 421,
-                "n_added_px": 111,
-                "n_erased_px": 200,
-                "bcfill": true
+                "proposal_px": 3669,
+                "n_added_px": 0,
+                "n_erased_px": 0
             },
             "f814W": {
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed",
-                "source": "drawn",
-                "n_excluded_px": 421,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 3669,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "bcfill": true
+                "proposal_from": "f814W",
+                "proposal_px": 3468,
+                "n_added_px": 201,
+                "n_erased_px": 0
             }
         },
         "J1016+3859": {
@@ -2873,6 +3052,23 @@
                 "proposal_px": 7442,
                 "source": "edited_from_f814W",
                 "bcfill": true
+            }
+        },
+        "J1029+6115": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 9344,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 9306,
+                "n_added_px": 38,
+                "n_erased_px": 0
             }
         },
         "J1100+5329": {
@@ -2977,8 +3173,7 @@
                 "proposal_from": "f606W",
                 "proposal_px": 2695,
                 "n_added_px": 0,
-                "n_erased_px": 0,
-                "note": "2026-10-29/30: J1142 F606W was a combined stack of two visits 0.212\" apart, now split by visit (f606W = ua1l38 2x1100s, f606W_visit2 = ua1lc8 4x400s). The 2026-09 mask (drawn on the smeared stack) was carried to both visit stamps by sky reprojection, then reviewed and redrawn by Sam on 2026-10-30."
+                "n_erased_px": 0
             },
             "f814W": {
                 "brush_radius_px": 6,
@@ -3061,6 +3256,199 @@
                 "bcfill": true
             }
         },
+        "J1306+0600": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W_visit2 mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W_visit2",
+                "n_excluded_px": 1003,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W_visit2",
+                "proposal_px": 1003,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 1003,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 1003,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 378,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1313+4615": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W_visit2 mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W_visit2",
+                "n_excluded_px": 4165,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W_visit2",
+                "proposal_px": 4077,
+                "n_added_px": 228,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 4165,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 4165,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 750,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1318-0313": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W_visit2 mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W_visit2",
+                "n_excluded_px": 4138,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W_visit2",
+                "proposal_px": 3851,
+                "n_added_px": 531,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 4138,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 4138,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 4775,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1319+1504": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W_visit2 mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W_visit2",
+                "n_excluded_px": 4402,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W_visit2",
+                "proposal_px": 4402,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 4402,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 4402,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 5116,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 0,
+                "n_added_px": 5116,
+                "n_erased_px": 0
+            }
+        },
+        "J1330-0148": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 2302,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 881,
+                "n_added_px": 1421,
+                "n_erased_px": 0
+            }
+        },
         "J1402+6321": {
             "f555W": {
                 "prefix": "stamp12",
@@ -3096,10 +3484,10 @@
                 "brush_width": 0.025,
                 "display": "S/N, radial-subtracted + as-observed (f606W mask outlined)",
                 "drizzle_pass": "cr",
-                "edited": "2026-09-14: pulled back off the expected arc radius -- cleared masked pixels within 1.2\" of the deflector (3147 -> 3123 px). Bolton 2008 gives sigma=213+/-17 km/s, z_l=0.1888, z_s=0.4730 -> SIS theta_E=0.75\", and that estimator runs ~30-40% low against rings measured in this repo, so the arc is expected near ~1.0\". The mask previously reached 1.06\", i.e. onto that radius. No arc is actually detected here (no blue excess anywhere in f606W/f814W) and the masked companion at r=1.77\" is ~1.8x theta_E, so it is very unlikely to be the lensed source -- this is precautionary clearance, not a correction. || CORRECTION 2026-09-21: the theta_E reasoning above is superseded. Auger+2009 gives a MEASURED theta_E = 0.8303\" (info/catalogues/lens_einstein_radii.json), so the SIS 0.75\" was only 11% low here, not the 30-40% assumed, and the arc is expected at 0.83\", not ~1.0\". The mask's 1.20\" inner edge is therefore 1.45 theta_E. The '~1.8x theta_E companion at 1.77\"' is the same neighbour, re-measured on an elliptical-isophote model as r=1.82\" = 2.19 theta_E, sigma_major 0.66\" (5.2x the PSF), ~1100 px, peak S/N 15. Its halo crosses the 1.20\" edge, so 221 px / 1.23 e-/s of it is left INSIDE the fit region. Trade-off measured over the 0.8-1.3 theta_E annulus: inner edge 1.20\" leaves 221 px and masks 0% of the annulus; 1.00\" leaves 81 px for 5.6%; 0.90\" leaves 36 px for 10.5%; masking the neighbour outright leaves 0 px for 14.5%. 'No arc is actually detected here' STANDS, but for a measured reason: inside 1.2\" the residual scatter is 3.2x the photon noise (galaxy-model-limited, not noise-limited), so a feature needs >~10 sigma to be a 3-sigma excess over model error and the brightest thing in the annulus outside the neighbour is 8.7 sigma. See diagnostics/masks/J1403+0006_f606W_neighbour_tradeoff.png. || 2026-09-21: ADDED 308 px -- the neighbour's own 1-sigma isophote between r=1.00\" (1.20 theta_E) and r=2.0\", which the 2026-09-14 radial pull-back to 1.20\" had left unmasked. 3123 -> 3431 px; nothing was cleared and the hand-drawn OUTER boundary is untouched. Why: that pull-back cut a circular arc straight through the neighbour (r=1.82\"=2.19 theta_E, 5.2x the PSF, ~1100 px, peak S/N 15), leaving 427 px of its halo inside the fit region -- 3.45% of the deflector's flux inside 1\", brightest leftover pixel 11.5 sigma. After the edit: 119 px, 0.88%, brightest 9.1 sigma, which is below the ~10 sigma floor the galaxy-model error sets on this lens (residual scatter inside 1.2\" is 3.2x the photon noise). Cost: 6.4% of the 0.8-1.3 theta_E annulus and 13.7% of 0.8-1.5 theta_E, ALL of it in image PA 180-270 deg (~23% of those three 30-deg sectors, 0% in every other sector) -- the only direction the neighbour reaches in. Nearest masked pixel 1.15\" -> 1.00\" = 1.20 theta_E, still clear of the ring. Alternatives measured, if a looser or tighter edge is wanted: floor 1.10\" (+237 px, 190 left, 10.7 sigma, 0% of the 0.8-1.3 annulus) or 0.90\" (+358 px, 69 left, 4.5 sigma, 11.8%). Reversible: git checkout the mask. See diagnostics/masks/J1403+0006_f606W_mask_yours_vs_mine.png.",
+                "edited": "2026-09-14: pulled back off the expected arc radius -- cleared masked pixels within 1.2\" of the deflector (3147 -> 3123 px). Bolton 2008 gives sigma=213+/-17 km/s, z_l=0.1888, z_s=0.4730 -> SIS theta_E=0.75\", and that estimator runs ~30-40% low against rings measured in this repo, so the arc is expected near ~1.0\". The mask previously reached 1.06\", i.e. onto that radius. No arc is actually detected here (no blue excess anywhere in f606W/f814W) and the masked companion at r=1.77\" is ~1.8x theta_E, so it is very unlikely to be the lensed source -- this is precautionary clearance, not a correction. || CORRECTION 2026-09-21: the theta_E reasoning above is superseded. Auger+2009 gives a MEASURED theta_E = 0.8303\" (info/catalogues/lens_einstein_radii.json), so the SIS 0.75\" was only 11% low here, not the 30-40% assumed, and the arc is expected at 0.83\", not ~1.0\". The mask's 1.20\" inner edge is therefore 1.45 theta_E. The '~1.8x theta_E companion at 1.77\"' is the same neighbour, re-measured on an elliptical-isophote model as r=1.82\" = 2.19 theta_E, sigma_major 0.66\" (5.2x the PSF), ~1100 px, peak S/N 15. Its halo crosses the 1.20\" edge, so 221 px / 1.23 e-/s of it is left INSIDE the fit region. Trade-off measured over the 0.8-1.3 theta_E annulus: inner edge 1.20\" leaves 221 px and masks 0% of the annulus; 1.00\" leaves 81 px for 5.6%; 0.90\" leaves 36 px for 10.5%; masking the neighbour outright leaves 0 px for 14.5%. 'No arc is actually detected here' STANDS, but for a measured reason: inside 1.2\" the residual scatter is 3.2x the photon noise (galaxy-model-limited, not noise-limited), so a feature needs >~10 sigma to be a 3-sigma excess over model error and the brightest thing in the annulus outside the neighbour is 8.7 sigma. See diagnostics/masks/J1403+0006_f606W_neighbour_tradeoff.png. || 2026-09-21: ADDED 308 px -- the neighbour's own 1-sigma isophote between r=1.00\" (1.20 theta_E) and r=2.0\", which the 2026-09-14 radial pull-back to 1.20\" had left unmasked. 3123 -> 3431 px; nothing was cleared and the hand-drawn OUTER boundary is untouched. Why: that pull-back cut a circular arc straight through the neighbour (r=1.82\"=2.19 theta_E, 5.2x the PSF, ~1100 px, peak S/N 15), leaving 427 px of its halo inside the fit region -- 3.45% of the deflector's flux inside 1\", brightest leftover pixel 11.5 sigma. After the edit: 119 px, 0.88%, brightest 9.1 sigma, which is below the ~10 sigma floor the galaxy-model error sets on this lens (residual scatter inside 1.2\" is 3.2x the photon noise). Cost: 6.4% of the 0.8-1.3 theta_E annulus and 13.7% of 0.8-1.5 theta_E, ALL of it in image PA 180-270 deg (~23% of those three 30-deg sectors, 0% in every other sector) -- the only direction the neighbour reaches in. Nearest masked pixel 1.15\" -> 1.00\" = 1.20 theta_E, still clear of the ring. Alternatives measured, if a looser or tighter edge is wanted: floor 1.10\" (+237 px, 190 left, 10.7 sigma, 0% of the 0.8-1.3 annulus) or 0.90\" (+358 px, 69 left, 4.5 sigma, 11.8%). Reversible: git checkout the mask. See diagnostics/masks/J1403+0006_f606W_mask_yours_vs_mine.png. || 2026-11-01 (Sam): the neighbour UNMASKED -- its whole mask component (r 1.03-3.21\", 2389 px, the drawn region plus the 2026-09-21 isophote addition) cleared, 3431 -> 1042 px. Why: its Legacy Survey photo-z (0.47-0.55) matches z_s = 0.473, so it may be source-plane light, and an unmasked feature sits at (116, 142), 1.38 theta_E. It is not a multiple image (1.96 theta_E, outside the caustic), so the fit must model it as singly imaged source light or as a contaminant; compare with the 2026-09-21 mask (git history).",
                 "n_added_px": 342,
                 "n_erased_px": 0,
-                "n_excluded_px": 3431,
+                "n_excluded_px": 1042,
                 "pixel_scale_arcsec": 0.05,
                 "prefix": "stamp12",
                 "proposal_from": "f606W",
@@ -3191,6 +3579,34 @@
                 "bcfill": true
             }
         },
+        "J1614+4522": {
+            "f160W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "nocrrej",
+                "pixel_scale_arcsec": 0.06,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 855,
+                "brush_width": 0.03,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 654,
+                "n_added_px": 201,
+                "n_erased_px": 0
+            },
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 963,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
         "J1621+3931": {
             "f606W": {
                 "prefix": "stamp12",
@@ -3224,12 +3640,108 @@
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed",
-                "source": "drawn",
-                "n_excluded_px": 1032,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 1740,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "bcfill": true
+                "proposal_from": "f606W",
+                "proposal_px": 1032,
+                "n_added_px": 708,
+                "n_erased_px": 0
+            }
+        },
+        "J1644+2625": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 7593,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 5586,
+                "n_added_px": 2007,
+                "n_erased_px": 0
+            },
+            "f606W_visit2": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "accepted_from_f606W",
+                "n_excluded_px": 7593,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 7593,
+                "n_added_px": 0,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 5723,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 4159,
+                "n_added_px": 1564,
+                "n_erased_px": 0
+            }
+        },
+        "J1709+2324": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 10726,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
+        "J1719+2939": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 4143,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 3197,
+                "n_added_px": 1265,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 3502,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 3215,
+                "n_added_px": 287,
+                "n_erased_px": 0
             }
         },
         "J2300+0022": {
@@ -3278,12 +3790,29 @@
                 "prefix": "stamp12",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.05,
-                "display": "S/N, radial-subtracted + as-observed",
-                "source": "drawn",
-                "n_excluded_px": 428,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 1257,
                 "brush_width": 0.025,
                 "brush_radius_px": 6,
-                "bcfill": true
+                "proposal_from": "f606W",
+                "proposal_px": 1433,
+                "n_added_px": 0,
+                "n_erased_px": 685
+            }
+        },
+        "J2347-0005": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 3587,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
             }
         }
     },
@@ -3430,6 +3959,49 @@
                 "bcfill": true
             }
         },
+        "J1103+5322": {
+            "f450W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f814W",
+                "n_excluded_px": 3068,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 2934,
+                "n_added_px": 894,
+                "n_erased_px": 769
+            },
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f606W mask outlined)",
+                "bcfill": false,
+                "source": "edited_from_f606W",
+                "n_excluded_px": 3219,
+                "brush_width": 0.025,
+                "brush_radius_px": 6,
+                "proposal_from": "f606W",
+                "proposal_px": 2993,
+                "n_added_px": 226,
+                "n_erased_px": 0
+            },
+            "f814W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 2934,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
+            }
+        },
         "J1251-0208": {
             "f160W": {
                 "prefix": "stamp12",
@@ -3460,6 +4032,19 @@
                 "n_added_px": 324,
                 "n_erased_px": 0,
                 "bcfill": true
+            }
+        },
+        "J1313+0506": {
+            "f606W": {
+                "prefix": "stamp12",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.05,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch)",
+                "bcfill": false,
+                "source": "drawn",
+                "n_excluded_px": 2854,
+                "brush_width": 0.025,
+                "brush_radius_px": 6
             }
         },
         "J2141-0001": {

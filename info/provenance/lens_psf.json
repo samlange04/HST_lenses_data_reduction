@@ -2065,56 +2065,6 @@
                 "n_boot_valid": 100
             }
         },
-        "J1319+1504": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.7464,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 35,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002777,
-                "wing_scatter": 0.008414,
-                "n_frames": 4,
-                "psf_err_frac": 0.04892382,
-                "psf_err_frac_core": 0.03820781,
-                "psf_err_frac_wing": 0.03055656,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.996",
-                "err_lower_bound": true
-            },
-            "f606W_visit2": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.5968,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001763,
-                "wing_scatter": 0.001952,
-                "n_frames": 4,
-                "psf_err_frac": 0.04913627,
-                "psf_err_frac_core": 0.03898347,
-                "psf_err_frac_wing": 0.0299109,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.996",
-                "err_lower_bound": true
-            },
-            "f814W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 4.7467,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 25,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.001699,
-                "wing_scatter": 0.006779,
-                "n_frames": 4,
-                "psf_err_frac": 0.04966128,
-                "psf_err_frac_core": 0.03799916,
-                "psf_err_frac_wing": 0.03197353,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.996",
-                "err_lower_bound": true
-            }
-        },
         "J1436+3640": {
             "f160W": {
                 "method": "inject_stdpsf",
@@ -2178,6 +2128,24 @@
                 "psf_err_frac": 0.04928742,
                 "psf_err_frac_core": 0.03865628,
                 "psf_err_frac_wing": 0.03057683,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
+            }
+        },
+        "J2343-0030": {
+            "f606W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 5.2799,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 31,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.002095,
+                "wing_scatter": 0.005606,
+                "n_frames": 4,
+                "psf_err_frac": 0.0483651,
+                "psf_err_frac_core": 0.03793757,
+                "psf_err_frac_wing": 0.02999873,
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
@@ -3831,6 +3799,56 @@
                 "err_lower_bound": true
             }
         },
+        "J1319+1504": {
+            "f606W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 5.7464,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 35,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.002777,
+                "wing_scatter": 0.008414,
+                "n_frames": 4,
+                "psf_err_frac": 0.04892382,
+                "psf_err_frac_core": 0.03820781,
+                "psf_err_frac_wing": 0.03055656,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
+            },
+            "f606W_visit2": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.5968,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 31,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001763,
+                "wing_scatter": 0.001952,
+                "n_frames": 4,
+                "psf_err_frac": 0.04913627,
+                "psf_err_frac_core": 0.03898347,
+                "psf_err_frac_wing": 0.0299109,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
+            },
+            "f814W": {
+                "method": "inject_wfpc2_psfdb",
+                "fwhm_pix": 4.7467,
+                "kernel_size": 35,
+                "trimmed_kernel_size": 25,
+                "trim_threshold": 0.001,
+                "pedestal_frac": 0.001699,
+                "wing_scatter": 0.006779,
+                "n_frames": 4,
+                "psf_err_frac": 0.04966128,
+                "psf_err_frac_core": 0.03799916,
+                "psf_err_frac_wing": 0.03197353,
+                "err_method": "ensemble_broadened",
+                "err_source": "analytic_ensemble/box=0.996",
+                "err_lower_bound": true
+            }
+        },
         "J1330-0148": {
             "f606W": {
                 "method": "inject_wfpc2_psfdb",
@@ -4260,24 +4278,6 @@
                 "psf_err_frac": 0.04984692,
                 "psf_err_frac_core": 0.038607,
                 "psf_err_frac_wing": 0.03153117,
-                "err_method": "ensemble_broadened",
-                "err_source": "analytic_ensemble/box=0.996",
-                "err_lower_bound": true
-            }
-        },
-        "J2343-0030": {
-            "f606W": {
-                "method": "inject_wfpc2_psfdb",
-                "fwhm_pix": 5.2799,
-                "kernel_size": 35,
-                "trimmed_kernel_size": 31,
-                "trim_threshold": 0.001,
-                "pedestal_frac": 0.002095,
-                "wing_scatter": 0.005606,
-                "n_frames": 4,
-                "psf_err_frac": 0.0483651,
-                "psf_err_frac_core": 0.03793757,
-                "psf_err_frac_wing": 0.02999873,
                 "err_method": "ensemble_broadened",
                 "err_source": "analytic_ensemble/box=0.996",
                 "err_lower_bound": true
