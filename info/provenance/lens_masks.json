@@ -1052,28 +1052,46 @@
                 "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f438W mask outlined)",
                 "bcfill": false,
-                "source": "reprojected_from_stamp12",
-                "n_excluded_px": 3129,
-                "note": "2026-11-02: drawn on the 12\" stamp (edited_from_f606W, 16889 px), carried by sky reprojection to the 30\" group-centred stamp when J0755 became multi_galaxy. Mask components on a member galaxy were dropped (members are part of the lens model): companion 5.8\" (13745 px). The added outer area is unmasked: review with make_masks.py --force."
+                "source": "edited_from_f438W",
+                "n_excluded_px": 14127,
+                "brush_width": 0.007916,
+                "brush_radius_px": 6,
+                "proposal_from": "f438W",
+                "proposal_px": 3129,
+                "n_added_px": 10998,
+                "n_erased_px": 0
             },
             "f606W": {
                 "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
                 "bcfill": false,
-                "source": "reprojected_from_stamp12",
-                "n_excluded_px": 4025,
-                "note": "2026-11-02: drawn on the 12\" stamp (drawn, 17931 px), carried by sky reprojection to the 30\" group-centred stamp when J0755 became multi_galaxy. Mask components on a member galaxy were dropped (members are part of the lens model): companion 5.8\" (13811 px). The added outer area is unmasked: review with make_masks.py --force."
+                "source": "edited_from_f814W",
+                "n_excluded_px": 73897,
+                "brush_width": 0.007916,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 42764,
+                "n_added_px": 32976,
+                "n_erased_px": 0
             },
             "f814W": {
                 "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "pixel_scale_arcsec": 0.0396,
+                "display": "S/N, radial-subtracted + as-observed (Scribbler arcsinh stretch) (f814W mask outlined)",
                 "bcfill": false,
-                "source": "reprojected_from_stamp12",
-                "n_excluded_px": 5062,
-                "note": "2026-11-02: drawn on the 12\" stamp (edited_from_f606W, 18960 px), carried by sky reprojection to the 30\" group-centred stamp when J0755 became multi_galaxy. Mask components on a member galaxy were dropped (members are part of the lens model): companion 5.8\" (13814 px). The added outer area is unmasked: review with make_masks.py --force."
+                "source": "edited_from_f814W",
+                "n_excluded_px": 43001,
+                "brush_width": 0.007916,
+                "brush_radius_px": 6,
+                "proposal_from": "f814W",
+                "proposal_px": 5062,
+                "n_added_px": 38316,
+                "n_erased_px": 0
             }
         },
         "J0856+2010": {

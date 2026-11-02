@@ -751,7 +751,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.005446,
+                "frac_masked": 0.024587,
                 "bcfill": false,
                 "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f438W/stamp30_dataset.png"
             },
@@ -761,7 +761,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.007005,
+                "frac_masked": 0.128614,
                 "bcfill": false,
                 "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f606W/stamp30_dataset.png"
             },
@@ -771,7 +771,7 @@
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.00881,
+                "frac_masked": 0.074841,
                 "bcfill": false,
                 "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f814W/stamp30_dataset.png"
             }

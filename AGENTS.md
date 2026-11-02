@@ -59,9 +59,9 @@ Lenses by band mode (SB single_band, MB multi_band) and category (see *Sample la
   lenses) until 2026-10-29; then `slacs_prime`, `slacs_complex`, `slacs_sparse`, `slacs_late`,
   `slacs_multi` (all now `slacs`); `sl2s_dinos_a`, `sl2s_dinos_x` (now `dinos`); `sl2s_wf`,
   `sl2s_snap` (now `sl2s`). `swells`, `gallery` and `bells` kept their names.
-- **Outstanding (2026-11-02):** a review of J0755+3445's masks and positions after its 30″
-  group-centred re-cut (it became `multi_galaxy`), and of J1313+4615's category (marginal
-  prime). Every other band has a reviewed mask and a positions file.
+- **No product is outstanding (2026-11-02).** J0755+3445's masks and positions were reviewed on
+  its 30″ group-centred stamps (it became `multi_galaxy`; its 12″ files were removed, as for the
+  SLACS group lenses), and J1313+4615 stays `prime` (checked).
 - **Before that, no product was outstanding (2026-10-24).** Image positions were the last stage finished:
   BELLS 2026-10-22, all four SL2S samples 2026-10-24 (`run_positions_all.sh <sample>`, a GUI
   step). Contaminant masking is finished everywhere.

@@ -1835,44 +1835,12 @@
         },
         "J0755+3445": {
             "f814W": {
-                "broadcast": "sky (WCS pixel->world->pixel per band)",
-                "broadcast_to": [
-                    {
-                        "filt": "f438W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 19.8,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    },
-                    {
-                        "filt": "f606W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 17.53,
-                        "deflector_tie_mas": 29.8,
-                        "deflector_tie_px": 0.753
-                    },
-                    {
-                        "filt": "f814W",
-                        "prefix": "stamp12",
-                        "reprojection_shift_mas": 0.0,
-                        "deflector_tie_mas": null,
-                        "deflector_tie_px": null
-                    }
-                ],
-                "display": "S/N, radial-subtracted + as-observed (contaminants blanked)",
-                "display_hidden_contaminant_px": 18960,
-                "display_mask_center_arcsec": null,
-                "display_side_by_side": true,
-                "display_subtract_radial": true,
-                "display_vmax_value": null,
-                "drizzle_pass": "cr",
-                "marked_filt": "f814W",
-                "marked_prefix": "stamp30",
                 "n_positions": 4,
-                "n_positions_on_contaminant": 0,
-                "note": "2026-11-02: marked on the 12\" stamp; carried by sky reprojection to the 30\" group-centred stamp (J0755 became multi_galaxy), then rebroadcast to f606W and f438W. Review with --force.",
-                "pixel_scale_arcsec": 0.0396,
                 "positions_arcsec": [
+                    [
+                        0.3762,
+                        -3.7818
+                    ],
                     [
                         -2.673,
                         -3.7422
@@ -1884,33 +1852,47 @@
                     [
                         -1.7226,
                         -0.4158
-                    ],
-                    [
-                        0.3762,
-                        -3.7818
                     ]
                 ],
-                "positions_arcsec_stamp12": [
-                    [
-                        -0.8712,
-                        -1.3464
-                    ],
-                    [
-                        -1.8216,
-                        0.8316
-                    ],
-                    [
-                        0.0792,
-                        1.98
-                    ],
-                    [
-                        2.178,
-                        -1.386
-                    ]
-                ],
+                "marked_filt": "f814W",
+                "marked_prefix": "stamp30",
+                "drizzle_pass": "cr",
+                "pixel_scale_arcsec": 0.0396,
                 "search_box_size": 2,
-                "snap_moved_px_max": 1.87,
-                "snap_moved_px_mean": 1.03
+                "snap_moved_px_max": 2.05,
+                "snap_moved_px_mean": 1.26,
+                "broadcast": "sky (WCS pixel->world->pixel per band)",
+                "display": "S/N, as-observed + isophote-subtracted (contaminants blanked)",
+                "display_mask_center_arcsec": null,
+                "display_vmax_value": null,
+                "display_subtract": "isophote",
+                "display_subtract_radial": false,
+                "display_side_by_side": true,
+                "display_hidden_contaminant_px": 43001,
+                "n_positions_on_contaminant": 0,
+                "broadcast_to": [
+                    {
+                        "filt": "f438W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 19.8,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f606W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 17.53,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    },
+                    {
+                        "filt": "f814W",
+                        "prefix": "stamp30",
+                        "reprojection_shift_mas": 0.0,
+                        "deflector_tie_mas": null,
+                        "deflector_tie_px": null
+                    }
+                ]
             }
         },
         "J0856+2010": {
