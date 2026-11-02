@@ -28,6 +28,8 @@ data/*
 !data/mosaics/
 data/stamps/**/stamp*
 !data/stamps/**/stamp12_*
+# slacs_multi's modelling size is 30" (sample-level stamp_size, 2026-10-30).
+!data/stamps/slacs_multi/**/stamp30_*
 
 # ── QC renders of tracked stamps ───────────────────────────────────────────────
 # stamp12.png is a plain 3-panel render of the tracked sci/noise stamp, rebuilt by

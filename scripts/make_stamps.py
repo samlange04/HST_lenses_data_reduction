@@ -685,6 +685,13 @@ def main():
             _cw = WCS(_ch).celestial
             peak_coord = _cw.pixel_to_world((_ch['NAXIS1'] - 1) / 2.0, (_ch['NAXIS2'] - 1) / 2.0)
             cen_used, peak_src = a.center_from, f'stamp {os.path.basename(a.center_from)}'
+        elif mast_target_names.stamp_center(a.lens, a.sample):
+            # A fixed centre from the roster (multi-galaxy deflectors): the same sky point
+            # for every band, no peak search.
+            peak_coord = SkyCoord(*mast_target_names.stamp_center(a.lens, a.sample),
+                                  unit=(u.hourangle, u.deg), frame='icrs')
+            peak_src = 'stamp_center (info/samples/lens_samples.json)'
+            cen_used = ' '.join(mast_target_names.stamp_center(a.lens, a.sample))
         else:
             peak_coord, cen_used = find_peak_coord(peak_dir, catalogue_coord,
                                                    a.size, a.box, a.median_size)

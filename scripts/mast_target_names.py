@@ -23,7 +23,7 @@ which also added the 19 other Auger et al. 2009 grade-A lenses with usable data:
   ``sl2s_snap``    5 SL2S lenses with only the GO-11588 F475X + F600LP snapshot.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
-quirks, query MAST as ``SDSS<LENS>``". Six keys are understood:
+quirks, query MAST as ``SDSS<LENS>``". Eight keys are understood:
 
   ``mast_target``  the lens is archived under a ``GAL-<plate>-<mjd>-<fiber>`` designation
                    rather than ``SDSS<LENS>``, so the default query returns nothing.
@@ -45,6 +45,12 @@ quirks, query MAST as ``SDSS<LENS>``". Six keys are understood:
   ``stamp_size``   the lens's MODELLING stamp side in arcsec, overriding the default 12".
                    Every tool's --size defaults to it (stamp_paths.modelling_size), and its
                    stamp<S>_* files need a !data/stamps/**/stamp<S>_* line in .gitignore.
+                   A sample-level ``stamp_size`` sets it for every lens of the sample
+                   (``slacs_multi``: 30", 2026-10-30); a per-lens value still wins.
+  ``stamp_center`` ``["HH:MM:SS.sss", "+DD:MM:SS.ss"]``: the sky position every band's
+                   stamp is centred on, skipping make_stamps.py's peak search. For a
+                   multi-galaxy deflector, the light-weighted centroid of its member galaxies
+                   (``slacs_multi``, 2026-10-29), so the whole group sits in the stamp.
   ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
@@ -175,9 +181,19 @@ def stamp_box(lens, sample=None):
 
 
 def stamp_size(lens, sample=None):
-    """Per-lens modelling stamp side (arcsec), or None for the default."""
+    """Modelling stamp side (arcsec): the lens's own ``stamp_size``, else its sample's,
+    else None for the default."""
     size = _entry(lens, sample).get('stamp_size')
+    if not size:
+        owner = sample or sample_of(lens)
+        size = _sample(owner).get('stamp_size') if owner else None
     return float(size) if size else None
+
+
+def stamp_center(lens, sample=None):
+    """Per-lens fixed stamp centre as (RA, Dec) sexagesimal strings, or None."""
+    c = _entry(lens, sample).get('stamp_center')
+    return tuple(c) if c else None
 
 
 def target_patterns(lens, sample=None):
