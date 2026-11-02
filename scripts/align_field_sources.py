@@ -36,8 +36,8 @@ window of the same mosaic, so the shift is recovered exactly by matching the old
 arrays, and the mask is rolled by it. Pixels shifted in from outside the old stamp become
 unmasked (False) and are counted. Provenance goes to info/provenance/lens_masks.json under `field_tie_shift`.
 
-    uv run python scripts/align_field_sources.py --sample sl2s_dinos_a --lens J0217-0513 --ref f475X           # measure only
-    uv run python scripts/align_field_sources.py --sample sl2s_dinos_a --lens J0217-0513 --ref f475X --apply --recut
+    uv run python scripts/align_field_sources.py --sample dinos --lens J0217-0513 --ref f475X           # measure only
+    uv run python scripts/align_field_sources.py --sample dinos --lens J0217-0513 --ref f475X --apply --recut
 
 Run AFTER the drizzle and any `align_wfpc2_to_acs.py` tie, BEFORE make_stamps. A re-drizzle
 resets CRVAL, so re-run this afterwards.
@@ -57,6 +57,7 @@ from scipy import ndimage as ndi
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(WS, 'scripts'))
 import info_json  # noqa: E402
+import stamp_paths  # noqa: E402
 from stamp_paths import find_prefix  # noqa: E402
 
 TIES_JSON = os.path.join(WS, 'info', 'provenance', 'lens_field_ties.json')
@@ -65,7 +66,7 @@ MASKS_JSON = os.path.join(WS, 'info', 'provenance', 'lens_masks.json')
 
 def mosaic(sample, lens, band):
     """CR-pass sci mosaic of a band (no-CR when that is all there is, e.g. WFC3/IR)."""
-    d = os.path.join(WS, 'data', 'drizzled', sample, lens, band)
+    d = os.path.join(WS, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), band)
     for tag in ('_cr_', '_nocrrej_'):
         hit = sorted(p for p in glob.glob(os.path.join(d, '*_sci.fits')) if tag in os.path.basename(p))
         if hit:
@@ -159,7 +160,7 @@ def measure(ref_path, tgt_path, snr_min=15.0, search=1.5, tight=0.06):
 
 def apply_tie(sample, lens, band, dE, dN, ref, n_src, err):
     """Shift CRVAL of every drizzled product of `band` by -(dE, dN), keeping the originals."""
-    d = os.path.join(WS, 'data', 'drizzled', sample, lens, band)
+    d = os.path.join(WS, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), band)
     n = 0
     for fn in sorted(glob.glob(os.path.join(d, '*.fits'))):
         with fits.open(fn, mode='update') as h:
@@ -208,7 +209,7 @@ def roll_mask(mask, dy, dx):
 
 def reset_tie(sample, lens, band):
     """Restore every product of `band` to its pre-tie CRVAL (FTORIG1/2) and drop the FT* cards."""
-    d = os.path.join(WS, 'data', 'drizzled', sample, lens, band)
+    d = os.path.join(WS, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), band)
     n = 0
     for fn in sorted(glob.glob(os.path.join(d, '*.fits'))):
         with fits.open(fn, mode='update') as h:
@@ -225,8 +226,8 @@ def reset_tie(sample, lens, band):
 
 
 def recut(sample, lens, band, ref):
-    cdir = os.path.join(WS, 'data', 'stamps', sample, lens, band)
-    rdir = os.path.join(WS, 'data', 'stamps', sample, lens, ref)
+    cdir = os.path.join(WS, 'data', 'stamps', stamp_paths.lens_rel(sample, lens), band)
+    rdir = os.path.join(WS, 'data', 'stamps', stamp_paths.lens_rel(sample, lens), ref)
     prefix, rprefix = find_prefix(cdir), find_prefix(rdir)
     old_sci = fits.getdata(os.path.join(cdir, f'{prefix}_sci.fits')).astype(float)
     mpath = os.path.join(cdir, f'{prefix}_mask.fits')
@@ -273,7 +274,7 @@ def main():
     ref_path = mosaic(a.sample, a.lens, a.ref)
     if ref_path is None:
         sys.exit(f'{a.lens}: no {a.ref} mosaic')
-    bands = a.target or sorted(b for b in os.listdir(os.path.join(WS, 'data', 'drizzled', a.sample, a.lens))
+    bands = a.target or sorted(b for b in os.listdir(os.path.join(WS, 'data', 'drizzled', stamp_paths.lens_rel(a.sample, a.lens)))
                                if b != a.ref and mosaic(a.sample, a.lens, b))
     if a.reset:
         for b in bands:
@@ -300,7 +301,7 @@ def main():
                          'err_mas': round(err, 1), 'n_sources': nk, 'files': n, 'residual_after': resid})
             info_json.update(TIES_JSON, a.sample, a.lens, b, {'ref': a.ref, 'history': hist})
             print(f'    shifted CRVAL of {n} files; residual after: {resid}')
-            if a.recut and os.path.isdir(os.path.join(WS, 'data', 'stamps', a.sample, a.lens, b)):
+            if a.recut and os.path.isdir(os.path.join(WS, 'data', 'stamps', stamp_paths.lens_rel(a.sample, a.lens), b)):
                 recut(a.sample, a.lens, b, a.ref)
 
 

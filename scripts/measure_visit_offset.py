@@ -10,7 +10,7 @@ agree to 0.01" (both Gaia-fitted); J1142+1001's share a roll to 0.13 deg and are
 **Combine only below ~0.03"**, the frame-to-frame scatter the WFPC2 core-registration audit
 accepted; otherwise drizzle per visit (`run_wfpc2_wf3.sh` `split_visits_for`).
 
-Method: the frames the drizzle actually used (`data/drizzle_files/<sample>/<lens>/<band>*/
+Method: the frames the drizzle actually used (`data/drizzle_files/<sample>/<band_mode>/<category>/<lens>/<band>*/
 wf3_*_flt.fits`, after `updatewcs`, so the SIP distortion is in the WCS) are grouped by visit
 (the first six characters of the rootname). In each frame, compact sources are found with
 DAOStarFinder (8 sigma, CR-like sharpness rejected) away from the vignetted chip border and
@@ -23,8 +23,8 @@ control (it should read ~0.01"). Validated against the deflector-centroid tie
 J1306+0600 0.484" vs 0.477", J1436+3640 0.258" vs 0.255". Read-only; writes nothing.
 
 Usage:
-    uv run python scripts/measure_visit_offset.py --sample slacs_sparse --lens J1142+1001
-    uv run python scripts/measure_visit_offset.py --sample slacs_prime --lens J0822+2652 --filt f606W
+    uv run python scripts/measure_visit_offset.py --sample slacs --lens J1142+1001
+    uv run python scripts/measure_visit_offset.py --sample slacs --lens J0822+2652 --filt f606W
 """
 import argparse
 import glob
@@ -43,6 +43,7 @@ warnings.simplefilter('ignore', FITSFixedWarning)
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ws_path, 'scripts'))
 import mast_target_names  # noqa: E402
+import stamp_paths  # noqa: E402
 
 BORDER = (60, 20)        # px trimmed from the low / high edges (WF3's vignetted L-shaped border)
 MATCH_RADIUS = 1.5       # arcsec: search wide, then take the mode (see align_field_sources.py)
@@ -106,7 +107,7 @@ def main():
                    help='band; every <filt>* work dir is read, so a split lens contributes all its visits')
     a = p.parse_args()
 
-    frames = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzle_files', a.sample, a.lens,
+    frames = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzle_files', stamp_paths.lens_rel(a.sample, a.lens),
                                            a.filt + '*', 'wf3_*_flt.fits')))
     if not frames:
         sys.exit(f'no wf3_*_flt.fits for {a.sample}/{a.lens}/{a.filt}* in data/drizzle_files/ '

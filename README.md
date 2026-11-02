@@ -27,18 +27,22 @@ tools drew the masks and marked the positions.
 
 | Sample folder | Lenses | Survey | HST filters (number of lenses with each) |
 |---|---|---|---|
-| `slacs_prime` | 23 | SLACS (Bolton et al. 2008; Auger et al. 2009): Etherington et al. (2022) "Gold" lenses with marked image positions and no flagged morphology difficulty | F814W (23), F606W (12), F555W (11), F160W (9) |
-| `slacs_complex` | 4 | SLACS lenses with image positions whose morphology looks potentially difficult (e.g. the source overlapping the lens centre) | F814W (4), F606W (3), F555W (1), F160W (1) |
-| `slacs_sparse` | 40 | The remaining early-type SLACS lenses (no marked positions, or a single band) | F606W (36, plus 6 second visits), F814W (17), F160W (7), F555W (4) |
-| `slacs_late` | 2 | SLACS lenses with a late-type (spiral) deflector | F606W (2), F814W (1) |
-| `slacs_multi` | 4 | SLACS lenses with more than one deflector galaxy | F606W (4, plus 1 second visit), F814W (1), F160W (2) |
+| `slacs` | 73 | SLACS (Bolton et al. 2008; Auger et al. 2009) | F606W (57, plus 8 second visits), F814W (46), F160W (19), F555W (16) |
 | `swells` | 8 | SWELLS (Treu et al. 2011): disk-galaxy deflectors that SLACS also found | F606W (8), F160W (4), F814W (4), F450W (1) |
 | `gallery` | 15 | BELLS GALLERY (Shu et al. 2016) | F606W (15), F814W (6), F438W (6) |
 | `bells` | 21 | BELLS (Brownstein et al. 2012) | F814W (21) |
-| `sl2s_dinos_a` | 9 | SL2S (Sonnenfeld et al. 2013) + Project Dinos (Sheu et al. 2025) | F475X (9), F606W (8), F814W (3), F600LP (1), F160W (1) |
-| `sl2s_dinos_x` | 11 | as above, F475X-only lenses | F475X (11), F600LP (3) |
-| `sl2s_wf` | 10 | SL2S with older HST WFPC2 imaging | F606W (10), F475X (2), F600LP (2) |
-| `sl2s_snap` | 5 | SL2S with short "snapshot" imaging | F475X (5), F600LP (5) |
+| `dinos` | 20 | SL2S (Sonnenfeld et al. 2013) lenses re-imaged by Project Dinos (Sheu et al. 2025) | F475X (20), F606W (8), F600LP (4), F814W (3), F160W (1) |
+| `sl2s` | 15 | the other SL2S lenses: older WFPC2 or short "snapshot" imaging | F606W (10), F475X (7), F600LP (7) |
+
+Inside each sample, every lens is sorted two ways:
+
+- **`single_band` or `multi_band`**: imaged in one HST filter, or in more than one.
+- **its category**: `prime` (the cleanest systems), `complex` (harder to model: difficult
+  morphology, lens and source light blended, a low-S/N arc, a nearby companion, a second source),
+  `limited` (no marked image positions, or no lens or source redshift) and `multi_galaxy` (more
+  than one deflector galaxy). Why a lens is not prime is recorded in `info/manifest.csv`.
+
+So a lens lives in `data/stamps/<sample>/<single_band|multi_band>/<category>/<lens>/<filter>/`.
 
 That is 271 lens-and-filter images in total. A filter name gives its approximate central
 wavelength in nanometres: F438W and F450W are blue, F606W and F475X/F600LP are visible light, F814W is
@@ -54,13 +58,14 @@ The data come from four HST cameras. They differ in pixel size, so the stamps do
 | WFC3/UVIS | F438W, F475X, F600LP, F606W, F814W | 0.0396″ | 303 × 303 |
 | WFC3/IR | F160W | 0.06″ (resampled from 0.13″) | 200 × 200 |
 
-Every stamp covers a 12″ × 12″ patch of sky centred on the deflector, except `slacs_multi`, whose
-stamps are 30″ × 30″ (pixel counts scale to match) and centred on the group of deflector galaxies.
+Every stamp covers a 12″ × 12″ patch of sky centred on the deflector, except the `multi_galaxy`
+lenses, whose stamps are 30″ × 30″ (pixel counts scale to match) and centred on the group of
+deflector galaxies.
 
 ## Using the finished products
 
-Each lens and filter has one folder, `data/stamps/<sample>/<lens>/<filter>/`, for example
-`data/stamps/slacs_prime/J0029-0055/f814W/`. The files in it are:
+Each lens and filter has one folder, `data/stamps/<sample>/<band_mode>/<category>/<lens>/<filter>/`, for example
+`data/stamps/slacs/multi_band/prime/J0029-0055/f814W/`. The files in it are:
 
 | File | What it is |
 |---|---|
@@ -96,7 +101,7 @@ A minimal example in Python:
 ```python
 from astropy.io import fits
 
-band = "data/stamps/slacs_prime/J0029-0055/f814W/"
+band = "data/stamps/slacs/multi_band/prime/J0029-0055/f814W/"
 image = fits.getdata(band + "stamp12_sci.fits")
 noise = fits.getdata(band + "stamp12_noise.fits")
 psf   = fits.getdata(band + "psf.fits")
@@ -106,7 +111,19 @@ signal_to_noise = image / noise
 ```
 
 **Overview figures** tiling every lens of a sample, one sheet per filter, are in
-`data/mosaics/<sample>/` (`*_signal.png`, `*_snr.png`, `*_noise.png`, `*_psf.png`).
+`data/mosaics/<sample>/` (`*_signal.png`, `*_snr.png`, `*_noise.png`, `*_psf.png`); the tag in
+each panel's corner gives the lens's type (`SB`/`MB` single/multi band, then `P`/`C`/`L`/`MG`
+prime/complex/limited/multi_galaxy).
+
+**Downloading one sample in one filter.** `info/manifest.csv` lists every lens and filter with
+its folder. The Zenodo record has one archive per sample and one per sample and filter (e.g. all
+SLACS F606W data, whatever its category). From GitHub, a sparse checkout fetches the same slice:
+
+```bash
+git clone --filter=blob:none --no-checkout https://github.com/samlange04/HST_lenses_data_reduction
+cd HST_lenses_data_reduction && git sparse-checkout set --no-cone 'data/stamps/slacs/*/*/*/f606W*/' info/
+git checkout main
+```
 
 ### Things worth knowing before you model
 
@@ -175,16 +192,16 @@ and takes hours per sample. One command rebuilds the missing layers in the right
 can be re-run to resume after an interruption:
 
 ```bash
-uv run python scripts/regenerate_files.py --sample slacs_prime --dry-run      # show the plan, run nothing
-uv run python scripts/regenerate_files.py --sample slacs_prime --light        # quick-look PNGs only: minutes, no download
-uv run python scripts/regenerate_files.py --sample slacs_prime                # download + full re-reduction
+uv run python scripts/regenerate_files.py --sample slacs --dry-run      # show the plan, run nothing
+uv run python scripts/regenerate_files.py --sample slacs --light        # quick-look PNGs only: minutes, no download
+uv run python scripts/regenerate_files.py --sample slacs                # download + full re-reduction
 ```
 
 **Reduce one lens in one filter**, e.g. lens J0029-0055 in F814W:
 
 ```bash
-uv run python scripts/drizzle_acs_wfc.py --sample slacs_prime --lens J0029-0055 --filt f814W
-uv run python scripts/make_stamps.py    --sample slacs_prime --lens J0029-0055 --filt f814W
+uv run python scripts/drizzle_acs_wfc.py --sample slacs --lens J0029-0055 --filt f814W
+uv run python scripts/make_stamps.py    --sample slacs --lens J0029-0055 --filt f814W
 ```
 
 There is one combining script per camera (`drizzle_acs_wfc.py`, `drizzle_wfpc2_wf3.py`,
@@ -195,7 +212,7 @@ lens with no data in the requested filter prints `NO DATA` and is skipped; that 
 ## Repository layout
 
 ```
-data/stamps/<sample>/<lens>/<filter>/   the finished products (in git)
+data/stamps/<sample>/<band_mode>/<category>/<lens>/<filter>/   the finished products (in git)
 data/mosaics/<sample>/                   overview figures (in git)
 data/...                                 downloads and intermediate files (not in git, rebuildable)
 info/                                    sample lists, lens coordinates, catalogue values, and a
@@ -224,7 +241,7 @@ in `data/`, and the JSON/CSV/Markdown records in `info/` — are under
 credit as above.
 
 Please also cite the survey papers for the lenses you use (SLACS: Bolton et al. 2008, Auger
-et al. 2009, and Etherington et al. 2022 for the Gold selection behind `slacs_prime`; SWELLS: Treu et al. 2011; BELLS: Brownstein et
+et al. 2009, and Etherington et al. 2022 for the Gold grades (`etherington_gold` in the sample list); SWELLS: Treu et al. 2011; BELLS: Brownstein et
 al. 2012; BELLS GALLERY: Shu et al. 2016; SL2S:
 Sonnenfeld et al. 2013; Project Dinos: Sheu et al. 2025), and acknowledge the HST data, e.g.
 *"Based on observations made with the NASA/ESA Hubble Space Telescope, obtained from the

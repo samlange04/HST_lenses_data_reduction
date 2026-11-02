@@ -68,10 +68,10 @@ def isophote_subtract(image, pixel_scale, exclude=None, centre=None):
 
 def deflector_pixel(sci_path):
     """(col, row) of the catalogue deflector on a stamp whose centre is NOT the deflector, else
-    None (the stamp centre is then right). Only the group-centred `slacs_multi` stamps
+    None (the stamp centre is then right). Only the group-centred multi_galaxy stamps
     (`stamp_center` in lens_samples.json) qualify: centred on the group, an isophote fit started
     at the stamp centre finds no galaxy there and fails. The lens and sample are read from the
-    path, data/stamps/<sample>/<lens>/<band>/<file>."""
+    path's band dir (lens names are unique across samples)."""
     from astropy.coordinates import SkyCoord
     from astropy.io import fits
     from astropy.wcs import WCS
@@ -81,9 +81,8 @@ def deflector_pixel(sci_path):
     sys.path.insert(0, os.path.join(os.path.dirname(scripts), 'info', 'coords'))
     import mast_target_names
     from lens_coords import lens_coords
-    band_dir = os.path.dirname(os.path.abspath(sci_path))
-    lens = os.path.basename(os.path.dirname(band_dir))
-    sample = os.path.basename(os.path.dirname(os.path.dirname(band_dir)))
+    lens = os.path.basename(os.path.dirname(os.path.dirname(os.path.abspath(sci_path))))
+    sample = mast_target_names.sample_of(lens)
     try:
         if not mast_target_names.stamp_center(lens, sample) or lens not in lens_coords:
             return None
@@ -94,13 +93,24 @@ def deflector_pixel(sci_path):
     return tuple(float(v) for v in wcs.world_to_pixel(c))
 
 
+_DISPLAY_CACHE = {}
+
+
 def isophote_display(image, pixel_scale, exclude=None, smooth_px=1.5, centre=None):
     """The positions-GUI panel: the isophote residual smoothed by `smooth_px` (a Gaussian sigma)
     and its symmetric display range, so positive (lensed) light shows red and over-subtraction
     blue on the diverging map. `centre` (col, row) starts the fit off-centre (`deflector_pixel`).
-    Returns (array, vmax)."""
-    res = gaussian_filter(isophote_subtract(image, pixel_scale, exclude=exclude, centre=centre),
+    Returns (array, vmax). Memoised on the inputs, so the positions GUI's fit is reused for the
+    marked band's QC PNG written straight after it (each fit takes a few seconds)."""
+    import hashlib
+    img = np.asarray(image, dtype=float)
+    key = hashlib.sha1(img.tobytes() + (b'' if exclude is None else np.asarray(exclude, bool).tobytes())
+                       + repr((img.shape, pixel_scale, smooth_px, centre)).encode()).hexdigest()
+    if key in _DISPLAY_CACHE:
+        return _DISPLAY_CACHE[key]
+    res = gaussian_filter(isophote_subtract(img, pixel_scale, exclude=exclude, centre=centre),
                           smooth_px)
     keep = ~np.asarray(exclude, dtype=bool) if exclude is not None else np.ones(res.shape, bool)
     vmax = float(np.nanpercentile(np.abs(res[keep]), 99.5)) or 1.0
+    _DISPLAY_CACHE[key] = (res, vmax)
     return res, vmax

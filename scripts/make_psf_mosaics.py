@@ -25,7 +25,7 @@ Every sample has PSF products (info/provenance/lens_psf.json). A sample not list
 mosaic_groups.SAMPLE_GROUPS falls back to one group per filter directory found on disk.
 
 Usage:
-    uv run python scripts/make_psf_mosaics.py --sample slacs_prime
+    uv run python scripts/make_psf_mosaics.py --sample slacs
 """
 
 import argparse
@@ -75,10 +75,10 @@ def build_group(sample, precedence):
     Each kernel is located with stamp_paths.psf_stamp_dir, which pins it to the
     default-size tree (the kernel is not size-keyed - see stamp_paths.py)."""
     entries = []
-    lenses = sorted({os.path.basename(d)
-                     for d in glob.glob(os.path.join(
-                         stamp_paths.stamps_root(ws_path), sample, '*'))
-                     if os.path.isdir(d)})
+    # sorted by <band_mode>/<category>/<lens>, the order make_mosaics.py tiles them in
+    lenses = [os.path.basename(d)
+              for d in sorted(glob.glob(stamp_paths.lens_glob(stamp_paths.stamps_root(ws_path), sample)))
+              if os.path.isdir(d)]
     for lens in lenses:
         for filt in precedence:
             band_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
@@ -103,7 +103,7 @@ def build_group(sample, precedence):
                 label, group = f'{lens} [{short}] {tag}', short.split('_')[0]
             else:
                 label, group = f'{lens} {tag}', None
-            entries.append((lens, label, data, group))
+            entries.append((lens, label, data, group))   # lens kept for the sub-type tag
             break
     return entries
 
@@ -116,8 +116,8 @@ def main():
                         f'info/samples/lens_samples.json (default {mast_target_names.DEFAULT_SAMPLE})')
     a = p.parse_args()
 
-    stamps_dir = os.path.join(ws_path, 'data', 'stamps', a.sample)
-    out_dir = os.path.join(ws_path, 'data', 'mosaics', a.sample)
+    stamps_dir = os.path.join(stamp_paths.stamps_root(ws_path), a.sample)
+    out_dir = os.path.join(stamp_paths.mosaics_root(ws_path), a.sample)
     os.makedirs(out_dir, exist_ok=True)
 
     groups = mosaic_groups.groups_for_sample(a.sample, stamps_dir)
@@ -127,7 +127,8 @@ def main():
             print(f"{group_name}: no PSF kernels found for sample {a.sample}, skipping")
             continue
 
-        entries = [{'label': label} for _, label, _, _ in entries_raw]
+        entries = [{'label': label, 'tag': mast_target_names.layout_tag(lens)}
+                   for lens, label, _, _ in entries_raw]
         arrays = [data for _, _, data, _ in entries_raw]
         raw_groups = [group for _, _, _, group in entries_raw]
         split_by = raw_groups if any(g is not None for g in raw_groups) else None

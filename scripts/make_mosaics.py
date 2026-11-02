@@ -3,7 +3,7 @@
 Tile every lens's stamp into per-filter-group QC mosaics.
 
 Reads the postage stamps already written by make_stamps.py
-(data/stamps/<sample>/<lens>/<filt>/stamp12_{sci,noise}.fits) and lays every
+(data/stamps/<sample>/<band_mode>/<category>/<lens>/<filt>/stamp12_{sci,noise}.fits) and lays every
 available lens out on a 5-wide grid, one mosaic per (filter group, data type). Nothing
 is re-drizzled or re-cut - this only reads existing stamp FITS files.
 
@@ -28,8 +28,8 @@ data/mosaics_<size>arcsec/ instead, mirroring make_stamps.py so the two sizes' Q
 never overwrite each other -- see stamp_paths.py.
 
 Usage:
-    uv run python scripts/make_mosaics.py --sample slacs_prime
-    uv run python scripts/make_mosaics.py --sample slacs_prime --size 20
+    uv run python scripts/make_mosaics.py --sample slacs
+    uv run python scripts/make_mosaics.py --sample slacs --size 20
 """
 
 import argparse
@@ -104,7 +104,7 @@ def build_group(stamps_dir, precedence):
     F606W is itself far noisier than ACS F555W), so those mosaics split the colourbar
     per instrument rather than share one."""
     entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(stamps_dir, '*'))):
+    for lens_dir in sorted(glob.glob(os.path.join(stamps_dir, '*', '*', '*'))):   # <mode>/<category>/<lens>
         lens = os.path.basename(lens_dir)
         for filt in precedence:
             band_dir = os.path.join(lens_dir, filt)
@@ -325,6 +325,12 @@ def plot_mosaic(entries, arrays, title_key, out_path, panel_label, split_by=None
         ax.text(0.5, 0.97, label, transform=ax.transAxes, ha='center', va='top',
                 color='white', fontsize=TITLE_FONTSIZE,
                 path_effects=[pe.withStroke(linewidth=3, foreground='black')])
+        # The lens's sub-type (MB/SB multi/single band - P/C/L/MG prime/complex/limited/
+        # multi_galaxy), bottom-left: one mosaic covers every band mode and category of a sample.
+        if entries[i].get('tag'):
+            ax.text(0.03, 0.03, entries[i]['tag'], transform=ax.transAxes, ha='left',
+                    va='bottom', color='white', fontsize=TITLE_FONTSIZE, fontweight='bold',
+                    path_effects=[pe.withStroke(linewidth=3, foreground='black')])
 
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005,
                         wspace=0.02, hspace=0.02)
@@ -426,7 +432,8 @@ def main():
             print(f"{group_name}: no stamps found under {stamps_dir}, skipping")
             continue
 
-        entries = [{'lens': lens, 'label': label} for lens, label, _, _, _ in entries_raw]
+        entries = [{'lens': lens, 'label': label, 'tag': mast_target_names.layout_tag(lens)}
+                   for lens, label, _, _, _ in entries_raw]
         groups = [group for _, _, _, _, group in entries_raw]
         # Only split the colourbar when the group actually mixes >1 instrument -
         # f814W/f160W are single-instrument, so groups is all-None there.

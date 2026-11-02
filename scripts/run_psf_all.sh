@@ -63,7 +63,7 @@ fi
 METHOD_ARG=""; [ "$MODE" = empirical ] && METHOD_ARG="--method empirical"
 ok=0; fail=0; skip=0
 for filt in f606W f814W f555W f160W f438W f450W f475X f600LP; do
-  for d in "$WS"/data/drizzled/"$SAMPLE"/*/"$filt"*; do
+  for d in "$WS"/data/drizzled/"$SAMPLE"/*/*/*/"$filt"*; do
     [ -d "$d" ] || continue
     ls "$d"/*_sci.fits >/dev/null 2>&1 || continue
     lens=$(basename "$(dirname "$d")")

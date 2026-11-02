@@ -53,7 +53,7 @@ ok=0; fail=0
 # sample. make_stamps reads the centre band's *mosaic*, not its stamp, so the order only
 # needs that drizzle to exist -- which the drizzle phase guarantees.
 for filt in f606W f814W f555W f160W f438W f450W f475X f600LP; do
-  for d in "$WS"/data/"$DZ"/"$SAMPLE"/*/"$filt"*; do
+  for d in "$WS"/data/"$DZ"/"$SAMPLE"/*/*/*/"$filt"*; do
     [ -d "$d" ] || continue
     # Any final drizzle product (CR or no-CR) means the mosaic exists and is cuttable.
     # Must NOT key on *nocrrej* specifically: ACS/WFPC2 now default to a CR-only pass, so

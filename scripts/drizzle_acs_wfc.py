@@ -272,14 +272,14 @@ if _cr_ovr:
 # what a later PSF-injection re-drizzle of the *standard* product reads back.
 _variant    = '_'.join([t for t, on in (('bcfill', _a.bcfill), ('crfill', _a.crfill),
                                        ('drop', bool(_excluded))) if on])
-data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant), sample, lens, filt)
+data_path   = os.path.join(ws_path, 'data', 'calibrated', stamp_paths.lens_rel(sample, lens), filt)
+output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant), stamp_paths.lens_rel(sample, lens), filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
 # output FITS is written) onto a different volume/backing store — used to isolate the
 # APFS-write U-state hang (e.g. point it at a RAM disk). Falls back to the in-repo path.
 _work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(
     ws_path, 'data', f'drizzle_files{stamp_paths.variant_tag(_variant)}')
-work_path   = os.path.join(_work_root, sample, lens, filt)
+work_path   = os.path.join(_work_root, stamp_paths.lens_rel(sample, lens), filt)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────

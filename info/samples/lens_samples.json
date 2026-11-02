@@ -1,258 +1,586 @@
 {
-    "slacs_prime": {
-        "description": "SLACS (Bolton et al. 2008) lenses graded \"Gold\" by Etherington et al. 2022 (MNRAS 517, 3275), with marked image positions and no morphology difficulty flagged by eye. The working sample and the default --sample. Split from slacs_gold on 2026-10-29: Gold minus the lenses with deliberately empty positions (-> slacs_sparse), minus those judged by eye to have potentially difficult morphology such as a source overlapping the lens centre (-> slacs_complex), minus late-type (-> slacs_late) and SWELLS (-> swells) deflectors.",
+    "slacs": {
+        "description": "SLACS lenses (Bolton et al. 2008 Table 4; Auger et al. 2009, SLACS IX): all 85 Auger+2009 grade-A lenses except the SWELLS disk deflectors (-> swells) and J1618+4353 (a single 420 s SNAP frame, below the exposure gate). 76 lenses, 3 of them with no usable HST imaging (J0109+1500, J0405-0455, J1259+6134). `etherington_gold` marks the 38 graded Gold by Etherington et al. 2022 (MNRAS 517, 3275). The default --sample. Merged on 2026-11-02 from slacs_prime, slacs_complex, slacs_sparse, slacs_late and slacs_multi (which on 2026-10-29 replaced slacs_gold and slacs_other); each lens's `note` keeps its Bolton class and Auger morphology.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
-            "J0029-0055": {},
+            "J0008-0004": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam, 2026-10-29)",
+                "etherington_gold": true
+            },
+            "J0029-0055": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0037-0942": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J0044+0113": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "lens-source blending"
+            },
+            "J0109+1500": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "no usable HST data: stays in the roster, no data directory"
+            },
+            "J0157-0056": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true
+            },
             "J0216-0813": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
                 "mast_target": "GAL-0668-52162-428"
             },
-            "J0252+0039": {},
-            "J0330-0020": {},
-            "J0728+3835": {},
+            "J0252+0039": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0330-0020": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0405-0455": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "no usable HST data: stays in the roster, no data directory"
+            },
+            "J0728+3835": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
             "J0737+3216": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
                 "mast_target": "GAL-0541-51959-145"
             },
-            "J0822+2652": {},
-            "J0903+4116": {},
-            "J0946+1006": {},
-            "J0956+5100": {
-                "mast_target": "GAL-0902-52409-068"
-            },
-            "J0959+0410": {
-                "mast_target": "GAL-0572-52289-495"
-            },
-            "J1020+1122": {},
-            "J1023+4230": {},
-            "J1205+4910": {
-                "mast_target": "GAL-0969-52442-134"
-            },
-            "J1250+0523": {
-                "mast_target": "GAL-0847-52426-549"
-            },
-            "J1430+4105": {},
-            "J1451-0239": {},
-            "J1525+3327": {},
-            "J1627-0053": {
-                "mast_target": "GAL-0364-52000-084"
-            },
-            "J1630+4520": {
-                "mast_target": "GAL-0626-52057-518"
-            },
-            "J2238-0754": {
-                "mast_target": "GAL-0722-52224-442"
-            },
-            "J2303+1422": {
-                "mast_target": "GAL-0743-52262-304"
-            },
-            "J2341+0000": {}
-        }
-    },
-    "slacs_complex": {
-        "description": "SLACS lenses with marked image positions whose morphology was judged by eye (2026-10-29) to be potentially difficult, e.g. a source overlapping the lens centre: Gold lenses J0008-0004, J1218+0830, J1420+6019. Also the non-Gold SLACS lenses (Bolton et al. 2008 Table 4, E-S-A) that have marked positions and ACS F814W plus F555W or F606W: J1153+4612. Split from slacs_gold/slacs_other on 2026-10-29.",
-        "coords": "info/coords/slacs_coords.py",
-        "lenses": {
-            "J0008-0004": {},
-            "J1153+4612": {},
-            "J1218+0830": {},
-            "J1420+6019": {
-                "mast_target": "GAL-0788-52338-605"
-            }
-        }
-    },
-    "slacs_sparse": {
-        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Also the 11 early-type (E, S0, E/S0) Auger et al. 2009 grade-A lenses added 2026-10-29: five Bolton grade-B lenses Auger promoted (J0819+4534, J1029+6115, J1330-0148, J1614+4522, J2347-0005) and six of Auger's new WFPC2 targets (J1306+0600, J1313+4615, J1318-0313, J1644+2625, J1709+2324, J1719+2939) and J1319+1504 (moved from slacs_multi 2026-10-30). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
-        "coords": "info/coords/slacs_coords.py",
-        "lenses": {
-            "J0037-0942": {},
-            "J0044+0113": {},
-            "J0109+1500": {},
-            "J0157-0056": {},
-            "J0405-0455": {},
-            "J0819+4534": {
-                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
-            },
-            "J0912+0029": {
-                "mast_target": "GAL-0472-51955-429"
-            },
-            "J0935-0003": {},
-            "J0936+0913": {},
-            "J0959+4416": {},
-            "J1016+3859": {
-                "force_copy": true
-            },
-            "J1029+6115": {
-                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A (IFU-confirmed; Auger has no lens model); Auger morph E."
-            },
-            "J1100+5329": {},
-            "J1106+5228": {},
-            "J1112+0826": {},
-            "J1134+6027": {},
-            "J1142+1001": {},
-            "J1143-0144": {},
-            "J1204+0358": {},
-            "J1213+6708": {},
-            "J1259+6134": {},
-            "J1306+0600": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
-            },
-            "J1313+4615": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
-            },
-            "J1318-0313": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
-            },
-            "J1319+1504": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger: needs special subtraction for nearby galaxies in the field. Auger morph E/S0. In slacs_multi 2026-10-29/30, moved to slacs_sparse 2026-10-30: its nearby objects are minor (a compact satellite at 1.77\" with 1.0% of the deflector light, about as red as the deflector; a bluer stream and knot at 4.7-6.7\", each <= 1.7%), so an external-shear term covers them (SIS-scaled shear ~0.03 and ~0.01). Auger's remark is about light subtraction, and Auger does not flag it E*."
-            },
-            "J1330-0148": {
-                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph S0."
-            },
-            "J1402+6321": {
-                "mast_target": "GAL-0605-52353-503"
-            },
-            "J1403+0006": {},
-            "J1416+5136": {},
-            "J1436-0000": {},
-            "J1443+0304": {},
-            "J1531-0105": {},
-            "J1538+5817": {},
-            "J1614+4522": {
-                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
-            },
-            "J1621+3931": {},
-            "J1636+4707": {},
-            "J1644+2625": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
-            },
-            "J1709+2324": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
-            },
-            "J1719+2939": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0."
-            },
-            "J2300+0022": {
-                "mast_target": "GAL-0677-52606-520"
-            },
-            "J2302-0840": {},
-            "J2321-0939": {},
-            "J2347-0005": {
-                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
-            }
-        }
-    },
-    "slacs_late": {
-        "description": "SLACS lenses whose deflector is late-type and which are not SWELLS lenses: J1432+6317 (Bolton et al. 2008 Table 4 morphology L, Sa and later) and J1250-0135 (Bolton U-S-A*, Table 6: 'complicated by spiral structure and asymmetric bulge'; Auger et al. 2009 morph S0/SA; added 2026-10-29). Created 2026-10-29.",
-        "coords": "info/coords/slacs_coords.py",
-        "lenses": {
-            "J1250-0135": {
-                "note": "Bolton 2008 U-S-A*; Table 6: complicated by spiral structure and asymmetric bulge in the foreground galaxy. Auger morph S0/SA. WFPC2 F606W only (GO-10798)."
-            },
-            "J1432+6317": {}
-        }
-    },
-    "slacs_multi": {
-        "description": "SLACS lenses with more than one deflector galaxy (group-scale or multi-galaxy): the Bolton et al. 2008 Table 4 grade-A lenses of class E-M-A* (early-type, multiple foreground galaxies, definite lens), which the original E/L-S-A selection excluded. J0808+4706 (Bolton Table 6: 'nearby companion prevents simple SIE modeling'; ACS F814W GO-10886, WFPC2 F606W and WFC3/IR F160W GO-11202) and J1718+6424 ('double foreground galaxy'; WFPC2 F606W GO-10798 only). The third, J1618+4353 ('double foreground galaxy'), has only the 420 s SNAP F814W/F435W (GO-10174), below BLOCK_EXPTIME, so it is not in the roster. Also J1436+3640, an Auger et al. 2009 grade-A lens with morphology E* ('at least one close companion galaxy'): WFPC2 F606W from GO-10886 and GO-11202 plus WFC3/IR F160W. (J1319+1504 was here 2026-10-29/30 and moved to slacs_sparse: its nearby objects carry <= 2% of its light.) Also J2343-0030 (Auger 2009 grade A; an edge-on disk companion 7.3\" away with ~57% of its light; moved from slacs_sparse 2026-11-01). Stamps are 30\" (sample-level stamp_size; the group light is still ~1.2-1.5% of the centre at r = 10\"), centred on the light-weighted centroid of each lens's member galaxies (per-lens stamp_center, 2026-10-30), so the whole group is in the stamp. Created 2026-10-29.",
-        "coords": "info/coords/slacs_coords.py",
-        "stamp_size": 30,
-        "lenses": {
             "J0808+4706": {
+                "band_mode": "multi_band",
+                "category": "multi_galaxy",
+                "category_reason": "Bolton E-M-A* (companion)",
                 "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: nearby companion prevents simple SIE modeling. stamp_center = light-weighted centroid (0.5\" apertures, f814W) of the member galaxies: 08:08:58.793 +47:06:38.734 (flux 1.00); 08:08:58.720 +47:06:40.507 (flux 0.41).",
                 "stamp_center": [
                     "08:08:58.771",
                     "+47:06:39.252"
-                ]
+                ],
+                "stamp_size": 30
+            },
+            "J0819+4534": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)",
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
+            },
+            "J0822+2652": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0903+4116": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0912+0029": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true,
+                "mast_target": "GAL-0472-51955-429"
+            },
+            "J0935-0003": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "lens-source blending"
+            },
+            "J0936+0913": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true
+            },
+            "J0946+1006": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J0956+5100": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0902-52409-068"
+            },
+            "J0959+0410": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0572-52289-495"
+            },
+            "J0959+4416": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1016+3859": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "force_copy": true
+            },
+            "J1020+1122": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "two large galaxies on one side; mask boundary uncertain in every band",
+                "etherington_gold": true
+            },
+            "J1023+4230": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J1029+6115": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A (IFU-confirmed; Auger has no lens model); Auger morph E."
+            },
+            "J1100+5329": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "nearby emission masked"
+            },
+            "J1106+5228": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1112+0826": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "lens-source blending"
+            },
+            "J1134+6027": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1142+1001": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam); positions now marked",
+                "etherington_gold": true
+            },
+            "J1143-0144": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true
+            },
+            "J1153+4612": {
+                "band_mode": "multi_band",
+                "category": "prime"
+            },
+            "J1204+0358": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1205+4910": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0969-52442-134"
+            },
+            "J1213+6708": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true
+            },
+            "J1218+0830": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam, 2026-10-29)",
+                "etherington_gold": true
+            },
+            "J1250+0523": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0847-52426-549"
+            },
+            "J1250-0135": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "note": "Bolton 2008 U-S-A*; Table 6: complicated by spiral structure and asymmetric bulge in the foreground galaxy. Auger morph S0/SA. WFPC2 F606W only (GO-10798)."
+            },
+            "J1259+6134": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "no usable HST data: stays in the roster, no data directory"
+            },
+            "J1306+0600": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1313+4615": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1318-0313": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1319+1504": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger: needs special subtraction for nearby galaxies in the field. Auger morph E/S0. In slacs_multi 2026-10-29/30, moved to slacs_sparse 2026-10-30: its nearby objects are minor (a compact satellite at 1.77\" with 1.0% of the deflector light, about as red as the deflector; a bluer stream and knot at 4.7-6.7\", each <= 1.7%), so an external-shear term covers them (SIS-scaled shear ~0.03 and ~0.01). Auger's remark is about light subtraction, and Auger does not flag it E*."
+            },
+            "J1330-0148": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "lens-source blending",
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph S0."
+            },
+            "J1402+6321": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true,
+                "mast_target": "GAL-0605-52353-503"
+            },
+            "J1403+0006": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1416+5136": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1420+6019": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam); LACosmic tuned to keep an arc knot",
+                "etherington_gold": true,
+                "mast_target": "GAL-0788-52338-605"
+            },
+            "J1430+4105": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J1432+6317": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "late-type spiral deflector (Bolton L; by-eye list)",
+                "etherington_gold": true
             },
             "J1436+3640": {
+                "band_mode": "multi_band",
+                "category": "multi_galaxy",
+                "category_reason": "Auger E* (close companions)",
                 "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger morph E* (at least one close companion galaxy) and needs special subtraction for nearby galaxies. stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 14:36:05.857 +36:40:46.134 (flux 1.00); 14:36:05.617 +36:40:47.445 (flux 0.85); 14:36:05.630 +36:40:46.335 (flux 0.53). stamp_size 30 (2026-10-30): its group light is still 1.5% of the centre at r = 10\", the edge of a 20\" stamp (0.27% at 15\").",
                 "stamp_center": [
                     "14:36:05.721",
                     "+36:40:46.646"
-                ]
+                ],
+                "stamp_size": 30
+            },
+            "J1436-0000": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1443+0304": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "lens-source blending"
+            },
+            "J1451-0239": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "f555W mask provisional; mask pulled back off image A",
+                "etherington_gold": true
+            },
+            "J1525+3327": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
+            },
+            "J1531-0105": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1538+5817": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "features C1/C2 near the ring unresolved (spiral arm vs lensed)"
+            },
+            "J1614+4522": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
+            },
+            "J1621+3931": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1627-0053": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0364-52000-084"
+            },
+            "J1630+4520": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0626-52057-518"
+            },
+            "J1636+4707": {
+                "band_mode": "multi_band",
+                "category": "prime"
+            },
+            "J1644+2625": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
+            },
+            "J1709+2324": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "low arc S/N",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
             },
             "J1718+6424": {
+                "band_mode": "single_band",
+                "category": "multi_galaxy",
+                "category_reason": "Bolton E-M-A* (double foreground galaxy)",
                 "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: double foreground galaxy. WFPC2 F606W only (GO-10798). stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 17:18:37.420 +64:24:51.949 (flux 1.00); 17:18:37.179 +64:24:50.652 (flux 0.41).",
                 "stamp_center": [
                     "17:18:37.350",
                     "+64:24:51.571"
-                ]
+                ],
+                "stamp_size": 30
+            },
+            "J1719+2939": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0."
+            },
+            "J2238-0754": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0722-52224-442"
+            },
+            "J2300+0022": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true,
+                "mast_target": "GAL-0677-52606-520"
+            },
+            "J2302-0840": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J2303+1422": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true,
+                "mast_target": "GAL-0743-52262-304"
+            },
+            "J2321-0939": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J2341+0000": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "etherington_gold": true
             },
             "J2343-0030": {
+                "band_mode": "single_band",
+                "category": "multi_galaxy",
+                "category_reason": "edge-on companion 7.3\", ~57% of the light",
                 "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0. Moved to slacs_multi 2026-11-01: an edge-on disk companion 7.3\" SW carries ~57% of the deflector's light (SDSS r 17.85 vs 17.23) at photo-z 0.162 +/- 0.014 (lens 0.181), SIS-scaled shear ~0.09, the regime BELLS J1337+3620 was removed for. stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 23:43:58.863 -00:30:21.973 (flux 1.00); 23:43:58.688 -00:30:28.805 (flux 0.33).",
                 "stamp_center": [
                     "23:43:58.820",
                     "-00:30:23.659"
-                ]
+                ],
+                "stamp_size": 30
+            },
+            "J2347-0005": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex source structure",
+                "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
             }
         }
     },
     "swells": {
-        "description": "SWELLS lenses (Treu et al. 2011; Brewer et al. 2012): high-inclination disk deflectors, lenticular to late-type spiral. Today only the six that SLACS also found and that were already reduced here: J0841+3824, J1029+0420, J1032+5322 (Etherington Gold), J0955+0101, J1251-0208, J2141-0001. Bolton et al. 2008 classes all but J1029+0420 as late-type. J1103+5322 (Bolton U-S-A, excluded by the original class rule) and J1313+0506 (Bolton L-S-B, promoted to grade A by Auger et al. 2009) were added 2026-10-29. The SWELLS-only grade-A lenses (GO-11978 WFPC2, GO-12292 ACS) are not yet reduced. Created 2026-10-29.",
+        "description": "SWELLS lenses (Treu et al. 2011; Brewer et al. 2012): high-inclination disk deflectors, lenticular to late-type spiral. Today the eight that SLACS also found: J0841+3824, J1029+0420, J1032+5322 (Etherington Gold), J0955+0101, J1251-0208, J2141-0001, J1103+5322 (Bolton U-S-A) and J1313+0506 (Bolton L-S-B, Auger grade A). The SWELLS-only grade-A lenses (GO-11978, GO-12292) are not yet reduced.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
-            "J0841+3824": {},
-            "J0955+0101": {},
-            "J1029+0420": {},
+            "J0841+3824": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty",
+                "etherington_gold": true
+            },
+            "J0955+0101": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J1029+0420": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam)",
+                "etherington_gold": true
+            },
             "J1032+5322": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "by-eye difficult morphology (Sam)",
+                "etherington_gold": true,
                 "force_copy": true
             },
             "J1103+5322": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)",
                 "note": "Bolton 2008 U-S-A; SWELLS grade A. Auger morph S0/SA."
             },
-            "J1251-0208": {},
+            "J1251-0208": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "spiral deflector, two-armed structure left unmasked"
+            },
             "J1313+0506": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "theta_E 0.53 +- 0.23\" (Brewer+2012), pair at 0.43/0.46\" from the review",
                 "note": "Bolton 2008 L-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A (spectroscopically confirmed; no Auger lens model); SWELLS grade A. Auger morph S."
             },
-            "J2141-0001": {}
+            "J2141-0001": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            }
         }
     },
     "gallery": {
-        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F438W, F606W, F814W; the F225W/F275W products were found unusable for lens science and deleted 2026-09-29). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) \u2014 L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduced with drizzle_wfc3_uvis.py.",
+        "description": "BELLS GALLERY (HST proposals 14189, 16734), WFC3/UVIS multi-band (F438W, F606W, F814W; the F225W/F275W products were found unusable for lens science and deleted 2026-09-29). Restricted to Shu et al. 2016 Table 1 classification E-S-A (early-type, single lens, clear multiple imaging) — L-S-X, E-M-A, E-S-X, and E-S-M systems excluded. mast_target holds each lens's full SDSS coordinate designation, the MAST target name for this sample (see 'Non-standard MAST target names' in AGENTS.md). Reduced with drizzle_wfc3_uvis.py.",
         "coords": "info/coords/gallery_coords.py",
         "lenses": {
             "J0029+2544": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SDSSJ002927.38+254401.7"
             },
             "J0201+3228": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SDSSJ020121.39+322829.6"
             },
             "J0237-0641": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "low S/N",
                 "mast_target": "SDSSJ023740.63-064112.9"
             },
             "J0742+3341": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SDSSJ074249.68+334148.9"
             },
             "J0755+3445": {
-                "mast_target": "SDSSJ075523.52+344539.5"
+                "band_mode": "multi_band",
+                "category": "multi_galaxy",
+                "category_reason": "companion galaxy; needs shear 0.24 (Shu+2016) (Sam, 2026-11-02)",
+                "mast_target": "SDSSJ075523.52+344539.5",
+                "note": "multi_galaxy (Sam, 2026-11-02): an extended galaxy 5.8\" away (07:55:23.294 +34:45:34.39, r_half 0.6\", ~2.9x the deflector light within 1.5\" in F814W) is the companion behind Shu+2016's shear of 0.24. stamp_center = light-weighted centroid (0.5\" apertures, F814W) of the members with >= 25% of the brightest: that galaxy (flux 1.00), the deflector 07:55:23.513 +34:45:39.46 (0.44) and an object 8.7\" N (07:55:23.095 +34:45:46.39, 0.28); 3.0\" from the deflector. stamp_size 30, as the SLACS multi_galaxy lenses.",
+                "stamp_center": [
+                    "07:55:23.318",
+                    "+34:45:37.639"
+                ],
+                "stamp_size": 30
             },
             "J0856+2010": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "nearby companion",
                 "mast_target": "SDSSJ085621.59+201040.5"
             },
             "J0918+5104": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "cusp quad; galaxy-model-limited (~10 sigma dipole); diffuse patch open",
                 "mast_target": "SDSSJ091859.21+510452.5"
             },
             "J1110+2808": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SDSSJ111027.11+280838.4"
             },
             "J1110+3649": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SDSSJ111040.42+364924.4"
             },
             "J1116+0915": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "contaminant 1.35\" between the images; demagnified counter-image",
                 "mast_target": "SDSSJ111634.55+091503.0"
             },
             "J1141+2216": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SDSSJ114154.71+221628.8"
             },
             "J1201+4743": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "light of a massive nearby companion",
                 "mast_target": "SDSSJ120159.02+474323.2"
             },
             "J1226+5457": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "needs shear 0.15 (Shu+2016); 7-knot source",
                 "mast_target": "SDSSJ122656.45+545739.0"
             },
             "J2228+1205": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SDSSJ222825.76+120503.9"
             },
             "J2342-0120": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "mask pulled back: contaminant vs source light",
                 "mast_target": "SDSSJ234248.68-012032.5"
             }
         }
@@ -261,145 +589,111 @@
         "description": "BELLS (Brownstein et al. 2012), HST GO-12209, ACS/WFC F814W (~2200-2400 s per lens). Restricted to Brownstein et al. 2012 Table 3 classification E-S-A or L-S-A (early- or late-type, single lens, clear multiple imaging; 21 + 3), the same rule as the non-Gold SLACS lenses (originally the slacs_other sample). J1522+2910 (E-M-A) and all grade B/C/X systems excluded. Disjoint from gallery by construction (BELLS sources are [OII]/Hb/[OIII] emitters at z_s < 1.5). MAST target names are the short SDSS<LENS> form, so no mast_target overrides. Reduced, masked and positions marked (2026-10-22). J1337+3620 was REMOVED 2026-10-14: a multi-deflector system -- a companion 5.24\" away (SDSS z_phot 0.59+/-0.10 vs z_lens 0.564), with 35-50% of the deflector's light, would need its own mass component. J1349+3612 was REMOVED 2026-10-14: a multi-deflector system -- a same-redshift companion 3.9\" away (DESI z=0.4412 vs z_lens 0.4396, dv~330 km/s), ~80% of the deflector's light; Tan+2024 fits external shear 0.17. J1542+1629 was REMOVED 2026-10-22: its contaminant mask (the masked neighbouring galaxy) reaches in to 1.08\", past theta_E = 1.04\", so the mask cuts into the Einstein-ring annulus.",
         "coords": "info/coords/bells_coords.py",
         "lenses": {
-            "J0151+0049": {},
-            "J0747+4448": {},
-            "J0747+5055": {},
-            "J0801+4727": {},
-            "J0830+5116": {},
-            "J0944-0147": {},
-            "J1159-0007": {},
-            "J1215+0047": {},
-            "J1221+3806": {},
-            "J1234-0241": {},
-            "J1318-0104": {},
-            "J1352+3216": {},
-            "J1541+1812": {},
-            "J1545+2748": {},
-            "J1601+2138": {},
-            "J1611+1705": {},
-            "J1631+1854": {},
-            "J1637+1439": {},
-            "J2122+0409": {},
-            "J2125+0411": {},
-            "J2303+0037": {}
-        }
-    },
-    "sl2s_dinos_a": {
-        "description": "SL2S lenses with deep WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025) PLUS a second band: WFPC2 F606W (GO-11289, lens on WF3) or ACS F814W (GO-10876). F475X is restricted to GO-17130 (proposals quirk). Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
-        "coords": "info/coords/sl2s_coords.py",
-        "uvis_filters": [
-            "f475X",
-            "f600LP"
-        ],
-        "center_bands": [
-            "f814W",
-            "f606W",
-            "f600LP",
-            "f475X"
-        ],
-        "lenses": {
-            "J0214-0405": {
-                "mast_target": "SL2SJ021411-040502",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). GO-10876 ACS F814W 2x400 s; its F606W is a single 400 s frame (exposure gate blocks it)."
+            "J0151+0049": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
             },
-            "J0217-0513": {
-                "mast_target": "SL2SJ021737-051329",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "archive_proposals": {
-                    "f814W": [
-                        "12064"
-                    ],
-                    "f606W": [
-                        "12064"
-                    ],
-                    "f160W": [
-                        "12064"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W)."
+            "J0747+4448": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "bright-star diffraction spikes masked; two nearby galaxies"
             },
-            "J0226-0420": {
-                "mast_target": "SL2SJ022610-042011",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X)."
+            "J0747+5055": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "Tan+2024 foreground mask"
             },
-            "J0232-0408": {
-                "mast_target": "SL2SJ023251-040823",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X)."
+            "J0801+4727": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
             },
-            "J0904-0059": {
-                "mast_target": "SL2SJ090407-005952",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "stamp_box": 30,
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). stamp_box 30: in F606W (its centre band) the arc outshines the deflector, and the default 100 px search centred the stamps on the arc 1.76\" off."
+            "J0830+5116": {
+                "band_mode": "single_band",
+                "category": "prime"
             },
-            "J0959+0206": {
-                "mast_target": "SL2SJ095921+020638",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "archive_proposals": {
-                    "f814W": [
-                        "9822"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: WFPC2 F606W was chosen (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14: the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals."
+            "J0944-0147": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
             },
-            "J1359+5535": {
-                "mast_target": "SL2SJ135949+553550",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X)."
+            "J1159-0007": {
+                "band_mode": "single_band",
+                "category": "prime"
             },
-            "J1405+5243": {
-                "mast_target": "SL2SJ140546+524311",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it."
+            "J1215+0047": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "Tan+2024 foreground mask"
             },
-            "J1406+5226": {
-                "mast_target": "SL2SJ140650+522619",
-                "proposals": {
-                    "f475X": [
-                        "17130"
-                    ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X)."
+            "J1221+3806": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1234-0241": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1318-0104": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "Tan+2024 foreground mask"
+            },
+            "J1352+3216": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "Tan+2024 foreground mask"
+            },
+            "J1541+1812": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J1545+2748": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J1601+2138": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1611+1705": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty"
+            },
+            "J1631+1854": {
+                "band_mode": "single_band",
+                "category": "prime"
+            },
+            "J1637+1439": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J2122+0409": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J2125+0411": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "complex (Sam)"
+            },
+            "J2303+0037": {
+                "band_mode": "single_band",
+                "category": "prime"
             }
         }
     },
-    "sl2s_dinos_x": {
-        "description": "SL2S lenses whose only deep band is WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu+2025). J0233-0438 (GO-17130, not a Dinos II lens) was REMOVED 2026-10-14: both F475X visits failed (EXPFLAG TDF-DOWN AT EXPSTART, blank sky at the lens) -- see AGENTS.md *SL2S samples*. J0848-0351 was REMOVED 2026-10-24: not a real grade-A lens. Its SL2S III grade A (Table 6, HST=N) came from CFHT imaging plus the source redshift, before any HST data; the GO-17130 F475X shows a single arc on one side and no counter-image (as in Dinos II Fig. A2, whose theta_E 0.93+/-0.04\" and q=0.43 are among the weakest constraints in the sample), so it fails SL2S III's own HST grade-A test of a visible multiple-image pair. J0219-0829, J0849-0412 and J2203+0205 also keep the GO-11588 snapshot F600LP. F475X is restricted to GO-17130. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
+    "dinos": {
+        "description": "SL2S lenses with deep WFC3/UVIS F475X from GO-17130 (Project Dinos II, Sheu et al. 2025), with or without a second band (WFPC2 F606W GO-11289, ACS F814W GO-10876, or the GO-11588 F600LP snapshot). F475X is restricted to GO-17130 (proposals quirk). Merged on 2026-11-02 from sl2s_dinos_a (9, with a second band) and sl2s_dinos_x (11, F475X the only deep band). J0233-0438 (2026-10-14, failed visits) and J0848-0351 (2026-10-24, not a grade-A lens) were removed; see AGENTS.md *SL2S samples*.",
         "coords": "info/coords/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -413,167 +707,260 @@
         ],
         "lenses": {
             "J0205-0930": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "extended source structure",
                 "mast_target": "SL2SJ020524-093023",
+                "note": "Not in Sonnenfeld+2013; grade A in Sonnenfeld+2015 Table 3. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Not in Sonnenfeld+2013; grade A in Sonnenfeld+2015 Table 3. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
+                }
             },
             "J0212-0555": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SL2SJ021247-055552",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N (no HST in 2013). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on a compact knot 2.57\" from the deflector, outside the Einstein ring. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
                 },
-                "stamp_box": 20,
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N (no HST in 2013). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on a compact knot 2.57\" from the deflector, outside the Einstein ring. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector."
+                "stamp_box": 20
+            },
+            "J0214-0405": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "mast_target": "SL2SJ021411-040502",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). GO-10876 ACS F814W 2x400 s; its F606W is a single 400 s frame (exposure gate blocks it).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
+            },
+            "J0217-0513": {
+                "archive_proposals": {
+                    "f814W": [
+                        "12064"
+                    ],
+                    "f606W": [
+                        "12064"
+                    ],
+                    "f160W": [
+                        "12064"
+                    ]
+                },
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "double source plane (Tu+2009)",
+                "mast_target": "SL2SJ021737-051329",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). F814W, F606W and F160W all from GO-12064 (CANDELS UDS) via archive_proposals (2026-10-04); the GO-10876, GO-12328 and GO-13792 F814W visits are not used. Its ACS F606W is drizzled by a direct drizzle_acs_wfc.py --filt f606W call (run_acs_all.sh does not loop F606W).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
             },
             "J0218-0802": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SL2SJ021801-080247",
+                "note": "Grade B in Sonnenfeld+2013 Table 6, upgraded to A in Sonnenfeld+2015 Sect. 2 (spectroscopy puts lens and arc at different redshifts). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on a ring knot 0.74\" off. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
                 },
-                "stamp_box": 20,
-                "note": "Grade B in Sonnenfeld+2013 Table 6, upgraded to A in Sonnenfeld+2015 Sect. 2 (spectroscopy puts lens and arc at different redshifts). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on a ring knot 0.74\" off. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector."
+                "stamp_box": 20
             },
             "J0219-0829": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SL2SJ021902-082934",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it."
+                }
             },
             "J0220-0949": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SL2SJ022046-094927",
+                "note": "Grade B in Sonnenfeld+2013 Table 6, upgraded to A in Sonnenfeld+2015 Sect. 2 (spectroscopy puts lens and arc at different redshifts). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on the western lensed image 1.04\" off. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
                 },
-                "stamp_box": 20,
-                "note": "Grade B in Sonnenfeld+2013 Table 6, upgraded to A in Sonnenfeld+2015 Sect. 2 (spectroscopy puts lens and arc at different redshifts). Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging. stamp_box 20 (2026-10-14): F475X is its only band and the lensed images outshine the deflector there; the 100 px search centred the stamp on the western lensed image 1.04\" off. 20 px = +/-0.4\" about the Gavazzi+14 position, inside which the only peak is the deflector."
+                "stamp_box": 20
+            },
+            "J0226-0420": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "lens-source blending",
+                "mast_target": "SL2SJ022610-042011",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
+            },
+            "J0232-0408": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "second source component (Sheu+2025)",
+                "mast_target": "SL2SJ023251-040823",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
             },
             "J0849-0412": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "lens-source blending",
                 "mast_target": "SL2SJ084909-041226",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it."
+                }
             },
             "J0855-0147": {
+                "band_mode": "single_band",
+                "category": "prime",
                 "mast_target": "SL2SJ085540-014730",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging.",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
+            },
+            "J0904-0059": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "large contaminant patch; mask edge 0.31\" off an arc knot",
+                "mast_target": "SL2SJ090407-005952",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). stamp_box 30: in F606W (its centre band) the arc outshines the deflector, and the default 100 px search centred the stamps on the arc 1.76\" off.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
                 },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
+                "stamp_box": 30
+            },
+            "J0959+0206": {
+                "archive_proposals": {
+                    "f814W": [
+                        "9822"
+                    ]
+                },
+                "band_mode": "multi_band",
+                "category": "prime",
+                "mast_target": "SL2SJ095921+020638",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Archive ACS F814W (GO-9822) via archive_proposals. Its archive ACS F606W (GO-17802) is NOT used: WFPC2 F606W was chosen (2026-10-04), since both would share the f606W band key. WFC3/IR F160W (GO-14114) was DROPPED 2026-10-14: the 8-pointing COSMOS mosaic has unfitted per-frame WCSs that disagree by up to 2.3\", the two frames covering the lens are 2.1\" apart (two offset copies of the lens in the stamp), and the lens sits on a detector edge -- so f160W is no longer in archive_proposals.",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
+            },
+            "J1359+5535": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "mast_target": "SL2SJ135949+553550",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
             },
             "J1404+5200": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "blending, unusual image layout",
                 "mast_target": "SL2SJ140454+520024",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
+                }
+            },
+            "J1405+5243": {
+                "band_mode": "multi_band",
+                "category": "prime",
+                "mast_target": "SL2SJ140546+524311",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it.",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
+            },
+            "J1406+5226": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "foreground object beside the arc (mass test)",
+                "mast_target": "SL2SJ140650+522619",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X).",
+                "proposals": {
+                    "f475X": [
+                        "17130"
+                    ]
+                }
             },
             "J2203+0205": {
+                "band_mode": "multi_band",
+                "category": "complex",
+                "category_reason": "unresolved interloper at 0.73\" (mass test)",
                 "mast_target": "SL2SJ220329+020518",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. Project Dinos II lens (Sheu+2025, GO-17130 F475X). Also has a GO-11588 F475X+F600LP snapshot; only F600LP is taken from it."
+                }
             },
             "J2205+0147": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "blending, unusual image layout",
                 "mast_target": "SL2SJ220506+014703",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
+                }
             },
             "J2221+0115": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "second source component (Sheu+2025)",
                 "mast_target": "SL2SJ222148+011542",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging.",
                 "proposals": {
                     "f475X": [
                         "17130"
                     ]
-                },
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=N. Project Dinos II lens (Sheu+2025, GO-17130 F475X); first HST imaging."
+                }
             }
         }
     },
-    "sl2s_wf": {
-        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) with GO-11289 WFPC2 F606W (3x400 s; MAST labels it WFPC2/PC but the aperture is WF3-FIX, so the lens is on WF3) and no GO-17130 F475X; three also have the GO-11588 F475X+F600LP snapshot. J0213-0743 was DROPPED 2026-10-14: not a single deflector -- a z=0.016 elliptical centred 10.7\" away dominates the stamp and needed its own SIE in SL2S III. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
-        "coords": "info/coords/sl2s_coords.py",
-        "uvis_filters": [
-            "f475X",
-            "f600LP"
-        ],
-        "center_bands": [
-            "f814W",
-            "f606W",
-            "f600LP",
-            "f475X"
-        ],
-        "lenses": {
-            "J0225-0454": {
-                "mast_target": "SL2SJ022511-045433",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J0226-0406": {
-                "mast_target": "SL2SJ022648-040610",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J0849-0251": {
-                "mast_target": "SL2SJ084959-025142",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J0858-0143": {
-                "mast_target": "SL2SJ085826-014300",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J0901-0259": {
-                "mast_target": "SL2SJ090106-025906",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J1358+5459": {
-                "mast_target": "SL2SJ135847+545913",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
-            },
-            "J1401+5557": {
-                "mast_target": "SL2SJ140123+555705",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
-            },
-            "J1419+5117": {
-                "mast_target": "SL2SJ141917+511729",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
-            },
-            "J1427+5516": {
-                "mast_target": "SL2SJ142731+551645",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            },
-            "J2213-0009": {
-                "mast_target": "SL2SJ221326-000946",
-                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
-            }
-        }
-    },
-    "sl2s_snap": {
-        "description": "SL2S grade-A lenses (Sonnenfeld+2013 Table 6) whose only HST data is the GO-11588 WFC3/UVIS snapshot: F475X + F600LP, 2x360 s each (passes the 500 s gate with a low-exptime warning). J1423+5722 was REMOVED 2026-10-24: no demonstrated multiple imaging. Its only lensed feature is one arc at ~2.8\" (2.1 theta_E) with no counter-image in either band; SL2S III gives it no per-lens note, and its model needs a mass axis ratio of 0.32 against a light axis ratio of ~0.85, a 31.7 mag source, and has no lens redshift. Under that model the arc's knots are singly imaged. Roster agreed 2026-10-04; see AGENTS.md *SL2S samples*. Reduced, masked and positions marked (2026-10-24).",
+    "sl2s": {
+        "description": "SL2S grade-A lenses (Sonnenfeld et al. 2013, SL2S III, Table 6) without GO-17130 data: GO-11289 WFPC2 F606W (3 x 400 s, lens on WF3) and/or the GO-11588 WFC3/UVIS F475X + F600LP snapshot (2 x 360 s each). Merged on 2026-11-02 from sl2s_wf (10) and sl2s_snap (5). J0213-0743 (2026-10-14, not a single deflector) and J1423+5722 (2026-10-24, no multiple imaging) were removed; see AGENTS.md *SL2S samples*.",
         "coords": "info/coords/sl2s_coords.py",
         "uvis_filters": [
             "f475X",
@@ -587,24 +974,105 @@
         ],
         "lenses": {
             "J0223-0651": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
                 "mast_target": "SL2SJ022357-065142",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only (2x360 s per band)."
             },
+            "J0225-0454": {
+                "band_mode": "single_band",
+                "category": "prime",
+                "mast_target": "SL2SJ022511-045433",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J0226-0406": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
+                "mast_target": "SL2SJ022648-040610",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J0849-0251": {
+                "band_mode": "single_band",
+                "category": "prime",
+                "mast_target": "SL2SJ084959-025142",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J0858-0143": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
+                "mast_target": "SL2SJ085826-014300",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J0901-0259": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "very low S/N",
+                "mast_target": "SL2SJ090106-025906",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J1358+5459": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
+                "mast_target": "SL2SJ135847+545913",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
+            },
             "J1401+5544": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
                 "mast_target": "SL2SJ140156+554446",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only: the three GO-11289 WFPC2 frames filed under its name point ~1 deg away and do not contain the lens (checked on the FLTs 2026-10-04), so it moved from sl2s_wf."
             },
+            "J1401+5557": {
+                "band_mode": "single_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty; no source redshift",
+                "mast_target": "SL2SJ140123+555705",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
+            },
             "J1402+5505": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "no source redshift",
                 "mast_target": "SL2SJ140221+550534",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only (2x360 s per band)."
             },
             "J1411+5651": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SL2SJ141137+565119",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only (2x360 s per band)."
             },
+            "J1419+5117": {
+                "band_mode": "multi_band",
+                "category": "limited",
+                "category_reason": "positions deliberately empty; no lens redshift; no source redshift",
+                "mast_target": "SL2SJ141917+511729",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11289 WFPC2 F606W (WF3) + GO-11588 WFC3/UVIS F475X+F600LP snapshot."
+            },
             "J1420+5630": {
+                "band_mode": "multi_band",
+                "category": "prime",
                 "mast_target": "SL2SJ142059+563007",
                 "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y. GO-11588 WFC3/UVIS F475X+F600LP snapshot only (2x360 s per band)."
+            },
+            "J1427+5516": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "arcs cross elliptical structure",
+                "mast_target": "SL2SJ142731+551645",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
+            },
+            "J2213-0009": {
+                "band_mode": "single_band",
+                "category": "complex",
+                "category_reason": "arcs cross elliptical structure",
+                "mast_target": "SL2SJ221326-000946",
+                "note": "Sonnenfeld+2013 Table 6 grade A, HST=Y, morphology note \"disky\". GO-11289 WFPC2 F606W only (lens on WF3, aperture WF3-FIX)."
             }
         }
     }

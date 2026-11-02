@@ -93,7 +93,7 @@ Usage:
     uv run python scripts/detect_arcs.py --fetch-theta-e
 
     # test the detector over a sample: QC figure per lens + a summary JSON, no products
-    uv run python scripts/detect_arcs.py --sample slacs_prime
+    uv run python scripts/detect_arcs.py --sample slacs
     uv run python scripts/detect_arcs.py --lens J0330-0020 --snr 3.0    # tune one lens
 
     # then review/correct the proposals by hand, one lens at a time:

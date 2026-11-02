@@ -28,7 +28,8 @@ echo "=== WFC3/IR: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 ok=0; nodata=0; blocked=0; fail=0; FAILED=()
 for lens in "${LENSES[@]}"; do
   log="$LOG/${lens}_f160W_wfc3.log"
-  rm -rf "$WS/data/drizzled/$SAMPLE/$lens/f160W" "$WS/data/drizzle_files/$SAMPLE/$lens/f160W"
+  REL="$(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE" --rel "$lens")" || exit 1
+  rm -rf "$WS/data/drizzled/$REL/f160W" "$WS/data/drizzle_files/$REL/f160W"
   printf '%-12s f160W ' "$lens"
   if uv run --project "$WS" python "$SD/drizzle_wfc3_ir.py" --lens "$lens" --filt f160W \
        --sample "$SAMPLE" --align mast > "$log" 2>&1; then

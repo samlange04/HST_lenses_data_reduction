@@ -89,7 +89,7 @@ def calibration_group(sample, filt):
 # ── Source 1: propagate the analytic ensemble through the broadening ────────────
 def drizzle_box(sample, lens, filt):
     """(box_width_pix, n_frames) of the drop the science drizzle projects onto the grid."""
-    scis = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzled', sample, lens,
+    scis = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens),
                                          filt, '*_sci.fits')))
     if not scis:
         raise FileNotFoundError(f'no drizzled sci for {sample}/{lens}/{filt}')
@@ -155,7 +155,7 @@ def build_calibrations(verbose=True):
     """
     groups = {}
     for sample, lens, filt, entry in collect_targets():
-        d = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
+        d = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt)
         emp_path = os.path.join(d, 'psf_kernel.fits')
         if not os.path.isfile(emp_path):
             continue
@@ -276,7 +276,7 @@ def main():
 
     n_written, n_skipped, counts = 0, [], {}
     for sample, lens, filt, entry in targets:
-        psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
+        psf_dir = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt)
         stamps_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
         kernel_path = os.path.join(psf_dir, 'psf_kernel.fits')
         if not os.path.isfile(kernel_path):

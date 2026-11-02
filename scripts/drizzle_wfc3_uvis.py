@@ -44,6 +44,7 @@ from stwcs.updatewcs import updatewcs
 # Must run before AstroDrizzle. Import from this script's own dir regardless of cwd.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mmap_fits_write
+import stamp_paths
 mmap_fits_write.install()
 import mast_target_names
 import visit_wcs
@@ -162,13 +163,13 @@ if _a.lacosmic_objlim is None:
 if _cr_ovr:
     print(f'=== LACosmic params for {lens} {filt}: sigclip={_a.lacosmic_sigclip} '
           f'objlim={_a.lacosmic_objlim} (info/overrides/lens_cr_params.json) ===')
-data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
+data_path   = os.path.join(ws_path, 'data', 'calibrated', stamp_paths.lens_rel(sample, lens), filt)
+output_path = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), filt)
 # DRIZZLE_WORK_ROOT lets us relocate the AstroDrizzle working dir (where the large
 # output FITS is written) onto a different volume/backing store -- used to isolate the
 # APFS-write U-state hang (e.g. point it at a RAM disk). Falls back to the in-repo path.
 _work_root  = os.environ.get('DRIZZLE_WORK_ROOT') or os.path.join(ws_path, 'data', 'drizzle_files')
-work_path   = os.path.join(_work_root, sample, lens, filt)
+work_path   = os.path.join(_work_root, stamp_paths.lens_rel(sample, lens), filt)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────

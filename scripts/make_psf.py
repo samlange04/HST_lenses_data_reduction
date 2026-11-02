@@ -24,7 +24,7 @@ else STDPSF; WFPC2 F606W: the MAST PSF-database ePSF, else STDPSF; WFC3/IR and t
 gallery UVIS bands: STDPSF) and auto-chain make_psf_inject.py so the canonical kernel is
 drizzle-broadened. SL2S F475X/F600LP have no model grid; make_psf_median.py covers them.
 
-Outputs (data/psf/<sample>/<lens>/<filt>/):
+Outputs (data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/):
   * psf_kernel.fits  -- image-scale, odd, unit-sum: a drop-in al.Kernel2D at the band
                         pixel scale (built by block_reduce of the in-memory oversampled
                         ePSF, which is not itself written to disk -- nothing reads it back).
@@ -685,7 +685,7 @@ def representative_input_cd(inst_key, lens, filt, sample):
         return None
 
     if inst_key == 'WFPC2':
-        dd = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
+        dd = os.path.join(ws_path, 'data', 'drizzle_files', stamp_paths.lens_rel(sample, lens), filt)
         cands = [f for f in sorted(glob.glob(os.path.join(dd, 'wf3_*flt.fits')))
                  if all(t not in os.path.basename(f) for t in ('ivm', 'd2im', 'hlet'))]
         for f in cands:
@@ -698,7 +698,7 @@ def representative_input_cd(inst_key, lens, filt, sample):
            'WFC3/UVIS': '*flc.fits'}.get(inst_key)
     if pat is None:
         return None
-    cd_dir = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
+    cd_dir = os.path.join(ws_path, 'data', 'calibrated', stamp_paths.lens_rel(sample, lens), filt)
     for f in sorted(glob.glob(os.path.join(cd_dir, pat))):
         cd = first_sci_cd(f)
         if cd is not None:
@@ -859,11 +859,11 @@ def main():
     p.add_argument('--kernel-size', dest='kernel_size', type=int, default=None,
                    help='odd side (pixels) of the delivered image-scale kernel')
     p.add_argument('--output', default=None,
-                   help='output dir, default data/psf/<sample>/<lens>/<filt>')
+                   help='output dir, default data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>')
     a = p.parse_args()
 
-    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', a.sample, a.lens, a.filt)
-    output_dir = a.output or os.path.join(ws_path, 'data', 'psf', a.sample, a.lens, a.filt)
+    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
+    output_dir = a.output or os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
     psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
 
     # No-data outcome: matches the drizzle/stamp scripts -- record null, exit 0.
@@ -1027,8 +1027,7 @@ def main():
         if inst_key == 'ACS/WFC':
             try:
                 rootnames = lens_products_rootnames(a.sample, a.lens, a.filt)
-                calibrated_dir = os.path.join(ws_path, 'data', 'calibrated', a.sample,
-                                              a.lens, a.filt)
+                calibrated_dir = os.path.join(ws_path, 'data', 'calibrated', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
                 print(f'  method: MODEL (ACS focus-diverse ePSF)  [{tag}]')
                 epsf_data, model_ensemble, model_err_method = psf_models.acs_focus_diverse_psf(
                     a.lens, a.filt, rootnames, calibrated_dir, catalogue_coord,

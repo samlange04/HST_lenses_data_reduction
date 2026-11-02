@@ -2,7 +2,7 @@
 """
 Cut science + noise-map postage stamps out of the drizzled mosaics.
 
-Reads the drizzle products from data/drizzled/<sample>/<lens>/<filt>/ (--pass auto takes
+Reads the drizzle products from data/drizzled/<sample>/<band_mode>/<category>/<lens>/<filt>/ (--pass auto takes
 the CR-rejected pass where one exists), centres a stamp on the lens coordinate from
 info/coords/lens_coords.py, then recentres onto the brightest pixel found within the central
 --box (100x100) pixels of the sample's centre band (--center-band, or the stamp named by
@@ -553,7 +553,7 @@ def main():
                         'the checks below.')
     p.add_argument('--output', default=None,
                    help='output dir, default '
-                        'data/stamps/<sample>/<lens>/<filt>')
+                        'data/stamps/<sample>/<band_mode>/<category>/<lens>/<filt>')
     a = p.parse_args()
     # The lens's modelling size unless --size asks for another; the QC record is the
     # modelling-size one unless this is a re-cut at another size.
@@ -562,8 +562,7 @@ def main():
     qc_size = None if a.size == _modelling else a.size
 
     variant = stamp_paths.variant_from_flags(bcfill=a.bcfill, crfill=a.crfill, drop=a.drop)
-    drizzled_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant),
-                                a.sample, a.lens, a.filt)
+    drizzled_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant), stamp_paths.lens_rel(a.sample, a.lens), a.filt)
     output_dir = a.output or stamp_paths.stamp_dir(ws_path, a.sample, a.lens, a.filt)
 
     # There is ONE stamp per band (stamp_paths.py), and a variant cut (--bcfill/--crfill/
@@ -665,10 +664,9 @@ def main():
         _order = mast_target_names.center_bands(a.sample)
         a.center_band = next(
             (b for b in _order if _has_products(os.path.join(
-                stamp_paths.drizzled_root(ws_path, variant), a.sample, a.lens, b))),
+                stamp_paths.drizzled_root(ws_path, variant), stamp_paths.lens_rel(a.sample, a.lens), b))),
             _order[0])
-    center_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant),
-                              a.sample, a.lens, a.center_band)
+    center_dir = os.path.join(stamp_paths.drizzled_root(ws_path, variant), stamp_paths.lens_rel(a.sample, a.lens), a.center_band)
     if a.center_self or a.filt == a.center_band or not _has_products(center_dir):
         peak_dir, peak_src = drizzled_dir, 'this band'
         if not a.center_self and a.filt != a.center_band:

@@ -2,7 +2,11 @@
 
 **One tree, the size in the filename.** Every science stamp lives in
 
-    data/stamps/<sample>/<lens>/<band>/
+    data/stamps/<sample>/<band_mode>/<category>/<lens>/<band>/
+
+(since 2026-11-02; every other data layer -- calibrated, drizzle_files, drizzled, psf -- uses
+the same `<sample>/<band_mode>/<category>/<lens>` path, built by `lens_dir`/`band_dir` from the
+lens's `band_mode` and `category` in info/samples/lens_samples.json; never spell it by hand)
 
 and its filenames start `stamp<S>_`, where S is the stamp size in arcsec (`stamp12_` for the
 pipeline's standard 12" stamps, `stamp20_` for a 20" re-cut). Stamps of different sizes sit
@@ -97,11 +101,11 @@ def modelling_size(lens, sample=None):
 
 def resolve_size(stamp_dir, size=None):
     """`size`, or the modelling size of the lens whose band dir this is (data/stamps/<sample>/
-    <lens>/<band>) when size is None."""
+    <band_mode>/<category>/<lens>/<band>) when size is None. Lens names are unique across
+    samples, so the lens alone identifies it."""
     if size is not None:
         return float(size)
-    lens_dir = os.path.dirname(os.path.normpath(stamp_dir))
-    return modelling_size(os.path.basename(lens_dir), os.path.basename(os.path.dirname(lens_dir)))
+    return modelling_size(os.path.basename(os.path.dirname(os.path.normpath(stamp_dir))))
 
 
 def size_tag(size):
@@ -300,10 +304,35 @@ def qc_json_path(ws_path, size=None):
     return os.path.join(ws_path, 'info', 'provenance', f'lens_stamp_qc{size_tag(size)}.json')
 
 
+def lens_rel(sample, lens):
+    """<sample>/<band_mode>/<category>/<lens>: a lens's path below any data layer, from its
+    lens_samples.json keys (mast_target_names.lens_rel)."""
+    import mast_target_names
+    return mast_target_names.lens_rel(lens, sample)
+
+
+def lens_dir(ws_path, layer, sample, lens):
+    """data/<layer>/<sample>/<band_mode>/<category>/<lens>. `layer` is the data/ subdirectory:
+    'calibrated', 'drizzle_files', 'drizzled', 'psf', 'stamps', or a variant tree such as
+    'drizzled_bcfill' (see drizzled_root)."""
+    return os.path.join(ws_path, 'data', layer, lens_rel(sample, lens))
+
+
+def band_dir(ws_path, layer, sample, lens, filt):
+    """data/<layer>/<sample>/<band_mode>/<category>/<lens>/<filt>."""
+    return os.path.join(lens_dir(ws_path, layer, sample, lens), filt)
+
+
+def lens_glob(root, sample, lens='*'):
+    """Glob pattern for lens dirs of `sample` under a layer root (e.g. stamps_root(ws)):
+    <root>/<sample>/*/*/<lens>. Every discovery sweep goes through it."""
+    return os.path.join(root, sample, '*', '*', lens)
+
+
 def stamp_dir(ws_path, sample, lens, filt):
-    """The one band dir: data/stamps/<sample>/<lens>/<filt>. Every stamp size, the PSF and
-    everything drawn on the stamps live here."""
-    return os.path.join(stamps_root(ws_path), sample, lens, filt)
+    """The one band dir: data/stamps/<sample>/<band_mode>/<category>/<lens>/<filt>. Every
+    stamp size, the PSF and everything drawn on the stamps live here."""
+    return os.path.join(stamps_root(ws_path), lens_rel(sample, lens), filt)
 
 
 # The PSF lives in the same band dir as every stamp size; kept as a name so the call sites

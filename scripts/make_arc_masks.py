@@ -74,10 +74,10 @@ outside-footprint pixels then default to 'not arc', which is the safe side -- re
 the inverted array would instead leave stamp-edge slivers unmasked.
 
 Usage:
-    uv run python scripts/make_arc_masks.py --sample slacs_prime             # best band per lens
+    uv run python scripts/make_arc_masks.py --sample slacs             # best band per lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020               # one lens
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --filt f606W  # force the band
-    uv run python scripts/make_arc_masks.py --sample slacs_prime --filt f606W  # 2nd band sweep
+    uv run python scripts/make_arc_masks.py --sample slacs --filt f606W  # 2nd band sweep
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from detect,f814W
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --detect-snr 3.0  # looser detect
     uv run python scripts/make_arc_masks.py --lens J0330-0020 --propose-from none  # blank
@@ -267,7 +267,7 @@ def contaminant_overlay(mask_bool, pixel_scales):
 
 
 def save_arc_qc_png(stamp_dir, prefix, arc_bool, pixel_scales, out_path, lens, filt,
-                    stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1):
+                    stretch='asinh', vmin_percent=0.5, vmax_percent=99.5, asinh_a=0.1):
     """QC overlay: the arc region outlined over the band's own (radial-subtracted) image.
 
     Written per band, so a broadcast can be checked where it actually matters -- the f160W
@@ -281,12 +281,14 @@ def save_arc_qc_png(stamp_dir, prefix, arc_bool, pixel_scales, out_path, lens, f
     hw = int(a.shape[1] / 2) * pixel_scales
     ext = [-hw, hw, -hw, hw]
     fig = plt.figure(figsize=(7, 7))
-    plt.imshow(a, cmap='jet', extent=ext)
+    plt.imshow(a, cmap='inferno', extent=ext)
     # origin='upper' is REQUIRED: with an extent, imshow draws row 0 at the top but
     # contour defaults to row 0 at the BOTTOM, so without it the outline is drawn
     # vertically mirrored -- a QC image that looks fine and checks nothing (verified).
-    plt.contour(np.asarray(arc_bool, dtype=float), levels=[0.5], colors='white',
-                linewidths=1.2, extent=ext, origin='upper')
+    cs = plt.contour(np.asarray(arc_bool, dtype=float), levels=[0.5], colors='white',
+                     linewidths=1.2, extent=ext, origin='upper')
+    from matplotlib import patheffects
+    cs.set(path_effects=[patheffects.withStroke(linewidth=2.6, foreground='black')])
     plt.title(f'{lens}  {filt}  --  arc mask region (white outline)')
     plt.xlabel('arcsec'); plt.ylabel('arcsec')
     plt.tight_layout()
@@ -534,8 +536,8 @@ def main():
     p.add_argument('--asinh-a', type=float, default=0.1,
                    help='asinh softening for the QC PNG (smaller = stronger stretch; '
                         '--stretch asinh only)')
-    p.add_argument('--vmin-percent', type=float, default=5.0,
-                   help='lower clip percentile for the QC PNG stretch (default 5.0)')
+    p.add_argument('--vmin-percent', type=float, default=0.5,
+                   help='lower clip percentile for the QC PNG stretch (default 0.5)')
     p.add_argument('--vmax-percent', type=float, default=99.5,
                    help='upper clip percentile for the QC PNG stretch (default 99.5)')
     p.add_argument('--subtract-radial', action=argparse.BooleanOptionalAction, default=True,

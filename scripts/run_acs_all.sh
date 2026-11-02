@@ -48,12 +48,13 @@ for filt in f814W f555W; do
     # drizzle script has the same guard, but this rm runs before it. Test for the other
     # instruments' FITS specifically: a purged band dir keeps only its old PNG renders, and
     # "non-empty with no acs_wfc_* file" wrongly skipped all 76 SLACS Gold bands (2026-10-05).
-    _band="$WS/data/$DZ/$SAMPLE/$lens/$filt"
+    REL="$(uv run --project "$WS" python "$SD/mast_target_names.py" "$SAMPLE" --rel "$lens")" || exit 1
+    _band="$WS/data/$DZ/$REL/$filt"
     if ls "$_band"/wfc3_uvis_flc_*.fits "$_band"/wfc3_ir_flt_*.fits "$_band"/wfpc2_wf3_*.fits >/dev/null 2>&1; then
       printf '%-12s %-6s no data (band holds another instrument; not touched)\n' "$lens" "$filt"
       nodata=$((nodata + 1)); continue
     fi
-    rm -rf "$WS/data/$DZ/$SAMPLE/$lens/$filt" "$WS/data/$DF/$SAMPLE/$lens/$filt"
+    rm -rf "$WS/data/$DZ/$REL/$filt" "$WS/data/$DF/$REL/$filt"
     printf '%-12s %-6s ' "$lens" "$filt"
     if uv run --project "$WS" python "$SD/drizzle_acs_wfc.py" --lens "$lens" --filt "$filt" \
          --sample "$SAMPLE" --cr --align mast --cr-method lacosmic $BCFILL > "$log" 2>&1; then
