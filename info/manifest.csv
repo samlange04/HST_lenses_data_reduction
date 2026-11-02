@@ -1,0 +1,272 @@
+sample,band_mode,category,category_reason,lens,band,filter,instrument,exptime_s,stamp_size_arcsec,path,n_positions,n_position_sets,psf_method,zlens,zsrc,theta_e_arcsec,etherington_gold
+slacs,multi_band,complex,"by-eye difficult morphology (Sam, 2026-10-29)",J0008-0004,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/complex/J0008-0004/f606W,2,1,inject_wfpc2_psfdb,0.44,1.192,1.1591,yes
+slacs,multi_band,complex,"by-eye difficult morphology (Sam, 2026-10-29)",J0008-0004,f814W,f814W,ACS/WFC,1566.0,12,data/stamps/slacs/multi_band/complex/J0008-0004/f814W,2,1,empirical,0.44,1.192,1.1591,yes
+slacs,multi_band,prime,,J0029-0055,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0029-0055/f160W,2,1,empirical,0.227,0.931,0.9566,yes
+slacs,multi_band,prime,,J0029-0055,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0029-0055/f606W,2,1,inject_wfpc2_psfdb,0.227,0.931,0.9566,yes
+slacs,multi_band,prime,,J0029-0055,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/prime/J0029-0055/f814W,2,1,empirical,0.227,0.931,0.9566,yes
+slacs,single_band,prime,,J0037-0942,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J0037-0942/f606W,2,1,inject_wfpc2_psfdb,0.195,0.632,1.5303,
+slacs,single_band,complex,lens-source blending,J0044+0113,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J0044+0113/f606W,2,1,inject_wfpc2_psfdb,0.12,0.197,0.7951,
+slacs,multi_band,limited,positions deliberately empty,J0157-0056,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J0157-0056/f606W,0,0,inject_wfpc2_psfdb,0.513,0.924,0.7903,yes
+slacs,multi_band,limited,positions deliberately empty,J0157-0056,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/limited/J0157-0056/f814W,0,0,empirical,0.513,0.924,0.7903,yes
+slacs,multi_band,prime,,J0216-0813,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/prime/J0216-0813/f555W,2,1,empirical,0.332,0.523,1.159,yes
+slacs,multi_band,prime,,J0216-0813,f814W,f814W,ACS/WFC,2232.0,12,data/stamps/slacs/multi_band/prime/J0216-0813/f814W,2,1,empirical,0.332,0.523,1.159,yes
+slacs,multi_band,prime,,J0252+0039,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0252+0039/f160W,3,1,inject_stdpsf,0.28,0.982,1.0367,yes
+slacs,multi_band,prime,,J0252+0039,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0252+0039/f606W,3,1,inject_wfpc2_psfdb,0.28,0.982,1.0367,yes
+slacs,multi_band,prime,,J0252+0039,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/prime/J0252+0039/f814W,3,1,empirical,0.28,0.982,1.0367,yes
+slacs,multi_band,prime,,J0330-0020,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0330-0020/f606W,2,1,inject_wfpc2_psfdb,0.351,1.071,1.1012,yes
+slacs,multi_band,prime,,J0330-0020,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/prime/J0330-0020/f814W,2,1,empirical,0.351,1.071,1.1012,yes
+slacs,multi_band,prime,,J0728+3835,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0728+3835/f160W,3,1,empirical,0.206,0.688,1.2468,yes
+slacs,multi_band,prime,,J0728+3835,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0728+3835/f606W,3,1,inject_wfpc2_psfdb,0.206,0.688,1.2468,yes
+slacs,multi_band,prime,,J0728+3835,f814W,f814W,ACS/WFC,2116.0,12,data/stamps/slacs/multi_band/prime/J0728+3835/f814W,3,1,empirical,0.206,0.688,1.2468,yes
+slacs,multi_band,prime,,J0737+3216,f555W,f555W,ACS/WFC,2200.0,12,data/stamps/slacs/multi_band/prime/J0737+3216/f555W,3,1,empirical,0.322,0.581,0.9968,yes
+slacs,multi_band,prime,,J0737+3216,f814W,f814W,ACS/WFC,2272.0,12,data/stamps/slacs/multi_band/prime/J0737+3216/f814W,3,1,empirical,0.322,0.581,0.9968,yes
+slacs,multi_band,multi_galaxy,Bolton E-M-A* (companion),J0808+4706,f160W,f160W,WFC3/IR,2396.926268,30,data/stamps/slacs/multi_band/multi_galaxy/J0808+4706/f160W,2,1,empirical,0.219,1.025,,
+slacs,multi_band,multi_galaxy,Bolton E-M-A* (companion),J0808+4706,f606W,f606W,WFPC2/WF3,4400.0,30,data/stamps/slacs/multi_band/multi_galaxy/J0808+4706/f606W,2,1,inject_wfpc2_psfdb,0.219,1.025,,
+slacs,multi_band,multi_galaxy,Bolton E-M-A* (companion),J0808+4706,f814W,f814W,ACS/WFC,2140.0,30,data/stamps/slacs/multi_band/multi_galaxy/J0808+4706/f814W,2,1,empirical,0.219,1.025,,
+slacs,multi_band,complex,complex (Sam),J0819+4534,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/complex/J0819+4534/f160W,2,1,empirical,0.194,0.446,0.8474,
+slacs,multi_band,complex,complex (Sam),J0819+4534,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/complex/J0819+4534/f606W,2,1,inject_wfpc2_psfdb,0.194,0.446,0.8474,
+slacs,multi_band,prime,,J0822+2652,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0822+2652/f160W,2,1,inject_stdpsf,0.241,0.594,1.1694,yes
+slacs,multi_band,prime,,J0822+2652,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0822+2652/f606W,2,1,inject_wfpc2_psfdb,0.241,0.594,1.1694,yes
+slacs,multi_band,prime,,J0822+2652,f606W_visit2,f606W,WFPC2/WF3,2200.0,12,data/stamps/slacs/multi_band/prime/J0822+2652/f606W_visit2,2,1,inject_wfpc2_psfdb,0.241,0.594,1.1694,yes
+slacs,multi_band,prime,,J0822+2652,f814W,f814W,ACS/WFC,2108.0,12,data/stamps/slacs/multi_band/prime/J0822+2652/f814W,2,1,empirical,0.241,0.594,1.1694,yes
+slacs,multi_band,prime,,J0903+4116,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0903+4116/f160W,2,1,inject_stdpsf,0.43,1.065,1.2887,yes
+slacs,multi_band,prime,,J0903+4116,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0903+4116/f606W,2,1,inject_wfpc2_psfdb,0.43,1.065,1.2887,yes
+slacs,multi_band,prime,,J0903+4116,f814W,f814W,ACS/WFC,2128.0,12,data/stamps/slacs/multi_band/prime/J0903+4116/f814W,2,1,empirical,0.43,1.065,1.2887,yes
+slacs,multi_band,limited,positions deliberately empty,J0912+0029,f555W,f555W,ACS/WFC,2700.0,12,data/stamps/slacs/multi_band/limited/J0912+0029/f555W,0,0,empirical,0.164,0.324,1.6274,yes
+slacs,multi_band,limited,positions deliberately empty,J0912+0029,f814W,f814W,ACS/WFC,2224.0,12,data/stamps/slacs/multi_band/limited/J0912+0029/f814W,0,0,empirical,0.164,0.324,1.6274,yes
+slacs,single_band,complex,lens-source blending,J0935-0003,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J0935-0003/f606W,2,1,inject_wfpc2_psfdb,0.347,0.467,0.8672,
+slacs,multi_band,limited,positions deliberately empty,J0936+0913,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/limited/J0936+0913/f160W,0,0,inject_stdpsf,0.19,0.588,1.0887,yes
+slacs,multi_band,limited,positions deliberately empty,J0936+0913,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J0936+0913/f606W,0,0,inject_wfpc2_psfdb,0.19,0.588,1.0887,yes
+slacs,multi_band,limited,positions deliberately empty,J0936+0913,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/limited/J0936+0913/f814W,0,0,empirical,0.19,0.588,1.0887,yes
+slacs,multi_band,prime,,J0946+1006,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J0946+1006/f160W,3,1,inject_stdpsf,0.222,0.609,1.3839,yes
+slacs,multi_band,prime,,J0946+1006,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J0946+1006/f606W,3,1,inject_wfpc2_psfdb,0.222,0.609,1.3839,yes
+slacs,multi_band,prime,,J0946+1006,f814W,f814W,ACS/WFC,2096.0,12,data/stamps/slacs/multi_band/prime/J0946+1006/f814W,3,1,empirical,0.222,0.609,1.3839,yes
+slacs,multi_band,prime,,J0956+5100,f555W,f555W,ACS/WFC,2380.0,12,data/stamps/slacs/multi_band/prime/J0956+5100/f555W,3,1,empirical,0.241,0.47,1.3271,yes
+slacs,multi_band,prime,,J0956+5100,f814W,f814W,ACS/WFC,2440.0,12,data/stamps/slacs/multi_band/prime/J0956+5100/f814W,3,1,empirical,0.241,0.47,1.3271,yes
+slacs,multi_band,prime,,J0959+0410,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/prime/J0959+0410/f555W,2,1,empirical,0.126,0.535,0.9929,yes
+slacs,multi_band,prime,,J0959+0410,f814W,f814W,ACS/WFC,2224.0,12,data/stamps/slacs/multi_band/prime/J0959+0410/f814W,2,1,empirical,0.126,0.535,0.9929,yes
+slacs,multi_band,limited,positions deliberately empty,J0959+4416,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/limited/J0959+4416/f160W,0,0,empirical,0.237,0.531,0.9606,
+slacs,multi_band,limited,positions deliberately empty,J0959+4416,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J0959+4416/f606W,0,0,inject_wfpc2_psfdb,0.237,0.531,0.9606,
+slacs,multi_band,limited,positions deliberately empty,J0959+4416,f814W,f814W,ACS/WFC,2128.0,12,data/stamps/slacs/multi_band/limited/J0959+4416/f814W,0,0,empirical,0.237,0.531,0.9606,
+slacs,multi_band,limited,positions deliberately empty,J1016+3859,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/limited/J1016+3859/f160W,0,0,inject_stdpsf,0.168,0.439,1.0905,
+slacs,multi_band,limited,positions deliberately empty,J1016+3859,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J1016+3859/f606W,0,0,inject_wfpc2_psfdb,0.168,0.439,1.0905,
+slacs,multi_band,limited,positions deliberately empty,J1016+3859,f814W,f814W,ACS/WFC,1058.0,12,data/stamps/slacs/multi_band/limited/J1016+3859/f814W,0,0,inject_acs_fdpsf,0.168,0.439,1.0905,
+slacs,multi_band,complex,two large galaxies on one side; mask boundary uncertain in every band,J1020+1122,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/complex/J1020+1122/f160W,2,1,inject_stdpsf,0.282,0.553,1.2003,yes
+slacs,multi_band,complex,two large galaxies on one side; mask boundary uncertain in every band,J1020+1122,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/complex/J1020+1122/f606W,2,1,inject_wfpc2_psfdb,0.282,0.553,1.2003,yes
+slacs,multi_band,complex,two large galaxies on one side; mask boundary uncertain in every band,J1020+1122,f814W,f814W,ACS/WFC,2096.0,12,data/stamps/slacs/multi_band/complex/J1020+1122/f814W,2,1,empirical,0.282,0.553,1.2003,yes
+slacs,multi_band,prime,,J1023+4230,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J1023+4230/f160W,3,1,inject_stdpsf,0.191,0.696,1.4142,yes
+slacs,multi_band,prime,,J1023+4230,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J1023+4230/f606W,3,1,inject_wfpc2_psfdb,0.191,0.696,1.4142,yes
+slacs,multi_band,prime,,J1023+4230,f814W,f814W,ACS/WFC,2128.0,12,data/stamps/slacs/multi_band/prime/J1023+4230/f814W,3,1,empirical,0.191,0.696,1.4142,yes
+slacs,single_band,limited,positions deliberately empty,J1029+6115,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/limited/J1029+6115/f606W,0,0,inject_wfpc2_psfdb,0.157,0.251,,
+slacs,single_band,complex,nearby emission masked,J1100+5329,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J1100+5329/f606W,3,1,inject_wfpc2_psfdb,0.317,0.858,1.5176,
+slacs,single_band,prime,,J1106+5228,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J1106+5228/f606W,3,1,inject_wfpc2_psfdb,0.095,0.407,1.2314,
+slacs,single_band,complex,lens-source blending,J1112+0826,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J1112+0826/f606W,2,1,inject_wfpc2_psfdb,0.273,0.629,1.4851,
+slacs,multi_band,limited,positions deliberately empty,J1134+6027,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/limited/J1134+6027/f160W,0,0,inject_stdpsf,0.153,0.474,1.1024,
+slacs,multi_band,limited,positions deliberately empty,J1134+6027,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J1134+6027/f606W,0,0,inject_wfpc2_psfdb,0.153,0.474,1.1024,
+slacs,multi_band,complex,by-eye difficult morphology (Sam); positions now marked,J1142+1001,f606W,f606W,WFPC2/WF3,2200.0,12,data/stamps/slacs/multi_band/complex/J1142+1001/f606W,2,1,inject_wfpc2_psfdb,0.222,0.504,0.9841,yes
+slacs,multi_band,complex,by-eye difficult morphology (Sam); positions now marked,J1142+1001,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/complex/J1142+1001/f606W_visit2,2,1,inject_wfpc2_psfdb,0.222,0.504,0.9841,yes
+slacs,multi_band,complex,by-eye difficult morphology (Sam); positions now marked,J1142+1001,f814W,f814W,ACS/WFC,2096.0,12,data/stamps/slacs/multi_band/complex/J1142+1001/f814W,2,1,empirical,0.222,0.504,0.9841,yes
+slacs,multi_band,limited,positions deliberately empty,J1143-0144,f555W,f555W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/limited/J1143-0144/f555W,0,0,empirical,0.106,0.402,1.6842,yes
+slacs,multi_band,limited,positions deliberately empty,J1143-0144,f814W,f814W,ACS/WFC,2532.0,12,data/stamps/slacs/multi_band/limited/J1143-0144/f814W,0,0,empirical,0.106,0.402,1.6842,yes
+slacs,multi_band,prime,,J1153+4612,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J1153+4612/f160W,4,1,inject_stdpsf,0.18,0.875,1.0478,
+slacs,multi_band,prime,,J1153+4612,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J1153+4612/f606W,4,1,inject_wfpc2_psfdb,0.18,0.875,1.0478,
+slacs,multi_band,prime,,J1153+4612,f814W,f814W,ACS/WFC,2140.0,12,data/stamps/slacs/multi_band/prime/J1153+4612/f814W,4,1,empirical,0.18,0.875,1.0478,
+slacs,single_band,prime,,J1204+0358,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J1204+0358/f606W,2,1,inject_wfpc2_psfdb,0.164,0.631,1.3076,
+slacs,multi_band,prime,,J1205+4910,f555W,f555W,ACS/WFC,2320.0,12,data/stamps/slacs/multi_band/prime/J1205+4910/f555W,3,1,empirical,0.215,0.481,1.2234,yes
+slacs,multi_band,prime,,J1205+4910,f814W,f814W,ACS/WFC,2388.0,12,data/stamps/slacs/multi_band/prime/J1205+4910/f814W,3,1,empirical,0.215,0.481,1.2234,yes
+slacs,multi_band,limited,positions deliberately empty,J1213+6708,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J1213+6708/f606W,0,0,inject_wfpc2_psfdb,0.123,0.64,1.4164,yes
+slacs,multi_band,limited,positions deliberately empty,J1213+6708,f814W,f814W,ACS/WFC,2240.0,12,data/stamps/slacs/multi_band/limited/J1213+6708/f814W,0,0,inject_acs_fdpsf,0.123,0.64,1.4164,yes
+slacs,multi_band,complex,"by-eye difficult morphology (Sam, 2026-10-29)",J1218+0830,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/complex/J1218+0830/f606W,2,1,inject_wfpc2_psfdb,0.135,0.717,1.4502,yes
+slacs,multi_band,complex,"by-eye difficult morphology (Sam, 2026-10-29)",J1218+0830,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/complex/J1218+0830/f814W,2,1,empirical,0.135,0.717,1.4502,yes
+slacs,multi_band,prime,,J1250+0523,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/prime/J1250+0523/f555W,4,1,empirical,0.232,0.795,1.1302,yes
+slacs,multi_band,prime,,J1250+0523,f814W,f814W,ACS/WFC,2232.0,12,data/stamps/slacs/multi_band/prime/J1250+0523/f814W,4,1,empirical,0.232,0.795,1.1302,yes
+slacs,single_band,limited,positions deliberately empty,J1250-0135,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/limited/J1250-0135/f606W,0,0,inject_wfpc2_psfdb,0.087,0.353,,
+slacs,multi_band,prime,,J1306+0600,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1306+0600/f606W,2,1,inject_wfpc2_psfdb,0.173,0.472,1.3165,
+slacs,multi_band,prime,,J1306+0600,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1306+0600/f606W_visit2,2,1,inject_wfpc2_psfdb,0.173,0.472,1.3165,
+slacs,multi_band,prime,,J1306+0600,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1306+0600/f814W,2,1,inject_wfpc2_psfdb,0.173,0.472,1.3165,
+slacs,multi_band,prime,,J1313+4615,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1313+4615/f606W,2,1,inject_wfpc2_psfdb,0.185,0.514,1.3699,
+slacs,multi_band,prime,,J1313+4615,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1313+4615/f606W_visit2,2,1,inject_wfpc2_psfdb,0.185,0.514,1.3699,
+slacs,multi_band,prime,,J1313+4615,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1313+4615/f814W,2,1,inject_wfpc2_psfdb,0.185,0.514,1.3699,
+slacs,multi_band,prime,,J1318-0313,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1318-0313/f606W,4,1,inject_wfpc2_psfdb,0.24,1.3,1.5843,
+slacs,multi_band,prime,,J1318-0313,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1318-0313/f606W_visit2,4,1,inject_wfpc2_psfdb,0.24,1.3,1.5843,
+slacs,multi_band,prime,,J1318-0313,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1318-0313/f814W,4,1,inject_wfpc2_psfdb,0.24,1.3,1.5843,
+slacs,multi_band,limited,positions deliberately empty,J1319+1504,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/limited/J1319+1504/f606W,0,0,inject_wfpc2_psfdb,0.154,0.606,,
+slacs,multi_band,limited,positions deliberately empty,J1319+1504,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/limited/J1319+1504/f606W_visit2,0,0,inject_wfpc2_psfdb,0.154,0.606,,
+slacs,multi_band,limited,positions deliberately empty,J1319+1504,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/limited/J1319+1504/f814W,0,0,inject_wfpc2_psfdb,0.154,0.606,,
+slacs,single_band,complex,lens-source blending,J1330-0148,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J1330-0148/f606W,2,1,inject_wfpc2_psfdb,0.081,0.711,0.8644,
+slacs,multi_band,limited,positions deliberately empty,J1402+6321,f555W,f555W,ACS/WFC,2456.0,12,data/stamps/slacs/multi_band/limited/J1402+6321/f555W,0,0,empirical,0.205,0.481,1.3466,yes
+slacs,multi_band,limited,positions deliberately empty,J1402+6321,f814W,f814W,ACS/WFC,2520.0,12,data/stamps/slacs/multi_band/limited/J1402+6321/f814W,0,0,empirical,0.205,0.481,1.3466,yes
+slacs,single_band,limited,positions deliberately empty,J1403+0006,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/limited/J1403+0006/f606W,0,0,inject_wfpc2_psfdb,0.189,0.473,0.8303,
+slacs,multi_band,limited,positions deliberately empty,J1416+5136,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J1416+5136/f606W,0,0,inject_wfpc2_psfdb,0.299,0.811,1.3681,
+slacs,multi_band,limited,positions deliberately empty,J1416+5136,f814W,f814W,ACS/WFC,2156.0,12,data/stamps/slacs/multi_band/limited/J1416+5136/f814W,0,0,empirical,0.299,0.811,1.3681,
+slacs,multi_band,complex,by-eye difficult morphology (Sam); LACosmic tuned to keep an arc knot,J1420+6019,f555W,f555W,ACS/WFC,2456.0,12,data/stamps/slacs/multi_band/complex/J1420+6019/f555W,4,1,empirical,0.063,0.535,1.0388,yes
+slacs,multi_band,complex,by-eye difficult morphology (Sam); LACosmic tuned to keep an arc knot,J1420+6019,f814W,f814W,ACS/WFC,2520.0,12,data/stamps/slacs/multi_band/complex/J1420+6019/f814W,4,1,empirical,0.063,0.535,1.0388,yes
+slacs,multi_band,prime,,J1430+4105,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J1430+4105/f160W,2,1,empirical,0.285,0.575,1.5195,yes
+slacs,multi_band,prime,,J1430+4105,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J1430+4105/f606W,2,1,inject_wfpc2_psfdb,0.285,0.575,1.5195,yes
+slacs,multi_band,prime,,J1430+4105,f814W,f814W,ACS/WFC,2128.0,12,data/stamps/slacs/multi_band/prime/J1430+4105/f814W,2,1,empirical,0.285,0.575,1.5195,yes
+slacs,multi_band,complex,late-type spiral deflector (Bolton L; by-eye list),J1432+6317,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/complex/J1432+6317/f606W,2,1,inject_wfpc2_psfdb,0.123,0.664,1.258,yes
+slacs,multi_band,complex,late-type spiral deflector (Bolton L; by-eye list),J1432+6317,f814W,f814W,ACS/WFC,2200.0,12,data/stamps/slacs/multi_band/complex/J1432+6317/f814W,2,1,empirical,0.123,0.664,1.258,yes
+slacs,multi_band,multi_galaxy,Auger E* (close companions),J1436+3640,f160W,f160W,WFC3/IR,2396.926268,30,data/stamps/slacs/multi_band/multi_galaxy/J1436+3640/f160W,2,1,inject_stdpsf,0.185,0.758,,
+slacs,multi_band,multi_galaxy,Auger E* (close companions),J1436+3640,f606W,f606W,WFPC2/WF3,1600.0,30,data/stamps/slacs/multi_band/multi_galaxy/J1436+3640/f606W,2,1,inject_wfpc2_psfdb,0.185,0.758,,
+slacs,multi_band,multi_galaxy,Auger E* (close companions),J1436+3640,f606W_visit2,f606W,WFPC2/WF3,1600.0,30,data/stamps/slacs/multi_band/multi_galaxy/J1436+3640/f606W_visit2,2,1,inject_wfpc2_psfdb,0.185,0.758,,
+slacs,single_band,prime,,J1436-0000,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J1436-0000/f606W,2,1,inject_wfpc2_psfdb,0.285,0.805,1.1169,
+slacs,single_band,complex,lens-source blending,J1443+0304,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J1443+0304/f606W,2,1,inject_wfpc2_psfdb,0.134,0.419,0.8117,
+slacs,multi_band,complex,f555W mask provisional; mask pulled back off image A,J1451-0239,f555W,f555W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/complex/J1451-0239/f555W,2,1,empirical,0.125,0.52,1.0399,yes
+slacs,multi_band,complex,f555W mask provisional; mask pulled back off image A,J1451-0239,f814W,f814W,ACS/WFC,2112.0,12,data/stamps/slacs/multi_band/complex/J1451-0239/f814W,2,1,empirical,0.125,0.52,1.0399,yes
+slacs,multi_band,prime,,J1525+3327,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J1525+3327/f606W,3,1,inject_wfpc2_psfdb,0.358,0.717,1.3068,yes
+slacs,multi_band,prime,,J1525+3327,f814W,f814W,ACS/WFC,2108.0,12,data/stamps/slacs/multi_band/prime/J1525+3327/f814W,3,1,empirical,0.358,0.717,1.3068,yes
+slacs,single_band,prime,,J1531-0105,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J1531-0105/f606W,2,1,inject_wfpc2_psfdb,0.16,0.744,1.7078,
+slacs,single_band,complex,features C1/C2 near the ring unresolved (spiral arm vs lensed),J1538+5817,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J1538+5817/f606W,2,1,inject_wfpc2_psfdb,0.143,0.531,0.9952,
+slacs,multi_band,limited,positions deliberately empty,J1614+4522,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/limited/J1614+4522/f160W,0,0,inject_stdpsf,0.178,0.811,0.8444,
+slacs,multi_band,limited,positions deliberately empty,J1614+4522,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/limited/J1614+4522/f606W,0,0,inject_wfpc2_psfdb,0.178,0.811,0.8444,
+slacs,single_band,prime,,J1621+3931,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J1621+3931/f606W,2,1,inject_wfpc2_psfdb,0.245,0.602,1.2902,
+slacs,multi_band,prime,,J1627-0053,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/prime/J1627-0053/f555W,2,1,empirical,0.208,0.524,1.2286,yes
+slacs,multi_band,prime,,J1627-0053,f814W,f814W,ACS/WFC,2224.0,12,data/stamps/slacs/multi_band/prime/J1627-0053/f814W,2,1,empirical,0.208,0.524,1.2286,yes
+slacs,multi_band,prime,,J1630+4520,f555W,f555W,ACS/WFC,2320.0,12,data/stamps/slacs/multi_band/prime/J1630+4520/f555W,3,1,empirical,0.248,0.793,1.7777,yes
+slacs,multi_band,prime,,J1630+4520,f814W,f814W,ACS/WFC,2388.0,12,data/stamps/slacs/multi_band/prime/J1630+4520/f814W,3,1,empirical,0.248,0.793,1.7777,yes
+slacs,multi_band,prime,,J1636+4707,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/slacs/multi_band/prime/J1636+4707/f160W,2,1,empirical,0.228,0.675,1.0849,
+slacs,multi_band,prime,,J1636+4707,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J1636+4707/f606W,2,1,inject_wfpc2_psfdb,0.228,0.675,1.0849,
+slacs,multi_band,complex,complex (Sam),J1644+2625,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/complex/J1644+2625/f606W,2,1,inject_wfpc2_psfdb,0.137,0.61,1.2671,
+slacs,multi_band,complex,complex (Sam),J1644+2625,f606W_visit2,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/complex/J1644+2625/f606W_visit2,2,1,inject_wfpc2_psfdb,0.137,0.61,1.2671,
+slacs,multi_band,complex,complex (Sam),J1644+2625,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/complex/J1644+2625/f814W,2,1,inject_wfpc2_psfdb,0.137,0.61,1.2671,
+slacs,single_band,complex,low arc S/N,J1709+2324,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/slacs/single_band/complex/J1709+2324/f606W,2,1,inject_wfpc2_psfdb,0.347,0.719,1.0057,
+slacs,single_band,multi_galaxy,Bolton E-M-A* (double foreground galaxy),J1718+6424,f606W,f606W,WFPC2/WF3,4400.0,30,data/stamps/slacs/single_band/multi_galaxy/J1718+6424/f606W,0,0,inject_wfpc2_psfdb,0.09,0.737,,
+slacs,multi_band,prime,,J1719+2939,f606W,f606W,WFPC2/WF3,3200.0,12,data/stamps/slacs/multi_band/prime/J1719+2939/f606W,3,1,inject_wfpc2_psfdb,0.181,0.578,1.276,
+slacs,multi_band,prime,,J1719+2939,f814W,f814W,WFPC2/WF3,1600.0,12,data/stamps/slacs/multi_band/prime/J1719+2939/f814W,3,1,inject_wfpc2_psfdb,0.181,0.578,1.276,
+slacs,multi_band,prime,,J2238-0754,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/prime/J2238-0754/f555W,4,1,empirical,0.137,0.713,1.2713,yes
+slacs,multi_band,prime,,J2238-0754,f814W,f814W,ACS/WFC,2232.0,12,data/stamps/slacs/multi_band/prime/J2238-0754/f814W,4,1,empirical,0.137,0.713,1.2713,yes
+slacs,multi_band,limited,positions deliberately empty,J2300+0022,f555W,f555W,ACS/WFC,2160.0,12,data/stamps/slacs/multi_band/limited/J2300+0022/f555W,0,0,empirical,0.228,0.463,1.2356,yes
+slacs,multi_band,limited,positions deliberately empty,J2300+0022,f814W,f814W,ACS/WFC,2224.0,12,data/stamps/slacs/multi_band/limited/J2300+0022/f814W,0,0,empirical,0.228,0.463,1.2356,yes
+slacs,single_band,prime,,J2302-0840,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/prime/J2302-0840/f606W,2,1,empirical,0.09,0.222,,
+slacs,multi_band,prime,,J2303+1422,f555W,f555W,ACS/WFC,2176.0,12,data/stamps/slacs/multi_band/prime/J2303+1422/f555W,3,1,empirical,0.155,0.517,1.6192,yes
+slacs,multi_band,prime,,J2303+1422,f814W,f814W,ACS/WFC,2240.0,12,data/stamps/slacs/multi_band/prime/J2303+1422/f814W,3,1,empirical,0.155,0.517,1.6192,yes
+slacs,single_band,limited,positions deliberately empty,J2321-0939,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/limited/J2321-0939/f606W,0,0,inject_wfpc2_psfdb,0.082,0.532,1.5997,
+slacs,multi_band,prime,,J2341+0000,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/multi_band/prime/J2341+0000/f606W,4,1,inject_wfpc2_psfdb,0.186,0.807,1.4443,yes
+slacs,multi_band,prime,,J2341+0000,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/slacs/multi_band/prime/J2341+0000/f814W,4,1,empirical,0.186,0.807,1.4443,yes
+slacs,single_band,multi_galaxy,"edge-on companion 7.3"", ~57% of the light",J2343-0030,f606W,f606W,WFPC2/WF3,1600.0,30,data/stamps/slacs/single_band/multi_galaxy/J2343-0030/f606W,2,1,inject_wfpc2_psfdb,0.181,0.463,1.5155,
+slacs,single_band,complex,complex source structure,J2347-0005,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/slacs/single_band/complex/J2347-0005/f606W,2,1,inject_wfpc2_psfdb,0.417,0.714,1.1072,
+swells,multi_band,limited,positions deliberately empty,J0841+3824,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/swells/multi_band/limited/J0841+3824/f160W,0,0,inject_stdpsf,0.116,0.657,1.4091,yes
+swells,multi_band,limited,positions deliberately empty,J0841+3824,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/limited/J0841+3824/f606W,0,0,inject_wfpc2_psfdb,0.116,0.657,1.4091,yes
+swells,multi_band,limited,positions deliberately empty,J0841+3824,f814W,f814W,ACS/WFC,2116.0,12,data/stamps/swells/multi_band/limited/J0841+3824/f814W,0,0,empirical,0.116,0.657,1.4091,yes
+swells,single_band,complex,complex (Sam),J0955+0101,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/single_band/complex/J0955+0101/f606W,2,1,inject_wfpc2_psfdb,0.111,0.316,0.9052,
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1029+0420,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/swells/multi_band/complex/J1029+0420/f160W,2,1,inject_stdpsf,0.104,0.615,1.0056,yes
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1029+0420,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/complex/J1029+0420/f606W,2,1,inject_wfpc2_psfdb,0.104,0.615,1.0056,yes
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1029+0420,f814W,f814W,ACS/WFC,2088.0,12,data/stamps/swells/multi_band/complex/J1029+0420/f814W,2,1,empirical,0.104,0.615,1.0056,yes
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1032+5322,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/swells/multi_band/complex/J1032+5322/f160W,2,1,inject_stdpsf,0.133,0.329,1.0327,yes
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1032+5322,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/complex/J1032+5322/f606W,2,1,inject_wfpc2_psfdb,0.133,0.329,1.0327,yes
+swells,multi_band,complex,by-eye difficult morphology (Sam),J1032+5322,f814W,f814W,ACS/WFC,2156.0,12,data/stamps/swells/multi_band/complex/J1032+5322/f814W,2,1,empirical,0.133,0.329,1.0327,yes
+swells,multi_band,complex,complex (Sam),J1103+5322,f450W,f450W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/complex/J1103+5322/f450W,2,1,inject_wfpc2_psfdb,0.158,0.735,1.0185,
+swells,multi_band,complex,complex (Sam),J1103+5322,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/complex/J1103+5322/f606W,2,1,inject_wfpc2_psfdb,0.158,0.735,1.0185,
+swells,multi_band,complex,complex (Sam),J1103+5322,f814W,f814W,ACS/WFC,2156.0,12,data/stamps/swells/multi_band/complex/J1103+5322/f814W,2,1,empirical,0.158,0.735,1.0185,
+swells,multi_band,complex,"spiral deflector, two-armed structure left unmasked",J1251-0208,f160W,f160W,WFC3/IR,2396.926268,12,data/stamps/swells/multi_band/complex/J1251-0208/f160W,3,1,inject_stdpsf,0.224,0.784,0.8413,
+swells,multi_band,complex,"spiral deflector, two-armed structure left unmasked",J1251-0208,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/multi_band/complex/J1251-0208/f606W,3,1,inject_wfpc2_psfdb,0.224,0.784,0.8413,
+swells,single_band,complex,"theta_E 0.53 +- 0.23"" (Brewer+2012), pair at 0.43/0.46"" from the review",J1313+0506,f606W,f606W,WFPC2/WF3,4400.0,12,data/stamps/swells/single_band/complex/J1313+0506/f606W,2,1,inject_wfpc2_psfdb,0.144,0.339,0.53,
+swells,single_band,limited,positions deliberately empty,J2141-0001,f606W,f606W,WFPC2/WF3,1600.0,12,data/stamps/swells/single_band/limited/J2141-0001/f606W,0,0,inject_wfpc2_psfdb,0.138,0.713,0.88,
+gallery,multi_band,prime,,J0029+2544,f438W,f438W,WFC3/UVIS,1410.0,12,data/stamps/gallery/multi_band/prime/J0029+2544/f438W,3,1,empirical,0.5869,2.4504,1.34,
+gallery,multi_band,prime,,J0029+2544,f606W,f606W,WFC3/UVIS,2504.0,12,data/stamps/gallery/multi_band/prime/J0029+2544/f606W,3,1,empirical,0.5869,2.4504,1.34,
+gallery,multi_band,prime,,J0029+2544,f814W,f814W,WFC3/UVIS,1425.0,12,data/stamps/gallery/multi_band/prime/J0029+2544/f814W,3,1,inject_stdpsf,0.5869,2.4504,1.34,
+gallery,single_band,prime,,J0201+3228,f606W,f606W,WFC3/UVIS,2520.0,12,data/stamps/gallery/single_band/prime/J0201+3228/f606W,3,1,inject_stdpsf,0.3957,2.8209,1.7,
+gallery,single_band,complex,low S/N,J0237-0641,f606W,f606W,WFC3/UVIS,2488.0,12,data/stamps/gallery/single_band/complex/J0237-0641/f606W,2,1,empirical,0.4859,2.2491,0.65,
+gallery,multi_band,prime,,J0742+3341,f438W,f438W,WFC3/UVIS,1080.0,12,data/stamps/gallery/multi_band/prime/J0742+3341/f438W,2,1,empirical,0.4936,2.3633,1.22,
+gallery,multi_band,prime,,J0742+3341,f606W,f606W,WFC3/UVIS,2520.0,12,data/stamps/gallery/multi_band/prime/J0742+3341/f606W,2,1,empirical,0.4936,2.3633,1.22,
+gallery,multi_band,prime,,J0742+3341,f814W,f814W,WFC3/UVIS,1001.0,12,data/stamps/gallery/multi_band/prime/J0742+3341/f814W,2,1,empirical,0.4936,2.3633,1.22,
+gallery,multi_band,multi_galaxy,"companion galaxy; needs shear 0.24 (Shu+2016) (Sam, 2026-11-02)",J0755+3445,f438W,f438W,WFC3/UVIS,1050.0,30,data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f438W,4,1,inject_stdpsf,0.7224,2.6347,2.05,
+gallery,multi_band,multi_galaxy,"companion galaxy; needs shear 0.24 (Shu+2016) (Sam, 2026-11-02)",J0755+3445,f606W,f606W,WFC3/UVIS,2520.0,30,data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f606W,4,1,empirical,0.7224,2.6347,2.05,
+gallery,multi_band,multi_galaxy,"companion galaxy; needs shear 0.24 (Shu+2016) (Sam, 2026-11-02)",J0755+3445,f814W,f814W,WFC3/UVIS,939.0,30,data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f814W,4,1,empirical,0.7224,2.6347,2.05,
+gallery,single_band,complex,nearby companion,J0856+2010,f606W,f606W,WFC3/UVIS,2496.0,12,data/stamps/gallery/single_band/complex/J0856+2010/f606W,2,1,empirical,0.5074,2.2335,0.98,
+gallery,multi_band,complex,cusp quad; galaxy-model-limited (~10 sigma dipole); diffuse patch open,J0918+5104,f438W,f438W,WFC3/UVIS,1260.0,12,data/stamps/gallery/multi_band/complex/J0918+5104/f438W,5,1,empirical,0.5811,2.403,1.6,
+gallery,multi_band,complex,cusp quad; galaxy-model-limited (~10 sigma dipole); diffuse patch open,J0918+5104,f606W,f606W,WFC3/UVIS,2676.0,12,data/stamps/gallery/multi_band/complex/J0918+5104/f606W,5,1,empirical,0.5811,2.403,1.6,
+gallery,multi_band,complex,cusp quad; galaxy-model-limited (~10 sigma dipole); diffuse patch open,J0918+5104,f814W,f814W,WFC3/UVIS,1308.0,12,data/stamps/gallery/multi_band/complex/J0918+5104/f814W,5,1,inject_stdpsf,0.5811,2.403,1.6,
+gallery,multi_band,prime,,J1110+2808,f438W,f438W,WFC3/UVIS,2360.0,12,data/stamps/gallery/multi_band/prime/J1110+2808/f438W,2,1,inject_stdpsf,0.6073,2.3999,0.98,
+gallery,multi_band,prime,,J1110+2808,f606W,f606W,WFC3/UVIS,2504.0,12,data/stamps/gallery/multi_band/prime/J1110+2808/f606W,2,1,empirical,0.6073,2.3999,0.98,
+gallery,multi_band,prime,,J1110+2808,f814W,f814W,WFC3/UVIS,2372.0,12,data/stamps/gallery/multi_band/prime/J1110+2808/f814W,2,1,inject_stdpsf,0.6073,2.3999,0.98,
+gallery,single_band,prime,,J1110+3649,f606W,f606W,WFC3/UVIS,7480.0,12,data/stamps/gallery/single_band/prime/J1110+3649/f606W,4,1,empirical,0.733,2.5024,1.16,
+gallery,single_band,complex,"contaminant 1.35"" between the images; demagnified counter-image",J1116+0915,f606W,f606W,WFC3/UVIS,2488.0,12,data/stamps/gallery/single_band/complex/J1116+0915/f606W,2,1,inject_stdpsf,0.5501,2.4536,1.03,
+gallery,single_band,prime,,J1141+2216,f606W,f606W,WFC3/UVIS,2496.0,12,data/stamps/gallery/single_band/prime/J1141+2216/f606W,2,1,inject_stdpsf,0.5858,2.7624,1.27,
+gallery,single_band,complex,light of a massive nearby companion,J1201+4743,f606W,f606W,WFC3/UVIS,7736.0,12,data/stamps/gallery/single_band/complex/J1201+4743/f606W,3,1,empirical,0.5628,2.1258,1.18,
+gallery,single_band,complex,needs shear 0.15 (Shu+2016); 7-knot source,J1226+5457,f606W,f606W,WFC3/UVIS,2676.0,12,data/stamps/gallery/single_band/complex/J1226+5457/f606W,7,1,empirical,0.498,2.7322,1.37,
+gallery,single_band,prime,,J2228+1205,f606W,f606W,WFC3/UVIS,2492.0,12,data/stamps/gallery/single_band/prime/J2228+1205/f606W,3,1,empirical,0.5305,2.8324,1.28,
+gallery,multi_band,complex,mask pulled back: contaminant vs source light,J2342-0120,f438W,f438W,WFC3/UVIS,1314.0,12,data/stamps/gallery/multi_band/complex/J2342-0120/f438W,4,1,inject_stdpsf,0.527,2.2649,1.11,
+gallery,multi_band,complex,mask pulled back: contaminant vs source light,J2342-0120,f606W,f606W,WFC3/UVIS,2484.0,12,data/stamps/gallery/multi_band/complex/J2342-0120/f606W,4,1,inject_stdpsf,0.527,2.2649,1.11,
+gallery,multi_band,complex,mask pulled back: contaminant vs source light,J2342-0120,f814W,f814W,WFC3/UVIS,1350.0,12,data/stamps/gallery/multi_band/complex/J2342-0120/f814W,4,1,inject_stdpsf,0.527,2.2649,1.11,
+bells,single_band,limited,positions deliberately empty,J0151+0049,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/limited/J0151+0049/f814W,0,0,empirical,0.5171,1.3636,0.676,
+bells,single_band,complex,bright-star diffraction spikes masked; two nearby galaxies,J0747+4448,f814W,f814W,ACS/WFC,2312.0,12,data/stamps/bells/single_band/complex/J0747+4448/f814W,2,1,empirical,0.4366,0.8966,0.61,
+bells,single_band,complex,Tan+2024 foreground mask,J0747+5055,f814W,f814W,ACS/WFC,2416.0,12,data/stamps/bells/single_band/complex/J0747+5055/f814W,3,1,empirical,0.4384,0.8983,0.754,
+bells,single_band,complex,complex (Sam),J0801+4727,f814W,f814W,ACS/WFC,2364.0,12,data/stamps/bells/single_band/complex/J0801+4727/f814W,3,1,empirical,0.4831,1.5181,0.491,
+bells,single_band,prime,,J0830+5116,f814W,f814W,ACS/WFC,2415.711975,12,data/stamps/bells/single_band/prime/J0830+5116/f814W,2,1,empirical_donor,0.5301,1.3317,1.142,
+bells,single_band,limited,positions deliberately empty,J0944-0147,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/limited/J0944-0147/f814W,0,0,empirical,0.539,1.1785,0.725,
+bells,single_band,prime,,J1159-0007,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/prime/J1159-0007/f814W,4,1,empirical,0.5793,1.3457,0.683,
+bells,single_band,complex,Tan+2024 foreground mask,J1215+0047,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/complex/J1215+0047/f814W,2,1,empirical,0.6423,1.297,1.368,
+bells,single_band,limited,positions deliberately empty,J1221+3806,f814W,f814W,ACS/WFC,2255.711975,12,data/stamps/bells/single_band/limited/J1221+3806/f814W,0,0,empirical,0.5348,1.2844,0.699,
+bells,single_band,limited,positions deliberately empty,J1234-0241,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/limited/J1234-0241/f814W,0,0,empirical,0.49,1.0159,0.533,
+bells,single_band,complex,Tan+2024 foreground mask,J1318-0104,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/complex/J1318-0104/f814W,2,1,empirical,0.6591,1.3959,0.679,
+bells,single_band,complex,Tan+2024 foreground mask,J1352+3216,f814W,f814W,ACS/WFC,2248.0,12,data/stamps/bells/single_band/complex/J1352+3216/f814W,2,1,empirical,0.4634,1.0341,1.823,
+bells,single_band,complex,complex (Sam),J1541+1812,f814W,f814W,ACS/WFC,2220.0,12,data/stamps/bells/single_band/complex/J1541+1812/f814W,2,1,empirical,0.5603,1.1133,0.64,
+bells,single_band,complex,complex (Sam),J1545+2748,f814W,f814W,ACS/WFC,2228.0,12,data/stamps/bells/single_band/complex/J1545+2748/f814W,2,1,empirical,0.5218,1.2886,1.21,
+bells,single_band,limited,positions deliberately empty,J1601+2138,f814W,f814W,ACS/WFC,2220.0,12,data/stamps/bells/single_band/limited/J1601+2138/f814W,0,0,empirical,0.5435,1.4461,0.858,
+bells,single_band,limited,positions deliberately empty,J1611+1705,f814W,f814W,ACS/WFC,2220.0,12,data/stamps/bells/single_band/limited/J1611+1705/f814W,0,0,empirical,0.4766,1.2109,0.58,
+bells,single_band,prime,,J1631+1854,f814W,f814W,ACS/WFC,2220.0,12,data/stamps/bells/single_band/prime/J1631+1854/f814W,2,1,empirical,0.4081,1.0863,1.634,
+bells,single_band,complex,complex (Sam),J1637+1439,f814W,f814W,ACS/WFC,2216.0,12,data/stamps/bells/single_band/complex/J1637+1439/f814W,2,1,empirical,0.391,0.8744,0.65,
+bells,single_band,complex,complex (Sam),J2122+0409,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/complex/J2122+0409/f814W,3,1,empirical,0.6261,1.4517,1.58,
+bells,single_band,complex,complex (Sam),J2125+0411,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/complex/J2125+0411/f814W,2,1,empirical,0.3632,0.9777,1.204,
+bells,single_band,prime,,J2303+0037,f814W,f814W,ACS/WFC,2204.0,12,data/stamps/bells/single_band/prime/J2303+0037/f814W,4,1,empirical,0.4582,0.9363,1.016,
+dinos,single_band,complex,extended source structure,J0205-0930,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/single_band/complex/J0205-0930/f475X,2,1,empirical,0.557,1.33,1.246,
+dinos,single_band,prime,,J0212-0555,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/single_band/prime/J0212-0555/f475X,2,1,empirical,0.75,2.74,1.238,
+dinos,multi_band,prime,,J0214-0405,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/prime/J0214-0405/f475X,2,1,empirical,0.609,1.88,1.34,
+dinos,multi_band,prime,,J0214-0405,f814W,f814W,ACS/WFC,800.0,12,data/stamps/dinos/multi_band/prime/J0214-0405/f814W,2,1,inject_acs_fdpsf,0.609,1.88,1.34,
+dinos,multi_band,complex,double source plane (Tu+2009),J0217-0513,f160W,f160W,WFC3/IR,3511.7399299999997,12,data/stamps/dinos/multi_band/complex/J0217-0513/f160W,3,1,empirical,0.646,1.85,1.272,
+dinos,multi_band,complex,double source plane (Tu+2009),J0217-0513,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/multi_band/complex/J0217-0513/f475X,3,1,empirical,0.646,1.85,1.272,
+dinos,multi_band,complex,double source plane (Tu+2009),J0217-0513,f606W,f606W,ACS/WFC,4186.0,12,data/stamps/dinos/multi_band/complex/J0217-0513/f606W,3,1,empirical,0.646,1.85,1.272,
+dinos,multi_band,complex,double source plane (Tu+2009),J0217-0513,f814W,f814W,ACS/WFC,7917.0,12,data/stamps/dinos/multi_band/complex/J0217-0513/f814W,3,1,empirical,0.646,1.85,1.272,
+dinos,single_band,prime,,J0218-0802,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/single_band/prime/J0218-0802/f475X,2,1,empirical,0.884,2.06,0.85,
+dinos,multi_band,prime,,J0219-0829,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/multi_band/prime/J0219-0829/f475X,2,1,empirical,0.389,2.15,1.296,
+dinos,multi_band,prime,,J0219-0829,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/dinos/multi_band/prime/J0219-0829/f600LP,2,1,empirical,0.389,2.15,1.296,
+dinos,single_band,prime,,J0220-0949,f475X,f475X,WFC3/UVIS,2370.0,12,data/stamps/dinos/single_band/prime/J0220-0949/f475X,2,1,empirical,0.572,2.61,0.914,
+dinos,multi_band,complex,lens-source blending,J0226-0420,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/complex/J0226-0420/f475X,2,1,empirical,0.494,1.23,1.152,
+dinos,multi_band,complex,lens-source blending,J0226-0420,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/complex/J0226-0420/f606W,2,1,inject_wfpc2_psfdb,0.494,1.23,1.152,
+dinos,multi_band,complex,second source component (Sheu+2025),J0232-0408,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/complex/J0232-0408/f475X,4,1,empirical,0.352,2.34,1.019,
+dinos,multi_band,complex,second source component (Sheu+2025),J0232-0408,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/complex/J0232-0408/f606W,4,1,inject_wfpc2_psfdb,0.352,2.34,1.019,
+dinos,multi_band,complex,lens-source blending,J0849-0412,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/complex/J0849-0412/f475X,2,1,empirical,0.722,1.54,1.134,
+dinos,multi_band,complex,lens-source blending,J0849-0412,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/dinos/multi_band/complex/J0849-0412/f600LP,2,1,empirical,0.722,1.54,1.134,
+dinos,single_band,prime,,J0855-0147,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/single_band/prime/J0855-0147/f475X,4,1,empirical,0.365,3.39,0.956,
+dinos,multi_band,complex,"large contaminant patch; mask edge 0.31"" off an arc knot",J0904-0059,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/complex/J0904-0059/f475X,2,1,empirical,0.611,2.36,1.411,
+dinos,multi_band,complex,"large contaminant patch; mask edge 0.31"" off an arc knot",J0904-0059,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/complex/J0904-0059/f606W,2,1,inject_wfpc2_psfdb,0.611,2.36,1.411,
+dinos,multi_band,prime,,J0959+0206,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/prime/J0959+0206/f475X,4,1,empirical,0.552,3.35,0.711,
+dinos,multi_band,prime,,J0959+0206,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/prime/J0959+0206/f606W,4,1,inject_wfpc2_psfdb,0.552,3.35,0.711,
+dinos,multi_band,prime,,J0959+0206,f814W,f814W,ACS/WFC,2028.0,12,data/stamps/dinos/multi_band/prime/J0959+0206/f814W,4,1,inject_acs_fdpsf,0.552,3.35,0.711,
+dinos,multi_band,prime,,J1359+5535,f475X,f475X,WFC3/UVIS,2614.0,12,data/stamps/dinos/multi_band/prime/J1359+5535/f475X,4,1,empirical,0.783,2.77,1.092,
+dinos,multi_band,prime,,J1359+5535,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/prime/J1359+5535/f606W,4,1,inject_wfpc2_psfdb,0.783,2.77,1.092,
+dinos,single_band,complex,"blending, unusual image layout",J1404+5200,f475X,f475X,WFC3/UVIS,2558.0,12,data/stamps/dinos/single_band/complex/J1404+5200/f475X,3,1,empirical,0.456,1.59,2.394,
+dinos,multi_band,prime,,J1405+5243,f475X,f475X,WFC3/UVIS,2558.0,12,data/stamps/dinos/multi_band/prime/J1405+5243/f475X,3,1,empirical,0.526,3.01,1.457,
+dinos,multi_band,prime,,J1405+5243,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/dinos/multi_band/prime/J1405+5243/f600LP,3,1,empirical,0.526,3.01,1.457,
+dinos,multi_band,prime,,J1405+5243,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/prime/J1405+5243/f606W,3,1,inject_wfpc2_psfdb,0.526,3.01,1.457,
+dinos,multi_band,complex,foreground object beside the arc (mass test),J1406+5226,f475X,f475X,WFC3/UVIS,2558.0,12,data/stamps/dinos/multi_band/complex/J1406+5226/f475X,2,1,empirical,0.716,1.47,1.029,
+dinos,multi_band,complex,foreground object beside the arc (mass test),J1406+5226,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/dinos/multi_band/complex/J1406+5226/f606W,2,1,inject_wfpc2_psfdb,0.716,1.47,1.029,
+dinos,multi_band,complex,"unresolved interloper at 0.73"" (mass test)",J2203+0205,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/multi_band/complex/J2203+0205/f475X,3,1,empirical,0.4,2.15,1.677,
+dinos,multi_band,complex,"unresolved interloper at 0.73"" (mass test)",J2203+0205,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/dinos/multi_band/complex/J2203+0205/f600LP,3,1,empirical,0.4,2.15,1.677,
+dinos,single_band,complex,"blending, unusual image layout",J2205+0147,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/single_band/complex/J2205+0147/f475X,2,1,empirical,0.476,2.53,1.814,
+dinos,single_band,complex,second source component (Sheu+2025),J2221+0115,f475X,f475X,WFC3/UVIS,2366.0,12,data/stamps/dinos/single_band/complex/J2221+0115/f475X,2,1,empirical,0.325,2.35,1.274,
+sl2s,multi_band,limited,no source redshift,J0223-0651,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J0223-0651/f475X,2,1,empirical,0.473,,1.36,
+sl2s,multi_band,limited,no source redshift,J0223-0651,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J0223-0651/f600LP,2,1,empirical,0.473,,1.36,
+sl2s,single_band,prime,,J0225-0454,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/prime/J0225-0454/f606W,2,1,inject_wfpc2_psfdb,0.238,1.2,1.76,
+sl2s,single_band,limited,no source redshift,J0226-0406,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/limited/J0226-0406/f606W,2,1,inject_wfpc2_psfdb,0.766,,1.29,
+sl2s,single_band,prime,,J0849-0251,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/prime/J0849-0251/f606W,2,1,inject_wfpc2_psfdb,0.274,2.09,1.16,
+sl2s,single_band,limited,no source redshift,J0858-0143,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/limited/J0858-0143/f606W,2,1,inject_wfpc2_psfdb,0.58,,0.9,
+sl2s,single_band,complex,very low S/N,J0901-0259,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/complex/J0901-0259/f606W,2,1,inject_wfpc2_psfdb,0.67,1.19,1.03,
+sl2s,multi_band,limited,no source redshift,J1358+5459,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1358+5459/f475X,2,1,empirical,0.51,,1.21,
+sl2s,multi_band,limited,no source redshift,J1358+5459,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1358+5459/f600LP,2,1,empirical_median,0.51,,1.21,
+sl2s,multi_band,limited,no source redshift,J1358+5459,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/multi_band/limited/J1358+5459/f606W,2,1,inject_wfpc2_psfdb,0.51,,1.21,
+sl2s,multi_band,limited,no source redshift,J1401+5544,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1401+5544/f475X,4,1,empirical,0.464,,2.03,
+sl2s,multi_band,limited,no source redshift,J1401+5544,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1401+5544/f600LP,4,1,empirical,0.464,,2.03,
+sl2s,single_band,limited,positions deliberately empty; no source redshift,J1401+5557,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/limited/J1401+5557/f606W,0,0,inject_wfpc2_psfdb,0.527,,1.74,
+sl2s,multi_band,limited,no source redshift,J1402+5505,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1402+5505/f475X,2,1,empirical,0.412,,1.23,
+sl2s,multi_band,limited,no source redshift,J1402+5505,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1402+5505/f600LP,2,1,empirical,0.412,,1.23,
+sl2s,multi_band,prime,,J1411+5651,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/prime/J1411+5651/f475X,3,1,empirical,0.322,1.42,0.93,
+sl2s,multi_band,prime,,J1411+5651,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/prime/J1411+5651/f600LP,3,1,empirical,0.322,1.42,0.93,
+sl2s,multi_band,limited,positions deliberately empty; no lens redshift; no source redshift,J1419+5117,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1419+5117/f475X,0,0,empirical,,,3.11,
+sl2s,multi_band,limited,positions deliberately empty; no lens redshift; no source redshift,J1419+5117,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/limited/J1419+5117/f600LP,0,0,empirical,,,3.11,
+sl2s,multi_band,limited,positions deliberately empty; no lens redshift; no source redshift,J1419+5117,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/multi_band/limited/J1419+5117/f606W,0,0,inject_wfpc2_psfdb,,,3.11,
+sl2s,multi_band,prime,,J1420+5630,f475X,f475X,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/prime/J1420+5630/f475X,4,1,empirical,0.483,3.12,1.4,
+sl2s,multi_band,prime,,J1420+5630,f600LP,f600LP,WFC3/UVIS,720.0,12,data/stamps/sl2s/multi_band/prime/J1420+5630/f600LP,4,1,empirical,0.483,3.12,1.4,
+sl2s,single_band,complex,arcs cross elliptical structure,J1427+5516,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/complex/J1427+5516/f606W,2,1,inject_wfpc2_psfdb,0.511,2.58,0.81,
+sl2s,single_band,complex,arcs cross elliptical structure,J2213-0009,f606W,f606W,WFPC2/WF3,1200.0,12,data/stamps/sl2s/single_band/complex/J2213-0009/f606W,2,1,inject_wfpc2_psfdb,0.338,3.45,1.07,

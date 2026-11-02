@@ -167,6 +167,15 @@ def lens_rel(lens, sample=None):
     return os.path.join(owner, band_mode(lens, owner), category(lens, owner), lens)
 
 
+LAYOUT_TAGS = {'single_band': 'SB', 'multi_band': 'MB',
+               'prime': 'P', 'complex': 'C', 'limited': 'L', 'multi_galaxy': 'MG'}
+
+
+def layout_tag(lens, sample=None):
+    """Short sub-type tag for QC panels, e.g. 'MB-P' (multi-band, prime) or 'SB-L'."""
+    return f'{LAYOUT_TAGS[band_mode(lens, sample)]}-{LAYOUT_TAGS[category(lens, sample)]}'
+
+
 def force_copy(lens, sample=None):
     """True if this lens must be fetched from its ``-COPY`` MAST observations (its
     non-COPY frames are unusable, e.g. EXPTIME=0)."""
