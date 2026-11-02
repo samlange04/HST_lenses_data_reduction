@@ -355,21 +355,66 @@
             "f606W": "WFPC2/WF3"
         }
     },
-    "slacs_gold": {
+    "slacs_complex": {
         "J0008-0004": {
             "f160W": null,
             "f555W": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
-        "J0029-0055": {
+        "J1153+4612": {
             "f160W": "WFC3/IR",
             "f555W": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
-        "J0157-0056": {
+        "J1218+0830": {
             "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1420+6019": {
+            "f160W": null,
+            "f555W": "ACS/WFC",
+            "f606W": null,
+            "f814W": "ACS/WFC"
+        }
+    },
+    "slacs_late": {
+        "J1250-0135": {
+            "f606W": "WFPC2/WF3"
+        },
+        "J1432+6317": {
+            "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        }
+    },
+    "slacs_multi": {
+        "J0808+4706": {
+            "f160W": "WFC3/IR",
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1319+1504": {
+            "f814W": "WFPC2/WF3"
+        },
+        "J1436+3640": {
+            "f160W": "WFC3/IR"
+        },
+        "J1718+6424": {
+            "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        }
+    },
+    "slacs_prime": {
+        "J0029-0055": {
+            "f160W": "WFC3/IR",
             "f555W": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
@@ -411,25 +456,7 @@
             "f606W_v2": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
-        "J0841+3824": {
-            "f160W": "WFC3/IR",
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
         "J0903+4116": {
-            "f160W": "WFC3/IR",
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J0912+0029": {
-            "f160W": null,
-            "f555W": "ACS/WFC",
-            "f606W": null,
-            "f814W": "ACS/WFC"
-        },
-        "J0936+0913": {
             "f160W": "WFC3/IR",
             "f555W": null,
             "f606W": "WFPC2/WF3",
@@ -465,46 +492,10 @@
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
-        "J1029+0420": {
-            "f160W": "WFC3/IR",
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J1032+5322": {
-            "f160W": "WFC3/IR",
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J1142+1001": {
-            "f160W": null,
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J1143-0144": {
-            "f160W": null,
-            "f555W": "ACS/WFC",
-            "f606W": null,
-            "f814W": "ACS/WFC"
-        },
         "J1205+4910": {
             "f160W": null,
             "f555W": "ACS/WFC",
             "f606W": null,
-            "f814W": "ACS/WFC"
-        },
-        "J1213+6708": {
-            "f160W": null,
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J1218+0830": {
-            "f160W": null,
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
         },
         "J1250+0523": {
@@ -513,26 +504,8 @@
             "f606W": null,
             "f814W": "ACS/WFC"
         },
-        "J1402+6321": {
-            "f160W": null,
-            "f555W": "ACS/WFC",
-            "f606W": null,
-            "f814W": "ACS/WFC"
-        },
-        "J1420+6019": {
-            "f160W": null,
-            "f555W": "ACS/WFC",
-            "f606W": null,
-            "f814W": "ACS/WFC"
-        },
         "J1430+4105": {
             "f160W": "WFC3/IR",
-            "f555W": null,
-            "f606W": "WFPC2/WF3",
-            "f814W": "ACS/WFC"
-        },
-        "J1432+6317": {
-            "f160W": null,
             "f555W": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
@@ -567,12 +540,6 @@
             "f606W": null,
             "f814W": "ACS/WFC"
         },
-        "J2300+0022": {
-            "f160W": null,
-            "f555W": "ACS/WFC",
-            "f606W": null,
-            "f814W": "ACS/WFC"
-        },
         "J2303+1422": {
             "f160W": null,
             "f555W": "ACS/WFC",
@@ -586,7 +553,7 @@
             "f814W": "ACS/WFC"
         }
     },
-    "slacs_other": {
+    "slacs_sparse": {
         "J0037-0942": {
             "f160W": null,
             "f555W": null,
@@ -605,11 +572,27 @@
             "f606W": null,
             "f814W": null
         },
+        "J0157-0056": {
+            "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
         "J0405-0455": {
             "f160W": null,
             "f555W": null,
             "f606W": null,
             "f814W": null
+        },
+        "J0819+4534": {
+            "f160W": "WFC3/IR",
+            "f606W": "WFPC2/WF3"
+        },
+        "J0912+0029": {
+            "f160W": null,
+            "f555W": "ACS/WFC",
+            "f606W": null,
+            "f814W": "ACS/WFC"
         },
         "J0935-0003": {
             "f160W": null,
@@ -617,11 +600,11 @@
             "f606W": "WFPC2/WF3",
             "f814W": null
         },
-        "J0955+0101": {
-            "f160W": null,
+        "J0936+0913": {
+            "f160W": "WFC3/IR",
             "f555W": null,
             "f606W": "WFPC2/WF3",
-            "f814W": null
+            "f814W": "ACS/WFC"
         },
         "J0959+4416": {
             "f160W": "WFC3/IR",
@@ -634,6 +617,10 @@
             "f555W": null,
             "f606W": "WFPC2/WF3",
             "f814W": "ACS/WFC"
+        },
+        "J1029+6115": {
+            "f606W": "WFPC2/WF3",
+            "f814W": null
         },
         "J1100+5329": {
             "f160W": null,
@@ -659,10 +646,16 @@
             "f606W": "WFPC2/WF3",
             "f814W": null
         },
-        "J1153+4612": {
-            "f160W": "WFC3/IR",
+        "J1142+1001": {
+            "f160W": null,
             "f555W": null,
             "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1143-0144": {
+            "f160W": null,
+            "f555W": "ACS/WFC",
+            "f606W": null,
             "f814W": "ACS/WFC"
         },
         "J1204+0358": {
@@ -671,17 +664,35 @@
             "f606W": "WFPC2/WF3",
             "f814W": null
         },
-        "J1251-0208": {
-            "f160W": "WFC3/IR",
+        "J1213+6708": {
+            "f160W": null,
             "f555W": null,
             "f606W": "WFPC2/WF3",
-            "f814W": null
+            "f814W": "ACS/WFC"
         },
         "J1259+6134": {
             "f160W": null,
             "f555W": null,
             "f606W": null,
             "f814W": null
+        },
+        "J1306+0600": {
+            "f814W": "WFPC2/WF3"
+        },
+        "J1313+4615": {
+            "f814W": "WFPC2/WF3"
+        },
+        "J1318-0313": {
+            "f814W": "WFPC2/WF3"
+        },
+        "J1330-0148": {
+            "f606W": "WFPC2/WF3"
+        },
+        "J1402+6321": {
+            "f160W": null,
+            "f555W": "ACS/WFC",
+            "f606W": null,
+            "f814W": "ACS/WFC"
         },
         "J1403+0006": {
             "f160W": null,
@@ -719,6 +730,11 @@
             "f606W": "WFPC2/WF3",
             "f814W": null
         },
+        "J1614+4522": {
+            "f160W": "WFC3/IR",
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
         "J1621+3931": {
             "f160W": null,
             "f555W": null,
@@ -731,11 +747,21 @@
             "f606W": "WFPC2/WF3",
             "f814W": null
         },
-        "J2141-0001": {
-            "f160W": null,
-            "f555W": null,
+        "J1644+2625": {
+            "f814W": "WFPC2/WF3"
+        },
+        "J1709+2324": {
+            "f606W": "WFPC2/WF3"
+        },
+        "J1719+2939": {
             "f606W": "WFPC2/WF3",
-            "f814W": null
+            "f814W": "WFPC2/WF3"
+        },
+        "J2300+0022": {
+            "f160W": null,
+            "f555W": "ACS/WFC",
+            "f606W": null,
+            "f814W": "ACS/WFC"
         },
         "J2302-0840": {
             "f160W": null,
@@ -744,6 +770,60 @@
             "f814W": null
         },
         "J2321-0939": {
+            "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
+        "J2343-0030": {
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
+        "J2347-0005": {
+            "f606W": "WFPC2/WF3"
+        }
+    },
+    "swells": {
+        "J0841+3824": {
+            "f160W": "WFC3/IR",
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J0955+0101": {
+            "f160W": null,
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
+        "J1029+0420": {
+            "f160W": "WFC3/IR",
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1032+5322": {
+            "f160W": "WFC3/IR",
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1103+5322": {
+            "f450W": "WFPC2/WF3",
+            "f606W": "WFPC2/WF3",
+            "f814W": "ACS/WFC"
+        },
+        "J1251-0208": {
+            "f160W": "WFC3/IR",
+            "f555W": null,
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
+        "J1313+0506": {
+            "f606W": "WFPC2/WF3",
+            "f814W": null
+        },
+        "J2141-0001": {
             "f160W": null,
             "f555W": null,
             "f606W": "WFPC2/WF3",

@@ -309,13 +309,14 @@ def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_
         grid = psf_models._load_grid(inst_key, stdpsf_filt)
         return {s: grid_renderer(grid) for s in sci_paths}, 'inject_stdpsf'
 
-    if inst_key == 'WFPC2' and psf_models._base_filter(filt).upper() == 'F606W':
+    db_filt = psf_models._base_filter(filt).upper()
+    if inst_key == 'WFPC2' and db_filt in psf_models.WFPC2_DB_FILTERS:
         try:
-            P, _samp = psf_models._wfpc2_f606w_db_build()
+            P, _samp = psf_models._wfpc2_f606w_db_build(filt=db_filt)
             r = array_renderer(np.asarray(P, float), psf_models._F606W_DB['build_oversample'])
             return {s: r for s in sci_paths}, 'inject_wfpc2_psfdb'
         except Exception as exc:
-            print(f'    WFPC2 F606W PSF-DB unavailable ({exc}); falling back to STDPSF F555W')
+            print(f'    WFPC2 {db_filt} PSF-DB unavailable ({exc}); falling back to STDPSF')
 
     stdpsf_filt, sub = psf_models._resolve_filter(inst_key, filt)
     if sub:

@@ -13,12 +13,17 @@ _SLACS_GROUPS = {
     'f814W':       ['f814W'],
     'f606W_f555W': ['f606W', 'f606W_v2', 'f555W'],
     'f160W':       ['f160W'],
+    'f450W':       ['f450W'],     # WFPC2, swells J1103+5322 only
 }
 _GALLERY_FILTERS = ['f438W', 'f606W', 'f814W']   # F225W/F275W products deleted 2026-09-29
 
 SAMPLE_GROUPS = {
-    'slacs_gold':  _SLACS_GROUPS,
-    'slacs_other': _SLACS_GROUPS,
+    'slacs_prime':     _SLACS_GROUPS,
+    'slacs_complex':     _SLACS_GROUPS,
+    'slacs_sparse':     _SLACS_GROUPS,
+    'slacs_late':  _SLACS_GROUPS,
+    'slacs_multi': _SLACS_GROUPS,
+    'swells':      _SLACS_GROUPS,
     'gallery':     {f: [f] for f in _GALLERY_FILTERS},
     'bells':       {'f814W': ['f814W']},
 }

@@ -51,7 +51,7 @@ _p.add_argument('--align',       default='mast', choices=['mast', 'tweakreg'],
                      "delivered files and runs neither updatewcs nor TweakReg; "
                      "'tweakreg' restores the old re-solve, which erases the dither.")
 # Total-exposure-time gate (frames that reach the drizzle, i.e. EXPTIME>MIN_EXPTIME
-# only). slacs_other runs generally shorter total exposures than slacs_gold; below
+# only). non-Gold SLACS runs generally shorter total exposures than SLACS Gold; below
 # BLOCK_EXPTIME no product is written (same outcome as no MAST data), between
 # BLOCK and WARN the drizzle proceeds but is flagged.
 WARN_EXPTIME, BLOCK_EXPTIME = 1200.0, 500.0

@@ -44,7 +44,7 @@ the dipole it was meant to remove. A measurement that says the astrometry is bro
 always the estimator: check it against something the deflector cannot bias before believing it.
 
 WHAT ACTUALLY WAS BROKEN WAS THE PSF KERNELS. Convolving with an off-centre kernel translates
-the image, and these kernels are not centred: 15 of the 90 slacs_gold stamp PSFs are off their
+the image, and these kernels are not centred: 15 of the 90 SLACS Gold stamp PSFs are off their
 own array centre by >0.5px and 5 by >1px, worst ~1.7px, concentrated in the INJECTED builds
 (`inject_wfpc2_psfdb` median 0.44px, `inject_acs_fdpsf` 1.16px, against 0.15-0.32px for
 `inject_stdpsf` and `empirical`). In a kernel swap each band is moved by the OTHER band's
@@ -66,7 +66,7 @@ distinguished by their `source`: Auger+2009 (SLACS IX) for the SLACS lenses, fet
 VizieR J/ApJ/705/1099/lenses by `--fetch-theta-e` (which merges, never overwrites a non-null
 theta_E); Shu+2016 (BELLS GALLERY IV) Table 2 for the 15 gallery lenses; Brownstein+2012 for
 BELLS; Sheu+2025 or Sonnenfeld+2013 for SL2S; Brewer+2012 for J2141-0001 -- the non-SLACS
-rows entered by hand. Every slacs_gold and gallery lens has a measured value, and a lens with
+rows entered by hand. Every SLACS Gold and gallery lens has a measured value, and a lens with
 a row has a successful published lens model, so the arc is known to exist and roughly where. This is the cheapest prior available and it kills the two
 classic false positives at once: the deflector's central residual (inside the annulus) and
 unrelated field galaxies (outside it).
@@ -93,7 +93,7 @@ Usage:
     uv run python scripts/detect_arcs.py --fetch-theta-e
 
     # test the detector over a sample: QC figure per lens + a summary JSON, no products
-    uv run python scripts/detect_arcs.py --sample slacs_gold
+    uv run python scripts/detect_arcs.py --sample slacs_prime
     uv run python scripts/detect_arcs.py --lens J0330-0020 --snr 3.0    # tune one lens
 
     # then review/correct the proposals by hand, one lens at a time:
@@ -124,7 +124,7 @@ THETA_E_JSON = os.path.join(ws_path, 'info', 'catalogues', 'lens_einstein_radii.
 
 #: Bands bluer than the reference band, best first. The blue band carries the source; the red
 #: band carries the deflector and sets the colour reference.
-BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_v2', 'f438W']
+BLUE_PRIORITY = ['f606W', 'f555W', 'f606W_v2', 'f438W', 'f450W']
 #: Reference (red, deflector-dominated) bands, best first. f160W is redder still but sits on a
 #: different grid and a much broader PSF, so it is not used as the reference.
 RED_PRIORITY = ['f814W', 'f555W']
@@ -331,7 +331,7 @@ def centre_kernel(psf):
     """Return `psf` shifted so its own centre sits on the array centre, renormalised.
 
     REQUIRED before the PSF swap, because these kernels are NOT centred: measured over the 90
-    slacs_gold stamp PSFs, the median offset from the array centre is 0.2-0.5px by band, 15
+    SLACS Gold stamp PSFs, the median offset from the array centre is 0.2-0.5px by band, 15
     are off by >0.5px and 5 by >1px, the worst being f606W kernels at ~1.7px (J0822+2652,
     J2341+0000, J0029-0055) -- on several of them even the BRIGHTEST PIXEL is a whole pixel
     off centre, so this is not an estimator artefact.

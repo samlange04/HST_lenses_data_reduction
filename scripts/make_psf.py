@@ -1039,19 +1039,22 @@ def main():
             except Exception as exc:
                 print(f'  WARNING: focus-diverse ePSF unavailable ({exc}); '
                       f'falling back to STDPSF')
-        # WFPC2 F606W: prefer a native-filter ePSF built from the MAST PSF database
-        # (Dauphin ISR WFC3 2021-12) over the STDPSF F555W-substituted proxy. STDPSF
-        # stays the fallback-of-the-fallback if the DB query/build fails.
-        elif inst_key == 'WFPC2' and a.filt.split('_')[0].upper() == 'F606W':
+        # WFPC2 F606W/F814W: prefer a native-filter ePSF built from the MAST PSF database
+        # (Dauphin ISR WFC3 2021-12) over STDPSF (F555W-substituted for F606W; exact for
+        # F814W but with no error calibration). STDPSF stays the fallback-of-the-fallback
+        # if the DB query/build fails.
+        elif (inst_key == 'WFPC2'
+              and a.filt.split('_')[0].upper() in psf_models.WFPC2_DB_FILTERS):
+            db_filt = a.filt.split('_')[0].upper()
             try:
-                print(f'  method: MODEL (WFPC2 F606W MAST PSF DB)  [{tag}]')
+                print(f'  method: MODEL (WFPC2 {db_filt} MAST PSF DB)  [{tag}]')
                 epsf_data, model_ensemble, model_err_method = psf_models.wfpc2_f606w_db_epsf(
                     oversample=oversample, size=star_size, out_scale=scale,
-                    cd_detector=cd_det, return_ensemble=True)
+                    cd_detector=cd_det, return_ensemble=True, filt=db_filt)
                 method_used = 'model_wfpc2_psfdb'
                 err_source = 'db_stars'
             except Exception as exc:
-                print(f'  WARNING: WFPC2 F606W PSF-DB unavailable ({exc}); '
+                print(f'  WARNING: WFPC2 {db_filt} PSF-DB unavailable ({exc}); '
                       f'falling back to STDPSF')
         if method_used is None:
             print(f'  method: MODEL (STDPSF)  [{tag}]')

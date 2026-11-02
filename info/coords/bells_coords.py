@@ -4,7 +4,7 @@ import re
 # ("BOSS Properties of BELLS Candidate Systems")
 # Raw format: HHMMSS.ss[+/-]DDMMSS.s (J2000)
 # Only grade-A single-deflector systems are kept: Table 3 classification E-S-A or L-S-A
-# (21 + 3), the same rule as slacs_other. Excluded grade-A row: J1522+2910 (E-M-A).
+# (21 + 3), the same rule as the non-Gold SLACS lenses. Excluded grade-A row: J1522+2910 (E-M-A).
 # Three of the 24 were later removed from the roster (info/samples/lens_samples.json) and are
 # marked below; their positions stay so the designation list matches the paper.
 _raw = [

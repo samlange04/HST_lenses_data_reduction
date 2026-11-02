@@ -3,8 +3,8 @@
 #
 # Usage: run_positions_all.sh [SAMPLE] [extra make_positions.py flags...]
 #   run_positions_all.sh                     # every sample, best band per lens
-#   run_positions_all.sh slacs_gold          # one sample
-#   run_positions_all.sh slacs_gold --force  # re-mark, one sample
+#   run_positions_all.sh slacs_prime             # one sample
+#   run_positions_all.sh slacs_prime --force     # re-mark, one sample
 #   run_positions_all.sh --filt f606W        # every sample, forced band (see note)
 #
 # make_positions.py already loops every lens WITHIN a sample and marks positions once per
@@ -22,7 +22,7 @@ SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; WS="$(dirname "$SD")"
 
 # All science samples with stamps. Positions are a lens-modelling product, so every sample
 # is in scope (unlike the drizzle runners, which are instrument-specific).
-ALL_SAMPLES="slacs_gold slacs_other gallery bells sl2s_dinos_a sl2s_dinos_x sl2s_wf sl2s_snap"
+ALL_SAMPLES="slacs_prime slacs_complex slacs_sparse slacs_late slacs_multi swells gallery bells sl2s_dinos_a sl2s_dinos_x sl2s_wf sl2s_snap"
 
 if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then
   SAMPLES="$1"; shift            # explicit sample; remaining args pass through

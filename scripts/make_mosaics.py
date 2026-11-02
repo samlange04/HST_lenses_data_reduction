@@ -8,7 +8,7 @@ available lens out on a 5-wide grid, one mosaic per (filter group, data type). N
 is re-drizzled or re-cut - this only reads existing stamp FITS files.
 
 Filter groups come from mosaic_groups.py, shared with make_psf_mosaics.py, so both
-scripts stay in sync. For slacs_gold/slacs_other (SLACS: WFPC2 F606W and ACS F555W
+scripts stay in sync. For the SLACS and swells samples (WFPC2 F606W and ACS F555W
 never share a lens):
     f814W          - ACS/WFC
     f606W_f555W    - WFPC2 F606W (+ split-visit f606W_v2) merged with ACS F555W
@@ -28,8 +28,8 @@ data/mosaics_<size>arcsec/ instead, mirroring make_stamps.py so the two sizes' Q
 never overwrite each other -- see stamp_paths.py.
 
 Usage:
-    uv run python scripts/make_mosaics.py --sample slacs_gold
-    uv run python scripts/make_mosaics.py --sample slacs_gold --size 20
+    uv run python scripts/make_mosaics.py --sample slacs_prime
+    uv run python scripts/make_mosaics.py --sample slacs_prime --size 20
 """
 
 import argparse

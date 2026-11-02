@@ -33,7 +33,7 @@ THUMB_PX = 260
 MOSAIC_W = 1600
 
 # Display order for bands inside a lens card; anything unknown sorts after, alphabetically.
-BAND_ORDER = ['f814W', 'f606W', 'f606W_v2', 'f555W', 'f475X', 'f600LP', 'f438W', 'f160W']
+BAND_ORDER = ['f814W', 'f606W', 'f606W_v2', 'f555W', 'f475X', 'f600LP', 'f438W', 'f450W', 'f160W']
 # lens_instrument.json label -> noise_corr_factors.json key
 NOISE_INSTR = {'ACS/WFC': 'ACS/WFC', 'WFPC2/WF3': 'WFPC2', 'WFPC2/PC': 'WFPC2',
                'WFC3/IR': 'WFC3/IR', 'WFC3/UVIS': 'WFC3/UVIS'}
