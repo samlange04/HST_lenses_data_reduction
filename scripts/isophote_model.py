@@ -94,13 +94,24 @@ def deflector_pixel(sci_path):
     return tuple(float(v) for v in wcs.world_to_pixel(c))
 
 
+_DISPLAY_CACHE = {}
+
+
 def isophote_display(image, pixel_scale, exclude=None, smooth_px=1.5, centre=None):
     """The positions-GUI panel: the isophote residual smoothed by `smooth_px` (a Gaussian sigma)
     and its symmetric display range, so positive (lensed) light shows red and over-subtraction
     blue on the diverging map. `centre` (col, row) starts the fit off-centre (`deflector_pixel`).
-    Returns (array, vmax)."""
-    res = gaussian_filter(isophote_subtract(image, pixel_scale, exclude=exclude, centre=centre),
+    Returns (array, vmax). Memoised on the inputs, so the positions GUI's fit is reused for the
+    marked band's QC PNG written straight after it (each fit takes a few seconds)."""
+    import hashlib
+    img = np.asarray(image, dtype=float)
+    key = hashlib.sha1(img.tobytes() + (b'' if exclude is None else np.asarray(exclude, bool).tobytes())
+                       + repr((img.shape, pixel_scale, smooth_px, centre)).encode()).hexdigest()
+    if key in _DISPLAY_CACHE:
+        return _DISPLAY_CACHE[key]
+    res = gaussian_filter(isophote_subtract(img, pixel_scale, exclude=exclude, centre=centre),
                           smooth_px)
     keep = ~np.asarray(exclude, dtype=bool) if exclude is not None else np.ones(res.shape, bool)
     vmax = float(np.nanpercentile(np.abs(res[keep]), 99.5)) or 1.0
+    _DISPLAY_CACHE[key] = (res, vmax)
     return res, vmax

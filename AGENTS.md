@@ -1566,7 +1566,13 @@ GUI wrote. **Since 2026-11-01 the PNG has the GUI's two panels**, as-observed S/
 left and isophote-subtracted right, with the band's contaminant mask outlined (blanked in the
 subtracted panel) and the positions on both; `save_overlay_png` reads the noise and mask from
 the stamp dir itself, so the GUI, `--rebroadcast` and `--overlays-only` all draw the same
-picture. All 271 were rebuilt that day. On a group-centred `slacs_multi` stamp the fit starts
+picture. All 271 were rebuilt that day. **One look everywhere (2026-11-02):** the as-observed panels of the
+positions GUI and PNG, the mask and arc-mask Scribbler GUIs and the arc-mask QC PNG all use the
+dataset QC subplots' inferno colour map with an asinh stretch (the Clicker panels and PNGs exactly:
+0.5–99.5 percentile limits, `AsinhStretch(0.1)`; the Scribbler keeps its own arcsinh stretch about
+the sky level). Only the isophote residual stays on a red-blue diverging map, since its sign
+matters. The positions GUI window now disappears on Esc at once, and the marked band's isophote
+fit is reused for its PNG rather than refitted. On a group-centred `slacs_multi` stamp the fit starts
 at the catalogue deflector (`isophote_model.deflector_pixel`), so only the main galaxy is
 subtracted and its companions stay visible. Where no isophote fit converges the panel is left
 unsubtracted (a note is printed): gallery F438W (the deflector is not detected, 5 bands) and

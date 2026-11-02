@@ -533,7 +533,8 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
         image=base, brush_width=brush_width, proposal=proposal,
         subtract_radial=subtract_radial, side_by_side=side_by_side,
         positions=positions or None, position_marker_size=position_marker_size,
-        mask_overlay=mask_overlay, title=title)
+        mask_overlay=mask_overlay, title=title,
+        cmap='inferno')   # the dataset QC subplots' colour map (2026-11-02); the Scribbler's own arcsinh stretch
     _drain_tk()
     return scribbler, pixel_scales, sci_hdr, brush_width, start_radius, source_label
 

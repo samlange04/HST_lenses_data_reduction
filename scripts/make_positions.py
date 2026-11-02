@@ -216,11 +216,14 @@ def deflector_sky(stamp_dir, prefix):
 # on the jet display as well as on a light or dark patch of it.
 STROKE = [patheffects.withStroke(linewidth=4, foreground='black')]
 MARK_STROKE = [patheffects.withStroke(linewidth=2.5, foreground='black')]  # the GUI's click crosses
+# The as-observed panels (GUI and PNG) use the dataset QC subplots' look since 2026-11-02: inferno
+# with 0.5-99.5 percentile limits (PercentileInterval(99)) and AsinhStretch(0.1).
+DISPLAY_CMAP = 'inferno'
 SET_COLOURS = ['white', 'magenta', 'lime', 'orange', 'cyan', 'yellow', 'red', 'deepskyblue', 'pink']
 
 
 def save_overlay_png(sci_native, pixel_scales, sets, out_path,
-                     stretch='asinh', vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                     stretch='asinh', vmin_percent=0.5, vmax_percent=99.5, asinh_a=0.1,
                      vmax_value=None, subtract='isophote'):
     """QC overlay: the marked positions over the band's AS-OBSERVED S/N (left) and its
     ISOPHOTE-SUBTRACTED view (right), the same two panels the GUI shows (standard since
@@ -260,15 +263,17 @@ def save_overlay_png(sci_native, pixel_scales, sets, out_path,
                                                 vmax_percent=vmax_percent, asinh_a=asinh_a,
                                                 exclude=cont if cont.any() else None,
                                                 vmax_value=vmax_value)
-            ax.imshow(np.asarray(disp.native), cmap='jet', extent=ext)
+            ax.imshow(np.asarray(disp.native), cmap=DISPLAY_CMAP, extent=ext)
         else:
             res, vmax_div = sub
             disp = np.array(res, dtype=float)
             disp[cont] = np.nan
             ax.imshow(disp, cmap='RdBu_r', vmin=-vmax_div, vmax=vmax_div, extent=ext)
-        if cont.any():
-            ax.contour(cont, levels=[0.5], colors='black', linewidths=0.8, extent=ext,
-                       origin='upper')
+        if cont.any():   # white on a black stroke over inferno, black over the red-blue residual
+            cs = ax.contour(cont, levels=[0.5], colors='white' if sub is None else 'black',
+                            linewidths=0.8, extent=ext, origin='upper')
+            if sub is None:
+                cs.set(path_effects=[patheffects.withStroke(linewidth=2.2, foreground='black')])
         for k, positions in enumerate(sets):
             if not positions:
                 continue
@@ -288,7 +293,7 @@ def save_overlay_png(sci_native, pixel_scales, sets, out_path,
 
 def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
                        display='snr', display_base=None, stretch='asinh',
-                       vmin_percent=5.0, vmax_percent=99.5, asinh_a=0.1,
+                       vmin_percent=0.5, vmax_percent=99.5, asinh_a=0.1,
                        mask_center=0.0, vmax_value=None, subtract='isophote',
                        side_by_side=True, contaminants=None, deflector=None):
     """Run the Clicker GUI once and return the clicked position SETS, [[(y, x), ...], ...]
@@ -398,7 +403,7 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
                 # Outline ON the masked pixels (mask_boundary is an INNER boundary), so the
                 # outline survives the interior being blanked to the colourmap floor.
                 disp[make_masks.mask_boundary(cont)] = 1.0
-            im = ax.imshow(disp, cmap='jet', extent=ext)
+            im = ax.imshow(disp, cmap=DISPLAY_CMAP, extent=ext)
         fig.colorbar(im, ax=ax, fraction=0.046)
         if mask_center and mask_center > 0:
             ax.add_patch(plt.Circle((0.0, 0.0), mask_center, fill=False, color='white',
@@ -469,6 +474,7 @@ def mark_positions_gui(sci_native, pixel_scales, lens, filt, search_box_size,
     fig.canvas.mpl_disconnect(cid)
     fig.canvas.mpl_disconnect(kid)
     plt.close(fig)
+    make_masks._drain_tk()   # let Tk remove the window now, not after the per-band PNGs below
 
     if moved:
         print(f"  snap distances: max {max(moved)/pixel_scales:.1f} px, "
@@ -818,8 +824,9 @@ def main():
                         'bright cores and faint arcs together)')
     p.add_argument('--asinh-a', type=float, default=0.1,
                    help='asinh softening (smaller = stronger stretch; --stretch asinh only)')
-    p.add_argument('--vmin-percent', type=float, default=5.0,
-                   help='lower clip percentile for the display stretch (default 5.0)')
+    p.add_argument('--vmin-percent', type=float, default=0.5,
+                   help='lower clip percentile for the display stretch (default 0.5, the '
+                        'dataset QC subplots\' PercentileInterval(99))')
     p.add_argument('--vmax-percent', type=float, default=99.5,
                    help='upper clip percentile for the display stretch (default 99.5)')
     p.add_argument('--mask-center', type=float, default=0.0, metavar='ARCSEC',
