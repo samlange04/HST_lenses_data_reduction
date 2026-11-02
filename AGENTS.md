@@ -1879,6 +1879,16 @@ pixel of band mismatch plus genuine WFPC2 PSF error; a better f606W kernel would
 than any detector tuning. **This is a proposal generator, not a detector to be believed** —
 nothing is written without the GUI review.
 
+**A proposal can flip on a ~1% PSF change (J0029-0055, found 2026-11-02).** The 2026-09-16 run
+proposed two components on J0029-0055 (536 px, core dipole 0.75); from the 2026-09-30 PSF rebuild
+(saturation gate: its F814W kernel went to 6 stars) the detector proposes nothing (dipole 1.61).
+The stamps are byte-identical. With the median of the 37 other SLACS ACS F814W empirical
+kernels in place of its own, the old result returns (529 px, dipole 0.81). The two kernels
+differ by 1.3% (L2), mostly a sub-pixel antisymmetric term, about the kernel's own bootstrap
+error (1.0%): neither is shown wrong. The components were marginal (mirror −1.8 against the
+−2σ cut), so the dipole change tipped them. Treat a lens's proposal as fragile when its
+mirror values sit near the cut, and draw the arcs by hand there.
+
 **The band-offset diagnostic must compare RAW against RAW.** It reads the regridded blue stamp
 against the red stamp on its own grid, *neither* PSF-matched. An earlier version compared the
 PSF-*matched* red against the raw blue and therefore measured the kernels as much as the sky —
