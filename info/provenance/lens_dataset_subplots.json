@@ -746,34 +746,34 @@
         },
         "J0755+3445": {
             "f438W": {
-                "prefix": "stamp12",
+                "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.183958,
+                "frac_masked": 0.005446,
                 "bcfill": false,
-                "output": "data/stamps/gallery/J0755+3445/f438W/stamp12_dataset.png"
+                "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f438W/stamp30_dataset.png"
             },
             "f606W": {
-                "prefix": "stamp12",
+                "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.195308,
+                "frac_masked": 0.007005,
                 "bcfill": false,
-                "output": "data/stamps/gallery/J0755+3445/f606W/stamp12_dataset.png"
+                "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f606W/stamp30_dataset.png"
             },
             "f814W": {
-                "prefix": "stamp12",
+                "prefix": "stamp30",
                 "drizzle_pass": "cr",
                 "stretch": "asinh",
                 "cmap": "inferno",
                 "pixel_scale_arcsec": 0.0396,
-                "frac_masked": 0.206516,
+                "frac_masked": 0.00881,
                 "bcfill": false,
-                "output": "data/stamps/gallery/J0755+3445/f814W/stamp12_dataset.png"
+                "output": "data/stamps/gallery/multi_band/multi_galaxy/J0755+3445/f814W/stamp30_dataset.png"
             }
         },
         "J0856+2010": {

@@ -519,7 +519,13 @@
                 "band_mode": "multi_band",
                 "category": "multi_galaxy",
                 "category_reason": "companion galaxy; needs shear 0.24 (Shu+2016) (Sam, 2026-11-02)",
-                "mast_target": "SDSSJ075523.52+344539.5"
+                "mast_target": "SDSSJ075523.52+344539.5",
+                "note": "multi_galaxy (Sam, 2026-11-02): an extended galaxy 5.8\" away (07:55:23.294 +34:45:34.39, r_half 0.6\", ~2.9x the deflector light within 1.5\" in F814W) is the companion behind Shu+2016's shear of 0.24. stamp_center = light-weighted centroid (0.5\" apertures, F814W) of the members with >= 25% of the brightest: that galaxy (flux 1.00), the deflector 07:55:23.513 +34:45:39.46 (0.44) and an object 8.7\" N (07:55:23.095 +34:45:46.39, 0.28); 3.0\" from the deflector. stamp_size 30, as the SLACS multi_galaxy lenses.",
+                "stamp_center": [
+                    "07:55:23.318",
+                    "+34:45:37.639"
+                ],
+                "stamp_size": 30
             },
             "J0856+2010": {
                 "band_mode": "single_band",
