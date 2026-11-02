@@ -108,6 +108,7 @@ import stamp_paths
 # Every display/tree/discovery/broadcast helper is make_masks'. This script contributes the
 # opposite polarity, the arc-specific display defaults, and its own product name.
 import make_masks
+import positions_io
 import detect_arcs
 
 ARC_MASKS_JSON = os.path.join(ws_path, 'info', 'provenance', 'lens_arc_masks.json')
@@ -234,7 +235,7 @@ def load_positions(stamp_dir, prefix):
     if not os.path.exists(path):
         return []
     try:
-        return [(float(p[0]), float(p[1])) for p in al.from_json(file_path=path)]
+        return positions_io.flatten(positions_io.read_sets(path))   # every set's images
     except Exception as exc:                       # a hand-edited/partial file must not block
         print(f"  NOTE: could not read {os.path.basename(path)} ({exc}); no position crosses")
         return []
