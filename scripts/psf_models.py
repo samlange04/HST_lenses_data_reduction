@@ -129,13 +129,13 @@ def _grid_from_M(cx, cy, M, n):
 
 
 def _base_filter(filt):
-    """Strip a split-visit suffix (f606W_v2 -> f606W) for filter-library lookups.
+    """Strip a split-visit suffix (f606W_visit2 -> f606W) for filter-library lookups.
 
     Multi-visit lenses (J0728, J0822) are keyed per visit at the product-directory
     level, but the optics are identical across visits, so the model PSF is the base
     filter's. Without this the STDPSF path KeyErrors on the raw directory name.
     """
-    return re.sub(r'_v\d+$', '', filt)
+    return re.sub(r'_visit\d+$', '', filt)
 
 
 def _resolve_filter(inst_key, filt):

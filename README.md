@@ -29,9 +29,9 @@ tools drew the masks and marked the positions.
 |---|---|---|---|
 | `slacs_prime` | 23 | SLACS (Bolton et al. 2008; Auger et al. 2009): Etherington et al. (2022) "Gold" lenses with marked image positions and no flagged morphology difficulty | F814W (23), F606W (12), F555W (11), F160W (9) |
 | `slacs_complex` | 4 | SLACS lenses with image positions whose morphology looks potentially difficult (e.g. the source overlapping the lens centre) | F814W (4), F606W (3), F555W (1), F160W (1) |
-| `slacs_sparse` | 40 | The remaining early-type SLACS lenses (no marked positions, or a single band) | F606W (32), F814W (16), F160W (7), F555W (4) |
+| `slacs_sparse` | 40 | The remaining early-type SLACS lenses (no marked positions, or a single band) | F606W (36, plus 6 second visits), F814W (17), F160W (7), F555W (4) |
 | `slacs_late` | 2 | SLACS lenses with a late-type (spiral) deflector | F606W (2), F814W (1) |
-| `slacs_multi` | 4 | SLACS lenses with more than one deflector galaxy | F606W (2), F814W (2), F160W (2) |
+| `slacs_multi` | 4 | SLACS lenses with more than one deflector galaxy | F606W (4, plus 1 second visit), F814W (1), F160W (2) |
 | `swells` | 8 | SWELLS (Treu et al. 2011): disk-galaxy deflectors that SLACS also found | F606W (8), F160W (4), F814W (4), F450W (1) |
 | `gallery` | 15 | BELLS GALLERY (Shu et al. 2016) | F606W (15), F814W (6), F438W (6) |
 | `bells` | 21 | BELLS (Brownstein et al. 2012) | F814W (21) |
@@ -40,7 +40,7 @@ tools drew the masks and marked the positions.
 | `sl2s_wf` | 10 | SL2S with older HST WFPC2 imaging | F606W (10), F475X (2), F600LP (2) |
 | `sl2s_snap` | 5 | SL2S with short "snapshot" imaging | F475X (5), F600LP (5) |
 
-That is 258 lens-and-filter images in total. A filter name gives its approximate central
+That is 271 lens-and-filter images in total. A filter name gives its approximate central
 wavelength in nanometres: F438W and F450W are blue, F606W and F475X/F600LP are visible light, F814W is
 near-infrared, and F160W is infrared. Seeing the same lens in several colours helps tell the
 (usually blue) lensed source apart from the (red) deflector.
@@ -54,7 +54,8 @@ The data come from four HST cameras. They differ in pixel size, so the stamps do
 | WFC3/UVIS | F438W, F475X, F600LP, F606W, F814W | 0.0396″ | 303 × 303 |
 | WFC3/IR | F160W | 0.06″ (resampled from 0.13″) | 200 × 200 |
 
-Every stamp covers the same 12″ × 12″ patch of sky, centred on the deflector.
+Every stamp covers a 12″ × 12″ patch of sky centred on the deflector, except `slacs_multi`, whose
+stamps are 30″ × 30″ (pixel counts scale to match) and centred on the group of deflector galaxies.
 
 ## Using the finished products
 

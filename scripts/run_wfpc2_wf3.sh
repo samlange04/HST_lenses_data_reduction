@@ -61,19 +61,32 @@ echo "=== WFPC2/WF3: ${#LENSES[@]} lenses in sample '$SAMPLE' ==="
 # J0728+3835 and J0822+2652 each have two visits at a ~14-16 deg roll difference, i.e.
 # two guide-star solutions. They are drizzled as SEPARATE per-visit datasets rather
 # than cross-registered, so each visit is single-guide-star and can use MAST alignment.
-# Each field is "PA_V3:out_suffix"; the drizzle keeps frames within 1 deg of that PA.
+# Each field is "SEL:out_suffix", SEL being either a PA_V3 (the drizzle keeps frames within
+# 1 deg of it) or "v<visit>" (frames whose rootname starts with that 6-character visit prefix).
 # The longer-exptime visit is the primary product (bare "f606W", no suffix); any
-# shorter visit is "_v2", "_v3", ... in descending exptime order.
-#   J0822+2652 -> f606W (4x1100s, PA 87.918716) + f606W_v2 (2x1100s, PA 101.8479)
+# shorter visit is "_visit2", "_visit3", ... in descending exptime order.
+#   J0822+2652 -> f606W (4x1100s, PA 87.918716) + f606W_visit2 (2x1100s, PA 101.8479)
 #   J0728+3835 -> f606W only (PA 91.374092); its other, 2-frame visit has just 1
 #                 x-dither-phase and cannot reach 0.05", so the drizzle script skips
 #                 it by design and it never gets a product/suffix at all.
-# J1142+1001 is deliberately NOT here: its two visits share a roll (PA 119.00 vs
-# 118.87), so there is no offset to separate and it stays combined.
+# Whether to split is decided by the MEASURED visit-to-visit offset (combine only below 0.03";
+# scripts/measure_visit_offset.py), not by roll. J1142+1001 was combined until 2026-10-29 because
+# its visits share a roll (PA 119.00 vs 118.87), but they are 0.212" apart, so it is split by visit:
+# ua1l38 (2x1100s) primary, ua1lc8 (4x400s) second. J1719+2939 (two programs, 1.7 deg apart, both
+# Gaia-fitted, 0.003") stays combined. The other Auger+2009 two-program lenses (4x400s F606W from
+# GO-10886 and from GO-11202, equal exposure) split by visit; the GO-11202 visit is the primary,
+# being the visit of these lenses' WFPC2 F814W (J1436+3640: its F160W program).
 split_visits_for() {
   case "$1" in
     J0728+3835) echo "91.374092:" ;;
-    J0822+2652) echo "87.918716: 101.8479:_v2" ;;
+    J0822+2652) echo "87.918716: 101.8479:_visit2" ;;
+    J1142+1001) echo "vua1l38: vua1lc8:_visit2" ;;
+    J1306+0600) echo "vua1l36: vu9op52:_visit2" ;;
+    J1313+4615) echo "vua1l40: vu9op53:_visit2" ;;
+    J1318-0313) echo "vua1l41: vu9op54:_visit2" ;;
+    J1319+1504) echo "vua1l48: vu9op55:_visit2" ;;
+    J1436+3640) echo "vua1lz8: vu9op57:_visit2" ;;
+    J1644+2625) echo "vua1l49: vu9op59:_visit2" ;;
     *)          echo "" ;;
   esac
 }
@@ -106,7 +119,11 @@ run_product() {
   # ${extra_args[@]+"${extra_args[@]}"} below, not "${extra_args[@]}": under set -u, macOS
   # bash 3.2 treats an EMPTY array as unbound and aborts the whole runner (2026-10-04).
   local -a extra_args=()
-  [ -n "$pa" ] && extra_args+=(--pa "$pa")
+  case "$pa" in
+    "") ;;
+    v*) extra_args+=(--visit "${pa#v}") ;;
+    *)  extra_args+=(--pa "$pa") ;;
+  esac
   [ -n "$suffix" ] && extra_args+=(--out-suffix "$suffix")
   [ -n "$BCFILL" ] && extra_args+=(--bcfill)
 
@@ -157,7 +174,7 @@ run_product() {
 
 # Failures are recorded as "lens|pa|suffix" triples, not a bare "lens$suffix" string --
 # the primary visit of a split lens now carries an empty suffix indistinguishable from
-# a non-split lens, so decoding "_v" out of a concatenated name no longer works, and the
+# a non-split lens, so decoding "_visit" out of a concatenated name no longer works, and the
 # retry pass needs the PA back too (a bare key alone under-selects a split lens's frames).
 failed_key() { local i="$1"; local lens="${i%%|*}" rest="${i#*|}"; echo "${lens}${rest#*|}"; }
 

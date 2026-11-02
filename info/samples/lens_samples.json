@@ -61,7 +61,7 @@
         }
     },
     "slacs_sparse": {
-        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Also the 12 early-type (E, S0, E/S0) Auger et al. 2009 grade-A lenses added 2026-10-29: five Bolton grade-B lenses Auger promoted (J0819+4534, J1029+6115, J1330-0148, J1614+4522, J2347-0005) and seven of Auger's new WFPC2 targets (J1306+0600, J1313+4615, J1318-0313, J1644+2625, J1709+2324, J1719+2939, J2343-0030). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
+        "description": "The remaining early-type SLACS lenses (Bolton et al. 2008 Table 4 class E-S-A or E-S-A*: definite lens, single early-type deflector). Gold lenses whose positions file is deliberately empty (J0157-0056, J0912+0029, J0936+0913, J1142+1001, J1143-0144, J1213+6708, J1402+6321, J2300+0022), and the non-Gold lenses without both marked positions and F814W plus an optical band (mostly WFPC2 F606W only). Also the 11 early-type (E, S0, E/S0) Auger et al. 2009 grade-A lenses added 2026-10-29: five Bolton grade-B lenses Auger promoted (J0819+4534, J1029+6115, J1330-0148, J1614+4522, J2347-0005) and six of Auger's new WFPC2 targets (J1306+0600, J1313+4615, J1318-0313, J1644+2625, J1709+2324, J1719+2939) and J1319+1504 (moved from slacs_multi 2026-10-30). Three (J0109+1500, J0405-0455, J1259+6134) have no usable HST imaging. Every non-Gold lens resolves on MAST under its plain SDSS<LENS> name, so a no-data result is a real absence. Split from slacs_gold/slacs_other on 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
         "lenses": {
             "J0037-0942": {},
@@ -102,6 +102,9 @@
             "J1318-0313": {
                 "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E."
             },
+            "J1319+1504": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger: needs special subtraction for nearby galaxies in the field. Auger morph E/S0. In slacs_multi 2026-10-29/30, moved to slacs_sparse 2026-10-30: its nearby objects are minor (a compact satellite at 1.77\" with 1.0% of the deflector light, about as red as the deflector; a bluer stream and knot at 4.7-6.7\", each <= 1.7%), so an external-shear term covers them (SIS-scaled shear ~0.03 and ~0.01). Auger's remark is about light subtraction, and Auger does not flag it E*."
+            },
             "J1330-0148": {
                 "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph S0."
             },
@@ -133,9 +136,6 @@
             },
             "J2302-0840": {},
             "J2321-0939": {},
-            "J2343-0030": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0."
-            },
             "J2347-0005": {
                 "note": "Bolton 2008 E-S-B, promoted to Auger et al. 2009 (SLACS IX) grade A; Auger morph E."
             }
@@ -152,20 +152,37 @@
         }
     },
     "slacs_multi": {
-        "description": "SLACS lenses with more than one deflector galaxy (group-scale or multi-galaxy): the Bolton et al. 2008 Table 4 grade-A lenses of class E-M-A* (early-type, multiple foreground galaxies, definite lens), which the original E/L-S-A selection excluded. J0808+4706 (Bolton Table 6: 'nearby companion prevents simple SIE modeling'; ACS F814W GO-10886, WFPC2 F606W and WFC3/IR F160W GO-11202) and J1718+6424 ('double foreground galaxy'; WFPC2 F606W GO-10798 only). The third, J1618+4353 ('double foreground galaxy'), has only the 420 s SNAP F814W/F435W (GO-10174), below BLOCK_EXPTIME, so it is not in the roster. Also two Auger et al. 2009 grade-A lenses with companions: J1436+3640 (Auger morph E*, 'at least one close companion galaxy') and J1319+1504 (Auger: needs special subtraction for nearby galaxies); both WFPC2 F606W from GO-10886 and GO-11202 (split by program), plus WFPC2 F814W (J1319) or WFC3/IR F160W (J1436). Created 2026-10-29.",
+        "description": "SLACS lenses with more than one deflector galaxy (group-scale or multi-galaxy): the Bolton et al. 2008 Table 4 grade-A lenses of class E-M-A* (early-type, multiple foreground galaxies, definite lens), which the original E/L-S-A selection excluded. J0808+4706 (Bolton Table 6: 'nearby companion prevents simple SIE modeling'; ACS F814W GO-10886, WFPC2 F606W and WFC3/IR F160W GO-11202) and J1718+6424 ('double foreground galaxy'; WFPC2 F606W GO-10798 only). The third, J1618+4353 ('double foreground galaxy'), has only the 420 s SNAP F814W/F435W (GO-10174), below BLOCK_EXPTIME, so it is not in the roster. Also J1436+3640, an Auger et al. 2009 grade-A lens with morphology E* ('at least one close companion galaxy'): WFPC2 F606W from GO-10886 and GO-11202 plus WFC3/IR F160W. (J1319+1504 was here 2026-10-29/30 and moved to slacs_sparse: its nearby objects carry <= 2% of its light.) Also J2343-0030 (Auger 2009 grade A; an edge-on disk companion 7.3\" away with ~57% of its light; moved from slacs_sparse 2026-11-01). Stamps are 30\" (sample-level stamp_size; the group light is still ~1.2-1.5% of the centre at r = 10\"), centred on the light-weighted centroid of each lens's member galaxies (per-lens stamp_center, 2026-10-30), so the whole group is in the stamp. Created 2026-10-29.",
         "coords": "info/coords/slacs_coords.py",
+        "stamp_size": 30,
         "lenses": {
             "J0808+4706": {
-                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: nearby companion prevents simple SIE modeling."
-            },
-            "J1319+1504": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger: needs special subtraction for nearby galaxies in the field. Auger morph E/S0."
+                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: nearby companion prevents simple SIE modeling. stamp_center = light-weighted centroid (0.5\" apertures, f814W) of the member galaxies: 08:08:58.793 +47:06:38.734 (flux 1.00); 08:08:58.720 +47:06:40.507 (flux 0.41).",
+                "stamp_center": [
+                    "08:08:58.771",
+                    "+47:06:39.252"
+                ]
             },
             "J1436+3640": {
-                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger morph E* (at least one close companion galaxy) and needs special subtraction for nearby galaxies."
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target; Auger morph E* (at least one close companion galaxy) and needs special subtraction for nearby galaxies. stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 14:36:05.857 +36:40:46.134 (flux 1.00); 14:36:05.617 +36:40:47.445 (flux 0.85); 14:36:05.630 +36:40:46.335 (flux 0.53). stamp_size 30 (2026-10-30): its group light is still 1.5% of the centre at r = 10\", the edge of a 20\" stamp (0.27% at 15\").",
+                "stamp_center": [
+                    "14:36:05.721",
+                    "+36:40:46.646"
+                ]
             },
             "J1718+6424": {
-                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: double foreground galaxy. WFPC2 F606W only (GO-10798)."
+                "note": "Bolton et al. 2008 Table 4 E-M-A*; Table 6: double foreground galaxy. WFPC2 F606W only (GO-10798). stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 17:18:37.420 +64:24:51.949 (flux 1.00); 17:18:37.179 +64:24:50.652 (flux 0.41).",
+                "stamp_center": [
+                    "17:18:37.350",
+                    "+64:24:51.571"
+                ]
+            },
+            "J2343-0030": {
+                "note": "Auger et al. 2009 (SLACS IX) grade A, new WFPC2 target (Auger Table 1); Auger morph E/S0. Moved to slacs_multi 2026-11-01: an edge-on disk companion 7.3\" SW carries ~57% of the deflector's light (SDSS r 17.85 vs 17.23) at photo-z 0.162 +/- 0.014 (lens 0.181), SIS-scaled shear ~0.09, the regime BELLS J1337+3620 was removed for. stamp_center = light-weighted centroid (0.5\" apertures, f606W) of the member galaxies: 23:43:58.863 -00:30:21.973 (flux 1.00); 23:43:58.688 -00:30:28.805 (flux 0.33).",
+                "stamp_center": [
+                    "23:43:58.820",
+                    "-00:30:23.659"
+                ]
             }
         }
     },

@@ -300,7 +300,7 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
 # sampling, bright blue arcs), so every Dinos lens -- including J0959+0206, which also has
 # F814W -- opens on F475X; snapshot-only lenses open on F475X over F600LP. No SLACS, GALLERY
 # or BELLS lens has either band, so their primary is unchanged.
-_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_v2', 'f555W', 'f160W', 'f438W', 'f450W', 'f275W',
+_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_visit2', 'f555W', 'f160W', 'f438W', 'f450W', 'f275W',
                   'f225W', 'f600LP']
 
 

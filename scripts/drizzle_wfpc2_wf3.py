@@ -117,12 +117,17 @@ _p.add_argument('--nocrrej', action=argparse.BooleanOptionalAction, default=Fals
                 help='also produce the no-CR comparison drizzle (off by default)')
 # Single-visit drizzling for multi-visit lenses. --pa restricts the drizzle to frames
 # within 1 deg of that PA_V3 (one guide-star solution -> clean MAST registration);
-# --out-suffix tags the output/work dir (e.g. f606W -> f606W_v2) so the two visits do
+# --out-suffix tags the output/work dir (e.g. f606W -> f606W_visit2) so the two visits do
 # not overwrite each other -- empty (default) for the primary, longer-exptime visit,
 # same as any other filter. Used for J0728+3835 / J0822+2652, whose two visits have a
 # 14-15 deg roll split that TweakReg cannot co-register below ~0.3": drizzle each visit
 # separately and let the modelling (PyAutoLens DatasetModel.grid_offset) fit the offset.
 _p.add_argument('--pa',          type=float, default=None)
+# --visit keeps only the frames of one visit: those whose rootname starts with the given
+# 6-character visit prefix (e.g. ua1l38). Roll cannot always tell visits apart: J1318-0313's
+# two (GO-10886, GO-11202) are 0.97 deg apart and J1142+1001's (both GO-11202) 0.13 deg,
+# yet each pair is 0.2-0.4" apart on the sky (2026-10-29; scripts/measure_visit_offset.py).
+_p.add_argument('--visit',       default=None)
 _p.add_argument('--out-suffix',  default='')
 # Bad-column fill (Bolton-style), the WFPC2 sibling of drizzle_acs_wfc.py --bcfill. WF3
 # carries genuine full-height dead columns flagged by WFPC2 c1m DQ bits 2 (calibration/mask
@@ -215,7 +220,7 @@ ws_path     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Per-lens LACosmic CR-param overrides (info/overrides/lens_cr_params.json): precedence
 # hardcoded default (4.5/5.0) < JSON < explicit CLI flag. A None means the flag was
 # not passed, so the JSON (else the default) wins. Keyed on the product filt (base
-# filter, or a split-visit key like f606W_v2), matching what --filt receives.
+# filter, or a split-visit key like f606W_visit2), matching what --filt receives.
 _cr_ovr = info_json.entry(
     os.path.join(ws_path, 'info', 'overrides', 'lens_cr_params.json'), sample, lens, filt, {})
 if _a.lacosmic_sigclip is None:
@@ -232,7 +237,7 @@ if _cr_ovr:
 # bcfill and the standard reduction never collide.
 _variant    = 'bcfill' if _a.bcfill else ''
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
-# take --out-suffix, so both visits share the one download but write to f606W / _v2.
+# take --out-suffix, so both visits share the one download but write to f606W / _visit2.
 data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
 output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant),
                            sample, lens, filt + _a.out_suffix)
@@ -265,7 +270,7 @@ except (KeyError, ImportError):
 # ── Info JSON paths ────────────────────────────────────────────────────────────
 filt_key             = filt  # e.g. 'f606W' — the MAST filter name, used for querying
 # Tracking-JSON key. It mirrors the product directory, so a split-visit run
-# (--out-suffix _v2) is recorded under 'f606W_v2', not 'f606W' -- only the primary
+# (--out-suffix _visit2) is recorded under 'f606W_visit2', not 'f606W' -- only the primary
 # (longer-exptime, empty-suffix) visit takes the bare filter key. Writing every visit
 # under the bare filter name is what once left J0728+3835 claiming a combined
 # 6600s/6-obsid f606W product that has never existed on disk (the real product is
@@ -399,6 +404,9 @@ if _a.pa is not None:
     _inputs = [f for f in _inputs
                if abs(float(fits.getheader(f).get('PA_V3', 1e9)) - _a.pa) < 1.0]
     print(f'=== Single-visit: {len(_inputs)} frames within 1deg of PA_V3={_a.pa} ===')
+if _a.visit is not None:
+    _inputs = [f for f in _inputs if os.path.basename(f).startswith(_a.visit)]
+    print(f'=== Single-visit: {len(_inputs)} frames from visit {_a.visit} ===')
 
 # Keep only frames whose WF3 chip actually contains the lens. MAST's WFPC2 footprint
 # (s_region) covers the PC chip alone, so it cannot vet this, and a target name is no

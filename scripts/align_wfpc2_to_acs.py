@@ -85,12 +85,12 @@ MAX_SHIFT = 1.5   # arcsec; a larger apparent offset means the tie failed -> ski
 # Product-filename prefix per band directory, so --target/--ref can name any band. The
 # prefix is set by the drizzle script that wrote the band, not by the filter, which is why
 # f814W and f555W share one (both come from drizzle_acs_wfc.py) and the split-visit
-# f606W_v2 shares WFPC2's. A band that more than one camera can supply lists every
+# f606W_visit2 shares WFPC2's. A band that more than one camera can supply lists every
 # prefix, tried in order: the Auger+2009 SLACS targets with no ACS take F814W from WFPC2
 # (2026-10-29), and one filter key holds one instrument per lens, so at most one matches.
 BAND_PREFIX = {
     'f606W':    ('wfpc2_wf3', 'acs_wfc_flc'),
-    'f606W_v2': 'wfpc2_wf3',
+    'f606W_visit2': 'wfpc2_wf3',
     'f450W':    'wfpc2_wf3',
     'f814W':    ('acs_wfc_flc', 'wfpc2_wf3'),
     'f555W':    'acs_wfc_flc',
@@ -107,7 +107,7 @@ AUTO_REF_ORDER = ('f814W', 'f600LP', 'f475X', 'f160W')
 
 
 def band_prefix(filt):
-    """Product prefix for a band directory, tolerating any f606W_v<N> split-visit key."""
+    """Product prefix for a band directory, tolerating any f606W_visit<N> split-visit key."""
     if filt in BAND_PREFIX:
         return BAND_PREFIX[filt]
     base = filt.split('_')[0]
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     p.add_argument('--lens')
     p.add_argument('--all', action='store_true')
     p.add_argument('--f606-dir', default='f606W',
-                   help='F606W band subdirectory (e.g. f606W_v2 for a split lens\'s second visit)')
+                   help='F606W band subdirectory (e.g. f606W_visit2 for a split lens\'s second visit)')
     p.add_argument('--target', default=None,
                    help='band whose CRVAL is shifted (default: --f606-dir, i.e. F606W). Use '
                         'this when the mis-fit band is not F606W -- check WCSNAME first')

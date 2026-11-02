@@ -10,7 +10,7 @@ scripts consult. Everything here is tracked in git and is small; it is what lets
 write them only through `scripts/info_json.py` (`load` / `update`), which keeps all three
 levels sorted. The one exception is `lens_einstein_radii.json`, a catalogue keyed by lens
 alone. A band key is the product directory name, so a split-visit WFPC2 lens has `f606W` and
-`f606W_v2`; `null` for a band means "tried, no data or gated out", and an absent key means
+`f606W_visit2`; `null` for a band means "tried, no data or gated out", and an absent key means
 "never run".
 
 **Folders.** Files are grouped by who writes them (since 2026-10-26).

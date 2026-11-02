@@ -33,12 +33,12 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
 
 | sample | bands | stamps + PSF + psf_err + dataset | contaminant masks | positions JSON | arc masks (optional, untracked) |
 |---|---|---|---|---|---|
-| `slacs_prime` | f814W 23, f606W 13 (incl. `f606W_v2`), f555W 11, f160W 9 | all 56 | all 56 | all 56 | f814W 23 |
+| `slacs_prime` | f814W 23, f606W 13 (incl. `f606W_visit2`), f555W 11, f160W 9 | all 56 | all 56 | all 56 | f814W 23 |
 | `slacs_complex` | f814W 4, f606W 3, f555W 1, f160W 1 | all 9 | all 9 | all 9 | f814W 3 |
-| `slacs_sparse` | f606W 32, f814W 16 (5 WFPC2), f160W 7, f555W 4 | all 59 | 44 of 59 | 44 of 59 (14 deliberately empty) | f606W 10, f814W 8 |
-| `slacs_late` | f606W 2, f814W 1 | all 3 | 2 of 3 | 2 of 3 | f814W 1 |
-| `slacs_multi` | f606W 2, f814W 2 (1 WFPC2), f160W 2 | all 6 | 0 of 6 | 0 of 6 | — |
-| `swells` | f606W 8, f160W 4, f814W 4, f450W 1 (WFPC2) | all 17 | 13 of 17 | 13 of 17 (2 deliberately empty) | f814W 3 |
+| `slacs_sparse` | f606W 42 (incl. 6 `f606W_visit2`), f814W 17 (6 WFPC2), f160W 7, f555W 4 | all 70 | all 70 | 60 of 70 (14 lenses deliberately empty) | f606W 10, f814W 8 |
+| `slacs_late` | f606W 2, f814W 1 | all 3 | all 3 | 2 of 3 | f814W 1 |
+| `slacs_multi` | f606W 5 (incl. 1 `f606W_visit2`), f814W 1, f160W 2 | all 8 | 7 of 8 (J2343's carried over, unreviewed) | 7 of 8 | — |
+| `swells` | f606W 8, f160W 4, f814W 4, f450W 1 (WFPC2) | all 17 | all 17 | 16 of 17 (2 deliberately empty) | f814W 3 |
 | `gallery` | f606W 15, f814W 6, f438W 6 | all 27 | all 27 | all 27 | f606W 15 |
 | `bells` | f814W 21 | all 21 | all 21 | all 21 (6 deliberately empty, 2026-10-22) | — |
 | `sl2s_dinos_a` | f475X 9, f606W 8, f814W 3, f600LP 1, f160W 1 | all 22 | all 22 | all 22 (2026-10-24) | — |
@@ -52,17 +52,16 @@ product was deleted 2026-09-29** (see *BELLS GALLERY*). "dataset" is the
   the dated provenance text, `slacs_gold` means the 38 Etherington+2022 Gold lenses and
   `slacs_other` the 27 other SLACS lenses**; the rewritten parts say "SLACS Gold" and
   "non-Gold SLACS".
-- **Outstanding (2026-10-29): contaminant masks and image positions for the 19 SLACS lenses
-  added on 2026-10-29** (26 bands: `slacs_sparse` 15, `slacs_multi` 6, `swells` 4,
-  `slacs_late` 1; see *SLACS samples*). Both are GUI steps (`make_masks.py --sample <s>`, then
-  `run_positions_all.sh <s>`); their stamps, noise maps and PSFs with error maps are done.
+- **Outstanding (2026-11-02):** only a review of J2343-0030's mask, which was drawn on its 12″
+  stamp and carried to its 30″ group-centred stamp when it moved to `slacs_multi`. Every SLACS
+  band now has a mask and a positions file (several deliberately empty).
 - **Before that, no product was outstanding (2026-10-24).** Image positions were the last stage finished:
   BELLS 2026-10-22, all four SL2S samples 2026-10-24 (`run_positions_all.sh <sample>`, a GUI
   step). Contaminant masking is finished everywhere.
 - **Arc masks are optional products, and none is tracked in git** (see *Arc masks*): a band
   or a sample without one is complete, not outstanding. The 10 SLACS Gold f606W arc masks
   recorded in `info/provenance/lens_arc_masks.json` have no file anywhere; their provenance entries remain.
-- **24 lenses have deliberately EMPTY positions files** (images too uncertain to mark, or
+- **25 lenses have deliberately EMPTY positions files** (images too uncertain to mark, or
   counter-images below the noise) — see *Image positions*. An empty file means "decided:
   none", not "to do".
 - The three 420 s SNAP F814W diagnostics (`slacs_sparse` J1134+6027, J1403+0006, J1538+5817)
@@ -393,17 +392,18 @@ core into ~4 knots. The choice is stored in `info/overrides/wfpc2_alignment.json
 
 **Multi-visit lenses are split, not TweakReg'd.** J0728+3835 and J0822+2652 each have two
 visits at a ~14–16° roll (two guide-star solutions). They're drizzled as separate per-visit
-datasets (`--pa <PA_V3> --out-suffix ''/_v2`, each single-guide-star → `mast`); the
+datasets (`--pa <PA_V3> --out-suffix ''/_visit2`, each single-guide-star → `mast`); the
 **longer-exptime visit is the primary product, keyed bare `f606W`** (no suffix), any shorter
-visit `_v2` (`_v3`, ... if a lens ever has more). Outcome: **J0822+2652** = `f606W` (4×1100s)
-+ `f606W_v2` (2×1100s); **J0728+3835** = `f606W` only (its other, 2-frame visit has 1
+visit `_visit2` (`_visit3`, ... if a lens ever has more; the suffix was `_v2` until 2026-10-29). Outcome: **J0822+2652** = `f606W` (4×1100s)
++ `f606W_visit2` (2×1100s); **J0728+3835** = `f606W` only (its other, 2-frame visit has 1
 x-dither-phase, can't reach 0.05″, dropped — never gets a product or suffix at all);
-**J1142+1001 stays combined** (visits share roll, PA 119.00 vs 118.87). Renamed 2026-08-03
+**J1142+1001 was combined until 2026-10-29** (visits share roll, PA 119.00 vs 118.87; now split,
+see the combine criterion below). Renamed 2026-08-03
 from the original `f606W_v1`/`f606W_v2` (arbitrary visit order, no bare `f606W` key) to this
 exptime-ranked scheme — `align_wfpc2_to_acs.py --f606-dir` and `make_stamps.py --filt
-f606W_v2` handle the suffixed dir; the primary needs no flag, same as any other filter.
+f606W_visit2` handle the suffixed dir; the primary needs no flag, same as any other filter.
 
-**J1142+1001 is the only combined-visit lens among the original SLACS samples** (J1719+2939, added 2026-10-29, is the other) — verified (2026-08-03) across every WFPC2
+**J1142+1001 was the only combined-visit lens** (until 2026-10-29; J1719+2939 is the only one now) — verified (2026-08-03) across every WFPC2
 F606W product in SLACS Gold (38) and non-Gold SLACS (27): grouping `info/provenance/lens_products.json`
 frame lists by 6-char rootname prefix, only J1142+1001's `f606W` mixes two visits (`ua1l38` +
 `ua1lc8`, 6 frames); the split keys J0728+3835/J0822+2652 are each single-visit. The
@@ -412,6 +412,42 @@ not a PSF/noise-homogeneity check — those are handled separately (per-frame IV
 noisier visit; the PSF is measured *after* combination from the actual stack). A one-off
 spot-check put J1142's injected-kernel FWHM/pedestal/scatter within the single-visit spread —
 no smearing penalty.
+
+**The combine criterion is the MEASURED visit-to-visit WCS offset, not the roll (2026-10-29).**
+Two visits may be drizzled together only when their delivered WCSs agree to **< 0.03″**, the
+frame-to-frame scatter the core-registration audit accepted. Roll is a poor proxy: what matters is
+the guide-star solution, and visits from different programs (or years) disagree at any roll, while
+two Gaia-fitted visits agree at any roll. `--pa`'s 1° window only picks out one visit's frames;
+it is not a combine rule. Measure with `scripts/measure_visit_offset.py --sample S --lens L`:
+compact sources in the distortion-corrected drizzle inputs, each visit against each other, with a
+within-visit control (~0.01″). It reproduces the deflector-centroid tie to a few mas (J1318
+0.365″ vs 0.366″). Measured on every multi-visit WFPC2 lens:
+
+| lens | roll difference | visit offset | product |
+|---|---|---|---|
+| J0728+3835 | 15.5° | 0.638″ (GSC240 vs Gaia SVM) | primary visit only (other visit has 1 dither phase) |
+| J0822+2652 | 13.9° | 0.196″ | split, `f606W` + `f606W_visit2` |
+| **J1142+1001** | **0.13°** | **0.212″** | **split 2026-10-29** (was combined; see below) |
+| J1306+0600 | 39.5° | 0.484″ | split |
+| J1313+4615 | 126° | 0.877″ | split |
+| J1318-0313 | 0.97° | 0.365″ | split |
+| J1319+1504 | 9.1° | 0.36″ (tie; frame match too sparse) | split |
+| J1436+3640 | 68° | 0.258″ | split |
+| J1644+2625 | 18.6° | 0.059″ | split |
+| J1719+2939 | 1.7° | 0.010″ | **combined** (both visits Gaia-fitted), 8 × 400 s |
+
+**J1142+1001 F606W is a combined stack of two visits 0.21″ apart** (`ua1l38` 2 × 1100 s, one
+frame GSC240 and one GSC242, vs `ua1lc8` 4 × 400 s, GSC240; within-visit 0.016″ and 0.004″). The
+2026-08-03 "no smearing" spot-check could not see it: the injected PSF star is placed through each
+frame's own WCS, so it is registered by construction whatever the real sky does. Its positions
+file is deliberately empty ("images too uncertain to mark"), possibly for this reason. **Split
+2026-10-29** (`--visit`): `f606W` = `ua1l38` (2 × 1100 s, the longer, primary) and `f606W_visit2`
+= `ua1lc8` (4 × 400 s); both have 2 × 2 dither phases. Tied to F814W, the visits moved by
+(0.594″, 0.294″) and (0.381″, 0.259″), i.e. 0.216″ apart, as measured. The combined stack's core
+was ~4% broader (second-moment σ 0.166″ vs 0.160″ in either visit). Its f606W mask (drawn on
+the smeared stack) was carried to both visit stamps by sky reprojection, then reviewed and
+redrawn on 2026-10-30 (`f606W` edited, +705 px; `f606W_visit2` accepted from it). Figure:
+`diagnostics/cr_defects/J1142+1001_f606W_visit_split.png`.
 
 **Diagnosing this class of bug:** compare the *spread* of per-frame WCS error, not its
 magnitude — a common offset is a harmless absolute-astrometry shift; frame-to-frame scatter
@@ -729,7 +765,7 @@ files.
 
 **Stamps whose mosaic changed under them, and how they were re-cut (2026-10-06).** A re-drizzle
 reproduces a stamp to ~10⁻⁵ of the sky noise (floating point), *unless the input changed*:
-- **J1204+0358, J2141-0001 and J0822+2652 `f606W_v2` (WFPC2):** MAST re-solved these frames'
+- **J1204+0358, J2141-0001 and J0822+2652 `f606W_visit2` (WFPC2):** MAST re-solved these frames'
   astrometry (new per-image `FIT_IMG_GSC242`/`FIT_IMG_GAIAeDR3` headerlets; CRDS context 1358
   became 1361). The frames register differently, so the deflector moves by under 0.5 px and the
   mosaic WCS shifts.
@@ -878,7 +914,8 @@ noise FITS (from the weight map), and a 3-panel PNG.
   All sizes share one band directory, `data/stamps/<sample>/<lens>/<filter>/`: the 12″ stamps
   are `stamp12_*`, a 20″ re-cut is `stamp20_*`, so a re-cut at another size cannot clobber the
   standard set. **Each lens has one modelling size**, its `stamp_size` in
-  `info/samples/lens_samples.json` (none set today, so every lens is 12″), and every tool's
+  `info/samples/lens_samples.json` (a lens's own value, else its sample's: `slacs_multi` is 30″,
+  every other lens 12″), and every tool's
   `--size` defaults to it, so a lens given smaller stamps needs no flag anywhere; its
   `stamp<S>_*` then needs a `!data/stamps/**/stamp<S>_*` line in `.gitignore` to be tracked.
   The size also keys the QC mosaics (`data/mosaics/` for the modelling size,
@@ -988,7 +1025,7 @@ an empty arc region would mask out the whole stamp.
 **State: every science band has a contaminant mask** (see *Current state* at the top). Most
 bands after a lens's first came through the reviewed-proposal route (`edited_from_<band>` /
 `accepted_from_<band>` in `info/provenance/lens_masks.json`) rather than fresh draws. The split-visit
-`J0822+2652 f606W_v2` is its own product directory and has its own mask. Per-lens notes
+`J0822+2652 f606W_visit2` is its own product directory and has its own mask. Per-lens notes
 follow, SLACS first, then `gallery`:
 
 **Per-lens verdicts.** The detail is in each band's `note` / `edited` / `CORRECTION` keys in
@@ -1019,10 +1056,56 @@ follow, SLACS first, then `gallery`:
 - **J1134+6027** (`slacs_sparse`), **J1251-0208** (`swells`) f606W: both masks are clear of the ring. J1251's
   deflector is a **spiral**; the two-armed structure at r = 3.3–4.3″ is left unmasked, so its
   light model has to cope with spiral structure.
-- **J1403+0006** (`slacs_sparse`, f606W only): the mask's inner edge stops at 1.00″ = 1.20 θ_E,
-  with the close neighbour's 1σ isophote added (+308 px; `MASKEDIT`/`MASKEDDT`/`MASKEDPX`/
-  `MASKEDRI` header cards). Inside 1.2″ the residuals are 3.2× the photon noise
-  (galaxy-model-limited), so whether an arc is present cannot be settled from this data.
+- **J1403+0006** (`slacs_sparse`, f606W only): **the close neighbour is UNMASKED since 2026-11-01**
+  (its whole mask component cleared, 3431 → 1042 px; `MASKEDIT`/`MASKEDDT`/`MASKEDPX` header
+  cards). Its Legacy Survey photo-z (0.47–0.55) matches z_s = 0.473, so it may be source-plane
+  light; at 1.96 θ_E it is singly imaged, so the fit must treat it as single-image source light or
+  model it. The 2026-09-21 mask (inner edge 1.00″ with the neighbour's 1σ isophote added) is in
+  git history. Inside 1.2″ the residuals are 3.2× the photon noise (galaxy-model-limited), so
+  whether an arc is present cannot be settled from this data.
+
+*SLACS additions (review 2026-11-01)*, measured on an isophote-subtracted stamp (colour as
+F606W/F814W relative to the deflector; SIS pair test = radii summing to 2θ_E, ~180° apart).
+GUI (col, row) on the 12″ stamp. Sheets: `diagnostics/feature_vetting/review_2026-11-01/`.
+- **J1029+6115**: the companion 3.7″ N holds 14% of the light (shear ~0.03), so single. But
+  θ_E ≈ 0.5″ on an SIS (σ 228 km/s, z_s only 0.251) and Auger had no model, so the marked
+  positions at 1.38″/1.85″ were unlikely to be images: positions deliberately empty (2026-11-01).
+- **J1644+2625 is NOT a double source plane.** For z_l = 0.137 a source at any z beyond 0.61
+  raises θ_E by ≤ 23%, so the blue tangential features at 2.1–2.5 θ_E are singly imaged,
+  weakly sheared background galaxies (no counter-images), and unlike the arc in colour (1.3–1.5
+  vs 0.79); no redshift is available for them. The marked pair is consistent. The compact
+  object masked at (57, 60) in F606W is in the primary visit only (local S/N 11.7; −2.3 in the
+  second visit, 0.9 in F814W), so it is a CR residual or transient, not a galaxy: F814W needs
+  nothing there.
+- **J1719+2939**: the source is three blue (1.6–2.4) tangential knots on the ring, (92, 122),
+  (141, 132), (122, 145), at 0.97–1.09 θ_E.
+- **J0819+4534**: the image pair is (125, 95) at 1.5 θ_E + (116, 128) at 0.5 θ_E (189° apart,
+  radii sum = 2θ_E). The blue object left of the deflector (85, 103) is at 2.2 θ_E, singly
+  imaged, and a different colour from the arc (2.4 vs 3.75): mask it.
+- **J0959+4416 / J1330-0148**: the bright pairs at 1.9–3.2 θ_E are satellites/contaminants (radii
+  far too large to pair, deflector colour on J0959): mask them.
+- **J1318-0313**: four blue tangential images at 0.9–1.3 θ_E (ring/quad): (93, 110), (114, 147),
+  (160, 112), (151, 90).
+- **J1313+0506**: Brewer+2012 θ_E = 0.53 ± 0.23″ (entered in `lens_einstein_radii.json`), so the object left of the core (1.12″,
+  2.1 θ_E) is not multiply imaged; the likelier pair is (127, 116) + (110, 121) at 0.43″/0.46″.
+- **J1032+5322**: the top-right object (141, 93) is the lensed image (pairs with the inner one,
+  174° apart). **J1313+4615**: the marked arc + counter-image are a consistent SIS pair.
+- **J1403+0006**: the neighbour (1.96 θ_E) is not a multiple image, but its photo-z matches z_s,
+  and an unmasked feature sits at (116, 142), 1.38 θ_E; its mask was lifted on 2026-11-01.
+- **J2321-0939**: the closest masked object, a compact knot at 1.59 θ_E (103, 167), is 0.4″ from
+  an unmasked tangential feature at 1.31 θ_E: possibly an arc knot (single band, no colour test).
+- **J0808+4706 F160W is usable**: the diffraction spike's mask starts 3.84″ from the lens, and
+  the star's halo shows no gradient across the lens.
+- **J0157-0056**: the blue object at 2.7 θ_E, (80, 102), is part of the clumpy extended source
+  and stays unmasked, as singly imaged source light.
+- **J1636+4707**: the two "objects" at 3.84″ flagged in the scan were the edge of the isophote
+  model (same radius on opposite sides), not sources: nothing to mask. A real unmarked feature
+  sits at (120, 149) on f606W, 1.38 θ_E, detected in both bands (local S/N 18 in f606W, 24 in
+  f160W at (99, 125)). With the blue knot at (121, 105), 0.67 θ_E, it forms an SIS double (176°
+  apart, radii summing to 1.02 × 2θ_E, both far bluer than the deflector). The two positions
+  marked 2026-09 sit on no detected feature (local S/N 3.9 and 3.0). The tangential feature at
+  (140, 110) on the ring has a −5σ mirror, so it is probably galaxy-model residual.
+  Figure: `diagnostics/feature_vetting/review_2026-11-01/J1636+4707_positions.png`.
 
 *GALLERY* — all 15 F606W masks were audited against Shu+2016's published SIE models
 (2026-09-15): no lensed image is masked and every S/N > 4 detection out to 6″ beyond the
@@ -1117,6 +1200,16 @@ flattened lens light, and lensed light in isophote fits.
   measured through a misregistered band).
 - **A `make_masks.py --force` redraw REPLACES the band's `lens_masks.json` record**, so a
   hand-added `note`/`edited` key is lost. Re-add it after any redraw.
+- **An isophote model's outer edge fakes objects.** Beyond the outermost fitted isophote the
+  model is zero, so the residual shows the raw envelope as a bright ellipse; features found there
+  (J1636+4707 at 3.84″, J1644+2625's edge blobs) were all this. Re-measure any candidate against
+  a local background (0.15–0.2″ core minus a 0.4–0.8″ annulus) on the raw image.
+- **An object in one visit only is a transient or CR residual, not a missing mask.** Before
+  calling a band's mask incomplete, map the other band's mask component through sky coordinates
+  and measure every band and visit: J1644+2625's (57, 60) is S/N 11.7 in one F606W visit, −2.3 in
+  the other and 0.9 in F814W.
+- **A position click that snaps by ~`--search-box-size` px climbed the deflector gradient**;
+  check that each marked position sits on a detected feature (J1636+4707's did not).
 
 ### Orientation: on screen the stamps are NOT North-up-East-left
 
@@ -1368,14 +1461,29 @@ unlike the mask tools there is no `--broadcast` switch. Trees/skip/`--size` beha
 `make_masks.py`; `run_positions_all.sh [SAMPLE] [flags…]` sweeps the samples. The JSONs are
 non-regenerable, so they live in the git-tracked `data/stamps/` tree.
 
-**DELIBERATELY EMPTY positions files.** 24 lenses carry a zero-length
+**POSITION SETS: one per source (2026-11-01).** A lens with two sources or two source planes
+needs its images grouped per source, because each group maps back to its OWN source-plane point.
+In the GUI the number keys select the set being marked (1 = source 1, the default; 2 = source
+2; ...), the title names the active set and each set is drawn in its own colour. **Esc** closes
+the GUI (as in the mask GUI; closing the window still works). The file stays
+`{prefix}_positions.json`, read and written ONLY through `scripts/positions_io.py`: one set is
+written exactly as before (a single `Grid2DIrregular`, byte-identical), several as autoconf's
+list type, and `read_sets` always returns a list, so every existing file reads as one set. The
+provenance record keeps `positions_arcsec` flattened and adds `n_sets` / `positions_arcsec_by_set`
+for a multi-set lens. **Downstream: a reader that calls `al.from_json` directly gets a list for a
+multi-set file** — use `positions_io.read_sets` (or upstream `ag.positions_sets_from_json`, PR
+pending) and build one `al.PositionsLH` per set. The same change is on PyAutoGalaxy branch
+`feature/clicker-position-sets`.
+
+**DELIBERATELY EMPTY positions files.** 25 lenses carry a zero-length
 `Grid2DIrregular` on every band. 2026-09-26 (images too uncertain to mark):
 `slacs_sparse` J0157-0056, J0912+0029, J0936+0913, J0959+4416, J1016+3859, J1134+6027,
 J1142+1001, J1143-0144, J1213+6708, J1402+6321, J1403+0006, J1416+5136, J2300+0022,
 J2321-0939; `swells` J0841+3824, J2141-0001. 2026-10-22: `bells` J0151+0049, J0944-0147,
 J1221+3806, J1234-0241, J1601+2138, J1611+1705. 2026-10-24: `sl2s_wf` J1401+5557 and
 J1419+5117 (arc only; SL2S III's SIE puts their counter-images at 5–13% of the knot flux,
-below our noise). Their `info/provenance/lens_positions.json` record has
+below our noise). 2026-11-01: `slacs_sparse` J1029+6115 (the marked features sat ~3× the SIS
+θ_E of ~0.5″; no HST lens model exists). Their `info/provenance/lens_positions.json` record has
 `n_positions: 0` and a `deliberately_empty` reason. The file's existence is what stops the
 sweep re-offering the lens (`--force` to mark one after all). **Downstream: a modelling
 script must skip the positions likelihood when the grid is empty**, not build an
@@ -1454,14 +1562,31 @@ uv run python scripts/make_positions.py --sample slacs_prime --overlays-only
 
 That flag exists so the ignore rule is honest — without it "regenerable" would have meant
 re-marking by hand, since `--force` reopens the Clicker. Verified byte-identical to what the
-GUI wrote. `stamp12.png` (and the WFPC2-era `stamp12.png`) joined it as an ignored QC
+GUI wrote. **Since 2026-11-01 the PNG has the GUI's two panels**, as-observed S/N
+left and isophote-subtracted right, with the band's contaminant mask outlined (blanked in the
+subtracted panel) and the positions on both; `save_overlay_png` reads the noise and mask from
+the stamp dir itself, so the GUI, `--rebroadcast` and `--overlays-only` all draw the same
+picture. All 271 were rebuilt that day. On a group-centred `slacs_multi` stamp the fit starts
+at the catalogue deflector (`isophote_model.deflector_pixel`), so only the main galaxy is
+subtracted and its companions stay visible. Where no isophote fit converges the panel is left
+unsubtracted (a note is printed): gallery F438W (the deflector is not detected, 5 bands) and
+the SL2S F475X/F606W stamps of J1359+5535, J0218-0802 and J0849-0412, where the arcs outshine it. `stamp12.png` (and the WFPC2-era `stamp12.png`) joined it as an ignored QC
 render on 2026-10-04 (a plain view of the tracked sci stamp, rebuilt by `make_stamps.py`);
 `_dataset.png` is still tracked, so do not generalise the rule (`_mask_arcs.png` left git with
 the arc masks on 2026-10-21, see *Arc masks*).
 
-**Two panels by default, and the band's contaminants blanked (2026-09-17).** The GUI shows
-the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
-single subtracted panel, and the pair is only meaningful with `--subtract-radial`), because
+**ISOPHOTE subtraction is the default panel since 2026-11-01.** The GUI shows the
+**as-observed view LEFT and the isophote-subtracted view RIGHT** (`scripts/isophote_model.py`:
+elliptical isophotes free in ellipticity and PA, centre fixed on the deflector, contaminants
+excluded, fitted within ±6″; shown smoothed by a 1.5 px Gaussian on a red-blue map, red = light
+the model lacks). It replaced the radial median as the default because the 2026-11-01 review
+sheets read far better with it: the radial median leaves a quadrupole on every elliptical.
+`--subtract radial` restores the radial-median panel, `--subtract none` the raw image only; the
+old `--(no-)subtract-radial` flags still map onto those.
+
+**Two panels by default, and the band's contaminants blanked (2026-09-17).** Until 2026-11-01 the
+GUI showed the **radial-subtracted view LEFT and the as-observed view RIGHT** (`--no-side-by-side` for the
+single subtracted panel, and the pair is only meaningful with a subtraction), because
 each answers a different question: the subtracted panel is where an image buried in the galaxy
 envelope shows up at all, the as-observed panel is where you judge whether that blob is really
 there or is a subtraction artefact. **Double-click either — they are the same sky.**
@@ -1498,7 +1623,7 @@ you are trying to click are the least visible thing on screen. All three transfo
 the imshow'd array — `al.Clicker` still snaps on the untouched flux array, so the saved
 positions are bit-identical either way — and each is recorded in `info/provenance/lens_positions.json`
 so a stamp's provenance says how it was marked:
-- **`--subtract-radial` (DEFAULT ON since 2026-09-03; `--no-subtract-radial` opts out)** —
+- **`--subtract-radial` (the default from 2026-09-03 to 2026-11-01, now `--subtract radial`)** —
   subtract the deflector's azimuthally-averaged (median) radial
   profile. **The strongest of the three**: an elliptical's
   light is nearly a function of radius alone while the arcs are not, so the galaxy vanishes
@@ -1887,7 +2012,7 @@ F606W star stamps near the lens position (`x_cal/y_cal` within ±200px of ~435,4
 F606W lens puts its target at the same WF3 spot), downloads the `c0m[3]` stamps, gates them
 (inner-window crop + centroid to drop edge neighbours/warm pixels in the un-CR-cleaned c0m),
 and builds **one shared native-F606W WF3 ePSF** (~147 stars) cached under
-`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_v2`)
+`data/reference_files/wfpc2_f606w_psfdb/`. Every F606W product (incl. split-visit `f606W_visit2`)
 reuses it; records method `model_wfpc2_psfdb`. The cached ePSF is detector-frame; each lens
 **rotates it to North-up at resample time via that lens's WF3 exposure CD** (so one shared
 build serves every roll — see *Model PSFs are rotated to North-up*), and the pedestal
@@ -1896,7 +2021,7 @@ the lens's-own-field empirical build is preferred where stars exist — this is 
 **fallback, slotted ABOVE the STDPSF F555W proxy** (now fallback-of-the-fallback). **Traps:**
 the MAST PSF DB `chip` column is the WFPC2 CCD/FITS ext (1=PC…4=WF4) — **query chip 3 for
 WF3**, not chip 1 (PC has a different pixel scale *and* PSF); split-visit filter keys
-(`f606W_v2`) must be normalised to the base filter before any STDPSF/pivot lookup
+(`f606W_visit2`) must be normalised to the base filter before any STDPSF/pivot lookup
 (`_base_filter`), or the model path KeyErrors. FWHM ~0.22″ (post-rotation).
 
 **STDPSF fallback (`psf_models.py`, Anderson & King 2000; Dauphin et al. 2021; Anderson
@@ -2328,7 +2453,7 @@ Not written by a pipeline run, and the odd one out in `info/`:
     rows whole**, redshifts included; they are kept now because the downstream lens-modelling code reads
     its redshifts from this file.
     **Every reader of θ_E must allow `null`** (`theta_e_table()` → `propose()` refuses by name).
-    **J2141-0001 is the one no-`RE` row with a θ_E (entered 2026-10-21):** `0.88″ ± 0.09`
+    **J2141-0001 (2026-10-21) and J1313+0506 (2026-11-01, `0.53″ ± 0.23`, F606W) are the no-`RE` rows with a θ_E, both from Brewer+2012. J2141's:** `0.88″ ± 0.09`
     (`theta_e_err_arcsec`) is **Brewer+2012 (SWELLS III) Table 1** `b`, an SIE + external shear
     fit in the intermediate-axis convention (the same convention as SLACS). It was fitted to
     HST F814W, J2141's Table 1 modelling band. `RE_kpc` 2.15 is derived on flat H0=70/Ωm=0.3,
@@ -2389,7 +2514,7 @@ No data for a filter → value `null`.
 
 - **The key is the product directory, not the filter.** Usually they coincide (`f606W`), but
   a split-visit lens is keyed per visit: `f606W` for its primary (longer-exptime) visit,
-  `f606W_v2` for a shorter one — so a bare `f606W` key does not by itself mean "the whole
+  `f606W_visit2` for a shorter one — so a bare `f606W` key does not by itself mean "the whole
   filter, unsplit" for J0728+3835/J0822+2652 the way it does for every other WFPC2 lens.
   Check keys against product directories, not against the filter name, when auditing these
   two. This once caught a live error (pre-2026-08-03 naming): both split lenses had recorded
@@ -2431,7 +2556,7 @@ uv run python scripts/mast_target_names.py slacs_prime       # lens names
 | **`slacs_complex`** | 4 | Positioned SLACS lenses whose morphology was judged by eye to be potentially difficult (e.g. a source overlapping the lens centre) |
 | **`slacs_sparse`** | 43 | The remaining early-type SLACS lenses: Gold with deliberately empty positions, non-Gold without both positions and F814W + an optical band, and the 12 early-type Auger+2009 additions (2026-10-29). 3 have no usable HST data |
 | **`slacs_late`** | 2 | Late-type deflectors not in SWELLS: J1432+6317 (Bolton class L), J1250-0135 (Bolton U, "spiral structure") |
-| **`slacs_multi`** | 4 | More than one deflector galaxy: J0808+4706, J1718+6424 (Bolton E-M-A*), J1319+1504, J1436+3640 (Auger+2009 companions) |
+| **`slacs_multi`** | 4 | More than one deflector galaxy: J0808+4706, J1718+6424 (Bolton E-M-A*), J1436+3640 (Auger+2009 E*), J2343-0030 (edge-on companion, ~57% of its light); 30″ stamps centred on the group |
 | **`swells`** | 8 | SWELLS disk-deflector lenses (Treu+2011; Brewer+2012) that SLACS also found, J1103+5322 and J1313+0506 added 2026-10-29. The SWELLS-only grade-A lenses (GO-11978/GO-12292) are not yet reduced |
 | **`gallery`** | 15 | BELLS GALLERY (props 14189, 16734), restricted to Shu et al. 2016 Table 1 class E-S-A; WFC3/UVIS multi-band. Reduced |
 | **`sl2s_dinos_a`** | 9 | SL2S with GO-17130 F475X (Project Dinos II) plus WFPC2 F606W or ACS F814W. See *SL2S samples*. Reduced and masked; positions marked 2026-10-24 |
@@ -2472,13 +2597,32 @@ Table 4 (the `L` first letter).
 **`slacs_multi`** (created 2026-10-29): SLACS grade-A lenses with more than one deflector
 galaxy, which the original E/L-S-A rule excluded. J0808+4706 and J1718+6424 are Bolton
 `E-M-A*` ("nearby companion prevents simple SIE modeling"; "double foreground galaxy");
-J1436+3640 is Auger+2009 morphology `E*` ("at least one close companion galaxy"); J1319+1504
-is one of the two lenses Auger says need "special subtractions due to the presence of nearby
-galaxies" (the other is J1436). The third Bolton `E-M-A*`, **J1618+4353**, has only a single
+J1436+3640 is Auger+2009 morphology `E*` ("at least one close companion galaxy"). J1319+1504,
+the other lens Auger says needs "special subtractions due to the presence of nearby galaxies",
+was here on 2026-10-29/30 and moved to `slacs_sparse`: its nearby objects are minor (a compact
+satellite at 1.77″ with 1.0% of the deflector's light, about as red as it; a bluer stream and
+knot at 4.7–6.7″, each ≤ 1.7%), so an SIS-scaled estimate gives them a shear of only ~0.03 and
+~0.01, which an external-shear term covers. Auger's remark is about light subtraction, and it
+does not flag J1319 `E*`. **J2343-0030 moved in from `slacs_sparse` (2026-11-01):** an edge-on disk
+companion 7.3″ SW holds ~57% of the deflector's light (SDSS r 17.85 vs 17.23) at photo-z
+0.162 ± 0.014 against the lens's 0.181; an SIS-scaled estimate gives a shear of ~0.09, the
+regime BELLS J1337+3620 was removed for. The third Bolton `E-M-A*`, **J1618+4353**, has only a single
 420 s SNAP F814W frame (GO-10174), below `BLOCK_EXPTIME`, so it is not in the roster. No lens
 from the original two samples qualified: the brightest masked neighbour within 6″ of any
 deflector holds 18% of its light (J1436-0000 at 3.7″), against 35–80% for the BELLS lenses
 removed under the single-deflector rule.
+
+**`slacs_multi` stamps are 30″ and centred on the deflector GROUP (2026-10-30).** Centring
+on the catalogue galaxy put J1436+3640's brightest member 2.9″ off-centre, and measured from
+the group centre the azimuthally averaged light of J1436, J0808 and J1718 is still 1.2–1.5% of
+the centre at r = 10″ (the edge of a 20″ stamp), and 0.3–0.4% at 15″. So the sample sets
+`stamp_size: 30` (a sample-level key; a per-lens value still wins), and each lens carries a
+`stamp_center`: the light-weighted centroid (0.5″ apertures) of its member galaxies, i.e.
+those with ≥ 25% of the brightest member's flux, listed in the lens's `note`. `make_stamps.py`
+cuts every band on that sky point with no peak search. J1436's centre is 1.19″ from the
+catalogue position, between the western pair and the eastern galaxy; J0808 and J1718 move 0.36″
+and 0.71″ toward their companions. **Mask with the group in mind: a member galaxy is part of
+the lens model, not a contaminant.**
 
 **Every SLACS grade-A lens is accounted for (2026-10-29).** Auger et al. 2009 (SLACS IX)
 lists **85 grade-A lenses**: Bolton+2008's 70 plus 15 new, and Table 3 gives each one's
@@ -2493,7 +2637,7 @@ The 19 added on 2026-10-29, and where the rules put them:
   J2347-0005 (→ `slacs_sparse`) and J1313+0506 (Auger morph S; SWELLS → `swells`).
 - Auger's new WFPC2 targets (positions in `info/coords/slacs_coords.py` from Auger Table 3):
   J1306+0600, J1313+4615, J1318-0313, J1644+2625, J1709+2324, J1719+2939, J2343-0030
-  (→ `slacs_sparse`), J1319+1504, J1436+3640 (→ `slacs_multi`).
+  (→ `slacs_sparse`), J1319+1504 (→ `slacs_multi`, then `slacs_sparse`), J1436+3640 (→ `slacs_multi`).
 
 Each added lens carries a `note` in `lens_samples.json` with its Bolton class and Auger
 morphology, so that morphology is visible in the roster.
@@ -2507,11 +2651,14 @@ Bolton-B promotions and the Bolton excluded lenses have WFPC2 F606W 4 × 1100 s 
 J1103+5322's WFPC2 F450W (GO-11978, 4 × 1100 s) is the repo's only F450W: tied to its ACS F814W
 by the deflector centroid (0.45″), PSF from the MAST PSF database (F450W added to
 `WFPC2_DB_FILTERS`), noise factor 1.08 measured on this one stamp.
-- **Not yet reduced here: the F606W of the six two-program lenses** J1306+0600, J1313+4615,
-  J1318-0313, J1644+2625 (`slacs_sparse`), J1319+1504 and J1436+3640 (`slacs_multi`). Their two
-  visits (GO-10886, GO-11202) sit on different guide-star solutions, so they must be drizzled
-  per visit, and `--pa` cannot do that for J1318-0313 (its visits are 0.97° apart in roll).
-  J1719+2939's two visits both carry Gaia-fitted WCSs and are drizzled together (8 × 400 s).
+- **Split visits by visit.** Six of the seven two-program lenses are drizzled per visit with
+  `drizzle_wfpc2_wf3.py --visit <rootname prefix>` (added 2026-10-29), because their visits are
+  0.06–0.88″ apart (see the combine criterion under *WCS alignment*). PA cannot separate them:
+  J1318-0313's two visits are 0.97° apart in roll. J1719+2939's visits agree to 0.010″, so it is
+  drizzled as one combined `f606W` (8 × 400 s). **The GO-11202 visit is the primary** (`f606W`),
+  being the visit of the lens's F814W (or J1436's F160W program), and the GO-10886 visit is
+  `f606W_visit2`. The split is in `run_wfpc2_wf3.sh`'s `split_visits_for` table, e.g.
+  `J1318-0313) echo "vua1l41: vu9op54:_visit2"`.
 - **WFPC2 F814W** is new to the repo. It is drizzled by `drizzle_wfpc2_wf3.py --filt f814W`
   (same WF3 extraction, IVM model and 0.05″ grid as F606W), takes the `f814W` band key (none
   of these lenses has ACS F814W), and is the F606W tie reference (`align_wfpc2_to_acs.py`
@@ -3088,7 +3235,7 @@ re-drizzled, re-cut, or rebuilt — pure visualization over what's already on di
 
 - **Filter groups** come from `scripts/mosaic_groups.py`, shared by both scripts so they
   stay in sync. For the SLACS samples and `swells`: `f814W`, `f606W_f555W` (WFPC2 F606W —
-  including the split-visit `f606W_v2` key, tried only if the lens has no bare `f606W` —
+  including the split-visit `f606W_visit2` key, tried only if the lens has no bare `f606W` —
   merged with ACS F555W per lens, since no SLACS lens has both), `f160W`. For `gallery`: one
   group per UVIS filter (no
   cross-filter merging). A sample not listed there falls back to one group per filter
