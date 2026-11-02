@@ -6,7 +6,9 @@ Every tracking JSON in info/ (lens_products.json, lens_exptime.json,
 lens_instrument.json, lens_psf.json, lens_psf_injected.json, wfpc2_alignment.json,
 psf_stars.json) is nested {sample: {lens: {key: value}}}, mirroring both
 info/samples/lens_samples.json's own top-level-by-sample layout and the
-data/<sample>/<lens>/<filt>/ directory convention every script already uses. Before
+data/<tree>/<sample>/.../<lens>/<filt>/ directories (the band_mode and category levels in
+between, added 2026-11-02, are not in the JSON keys: a reclassification moves directories, not
+records). Before
 this module, the tracking JSONs were flat {lens: {...}} with no sample namespace --
 harmless only because no lens name has ever collided across the SLACS and
 gallery samples; nesting by sample removes that latent trap and lets a JSON diff show which
@@ -71,7 +73,7 @@ def band_owner_conflict(path, sample, lens, key, instrument_prefix):
     """The instrument recorded for this lens's band in `path` (lens_instrument.json) if it is
     a DIFFERENT instrument from `instrument_prefix`, else None.
 
-    The pipeline keys products by filter alone (data/<tree>/<sample>/<lens>/<filt>/, and
+    The pipeline keys products by filter alone (data/<tree>/<sample>/<band_mode>/<category>/<lens>/<filt>/, and
     every tracking JSON), so one filter can hold one instrument's product per lens. On
     2026-10-04 the UVIS runner, looping F814W over SL2S, found J0959+0206's ACS F814W FLCs in
     that band's calibrated dir, took them as its own download and replaced the ACS product,

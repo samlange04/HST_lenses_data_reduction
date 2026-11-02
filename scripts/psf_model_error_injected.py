@@ -13,7 +13,7 @@ injected build exists.
 non-destructive: `make_psf_inject.run_injection(lens, filt, sample)` auto-detects
 `promote=False` and writes only the parallel `*_injected` names, leaving the canonical
 `psf_kernel.fits` / `psf.fits` untouched (verified by mtime). That is what
-`run_psf_inject_all.sh --all` does. Requires `data/drizzle_files/<sample>/<lens>/<filt>/`
+`run_psf_inject_all.sh --all` does. Requires `data/drizzle_files/<sample>/<band_mode>/<category>/<lens>/<filt>/`
 to still hold the science drizzle inputs -- re-run the band's drizzle first if cleared.
 
 Measured F160W result (5 lenses, 2026-08-02): model error median **0.036** against a
@@ -25,7 +25,7 @@ the earlier prototype's 3.93px injected FWHM exactly. See memory:
 stdpsf_model_error_measured.
 
     uv run python scripts/psf_model_error_injected.py
-    uv run python scripts/psf_model_error_injected.py --sample slacs_prime --filt f160W
+    uv run python scripts/psf_model_error_injected.py --sample slacs --filt f160W
 """
 import argparse
 import json
@@ -34,6 +34,7 @@ import warnings
 
 import numpy as np
 from astropy.io import fits
+import stamp_paths
 
 from psf_model_error import (align_resid, collect_targets, fwhm_radial,
                              split_residuals, unit, ws_path)
@@ -56,7 +57,7 @@ def main():
     print(f'{"sample":12s}{"lens":12s}{"filt":7s}{"nst":>4s}{"resid":>8s}{"boot":>8s}'
           f'{"corr":>8s}{"wing%":>8s}{"fwhm_e":>8s}{"fwhm_m":>8s}')
     for sample, lens, filt, entry in targets:
-        d = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
+        d = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt)
         emp_path = os.path.join(d, 'psf_kernel.fits')
         inj_path = os.path.join(d, 'psf_kernel_injected.fits')
         if not (os.path.isfile(emp_path) and os.path.isfile(inj_path)):

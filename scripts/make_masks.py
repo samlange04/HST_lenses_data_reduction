@@ -65,14 +65,14 @@ Tk window until you press Esc. A lens that already has a mask is skipped so a ru
 across a sample; --force redraws.
 
 Usage:
-    uv run python scripts/make_masks.py --sample slacs_prime                # best band per lens
+    uv run python scripts/make_masks.py --sample slacs                # best band per lens
     uv run python scripts/make_masks.py --lens J0008-0004                  # one lens, best band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f606W     # force the draw band
     uv run python scripts/make_masks.py --lens J0008-0004 --filt f160W --force  # redo one band
-    uv run python scripts/make_masks.py --sample slacs_prime --filt f555W    # review f814W's
+    uv run python scripts/make_masks.py --sample slacs --filt f555W    # review f814W's
     uv run python scripts/make_masks.py --lens J0008-0004 --propose-from none  # blank canvas
     uv run python scripts/make_masks.py --lens J0008-0004 --broadcast --propose-from none
-    uv run python scripts/make_masks.py --sample slacs_prime --force        # redraw everything
+    uv run python scripts/make_masks.py --sample slacs --force        # redraw everything
 """
 
 import argparse
@@ -241,7 +241,7 @@ def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
     The skip is announced, never silent, so a short target list is explicable.
     """
     found, sci_of = {}, {}
-    pattern = os.path.join(root, sample, lens or '*', filt or '*')
+    pattern = os.path.join(stamp_paths.lens_glob(root, sample, lens or '*'), filt or '*')
     for stamp_dir in sorted(glob.glob(pattern)):
         prefix = find_prefix(stamp_dir, 'auto')
         if prefix is None:

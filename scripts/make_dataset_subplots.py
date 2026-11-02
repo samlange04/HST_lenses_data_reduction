@@ -31,9 +31,9 @@ reduction the stamp came from, pixel scale, masked-pixel fraction) is recorded p
 
 Usage:
     uv run python scripts/make_dataset_subplots.py --lens J0008-0004 --filt f814W
-    uv run python scripts/make_dataset_subplots.py --sample slacs_prime
-    uv run python scripts/make_dataset_subplots.py --sample slacs_prime --filt f814W
-    uv run python scripts/make_dataset_subplots.py --sample slacs_prime --force
+    uv run python scripts/make_dataset_subplots.py --sample slacs
+    uv run python scripts/make_dataset_subplots.py --sample slacs --filt f814W
+    uv run python scripts/make_dataset_subplots.py --sample slacs --force
 """
 
 import argparse
@@ -136,7 +136,7 @@ def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
     """Yield (lens, filt, stamp_dir) for every band with a stamp under `root`, sorted for
     a reproducible run order.
     """
-    pattern = os.path.join(root, sample, lens or '*', filt or '*')
+    pattern = os.path.join(stamp_paths.lens_glob(root, sample, lens or '*'), filt or '*')
     found = {}
     # Gitignored stamp dirs are not science products -- see make_masks.discover_targets.
     # This tool only writes a QC PNG, so the cost of touching one is small, but a subplot of

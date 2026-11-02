@@ -10,7 +10,7 @@ on one output grid per band. Used for SL2S J1358+5459 F600LP (2 stars; 11 F600LP
 and for J0233-0438 F475X (0 usable stars) until that lens left the roster on 2026-10-14.
 
 Outputs mirror make_psf.py exactly, so everything downstream reads them unchanged:
-    data/psf/<sample>/<lens>/<filt>/psf_kernel.fits, psf_kernel_err.fits, psf.png
+    data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/psf_kernel.fits, psf_kernel_err.fits, psf.png
     <psf stamp dir>/psf.fits, psf_err.fits
 and info/provenance/lens_psf.json gets method 'empirical_median' with the donor list.
 
@@ -18,7 +18,7 @@ The error map is the donor-to-donor per-pixel std (NOT the std of the median): t
 true PSF is one more draw from that field-to-field spread (focus/breathing, position on the
 chip, drizzle geometry), so the scatter of single fields is its honest uncertainty.
 
-    uv run python scripts/make_psf_median.py --lens J1358+5459 --filt f600LP --sample sl2s_wf
+    uv run python scripts/make_psf_median.py --lens J1358+5459 --filt f600LP --sample sl2s
 
 **Single-donor mode** (``--donor SAMPLE/LENS``, method ``empirical_donor``): the kernel is
 that one lens's empirical PSF instead of the median, and the error map is still the
@@ -56,9 +56,9 @@ def donor_kernels(filt, target_lens, scale, psf_json, pool_samples=None):
     at pixel scale `scale`, across all samples (or only `pool_samples`)."""
     rec = info_json.load(psf_json)
     out = []
-    for path in sorted(glob.glob(os.path.join(ws_path, 'data', 'psf', '*', '*', filt,
+    for path in sorted(glob.glob(os.path.join(ws_path, 'data', 'psf', '*', '*', '*', '*', filt,
                                               'psf_kernel.fits'))):
-        sample, lens = path.split(os.sep)[-4:-2]
+        sample, lens = path.split(os.sep)[-6], path.split(os.sep)[-3]   # <sample>/<mode>/<category>/<lens>/<filt>/
         if lens == target_lens or (pool_samples and sample not in pool_samples):
             continue
         r = (rec.get(sample, {}).get(lens) or {}).get(filt) or {}
@@ -132,7 +132,7 @@ def main():
     print(f'  {method} kernel FWHM {fwhm_pix:.3f} px (donor spread {fwhm_err:.3f}), '
           f'trimmed {kernel.shape[0]} -> {trim_size} px, PSF error fraction {err_frac:.2e}')
 
-    output_dir = os.path.join(ws_path, 'data', 'psf', a.sample, a.lens, a.filt)
+    output_dir = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
     os.makedirs(output_dir, exist_ok=True)
     khdr = fits.Header()
     khdr['PSFMETH'] = (method, 'other fields\' empirical PSF(s): median or one donor')

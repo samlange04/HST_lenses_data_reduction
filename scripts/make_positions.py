@@ -48,10 +48,10 @@ Tk window until you close it. A lens that already has positions is skipped so a 
 across a sample; --force re-marks.
 
 Usage:
-    uv run python scripts/make_positions.py --sample slacs_prime            # best band per lens
+    uv run python scripts/make_positions.py --sample slacs            # best band per lens
     uv run python scripts/make_positions.py --lens J0008-0004              # one lens, best band
     uv run python scripts/make_positions.py --lens J0008-0004 --filt f606W # force the band
-    uv run python scripts/make_positions.py --sample slacs_prime --force    # re-mark everything
+    uv run python scripts/make_positions.py --sample slacs --force    # re-mark everything
     uv run python scripts/make_positions.py --lens J0008-0004 --no-subtract-radial
         # opt OUT of the default radial-profile subtraction and click on the raw image
     uv run python scripts/make_positions.py --lens J0008-0004 --mask-center 0.8 --vmax-value 10
@@ -59,7 +59,7 @@ Usage:
         # are the brightest thing on screen
     uv run python scripts/make_positions.py --lens J0008-0004 --no-side-by-side
         # one subtracted panel instead of the default subtracted-LEFT/as-observed-RIGHT pair
-    uv run python scripts/make_positions.py --sample slacs_prime --overlays-only
+    uv run python scripts/make_positions.py --sample slacs --overlays-only
         # rebuild the gitignored QC PNGs from the tracked positions JSONs -- no GUI
     uv run python scripts/make_positions.py --lens J0008-0004 --no-hide-masked
         # show the contaminants this band's mask already excludes, instead of blanking them

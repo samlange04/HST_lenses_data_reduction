@@ -1,5 +1,5 @@
 {
-    "sl2s_dinos_a": {
+    "dinos": {
         "J0214-0405": {
             "f814W": {
                 "ref": "f475X",
@@ -64,6 +64,33 @@
                 ]
             }
         },
+        "J0219-0829": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -290.5,
+                        "dN_mas": -35.5,
+                        "err_mas": 5.2,
+                        "n_sources": 31,
+                        "files": 2,
+                        "residual_after": "24 mas"
+                    },
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -24.0,
+                        "dN_mas": 0.5,
+                        "err_mas": 3.1,
+                        "n_sources": 134,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
         "J0226-0420": {
             "f606W": {
                 "ref": "f475X",
@@ -92,6 +119,23 @@
                         "dN_mas": 4.9,
                         "err_mas": 6.8,
                         "n_sources": 33,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J0849-0412": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -5.8,
+                        "dN_mas": -13.9,
+                        "err_mas": 2.8,
+                        "n_sources": 173,
                         "files": 2,
                         "residual_after": "0 mas"
                     }
@@ -214,53 +258,7 @@
             }
         }
     },
-    "sl2s_dinos_x": {
-        "J0219-0829": {
-            "f600LP": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -290.5,
-                        "dN_mas": -35.5,
-                        "err_mas": 5.2,
-                        "n_sources": 31,
-                        "files": 2,
-                        "residual_after": "24 mas"
-                    },
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -24.0,
-                        "dN_mas": 0.5,
-                        "err_mas": 3.1,
-                        "n_sources": 134,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            }
-        },
-        "J0849-0412": {
-            "f600LP": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -5.8,
-                        "dN_mas": -13.9,
-                        "err_mas": 2.8,
-                        "n_sources": 173,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            }
-        }
-    },
-    "sl2s_snap": {
+    "sl2s": {
         "J0223-0651": {
             "f600LP": {
                 "ref": "f475X",
@@ -272,6 +270,38 @@
                         "dN_mas": 129.6,
                         "err_mas": 1.5,
                         "n_sources": 145,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1358+5459": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": 4.7,
+                        "dN_mas": -33.5,
+                        "err_mas": 5.5,
+                        "n_sources": 108,
+                        "files": 2,
+                        "residual_after": "1 mas"
+                    }
+                ]
+            },
+            "f606W": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -39.0,
+                        "dN_mas": -33.2,
+                        "err_mas": 8.1,
+                        "n_sources": 20,
                         "files": 2,
                         "residual_after": "0 mas"
                     }
@@ -329,57 +359,6 @@
                 ]
             }
         },
-        "J1420+5630": {
-            "f600LP": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -25.9,
-                        "dN_mas": -8.6,
-                        "err_mas": 1.8,
-                        "n_sources": 147,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            }
-        }
-    },
-    "sl2s_wf": {
-        "J1358+5459": {
-            "f600LP": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": 4.7,
-                        "dN_mas": -33.5,
-                        "err_mas": 5.5,
-                        "n_sources": 108,
-                        "files": 2,
-                        "residual_after": "1 mas"
-                    }
-                ]
-            },
-            "f606W": {
-                "ref": "f475X",
-                "history": [
-                    {
-                        "date": "2026-10-14",
-                        "ref": "f475X",
-                        "dE_mas": -39.0,
-                        "dN_mas": -33.2,
-                        "err_mas": 8.1,
-                        "n_sources": 20,
-                        "files": 2,
-                        "residual_after": "0 mas"
-                    }
-                ]
-            }
-        },
         "J1419+5117": {
             "f606W": {
                 "ref": "f475X",
@@ -391,6 +370,23 @@
                         "dN_mas": 40.1,
                         "err_mas": 5.8,
                         "n_sources": 31,
+                        "files": 2,
+                        "residual_after": "0 mas"
+                    }
+                ]
+            }
+        },
+        "J1420+5630": {
+            "f600LP": {
+                "ref": "f475X",
+                "history": [
+                    {
+                        "date": "2026-10-14",
+                        "ref": "f475X",
+                        "dE_mas": -25.9,
+                        "dN_mas": -8.6,
+                        "err_mas": 1.8,
+                        "n_sources": 147,
                         "files": 2,
                         "residual_after": "0 mas"
                     }

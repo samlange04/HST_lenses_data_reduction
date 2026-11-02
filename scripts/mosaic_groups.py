@@ -18,11 +18,7 @@ _SLACS_GROUPS = {
 _GALLERY_FILTERS = ['f438W', 'f606W', 'f814W']   # F225W/F275W products deleted 2026-09-29
 
 SAMPLE_GROUPS = {
-    'slacs_prime':     _SLACS_GROUPS,
-    'slacs_complex':     _SLACS_GROUPS,
-    'slacs_sparse':     _SLACS_GROUPS,
-    'slacs_late':  _SLACS_GROUPS,
-    'slacs_multi': _SLACS_GROUPS,
+    'slacs':       _SLACS_GROUPS,
     'swells':      _SLACS_GROUPS,
     'gallery':     {f: [f] for f in _GALLERY_FILTERS},
     'bells':       {'f814W': ['f814W']},
@@ -37,7 +33,7 @@ def groups_for_sample(sample, stamps_dir):
     if sample in SAMPLE_GROUPS:
         return SAMPLE_GROUPS[sample]
     filts = set()
-    for lens_dir in glob.glob(os.path.join(stamps_dir, '*')):
+    for lens_dir in glob.glob(os.path.join(stamps_dir, '*', '*', '*')):   # <mode>/<category>/<lens>
         for filt_dir in glob.glob(os.path.join(lens_dir, '*')):
             if os.path.isdir(filt_dir):
                 filts.add(os.path.basename(filt_dir))

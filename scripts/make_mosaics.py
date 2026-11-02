@@ -3,7 +3,7 @@
 Tile every lens's stamp into per-filter-group QC mosaics.
 
 Reads the postage stamps already written by make_stamps.py
-(data/stamps/<sample>/<lens>/<filt>/stamp12_{sci,noise}.fits) and lays every
+(data/stamps/<sample>/<band_mode>/<category>/<lens>/<filt>/stamp12_{sci,noise}.fits) and lays every
 available lens out on a 5-wide grid, one mosaic per (filter group, data type). Nothing
 is re-drizzled or re-cut - this only reads existing stamp FITS files.
 
@@ -28,8 +28,8 @@ data/mosaics_<size>arcsec/ instead, mirroring make_stamps.py so the two sizes' Q
 never overwrite each other -- see stamp_paths.py.
 
 Usage:
-    uv run python scripts/make_mosaics.py --sample slacs_prime
-    uv run python scripts/make_mosaics.py --sample slacs_prime --size 20
+    uv run python scripts/make_mosaics.py --sample slacs
+    uv run python scripts/make_mosaics.py --sample slacs --size 20
 """
 
 import argparse
@@ -104,7 +104,7 @@ def build_group(stamps_dir, precedence):
     F606W is itself far noisier than ACS F555W), so those mosaics split the colourbar
     per instrument rather than share one."""
     entries = []
-    for lens_dir in sorted(glob.glob(os.path.join(stamps_dir, '*'))):
+    for lens_dir in sorted(glob.glob(os.path.join(stamps_dir, '*', '*', '*'))):   # <mode>/<category>/<lens>
         lens = os.path.basename(lens_dir)
         for filt in precedence:
             band_dir = os.path.join(lens_dir, filt)

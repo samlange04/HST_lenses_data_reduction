@@ -1,29 +1,33 @@
-"""Lens samples and MAST target-name resolution.
+"""Lens samples, their directory layout, and MAST target-name resolution.
 
 ``info/samples/lens_samples.json`` is the single source of truth for *which lenses exist in which
-sample* and for the per-lens MAST quirks. This module is the only reader of it; nothing
-else should parse that file or keep a second copy of a lens list. Twelve samples are
-defined (catalogue positions for all of them are merged in ``info/coords/lens_coords.py``).
-The six SLACS samples were split out of ``slacs_gold`` (Etherington et al. 2022 Gold) and
-``slacs_other`` (the rest of Bolton et al. 2008 Table 4 class E-S-A/L-S-A) on 2026-10-29,
-which also added the 19 other Auger et al. 2009 grade-A lenses with usable data:
+sample*, *where each lens's data live*, and the per-lens MAST quirks. This module is the only
+reader of it; nothing else should parse that file or keep a second copy of a lens list. Six
+samples are defined (catalogue positions for all of them are merged in
+``info/coords/lens_coords.py``), named after their surveys since 2026-11-02:
 
-  ``slacs_prime``   23 Gold lenses with marked positions and no flagged morphology
-                    difficulty -- the working sample, and the default ``--sample``.
-  ``slacs_complex``  4 positioned lenses with potentially difficult morphology (by eye).
-  ``slacs_sparse``  43 remaining early-type SLACS lenses (no positions, or one band).
-  ``slacs_late``     2 late-type deflectors not in SWELLS.
-  ``slacs_multi``    4 lenses with more than one deflector galaxy.
-  ``swells``         8 SWELLS disk-deflector lenses that SLACS also found.
-  ``gallery``      15 BELLS GALLERY lenses (HST proposals 14189, 16734), class E-S-A.
-  ``bells``        21 BELLS lenses (GO-12209), Brownstein et al. 2012 class E-S-A/L-S-A.
-  ``sl2s_dinos_a`` 9 SL2S lenses with GO-17130 WFC3/UVIS F475X plus WFPC2 F606W or ACS F814W.
-  ``sl2s_dinos_x`` 11 SL2S lenses whose only deep band is the GO-17130 F475X.
-  ``sl2s_wf``      10 SL2S lenses with GO-11289 WFPC2 F606W and no GO-17130 data.
-  ``sl2s_snap``    5 SL2S lenses with only the GO-11588 F475X + F600LP snapshot.
+  ``slacs``    SLACS (Bolton et al. 2008; Auger et al. 2009 grade A) -- the default ``--sample``.
+  ``swells``   SWELLS disk-deflector lenses (Treu et al. 2011; Brewer et al. 2012).
+  ``gallery``  BELLS GALLERY (Shu et al. 2016), WFC3/UVIS.
+  ``bells``    BELLS (Brownstein et al. 2012), ACS F814W.
+  ``dinos``    SL2S lenses with the deep GO-17130 F475X (Project Dinos II, Sheu et al. 2025).
+  ``sl2s``     the other SL2S lenses (Sonnenfeld et al. 2013): WFPC2 F606W or the snapshots.
+
+**Every lens sits in ``<sample>/<band_mode>/<category>/<lens>``** under every data layer
+(``data/calibrated``, ``data/drizzle_files``, ``data/drizzled``, ``data/psf``, ``data/stamps``;
+``stamp_paths.lens_dir``). Two per-lens keys, both REQUIRED, set it:
+
+  ``band_mode``   ``single_band`` or ``multi_band``: the number of distinct FILTERS reduced
+                  (a split-visit ``f606W_visit2`` is not a second band). Stored, not derived,
+                  so reducing a new band never moves a lens silently: ``check_layout.py``
+                  reports a lens whose bands on disk no longer match.
+  ``category``    ``prime``, ``complex`` (harder morphology, blending, low S/N, ...),
+                  ``limited`` (positions deliberately empty, or no lens or source redshift)
+                  or ``multi_galaxy`` (more than one deflector galaxy). Precedence
+                  multi_galaxy > limited > complex > prime.
 
 Per-lens entries carry only what is *unusual* about a lens; an empty ``{}`` means "no
-quirks, query MAST as ``SDSS<LENS>``". Eight keys are understood:
+quirks, query MAST as ``SDSS<LENS>``" (beyond the two layout keys). Eight keys are understood:
 
   ``mast_target``  the lens is archived under a ``GAL-<plate>-<mjd>-<fiber>`` designation
                    rather than ``SDSS<LENS>``, so the default query returns nothing.
@@ -45,12 +49,12 @@ quirks, query MAST as ``SDSS<LENS>``". Eight keys are understood:
   ``stamp_size``   the lens's MODELLING stamp side in arcsec, overriding the default 12".
                    Every tool's --size defaults to it (stamp_paths.modelling_size), and its
                    stamp<S>_* files need a !data/stamps/**/stamp<S>_* line in .gitignore.
-                   A sample-level ``stamp_size`` sets it for every lens of the sample
-                   (``slacs_multi``: 30", 2026-10-30); a per-lens value still wins.
+                   A sample-level ``stamp_size`` sets it for every lens of a sample; a
+                   per-lens value wins. The multi_galaxy lenses carry 30" (2026-10-30).
   ``stamp_center`` ``["HH:MM:SS.sss", "+DD:MM:SS.ss"]``: the sky position every band's
                    stamp is centred on, skipping make_stamps.py's peak search. For a
                    multi-galaxy deflector, the light-weighted centroid of its member galaxies
-                   (``slacs_multi``, 2026-10-29), so the whole group sits in the stamp.
+                   (the multi_galaxy lenses, 2026-10-29), so the whole group sits in the stamp.
   ``note``         free text recording why the lens is in the sample; not read by code.
 
 Output and directory names always stay in the J convention (the lens keys) regardless of
@@ -71,7 +75,9 @@ import os
 _INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'info')
 SAMPLES_JSON = os.path.join(_INFO_DIR, 'samples', 'lens_samples.json')
 
-DEFAULT_SAMPLE = 'slacs_prime'
+DEFAULT_SAMPLE = 'slacs'
+BAND_MODES = ('single_band', 'multi_band')
+CATEGORIES = ('prime', 'complex', 'limited', 'multi_galaxy')
 
 
 class NoMastData(Exception):
@@ -135,6 +141,30 @@ def _entry(lens, sample=None):
         if lens in block['lenses']:
             return block['lenses'][lens]
     return {}
+
+
+def band_mode(lens, sample=None):
+    """``single_band`` or ``multi_band`` (lens_samples.json). Raises KeyError if unset."""
+    mode = _entry(lens, sample).get('band_mode')
+    if mode not in BAND_MODES:
+        raise KeyError(f'{lens}: band_mode {mode!r} not one of {BAND_MODES} in {SAMPLES_JSON}')
+    return mode
+
+
+def category(lens, sample=None):
+    """``prime``, ``complex``, ``limited`` or ``multi_galaxy`` (lens_samples.json)."""
+    cat = _entry(lens, sample).get('category')
+    if cat not in CATEGORIES:
+        raise KeyError(f'{lens}: category {cat!r} not one of {CATEGORIES} in {SAMPLES_JSON}')
+    return cat
+
+
+def lens_rel(lens, sample=None):
+    """``<sample>/<band_mode>/<category>/<lens>``: the lens's path below any data layer."""
+    owner = sample or sample_of(lens)
+    if owner is None:
+        raise KeyError(f'{lens} is in no sample of {SAMPLES_JSON}')
+    return os.path.join(owner, band_mode(lens, owner), category(lens, owner), lens)
 
 
 def force_copy(lens, sample=None):
@@ -221,13 +251,17 @@ if __name__ == '__main__':
     p.add_argument('--list', action='store_true', help='list sample names and sizes')
     p.add_argument('--uvis-filters', action='store_true',
                    help='print the sample\'s WFC3/UVIS filters (space-separated) for the UVIS runner')
+    p.add_argument('--rel', metavar='LENS',
+                   help='print LENS\'s <sample>/<band_mode>/<category>/<lens> path, for the shell runners')
     p.add_argument('--print-sample', action='store_true',
                    help='print only the resolved sample name, so a shell runner can echo '
                         'the default without hardcoding a second copy of it')
     a = p.parse_args()
     if a.list:
         for s in samples():
-            print(f'{s:14s} {len(lenses(s)):3d} lenses')
+            print(f'{s:10s} {len(lenses(s)):3d} lenses')
+    elif a.rel:
+        print(lens_rel(a.rel, a.sample))
     elif a.uvis_filters:
         print(' '.join(uvis_filters(a.sample)))
     elif a.print_sample:

@@ -75,7 +75,7 @@ def collect(samples):
     for sample in samples:
         croot = stamp_paths.stamps_root(ws_path)
         for lens in mast_target_names.lenses(sample):
-            ldir = os.path.join(croot, sample, lens)
+            ldir = os.path.join(croot, stamp_paths.lens_rel(sample, lens))
             if not os.path.isdir(ldir):
                 continue
             bands = []

@@ -150,7 +150,7 @@ def measure(job):
                lens_r=lens_r, half=half)
     try:
         variant = stamp_paths.stamp_variant(stamp)
-        ddir = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, filt)
+        ddir = os.path.join(stamp_paths.drizzled_root(WS, variant), stamp_paths.lens_rel(sample, lens), filt)
         sci_f, wht_f = find_products(ddir, stamp_paths.stamp_pass(stamp))
         stamp_sci = fits.getdata(stamp).astype(np.float64)
         nh = fits.getheader(stamp.replace('_sci.fits', '_noise.fits'))
@@ -271,7 +271,7 @@ def summarise(results, thr='thr3'):
 def jobs_for(samples, filts=None):
     root = stamp_paths.stamps_root(WS)
     for sample in samples:
-        for d in sorted(glob.glob(os.path.join(root, sample, '*', '*'))):
+        for d in sorted(glob.glob(os.path.join(stamp_paths.lens_glob(root, sample), '*'))):
             if filts and os.path.basename(d) not in filts:
                 continue
             for prefix in stamp_paths.prefixes(stamp_paths.resolve_size(d)):

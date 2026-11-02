@@ -238,11 +238,9 @@ if _cr_ovr:
 _variant    = 'bcfill' if _a.bcfill else ''
 # data_path (calibrated source) always uses the base filter; only the output/work dirs
 # take --out-suffix, so both visits share the one download but write to f606W / _visit2.
-data_path   = os.path.join(ws_path, 'data', 'calibrated', sample, lens, filt)
-output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant),
-                           sample, lens, filt + _a.out_suffix)
-work_path   = os.path.join(ws_path, 'data', f'drizzle_files{stamp_paths.variant_tag(_variant)}',
-                           sample, lens, filt + _a.out_suffix)
+data_path   = os.path.join(ws_path, 'data', 'calibrated', stamp_paths.lens_rel(sample, lens), filt)
+output_path = os.path.join(stamp_paths.drizzled_root(ws_path, _variant), stamp_paths.lens_rel(sample, lens), filt + _a.out_suffix)
+work_path   = os.path.join(ws_path, 'data', f'drizzle_files{stamp_paths.variant_tag(_variant)}', stamp_paths.lens_rel(sample, lens), filt + _a.out_suffix)
 ref_path    = os.path.join(ws_path, 'data', 'reference_files')
 
 # ── Common output WCS across filters (orientation + centre) ────────────────────

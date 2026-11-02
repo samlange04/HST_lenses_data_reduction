@@ -46,7 +46,7 @@ the reference-band trap for make_stamps' shared --center-band. Check WCSNAME bef
 assuming which band is the truth; the defaults (target F606W, ref auto = F814W first)
 remain right for every other SLACS lens.
 
-    uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs_sparse \
+    uv run python scripts/align_wfpc2_to_acs.py --lens J1016+3859 --sample slacs \
         --target f814W --ref f160W
 
 **Default reference band (2026-10-04): F814W, then F600LP, then F475X** (`--ref auto`): the
@@ -54,7 +54,7 @@ reddest band the lens has, because the tie is a deflector-light centroid. F475X 
 first and failed: on J0959+0206, tying F606W to the Gaia-only F475X visit left it 0.13" from
 ACS F814W, because the blue arcs pull F475X's deflector centroid even though the two bands'
 WCSs agree to ~0.05". So expect a ~0.1" systematic on any lens whose only reference is F475X
-(most of sl2s_dinos_a and sl2s_wf). SLACS and BELLS have F814W, so their ties are unchanged.
+(most of dinos and sl2s). SLACS and BELLS have F814W, so their ties are unchanged.
 The same script ties F475X to F600LP where the two come from different visits with different
 WCS quality (J1405+5243, J0219-0829): `--target f475X --ref f600LP`.
 """
@@ -100,7 +100,7 @@ BAND_PREFIX = {
 }
 
 # --ref auto: the first of these bands with a drizzled product is the reference frame.
-# F160W last: a lens with no optical reference band (slacs_sparse J1134+6027, swells J1251-0208) ties
+# F160W last: a lens with no optical reference band (slacs J1134+6027, swells J1251-0208) ties
 # its F606W to its F160W, whose WCS carries a fitted GSC242 solution -- the tie fa7d094 made by
 # hand on 2026-09-14, which the 2026-10-05 re-drizzle silently dropped before this fallback.
 AUTO_REF_ORDER = ('f814W', 'f600LP', 'f475X', 'f160W')
@@ -142,7 +142,7 @@ def stable_centroid(path, cat, box=2.5, niter=8, tol=0.003):
 def find_product(lens, filt, prefix, sample=mast_target_names.DEFAULT_SAMPLE, variant=''):
     """The CR-pass sci product for a band (falls back to no-CR). `variant` selects the
     drizzled tree (e.g. 'bcfill' -> data/drizzled_bcfill/)."""
-    d = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, filt)
+    d = os.path.join(stamp_paths.drizzled_root(WS, variant), stamp_paths.lens_rel(sample, lens), filt)
     for pre in ((prefix,) if isinstance(prefix, str) else prefix):
         for tag in ('cr', 'nocrrej'):
             hit = glob.glob(os.path.join(d, f'{pre}_{tag}_*_sci.fits'))
@@ -190,7 +190,7 @@ def align_lens(lens, f606_dir='f606W', sample=mast_target_names.DEFAULT_SAMPLE,
     dra = cref.ra.deg - ctgt.ra.deg
     ddec = cref.dec.deg - ctgt.dec.deg
     # apply to every product of the target band (both passes, sci + wht)
-    d = os.path.join(stamp_paths.drizzled_root(WS, variant), sample, lens, target)
+    d = os.path.join(stamp_paths.drizzled_root(WS, variant), stamp_paths.lens_rel(sample, lens), target)
     n = 0
     tgt_prefix = os.path.basename(tgt).split('_cr_')[0].split('_nocrrej_')[0]
     for fn in glob.glob(os.path.join(d, f'{tgt_prefix}_*.fits')):
@@ -242,8 +242,8 @@ if __name__ == '__main__':
         # drizzled F606W product can be tied, and split-visit lenses have no bare f606W.
         lenses = sorted(
             os.path.basename(os.path.dirname(d))
-            for d in glob.glob(os.path.join(stamp_paths.drizzled_root(WS, variant),
-                                            a.sample, '*', 'f606W'))
+            for d in glob.glob(os.path.join(stamp_paths.lens_glob(stamp_paths.drizzled_root(WS, variant),
+                                                                a.sample), 'f606W'))
         )
         for lens in lenses:
             align_lens(lens, sample=a.sample, ref_filt=a.ref_filt, variant=variant)

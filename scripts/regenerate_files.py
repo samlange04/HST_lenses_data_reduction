@@ -37,7 +37,7 @@ given). --light runs only the two LIGHT stages (minutes, no network). --stages p
 subset explicitly. --dry-run prints every command without running anything.
 
 Usage:
-    uv run python scripts/regenerate_files.py --sample slacs_prime --light
+    uv run python scripts/regenerate_files.py --sample slacs --light
     uv run python scripts/regenerate_files.py --sample gallery
     uv run python scripts/regenerate_files.py --sample all --size 20
     uv run python scripts/regenerate_files.py --sample bells --stages drizzle psf
@@ -110,7 +110,7 @@ def stage_stamp_pngs(sample, dry_run):
         return True
     qc_path = stamp_paths.qc_json_path(ws_path)
     n = bad = 0
-    for stamp_dir in sorted(glob.glob(os.path.join(root, '*', '*'))):
+    for stamp_dir in sorted(glob.glob(os.path.join(stamp_paths.lens_glob(stamp_paths.stamps_root(ws_path), sample), '*'))):
         if not os.path.isdir(stamp_dir):
             continue
         lens = os.path.basename(os.path.dirname(stamp_dir))

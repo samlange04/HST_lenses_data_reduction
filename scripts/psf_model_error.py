@@ -64,6 +64,7 @@ from scipy.optimize import minimize
 
 import make_psf
 import psf_models
+import stamp_paths
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -174,7 +175,7 @@ def build_model_kernel(sample, lens, filt, star_size):
     North-up through the same representative_input_cd), then applies the analytic
     stand-in for the injection promotion. Returns (sharp, broadened, meta).
     """
-    scis = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzled', sample, lens,
+    scis = sorted(glob.glob(os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens),
                                          filt, '*_sci.fits')))
     if not scis:
         raise FileNotFoundError(f'no drizzled sci for {sample}/{lens}/{filt}')
@@ -259,7 +260,7 @@ def main():
           f'{"corr":>8s}{"wing%":>8s}{"shift(y,x)":>16s}')
     rows = []
     for sample, lens, filt, entry in targets:
-        kpath = os.path.join(ws_path, 'data', 'psf', sample, lens, filt,
+        kpath = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt,
                              'psf_kernel.fits')
         if not os.path.isfile(kpath):
             print(f'  SKIP {sample}/{lens}/{filt}: no psf_kernel.fits')

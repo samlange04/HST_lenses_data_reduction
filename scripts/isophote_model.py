@@ -68,10 +68,10 @@ def isophote_subtract(image, pixel_scale, exclude=None, centre=None):
 
 def deflector_pixel(sci_path):
     """(col, row) of the catalogue deflector on a stamp whose centre is NOT the deflector, else
-    None (the stamp centre is then right). Only the group-centred `slacs_multi` stamps
+    None (the stamp centre is then right). Only the group-centred multi_galaxy stamps
     (`stamp_center` in lens_samples.json) qualify: centred on the group, an isophote fit started
     at the stamp centre finds no galaxy there and fails. The lens and sample are read from the
-    path, data/stamps/<sample>/<lens>/<band>/<file>."""
+    path's band dir (lens names are unique across samples)."""
     from astropy.coordinates import SkyCoord
     from astropy.io import fits
     from astropy.wcs import WCS
@@ -81,9 +81,8 @@ def deflector_pixel(sci_path):
     sys.path.insert(0, os.path.join(os.path.dirname(scripts), 'info', 'coords'))
     import mast_target_names
     from lens_coords import lens_coords
-    band_dir = os.path.dirname(os.path.abspath(sci_path))
-    lens = os.path.basename(os.path.dirname(band_dir))
-    sample = os.path.basename(os.path.dirname(os.path.dirname(band_dir)))
+    lens = os.path.basename(os.path.dirname(os.path.dirname(os.path.abspath(sci_path))))
+    sample = mast_target_names.sample_of(lens)
     try:
         if not mast_target_names.stamp_center(lens, sample) or lens not in lens_coords:
             return None

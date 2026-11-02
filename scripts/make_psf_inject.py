@@ -20,12 +20,12 @@ when the product's primary build (per info/provenance/lens_psf.json) is on the m
 the injected kernel: the existing pre-broadening analytic-model files are moved aside to
 *_analytic (comparison only), and the injected build takes over the canonical names:
 
-  data/psf/<sample>/<lens>/<filt>/psf_kernel.fits             canonical (now the injected build)
-  data/psf/<sample>/<lens>/<filt>/psf_kernel_analytic.fits    the superseded analytic model
-  data/psf/<sample>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
+  data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/psf_kernel.fits             canonical (now the injected build)
+  data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/psf_kernel_analytic.fits    the superseded analytic model
+  data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/psf.png / psf_analytic.png  QA panels, same split
   <psf stamp dir>/psf.fits                       canonical (injected)
   <psf stamp dir>/psf_analytic.fits              superseded analytic
-    (<psf stamp dir> = stamp_paths.psf_stamp_dir(): data/stamps/<sample>/<lens>/<filt>/,
+    (<psf stamp dir> = stamp_paths.psf_stamp_dir(): data/stamps/<sample>/<band_mode>/<category>/<lens>/<filt>/,
      beside the sci/noise/mask that will actually be modelled -- one kernel per band, always
      in the default-size tree since the kernel is not size-keyed)
   info/provenance/lens_psf.json                                          method becomes inject_*
@@ -43,7 +43,7 @@ before.
 
 How it works, and why it is faithful:
   * It reuses the already-prepared inputs the science drizzle consumed, which persist in
-    data/drizzle_files/<sample>/<lens>/<filt>/ -- ACS and WFC3/UVIS `<root>_flc.fits`, WFC3/IR
+    data/drizzle_files/<sample>/<band_mode>/<category>/<lens>/<filt>/ -- ACS and WFC3/UVIS `<root>_flc.fits`, WFC3/IR
     `<root>_flt.fits`, WFPC2 extracted `wf3_<root>_flt.fits` + per-frame IVM + the two-column
     `@`-association. Reusing them inherits every instrument-specific prep step (WF3 chip
     extraction + EXTVER renumbering, distortion arrays, updatewcs, the IVM weighting) that
@@ -603,9 +603,9 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     empirical primary, matching the --all validation mode). Pass True/False to override,
     e.g. make_psf.py knows definitively it just built a model-tier product."""
     sample = sample or mast_target_names.DEFAULT_SAMPLE
-    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', sample, lens, filt)
-    src_dir = os.path.join(ws_path, 'data', 'drizzle_files', sample, lens, filt)
-    psf_dir = os.path.join(ws_path, 'data', 'psf', sample, lens, filt)
+    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), filt)
+    src_dir = os.path.join(ws_path, 'data', 'drizzle_files', stamp_paths.lens_rel(sample, lens), filt)
+    psf_dir = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt)
     stamps_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
     json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_psf_injected.json')
 

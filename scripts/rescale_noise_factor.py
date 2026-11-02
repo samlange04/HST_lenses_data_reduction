@@ -8,8 +8,8 @@ re-cut, by contrast, would re-read the mosaic. A stamp with the PSF error folded
 is NOT linear in the factor and is skipped with a message; re-cut it with make_stamps.py
 --center-from instead.
 
-    uv run python scripts/rescale_noise_factor.py --sample slacs_prime bells    # dry run
-    uv run python scripts/rescale_noise_factor.py --sample slacs_prime bells --apply
+    uv run python scripts/rescale_noise_factor.py --sample slacs bells    # dry run
+    uv run python scripts/rescale_noise_factor.py --sample slacs bells --apply
 """
 import argparse
 import glob
@@ -35,7 +35,7 @@ def main():
     root = stamp_paths.stamps_root(WS)
     n_change = n_skip = 0
     for sample in a.sample:
-        for nf in sorted(glob.glob(os.path.join(root, sample, '*', '*', 'stamp*_noise.fits'))):
+        for nf in sorted(glob.glob(os.path.join(stamp_paths.lens_glob(root, sample), '*', 'stamp*_noise.fits'))):
             lens, filt = nf.split(os.sep)[-3:-1]
             sci_hdr = fits.getheader(nf.replace('_noise.fits', '_sci.fits'))
             with fits.open(nf, mode='update' if a.apply else 'readonly') as h:
