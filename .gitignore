@@ -106,6 +106,11 @@ diagnostics/
 # CLAUDE.md imports the tracked AGENTS.md (@AGENTS.md) and adds the maintainer's private
 # working notes. Only AGENTS.md is needed to use the repo.
 /CLAUDE.md
+# .kimi-code/AGENTS.md is the Kimi Code twin of CLAUDE.md (Kimi Code auto-loads it as a
+# project-level instruction file alongside the root AGENTS.md). .kimi-code/local.toml is
+# machine-local Kimi Code config (the docs recommend ignoring it).
+/.kimi-code/AGENTS.md
+/.kimi-code/local.toml
 
 # ── Exploratory scripts kept out of the public tree ───────────────────────────
 # scripts/bolton_investigations/: the standalone prototypes behind the --bcfill decision
