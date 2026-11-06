@@ -305,10 +305,14 @@ except (KeyError, ImportError):
 
 
 # ── Info JSON paths ────────────────────────────────────────────────────────────
+# HST_INFO_DIR lets parallel per-shard drizzles write private copies of the three
+# tracking JSONs (concurrent info_json.update calls tear the shared file); a merge
+# step folds the shards back into info/ afterwards. Unset = write info/ directly.
+_info_root           = os.environ.get('HST_INFO_DIR', os.path.join(ws_path, 'info'))
 filt_key             = filt
-json_path            = os.path.join(ws_path, 'info', 'provenance', 'lens_products.json')
-exptime_json_path    = os.path.join(ws_path, 'info', 'provenance', 'lens_exptime.json')
-instrument_json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json')
+json_path            = os.path.join(_info_root, 'provenance', 'lens_products.json')
+exptime_json_path    = os.path.join(_info_root, 'provenance', 'lens_exptime.json')
+instrument_json_path = os.path.join(_info_root, 'provenance', 'lens_instrument.json')
 
 # One filter key holds one instrument's product per lens (info_json.band_owner_conflict).
 _owner = info_json.band_owner_conflict(instrument_json_path, sample, lens, filt_key, 'ACS/')

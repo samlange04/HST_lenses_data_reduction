@@ -190,8 +190,7 @@ def build_model_kernel(sample, lens, filt, star_size):
     cd = make_psf.representative_input_cd(inst_key, lens, filt, sample)
     eps = psf_models.model_psf(inst_key, filt, oversample=oversample, size=star_size,
                                out_scale=scale, cd_detector=cd)
-    sharp = make_psf.oversampled_to_kernel(eps, oversample, star_size)
-    sharp, _ = make_psf.subtract_pedestal(sharp)
+    sharp = make_psf.oversampled_to_kernel(eps, oversample, star_size)   # noiseless: no pedestal
 
     # NDRIZIM counts drizzled IMAGES; ACS/WFC and WFC3/UVIS FLCs are 2-chip MEFs whose
     # chips share a dither phase, so halve them -- same correction make_psf_inject uses.
@@ -200,7 +199,6 @@ def build_model_kernel(sample, lens, filt, star_size):
     broad, box = psf_models.analytic_drop_broaden(
         sharp, float(hdr['D001PIXF']), float(hdr['D001ISCL']), float(hdr['D001SCAL']),
         n_frames=n_frames)
-    broad, _ = make_psf.subtract_pedestal(broad)
     return unit(sharp), unit(broad), dict(inst=inst_key, scale=scale,
                                           n_frames=n_frames, box=box, cd=cd is not None)
 

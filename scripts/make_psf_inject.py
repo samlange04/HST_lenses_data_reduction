@@ -83,7 +83,10 @@ from photutils.centroids import centroid_com
 from scipy.ndimage import map_coordinates
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
+# HST_INFO_DIR: per-shard private info dir for parallel kernel rebuilds
+# (concurrent info_json.update calls tear shared JSONs); unset = the checkout's info/.
+_INFO_ROOT = os.environ.get('HST_INFO_DIR') or os.path.join(ws_path, 'info')
+sys.path.insert(0, os.path.join(_INFO_ROOT, 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # macOS AstroDrizzle write-hang workaround -- must be installed before AstroDrizzle runs
@@ -130,6 +133,21 @@ _DRIZ = {
 
 _DET_STAMP = 51          # side (detector px) of the rendered model-PSF stamp injected per frame
 _INJECT_FLUX = 1.0e4     # arbitrary positive total flux per injected star (kernel is renormalised)
+# The kernel is the MEAN of a GRID x GRID grid of injected stars around the lens, each on a
+# science-grid pixel centre 1.5 kernels apart (2026-11-03, ported from the JWST repo). One star
+# is one sub-pixel phase on each input frame, and on a drizzled undersampled image a star's
+# resampled shape depends on that phase (F160W single injected stars: radial FWHM 2.9-3.4 px);
+# extended emission (the lens light, the arcs) sees the phase AVERAGE, which the mean over the
+# grid is. An ePSF built from field stars registers the phases instead (the PSF of a single
+# phase), which is why the empirical tier is checked against this one (AGENTS.md *PSF
+# generation*). Only stars that fall on exactly the frames the lens does are averaged; with
+# fewer than MIN_PHASE_STARS (a lens near a chip edge), further passes with the whole grid
+# shifted by whole output pixels follow.
+GRID = 5
+MIN_PHASE_STARS = 12
+PHASE_SHIFTS = [(1, 0), (0, 1), (1, 1), (-1, 1), (2, 0), (0, 2), (2, 1), (1, 2), (-2, 1), (1, -2),
+                (2, 2), (-2, 2), (3, 0), (0, 3), (3, 1), (1, 3), (3, 2), (2, 3)]
+GRID_PHASE_TOL = 0.01    # px: the injected mosaic must land on the science lattice to this
 
 
 def _set_ref_env():
@@ -253,7 +271,7 @@ def _render_from_array(P, ov, x, y, flux, S=_DET_STAMP):
     return (stamp / s * flux if s > 0 else stamp), iy - half, ix - half
 
 
-def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_coord):
+def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_coord, blur_sigma_det=None):
     """Return {sci_path: renderer} where renderer(sci_hdr_wcs_shape) -> (stamp, iy0, ix0, ext),
     plus a short method tag. Mirrors make_psf's model-tier selection so the injected PSF is
     built from the SAME model source the analytic kernel would use:
@@ -265,22 +283,47 @@ def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_
 
     The drizzle itself does the exposure-average and North-up rotation, so each frame simply
     injects its own detector-frame model at its own lens position."""
+    # the calibrated extra blur (psf_models.model_blur_sigma; detector px), applied to every
+    # rendered detector stamp -- a Gaussian commutes with the pixel integration the ePSF
+    # already carries, so blurring the integrated stamp is exact
+    blur = psf_models.model_blur_sigma(inst_key, filt) if blur_sigma_det is None else blur_sigma_det
+
+    def blurred(stamp):
+        if blur and blur > 0:
+            stamp = np.clip(psf_models.gaussian_blur(stamp, blur), 0.0, None)
+            s_ = stamp.sum()
+            stamp = stamp / s_ * _INJECT_FLUX if s_ > 0 else stamp
+        return stamp
+
     def grid_renderer(grid):
         def r(x, y, ext):
             stamp, iy0, ix0 = _render_from_grid(grid, x, y, _INJECT_FLUX)
-            return stamp, iy0, ix0, ext
+            return blurred(stamp), iy0, ix0, ext
         return r
 
     def array_renderer(P, ov):
         def r(x, y, ext):
             stamp, iy0, ix0 = _render_from_array(P, ov, x, y, _INJECT_FLUX)
-            return stamp, iy0, ix0, ext
+            return blurred(stamp), iy0, ix0, ext
         return r
 
     if inst_key == 'ACS/WFC':
-        from acstools.focus_diverse_epsfs import psf_retriever, interp_epsf
+        from acstools.focus_diverse_epsfs import interp_epsf
         os.makedirs(psf_models._ACS_FD_CACHE, exist_ok=True)
         per_root, ok = {}, True
+
+        def fd_renderer(grid, chip_of_ext):
+            # the focus-diverse ePSF varies over the chip, so it is interpolated at each
+            # injected position (the grid stars sit up to ~2 kernels from the lens)
+            def r(x, y, ext):
+                P = interp_epsf(grid, int(round(x)), int(round(y)), chip_of_ext[ext])
+                if P is None or not np.all(np.isfinite(P)) or np.asarray(P).sum() <= 0:
+                    raise RuntimeError(f'interp_epsf returned no usable ePSF at ({x:.0f}, {y:.0f})')
+                stamp, iy0, ix0 = _render_from_array(np.asarray(P, float),
+                                                     psf_models._ACS_FD_SUPERSAMPLE, x, y, _INJECT_FLUX)
+                return blurred(stamp), iy0, ix0, ext
+            return r
+
         for sci in sci_paths:
             root = os.path.basename(sci).split('_flc')[0]
             pos = psf_models._fd_detector_position(root, src_dir, catalogue_coord)
@@ -288,20 +331,16 @@ def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_
                 print(f'    {root}: lens position/CD unavailable on FLC; FD unusable')
                 ok = False
                 break
-            x, y, chip, _cd = pos
             try:
-                grid = fits.getdata(psf_retriever(root, psf_models._ACS_FD_CACHE), ext=0)
+                grid = psf_models.acs_fd_grid(root)
             except Exception as exc:
                 print(f'    {root}: focus-diverse retrieval failed ({exc})')
                 ok = False
                 break
-            P = interp_epsf(grid, int(round(x)), int(round(y)), chip)
-            if P is None or not np.all(np.isfinite(P)) or np.asarray(P).sum() <= 0:
-                print(f'    {root}: interp_epsf returned no usable ePSF')
-                ok = False
-                break
-            per_root[sci] = array_renderer(np.asarray(P, float),
-                                           psf_models._ACS_FD_SUPERSAMPLE)
+            with fits.open(sci) as hdul:
+                chip_of_ext = {h.header.get('EXTVER', 1): ('WFC1' if int(h.header.get('CCDCHIP', 1)) == 1 else 'WFC2')
+                               for h in hdul if h.header.get('EXTNAME') == 'SCI'}
+            per_root[sci] = fd_renderer(grid, chip_of_ext)
         if ok:
             return per_root, 'inject_acs_fdpsf'
         print('    falling back to STDPSF for all ACS frames')
@@ -325,38 +364,86 @@ def build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir, catalogue_
     return {s: grid_renderer(grid) for s in sci_paths}, 'inject_stdpsf'
 
 
-def inject_frame(sci_path, renderer, catalogue_coord):
-    """Zero every SCI extension of `sci_path` (in place) and add the rendered model PSF at the
-    lens position on the chip that contains it. Multi-chip (ACS/WFC): the lens is on one chip;
-    both chips are zeroed, the star added only to the containing chip. Returns True if a star
-    was injected (lens on-frame), False otherwise."""
-    injected = False
+def inject_frame(sci_path, renderer, coords):
+    """Zero every SCI extension of `sci_path` (in place) and add the rendered model PSF at each
+    sky position in `coords` (a SkyCoord or a list of them) on the chip that contains it.
+    Multi-chip (ACS/WFC): both chips are zeroed, each star added only to its containing chip.
+    Returns a bool array, one per position: True where the star lies WHOLLY on the frame
+    (its full rendered stamp inside the chip), False where it is off the frame or clipped by
+    an edge. A single SkyCoord returns a single bool, as before."""
+    single = not isinstance(coords, (list, tuple))
+    coords = [coords] if single else list(coords)
+    on = np.zeros(len(coords), dtype=bool)
     with fits.open(sci_path, mode='update') as hdul:
         sci_hdus = [h for h in hdul if h.header.get('EXTNAME') == 'SCI']
         for h in sci_hdus:
             h.data = np.zeros_like(h.data, dtype=np.float32)
         for h in sci_hdus:
             ny, nx = h.data.shape
-            try:
-                x, y = WCS(h.header, hdul).world_to_pixel(catalogue_coord)
-            except Exception:
-                continue
-            if not (0 <= x < nx and 0 <= y < ny):
-                continue
+            w = WCS(h.header, hdul)
             ext = h.header.get('EXTVER', 1)
-            stamp, iy0, ix0, _ext = renderer(float(x), float(y), ext)
-            S = stamp.shape[0]
-            # clip the stamp to the frame
-            dy0, dx0 = max(0, -iy0), max(0, -ix0)
-            gy0, gx0 = max(0, iy0), max(0, ix0)
-            gy1, gx1 = min(ny, iy0 + S), min(nx, ix0 + S)
-            if gy1 <= gy0 or gx1 <= gx0:
-                continue
-            h.data[gy0:gy1, gx0:gx1] += stamp[dy0:dy0 + (gy1 - gy0),
-                                              dx0:dx0 + (gx1 - gx0)].astype(np.float32)
-            injected = True
-            break  # lens is on a single chip
-    return injected
+            for i, c in enumerate(coords):
+                if on[i]:
+                    continue          # already placed on another chip
+                try:
+                    x, y = w.world_to_pixel(c)
+                except Exception:
+                    continue
+                if not (0 <= x < nx and 0 <= y < ny):
+                    continue
+                stamp, iy0, ix0, _ext = renderer(float(x), float(y), ext)
+                S = stamp.shape[0]
+                # clip the stamp to the frame
+                dy0, dx0 = max(0, -iy0), max(0, -ix0)
+                gy0, gx0 = max(0, iy0), max(0, ix0)
+                gy1, gx1 = min(ny, iy0 + S), min(nx, ix0 + S)
+                if gy1 <= gy0 or gx1 <= gx0:
+                    continue
+                h.data[gy0:gy1, gx0:gx1] += stamp[dy0:dy0 + (gy1 - gy0),
+                                                  dx0:dx0 + (gx1 - gx0)].astype(np.float32)
+                on[i] = (gy1 - gy0 == S) and (gx1 - gx0 == S)
+    return bool(on[0]) if single else on
+
+
+def science_lattice_wcs(inj_hdr, sci_hdr):
+    """The injected mosaic's WCS put on the SCIENCE mosaic's sky lattice.
+
+    A fresh drizzle of the same inputs reproduces the science grid up to the integer crop
+    (crop_to_coverage), but NOT a post-drizzle astrometric tie: align_wfpc2_to_acs.py and
+    align_field_sources.py shift the science product's CRVAL (GSC240FX / FTORIG1), so the
+    science lattice sits a fraction of a pixel off a re-drizzle's (J0029-0055 F160W: 1.2 px,
+    its 72 mas tie; found 2026-11-03 when the grid stars landed at (x.92, y.53)). The tie is
+    a pure CRVAL shift, so with the same CD and an integer CRPIX difference the injected
+    mosaic takes the science CRVAL and the two lattices coincide. Otherwise the injected WCS
+    is returned as it is (and the GRID_PHASE_TOL check downstream reports the mismatch)."""
+    wi, ws = WCS(inj_hdr), WCS(sci_hdr)
+    cdi, cds = wi.wcs.cd if wi.wcs.has_cd() else wi.pixel_scale_matrix, \
+        ws.wcs.cd if ws.wcs.has_cd() else ws.pixel_scale_matrix
+    dcrpix = np.asarray(ws.wcs.crpix) - np.asarray(wi.wcs.crpix)
+    if np.allclose(cdi, cds, rtol=0, atol=1e-9 * np.abs(cds).max()) \
+            and np.all(np.abs(dcrpix - np.round(dcrpix)) < 1e-3):
+        if not np.allclose(wi.wcs.crval, ws.wcs.crval, rtol=0, atol=1e-12):
+            d = (np.asarray(ws.wcs.crval) - np.asarray(wi.wcs.crval)) * 3600.0
+            print(f'  injected mosaic put on the science lattice: CRVAL moved by '
+                  f'({d[0] * np.cos(np.radians(ws.wcs.crval[1])):+.3f}, {d[1]:+.3f})" (the science tie)')
+        wi.wcs.crval = ws.wcs.crval
+    else:
+        print('  WARNING: injected mosaic grid geometry differs from the science mosaic; '
+              'the science tie (if any) is not carried over')
+    return wi
+
+
+def grid_positions(sci_hdr, catalogue_coord, size, shift=(0, 0)):
+    """(pixels, skycoords, centre index) of the GRID x GRID injection grid: science-grid pixel
+    centres around the lens's pixel, 1.5 kernels apart, shifted by `shift` whole pixels."""
+    w = WCS(sci_hdr)
+    px, py = (float(v) for v in w.world_to_pixel(catalogue_coord))
+    ix, iy = int(round(px)) + shift[0], int(round(py)) + shift[1]
+    sp = size + size // 2
+    k = GRID // 2
+    pix = [(ix + i * sp, iy + j * sp) for j in range(-k, k + 1) for i in range(-k, k + 1)]
+    sky = [w.pixel_to_world(x, y) for x, y in pix]
+    return pix, sky, GRID * GRID // 2
 
 
 # ── Drizzle and kernel extraction ────────────────────────────────────────────────
@@ -435,15 +522,52 @@ def extract_kernel(out_sci, catalogue_coord, size):
     return kern, raw
 
 
+def injected_mosaic(sample, lens, filt, coords, blur_sigma_det=None, work_dir=None):
+    """The model PSF injected noiselessly at every sky position in `coords` into the band's
+    staged science frames and drizzled as the science was: (mosaic, WCS on the science
+    lattice, info). The science mosaic's post-drizzle tie is carried over (science_lattice_wcs).
+    Used by psf_star_check.py to put a twin at every real PSF star. Raises on failure."""
+    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), filt)
+    src_dir = os.path.join(ws_path, 'data', 'drizzle_files', stamp_paths.lens_rel(sample, lens), filt)
+    has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
+    sci_file, _ = find_products(drizzled_dir, 'cr' if has_cr else 'nocrrej')
+    sci_hdr = fits.getheader(sci_file)
+    inst_key = make_psf.instrument_key(sci_hdr)
+    ra, dec = catalogue_coord_for(lens)
+    catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
+    _set_ref_env()
+    work_dir = work_dir or os.path.join(src_dir, 'psf_twins')
+    shutil.rmtree(work_dir, ignore_errors=True)
+    cwd = os.getcwd()
+    try:
+        drizzle_input, sci_paths, _ = stage_inputs(inst_key, src_dir, work_dir)
+        blur = psf_models.model_blur_sigma(inst_key, filt) if blur_sigma_det is None else blur_sigma_det
+        renderers, method = build_renderers(inst_key, filt, sample, lens, sci_paths, src_dir,
+                                            catalogue_coord, blur_sigma_det=blur)
+        on = np.array([inject_frame(sci, renderers[sci], list(coords)) for sci in sci_paths])
+        os.chdir(work_dir)
+        try:
+            out_sci = run_injection_drizzle(inst_key, drizzle_input, catalogue_coord)
+            mosaic = np.nan_to_num(np.asarray(fits.getdata(out_sci), float))
+            owcs = science_lattice_wcs(fits.getheader(out_sci), sci_hdr)
+        finally:
+            os.chdir(cwd)
+    finally:
+        os.chdir(cwd)
+        shutil.rmtree(work_dir, ignore_errors=True)
+    return mosaic, owcs, dict(method=method, n_frames=len(sci_paths), on_frames=on.sum(axis=0).tolist(),
+                              blur_sigma_det_px=float(blur or 0.0))
+
+
 # ── Promotion: make the injected (drizzle-broadened) kernel the canonical product ──
 def _is_model_tier(sample, lens, filt):
     """True if the CURRENT primary build recorded in info/provenance/lens_psf.json for this product is
     on the model tier -- either not yet promoted ('model...') or already promoted
     ('inject...') by a previous run of this function. False for 'empirical' or no record."""
-    psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
+    psf_json = os.path.join(_INFO_ROOT, 'provenance', 'lens_psf.json')
     rec = info_json.load(psf_json).get(sample, {}).get(lens, {}).get(filt)
     method = str((rec or {}).get('method', ''))
-    return method.startswith('model') or method.startswith('inject')
+    return method.startswith(('model', 'inject', 'hybrid', 'broadened'))
 
 
 def _promote(psf_dir, stamps_dir):
@@ -545,7 +669,8 @@ def analytic_broadened_fallback(psf_dir, stamps_dir, sci_hdr, method,
 
     broadened, box_width = psf_models.analytic_drop_broaden(
         analytic_kernel, pixfrac, native_scale, out_scale, n_frames=n_frames)
-    broadened, pedestal_frac = make_psf.subtract_pedestal(broadened)
+    broadened = broadened / broadened.sum()          # noiseless: no pedestal to remove (2026-11-03)
+    pedestal_frac = 0.0
     fwhm_before = make_psf.measure_fwhm(analytic_kernel)
     fwhm_after = make_psf.measure_fwhm(broadened)
     print(f'  analytic drizzle-broadening fallback: box {box_width:.2f} output-px '
@@ -591,7 +716,7 @@ def analytic_broadened_fallback(psf_dir, stamps_dir, sci_hdr, method,
 
 # ── Callable entry point (also used by make_psf.py to auto-chain model-tier builds) ─
 def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1e-3,
-                  keep_work=False, promote=None):
+                  keep_work=False, promote=None, blur_sigma_det=None):
     """Build the drizzle-broadened injected PSF for (sample, lens, filt) and, when the
     product's primary build is on the model tier, PROMOTE it to the canonical
     psf_kernel.fits / psf.fits (the pre-broadening analytic model is moved
@@ -607,7 +732,7 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     src_dir = os.path.join(ws_path, 'data', 'drizzle_files', stamp_paths.lens_rel(sample, lens), filt)
     psf_dir = os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(sample, lens), filt)
     stamps_dir = stamp_paths.psf_stamp_dir(ws_path, sample, lens, filt)
-    json_path = os.path.join(ws_path, 'info', 'provenance', 'lens_psf_injected.json')
+    json_path = os.path.join(_INFO_ROOT, 'provenance', 'lens_psf_injected.json')
 
     # No-data outcome: matches the other scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
@@ -644,28 +769,70 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
         print(f'  {len(sci_paths)} frames')
 
         print('  building model-PSF renderers ...')
+        blur_sigma = psf_models.model_blur_sigma(inst_key, filt) if blur_sigma_det is None else blur_sigma_det
         renderers, method = build_renderers(inst_key, filt, sample, lens,
-                                            sci_paths, src_dir, catalogue_coord)
-        print(f'  model source: {method}')
+                                            sci_paths, src_dir, catalogue_coord, blur_sigma_det=blur_sigma)
+        print(f'  model source: {method}' + (f', blurred by {blur_sigma:.3f} detector px (calibrated)' if blur_sigma else ''))
 
-        n_inj = 0
-        for sci in sci_paths:
-            if inject_frame(sci, renderers[sci], catalogue_coord):
-                n_inj += 1
-        print(f'  injected the model PSF into {n_inj}/{len(sci_paths)} frames')
-        if n_inj == 0:
-            raise RuntimeError('lens fell off every frame; nothing injected')
-
-        os.chdir(work_dir)
-        out_sci = run_injection_drizzle(inst_key, drizzle_input, catalogue_coord)
-        kernel, raw = extract_kernel(out_sci, catalogue_coord, size)
+        # The kernel is the mean of a GRID x GRID grid of stars on science-grid pixel centres
+        # (see GRID / MIN_PHASE_STARS above), each pass one injection + drizzle of the same
+        # staged frames (the SCI arrays are zeroed and re-filled per pass).
+        crops, fwhms, n_passes, n_inj, lens_frames, raw = [], [], 0, 0, None, None
+        for shift in [(0, 0)] + PHASE_SHIFTS:
+            pix, sky, centre = grid_positions(sci_hdr, catalogue_coord, size, shift)
+            on = np.array([inject_frame(sci, renderers[sci], sky) for sci in sci_paths])  # frames x stars
+            if n_passes == 0:
+                lens_frames = on[:, centre]
+                n_inj = int(lens_frames.sum())
+                print(f'  injected the model PSF into {n_inj}/{len(sci_paths)} frames at the lens')
+                if n_inj == 0:
+                    raise RuntimeError('lens fell off every frame; nothing injected')
+            use = [s_ for s_ in range(len(pix)) if np.array_equal(on[:, s_], lens_frames)]
+            if centre not in use and np.array_equal(on[:, centre] > 0, lens_frames > 0):
+                use.append(centre)        # the lens star itself, even if clipped by a chip edge
+            os.chdir(work_dir)
+            try:
+                for f in glob.glob('psf_inject*'):
+                    os.remove(f)
+                out_sci = run_injection_drizzle(inst_key, drizzle_input, catalogue_coord)
+                out = np.nan_to_num(np.asarray(fits.getdata(out_sci), float))
+                owcs = science_lattice_wcs(fits.getheader(out_sci), sci_hdr)
+            finally:
+                os.chdir(cwd)
+            n_passes += 1
+            for s_ in use:
+                x, y = (float(v) for v in owcs.world_to_pixel(sky[s_]))
+                if max(abs(x - round(x)), abs(y - round(y))) > GRID_PHASE_TOL:
+                    raise RuntimeError(f'injected drizzle grid is not the science grid: star {s_} '
+                                       f'at ({x:.4f}, {y:.4f})')
+                crop = make_psf._crop_centered(out, size, int(round(x)), int(round(y)))
+                if crop.sum() <= 0:
+                    raise RuntimeError(f'injected star {s_} drizzled to nothing')
+                crops.append(crop / crop.sum())
+                fwhms.append(make_psf.measure_fwhm(crops[-1]))
+                if s_ == centre and n_passes == 1:
+                    raw = crop.copy()
+            if len(crops) >= MIN_PHASE_STARS:
+                break
+        if raw is None:
+            raw = crops[0].copy()
+        print(f'  {len(crops)} grid stars on the lens\'s frames from {n_passes} pass'
+              f'{"es" if n_passes > 1 else ""}')
     finally:
         os.chdir(cwd)
 
-    # Post-process identically to make_psf's analytic kernel.
-    kernel, pedestal_frac = make_psf.subtract_pedestal(kernel)
-    if abs(pedestal_frac) >= 1e-4:
-        print(f'  pedestal removed: {pedestal_frac:.2e} of peak')
+    kernel = np.mean(crops, axis=0)
+    # the per-pixel scatter of the single-phase stars about their mean: what a COMPACT
+    # source (a lens core, a point-like image) can see instead of the mean (JWST repo,
+    # err_method model_vs_stars+phase); make_psf_err_injected adds it to the error map
+    phase_std = np.std(crops, axis=0, ddof=1) if len(crops) >= 3 else None
+    fw = np.array([f for f in fwhms if f is not None], float)
+
+    # Post-process as make_psf does a model kernel: the injected star is noiseless, so no
+    # pedestal is removed (until 2026-11-03 the outer-annulus median was; on these truncated
+    # ~0.6"-wide models it was ~0 anyway, and on a real wing it removes real flux).
+    kernel = kernel / kernel.sum()
+    pedestal_frac = 0.0
     ped_frac, scat_frac = make_psf.wing_stats(kernel)
     trimmed, trim_size = make_psf.trim_kernel_to_amplitude(kernel, trim_threshold)
     fwhm_pix = make_psf.measure_fwhm(kernel)
@@ -691,6 +858,11 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
     khdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in the psf stamp dir)')
     khdr['PSFPED'] = (round(pedestal_frac, 6), 'ePSF-wing pedestal removed (fraction of peak)')
     khdr['PSFINJ'] = (True, 'built by artificial-star injection + re-drizzle')
+    khdr['PSFBLUR'] = (round(float(blur_sigma or 0.0), 4), 'calibrated extra blur of the model (detector px)')
+    khdr['PSFNSTI'] = (len(crops), 'injected grid stars averaged (sub-pixel phases)')
+    khdr['PSFNPASS'] = (n_passes, 'injection passes (grid shifted per pass)')
+    khdr['PSFPHERR'] = (round(float(np.sqrt(np.sum(phase_std ** 2))), 6) if phase_std is not None else 0.0,
+                        'integrated sub-pixel-phase scatter of the stars')
 
     if promote:
         # Move the existing analytic-model files aside, then write the injected build
@@ -731,13 +903,22 @@ def run_injection(lens, filt, sample=None, drizzle_pass='auto', trim_threshold=1
         'pedestal_frac': round(pedestal_frac, 6),
         'wing_scatter': round(scat_frac, 6),
         'n_frames': n_inj,
+        'n_stars': len(crops),
+        'n_passes': n_passes,
+        'blur_sigma_det_px': round(float(blur_sigma or 0.0), 4),
+        'star_fwhm_pix': [round(float(fw.min()), 4), round(float(np.median(fw)), 4), round(float(fw.max()), 4)] if len(fw) else None,
+        'phase_err_frac': round(float(np.sqrt(np.sum(phase_std ** 2))), 6) if phase_std is not None else None,
     }
+    if phase_std is not None:
+        phdr = khdr.copy()
+        phdr['PSFKIND'] = ('phase_std', 'per-pixel std of the injected stars about the kernel')
+        make_psf.write_fits(phase_std, phdr, os.path.join(psf_dir, 'psf_kernel_phase_std.fits'))
     info_json.update(json_path, sample, lens, filt, record)
 
     if promote:
         # The canonical lens_psf.json entry must describe what's now actually in
         # psf.fits: the injected build, not the superseded analytic one.
-        psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
+        psf_json = os.path.join(_INFO_ROOT, 'provenance', 'lens_psf.json')
         info_json.update(psf_json, sample, lens, filt, dict(record))
         print(f'  promoted: {method} is now the canonical PSF '
               f'(analytic model kept as *_analytic)')

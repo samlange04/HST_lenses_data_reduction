@@ -1,25 +1,23 @@
 #!/usr/bin/env bash
 # Build a PSF for every drizzled product. make_psf.py defaults to --pass auto (the kernel
 # is named for the CR pass; stars are detected in the no-CR mosaic where one exists, since
-# LACosmic eats star cores) and --method
-# auto (empirical ePSF, model fallback when a field is too star-poor or its empirical
-# wings are poor). For a model-tier build, make_psf.py auto-chains make_psf_inject.py
-# (promote=True) so the canonical psf_kernel.fits / psf.fits it leaves behind
-# is already the drizzle-broadened injected kernel, not the sharper analytic model (which
-# is kept alongside as *_analytic for comparison) -- see make_psf_inject.py's docstring.
+# LACosmic eats star cores) and --method auto, which since 2026-11-03 ships the HYBRID
+# kernel wherever a model exists: the model injected into the band's frames and drizzled
+# (the grid mean) as the core, the field-star ePSF as the wing; the pure model where the
+# field has no usable stars (WFPC2), the ePSF where the band has no model (SL2S F475X /
+# F600LP). See AGENTS.md *PSF generation* / *The 2026-11-03 PSF audit*. Run
+# make_psf_err_injected.py afterwards for the model-tier / hybrid error maps (and
+# psf_star_check.py --error-maps before it, for the measured model term).
 #
 # Usage: run_psf_all.sh [SAMPLE] [--all|--models-only|--empirical-only]
 #   (default SAMPLE: mast_target_names.DEFAULT_SAMPLE;  default mode: --all)
 #
 #   --all          (default) (re)build every product -- empirical AND model.
-#   --models-only  skip any product whose EXISTING lens_psf.json record is `empirical`;
-#                  (re)build only the model tier (STDPSF / focus-diverse / MAST PSF DB) plus
-#                  any product not yet built. Use this when you change only model-PSF code
-#                  (e.g. the detector->North-up rotation) and don't want to churn the good
-#                  empirical builds, which that code never touches (they are cut from the
-#                  North-up mosaic itself; the pedestal subtraction is a ~1e-4 no-op on the
-#                  sharp ACS bands). The skip set is "empirical AND already recorded", so a
-#                  lens with no entry still builds.
+#   --models-only  skip any product whose EXISTING lens_psf.json record is `empirical`
+#                  (since 2026-11-03 that is only a band with no model: SL2S F475X/F600LP,
+#                  or a pre-2026-11-03 record); (re)build the rest plus any product not yet
+#                  built. The skip set is "empirical AND already recorded", so a lens with
+#                  no entry still builds.
 #   --empirical-only  build every product with make_psf.py --method empirical: no model
 #                  fallback, so a too-star-poor field FAILS and is listed for review. Used
 #                  for the SL2S samples (2026-10-04), whose F475X/F600LP bands have no

@@ -2,11 +2,24 @@
 """
 Build a per-lens, per-filter PSF from the drizzled mosaics for strong-lens modelling.
 
-Empirical route (default): detect isolated field stars in the full drizzled science
-frame, extract postage stamps, and build an oversampled effective PSF (ePSF) with
-photutils (DAOStarFinder -> extract_stars -> EPSFBuilder). This is a production port of
-an early exploratory notebook (not tracked), with every manual step of it replaced
-by automatic quality cuts plus a per-lens override file:
+The canonical PSF (--method auto, the default, and model) is the model PSF injected into
+every science frame at the lens and drizzled exactly as the science was (make_psf_inject.py:
+the mean of a grid of injected stars, PSFMETH 'inject_*'), wherever a model exists: ACS/WFC
+the focus-diverse ePSF (else STDPSF), WFC3/IR and the gallery UVIS bands STDPSF, WFPC2 the
+MAST PSF-database ePSF. Since 2026-11-03 (AGENTS.md *The 2026-11-03 PSF audit*): a kernel
+built from bright field stars is not the PSF a faint extended source sees in a drizzled
+image (their cores' ERR weights vary frame to frame with sub-pixel phase), and the injected
+grid mean is the one kernel that recovers an injected Sersic galaxy unbiased.
+
+The empirical ePSF from the field stars is built beside it as the CHECK
+(psf_kernel_empirical.fits, `empirical_check` in the record), and SHIPS only with
+--method empirical, where the band has no model (WFC3/UVIS F475X/F600LP), or if the
+injection fails: isolated field stars in the full drizzled science frame, postage stamps,
+an oversampled effective PSF (ePSF) with photutils (DAOStarFinder -> extract_stars ->
+EPSFBuilder), point-sampled to the image scale (its samples are already pixel-integrated),
+with the measured sky residual removed. This is a production port of an early exploratory
+notebook (not tracked), with every manual step of it replaced by automatic quality cuts plus
+a per-lens override file:
 
   * the hand-typed NaN rectangles that blanked the lens galaxy / bad regions  ->  an
     automatic mask (deflector circle from info/coords/lens_coords.py, zero-weight pixels from
@@ -26,8 +39,10 @@ drizzle-broadened. SL2S F475X/F600LP have no model grid; make_psf_median.py cove
 
 Outputs (data/psf/<sample>/<band_mode>/<category>/<lens>/<filt>/):
   * psf_kernel.fits  -- image-scale, odd, unit-sum: a drop-in al.Kernel2D at the band
-                        pixel scale (built by block_reduce of the in-memory oversampled
-                        ePSF, which is not itself written to disk -- nothing reads it back).
+                        pixel scale (an ePSF is point-sampled from the in-memory oversampled
+                        build, which is not itself written to disk -- nothing reads it back).
+  * psf_kernel_empirical.fits -- on a model-tier product, the field-star ePSF (the check).
+  * psf_kernel_phase_std.fits -- on an injected product, the sub-pixel-phase scatter.
   * psf.png          -- QA panel: selected-star montage, the kernel, and a radial profile.
 
 The trimmed, modelling-ready kernel (psf.fits, plus its _err/_analytic
@@ -57,6 +72,7 @@ import argparse
 import glob
 import json
 import os
+import shutil
 import sys
 
 import numpy as np
@@ -80,7 +96,10 @@ from photutils.detection import DAOStarFinder
 from photutils.psf import EPSFBuilder, extract_stars
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ws_path, 'info', 'coords'))
+# HST_INFO_DIR: per-shard private info dir for parallel kernel rebuilds
+# (concurrent info_json.update calls tear shared JSONs); unset = the checkout's info/.
+_INFO_ROOT = os.environ.get('HST_INFO_DIR') or os.path.join(ws_path, 'info')
+sys.path.insert(0, os.path.join(_INFO_ROOT, 'coords'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mast_target_names
 # Reuse the canonical product locator and the coordinate resolver rather than
@@ -105,7 +124,12 @@ _BASE = dict(
     lens_mask_radius=5.0,    # arcsec circle around the deflector, masked out of detection
     maxiters=15,             # EPSFBuilder iterations
     fwhm_tol_lo=0.75,        # per-candidate fitted FWHM must exceed this x psf_fwhm
-    fwhm_tol_hi=1.4,         # ...and stay below this x psf_fwhm (rejects galaxies / CRs)
+    fwhm_tol_hi=1.2,         # ...and stay below this x psf_fwhm (rejects galaxies / CRs). With
+                             # psf_fwhm the RESAMPLED MODEL's _fit_stamp_shape FWHM (2026-11-03;
+                             # was a looser guess x1.4): genuine stars fit 0.99-1.07x their
+                             # injected twins, compact galaxies 1.24-1.35x, and the old bounds
+                             # (ACS 2.8 px, UVIS 3.36 px against models of 1.92 and 2.11 px) let
+                             # 4 of 25 and 6 of 25 selected "stars" in at 1.15-1.35x
     max_ellip=0.15,          # reject elongated objects (edge-on galaxies, streaks)
     min_snr=30.0,            # absolute peak-S/N floor for a PSF-grade star. A 5-sigma
                              # DAO detection is not a PSF star: on star-poor fields the
@@ -139,24 +163,33 @@ _BASE = dict(
 # has too many pixels per constraining star and comes out noisy. 2x is well-matched to
 # these (near-)critically-sampled drizzled grids and much more robust; raise per lens via
 # --oversample or info/overrides/psf_stars.json where a field is unusually star-rich.
+# wing_radius (output px): where the HYBRID kernel switches from the injected model (core)
+# to the field-star ePSF (wing) -- see hybrid_kernel. Set from the closure tests of
+# 2026-11-03: the ERR-weight artefact that deforms a star-built ePSF's core has deposited all
+# its displaced flux inside 13 px on ACS/UVIS (closure EE reaches 1.000 by r = 14) and ~13 px
+# on F160W, and the model ePSFs hold < 0.1% of their flux beyond 12 px (ACS/UVIS), so beyond
+# these radii the ePSF carries only real light and the model none. None: no hybrid (WFPC2
+# fields have no usable stars).
 _INSTR = {
-    'ACS/WFC': dict(fwhm=2.5, psf_fwhm=2.0, oversample=2, star_size=51, max_stars=25,
+    'ACS/WFC': dict(fwhm=2.5, psf_fwhm=1.95, oversample=2, star_size=51, max_stars=25, wing_radius=12,
                     min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7),
-    'WFC3/IR': dict(fwhm=2.8, psf_fwhm=2.6, oversample=2, star_size=41, max_stars=25,
+    'WFC3/IR': dict(fwhm=2.8, psf_fwhm=3.55, oversample=2, star_size=41, max_stars=25, wing_radius=13,
+                    # 3.55 px is the real F160W stars' gate FWHM (3.46 for the uncalibrated
+                    # STDPSF twins); the x1.2 window then spans 2.7-4.3 px
                     min_sep=20.0, sharplo=0.2, sharphi=1.0, roundlo=-0.7, roundhi=0.7),
     # star_size=35 (smaller than ACS): WFPC2 fields are star-poor and EPSFBuilder diverges
     # on a 51px stamp with only ~3 stars but converges on 35px (verified J0252+0039 F606W).
-    'WFPC2':   dict(fwhm=2.5, psf_fwhm=2.0, oversample=2, star_size=35, max_stars=25,
+    'WFPC2':   dict(fwhm=2.5, psf_fwhm=4.5, oversample=2, star_size=35, max_stars=25, wing_radius=None,
                     min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7),
     # WFC3/UVIS (BELLS GALLERY): a two-CCD optical detector like ACS/WFC, drizzled at the
-    # native 0.0396"/px. The measured drizzled stellar FWHM is ~2.4px (F606W), so psf_fwhm
-    # is 2.4 (the [0.75,1.4]x shape window then brackets the ~2.2-2.6px star locus with
-    # margin) and the DAO detection kernel 2.8. The wide UVIS field (~162") is star-rich, so
+    # native 0.0396"/px. psf_fwhm is the resampled STDPSF's gate FWHM (2.11 px on the F475X
+    # twins, 2026-11-03; the [0.75,1.2]x shape window brackets the 2.0-2.3px star locus) and
+    # the DAO detection kernel 2.8. The wide UVIS field (~162") is star-rich, so
     # the empirical build is the norm. flux_floor_frac is lowered to 0.02 (from the 0.05
     # base): these fields routinely contain one very bright (near-saturated) star whose flux
     # sets the 5%-floor high enough to discard a dozen genuinely good, high-S/N mid-range
     # stars -- the "brightest star collapses the flux floor" trap. 0.02 keeps them.
-    'WFC3/UVIS': dict(fwhm=2.8, psf_fwhm=2.4, oversample=2, star_size=51, max_stars=25,
+    'WFC3/UVIS': dict(fwhm=2.8, psf_fwhm=2.1, oversample=2, star_size=51, max_stars=25, wing_radius=12,
                       min_sep=25.0, sharplo=0.3, sharphi=1.0, roundlo=-0.7, roundhi=0.7,
                       flux_floor_frac=0.02),
 }
@@ -463,13 +496,29 @@ def validate_epsf(epsf_data, oversample):
     return std <= 0 or arr.max() / std >= 15.0
 
 
-def oversampled_to_kernel(epsf_data, oversample, kernel_size):
-    """Bin the oversampled ePSF down to an image-scale, unit-sum, odd kernel.
+def oversampled_to_kernel(epsf_data, oversample, kernel_size, integrated=True):
+    """Reduce an oversampled PSF to an image-scale, unit-sum, odd kernel centred on its core.
 
-    Centres on the ePSF core, crops to kernel_size x oversample so the block reduction
-    lands an integer number of output pixels, sums each oversample x oversample block
-    (flux-conserving for a convolution kernel), then renormalises to unit sum. Falls back
-    from a centroid to the peak, then to the geometric centre, if a step is degenerate.
+    `integrated=True` (the default; a photutils ePSF, or a model ePSF resampled by
+    psf_models._resample_centered): the samples are ALREADY pixel-integrated -- an ePSF's
+    value at an offset is the flux a pixel centred there collects (Anderson & King 2000) --
+    so the image-scale kernel is the ePSF POINT-SAMPLED at integer-pixel offsets, every
+    `oversample`-th sample through the core sample. Block-summing it (this function until
+    2026-11-03, and the JWST repo's until 2026-10-31) integrates over the pixel a second
+    time: on a noiseless synthetic closure test with this repo's own build it lowered the
+    ACS/WFC peak by 12.5%, broadened the radial FWHM by 15% and, because a block of an even
+    number of samples has no centre sample, shifted every kernel by +0.25 px in both axes
+    (the "0.26 px median kernel offset" once recorded as a measurement floor). Point
+    sampling reproduces the truth to < 1% in peak, width and encircled energy, and to
+    < 0.01 px (AGENTS.md *PSF generation*; the JWST repo found the same, its AGENTS.md
+    *PSF*, finding 1).
+
+    `integrated=False` (a raw optical PSF that has not been integrated over a pixel):
+    sum each oversample x oversample block. No model this repo uses is of that kind (STDPSF,
+    the focus-diverse ePSF and the MAST PSF-database ePSF are all Anderson ePSFs).
+
+    The core is the centroid of a window around the peak, falling back to the peak, then
+    to the geometric centre, if a step is degenerate.
     """
     arr = np.asarray(epsf_data, dtype=float)
     ny, nx = arr.shape
@@ -487,10 +536,17 @@ def oversampled_to_kernel(epsf_data, oversample, kernel_size):
     if not (np.isfinite(cx) and np.isfinite(cy)):
         cx, cy = float(px), float(py)
 
-    n = kernel_size * oversample
     for centre in ((cx, cy), (float(px), float(py)), (nx / 2.0, ny / 2.0)):
-        sub = _crop_centered(arr, n, *centre)
-        kernel = block_reduce(sub, oversample, func=np.sum)
+        if integrated:
+            half = kernel_size // 2
+            ic, jc = int(round(centre[1])), int(round(centre[0]))
+            pad = half * oversample + 1
+            big = np.pad(arr, pad)
+            idx = np.arange(-half, half + 1) * oversample
+            kernel = big[np.ix_(ic + pad + idx, jc + pad + idx)]
+        else:
+            sub = _crop_centered(arr, kernel_size * oversample, *centre)
+            kernel = block_reduce(sub, oversample, func=np.sum)
         if kernel.sum() > 0:
             return kernel / kernel.sum()
     raise ValueError('ePSF integrates to <= 0 at every candidate centre; '
@@ -544,26 +600,71 @@ def wing_stats(kernel, inner_frac=0.75):
     return float(np.median(arr[ann]) / peak), float(arr[ann].std() / peak)
 
 
-def subtract_pedestal(kernel):
-    """Remove the ePSF's residual flat background (median of the outer annulus) and
-    renormalise to unit sum. Returns (kernel, pedestal_frac).
+SKY_ANNULUS = (1.5, 2.5)   # x the kernel half-width: where sky_residual_level reads the sky
 
-    EPSFBuilder leaves a small DC floor in the ePSF wings. Left in, a ~1e-3-of-peak pedestal
-    across the kernel becomes several percent of the (renormalised) flux as a spurious
-    uniform background -- and it stops trim_kernel_to_amplitude from ever crossing the
-    amplitude threshold, so the trimmed kernel caps at the full size. This is a near no-op
-    for clean builds (ACS ~1e-4) and matters for oversampled bands (F160W empirical ~1e-3,
-    the WFPC2 F606W DB ePSF ~1e-3). Applied to every kernel regardless of method.
+
+def sky_residual_level(data, stars_tbl, star_size, annulus=SKY_ANNULUS):
+    """The flat background the ePSF inherits from its stars, per pixel, in units of the
+    kernel's unit sum: the median over the PSF stars of (sky level in an annulus OUTSIDE the
+    star cutout) / (the cutout's sum, which is the flux EPSFBuilder normalises each star by).
+    Measured on the background-subtracted mosaic, so it is Background2D's residual under the
+    stars, not the sky itself. The annulus is 1.5-2.5 x the kernel half-width (ACS: 1.9-3.1"),
+    where the stellar wing is ~1e-5 of the peak (ACS/WFC encircled-energy curve) against the
+    1e-4 the ePSF's own outer annulus reads. Returns 0.0 with no usable star.
+    """
+    half = star_size // 2
+    r_in, r_out = annulus[0] * half, annulus[1] * half
+    w = int(np.ceil(r_out)) + 1
+    ny, nx = data.shape
+    yy, xx = np.mgrid[-w:w + 1, -w:w + 1]
+    ann = (np.hypot(xx, yy) >= r_in) & (np.hypot(xx, yy) <= r_out)
+    levels = []
+    for x, y in zip(stars_tbl['x'], stars_tbl['y']):
+        ix, iy = int(round(float(x))), int(round(float(y)))
+        if not (w <= ix < nx - w and w <= iy < ny - w):
+            continue
+        big = data[iy - w:iy + w + 1, ix - w:ix + w + 1]
+        cut = data[iy - half:iy + half + 1, ix - half:ix + half + 1]
+        flux = float(np.nansum(cut))
+        if flux <= 0 or not np.isfinite(big[ann]).any():
+            continue
+        levels.append(float(np.nanmedian(big[ann])) / flux)
+    return float(np.median(levels)) if levels else 0.0
+
+
+def subtract_pedestal(kernel, level=None):
+    """Remove a flat background from the kernel and renormalise to unit sum. Returns
+    (kernel, pedestal_frac), the pedestal as a fraction of the peak.
+
+    EPSFBuilder leaves a flat floor in the ePSF: the residual background under its stars.
+    Left in, a ~1e-4-of-peak floor across a 51 px kernel is several percent of the
+    (renormalised) flux as a spurious uniform background, and it stops
+    trim_kernel_to_amplitude from ever crossing the amplitude threshold.
+
+    `level` (per pixel, in units of the unit-sum kernel; from sky_residual_level) is the
+    floor to remove. Without it the median of the kernel's own outer annulus (0.75-1 x the
+    half-width) is removed, as until 2026-11-03 -- but that annulus is not empty sky: on
+    ACS/WFC it reads 8-13e-5 of the peak where the sky residual outside the cutout is 2-3e-5
+    and the published encircled-energy curve puts the real wing at ~4e-5, so the old rule
+    removed a median 4% of the flux on ACS F814W (6% UVIS, 9% F160W), most of it real wing,
+    and renormalised the core up by as much (AGENTS.md *PSF generation*; the JWST repo found
+    the same, its finding 5). Noiseless model and injected kernels are not passed through
+    this at all since 2026-11-03.
     """
     arr = np.asarray(kernel, float)
     ny, nx = arr.shape
     cy, cx = ny // 2, nx // 2
-    yy, xx = np.mgrid[:ny, :nx]
-    rint = np.round(np.hypot(xx - cx, yy - cy)).astype(int)
+    s0 = arr.sum()
+    arr = arr / s0 if s0 > 0 else arr
     peak = arr[cy, cx] if arr[cy, cx] > 0 else float(arr.max())
-    half = min(cy, cx)
-    ann = (rint >= int(0.75 * half)) & (rint <= half)
-    ped = float(np.median(arr[ann])) if ann.any() else 0.0
+    if level is None:
+        yy, xx = np.mgrid[:ny, :nx]
+        rint = np.round(np.hypot(xx - cx, yy - cy)).astype(int)
+        half = min(cy, cx)
+        ann = (rint >= int(0.75 * half)) & (rint <= half)
+        ped = float(np.median(arr[ann])) if ann.any() else 0.0
+    else:
+        ped = float(level)
     out = arr - ped
     s = out.sum()
     if s > 0:
@@ -581,16 +682,19 @@ def subtract_pedestal(kernel):
 JACKKNIFE_MAX_STARS = 6   # < this, bootstrap draws collapse onto 1-2 stars; use jackknife
 
 
-def _kernel_from_epsf(epsf_data, oversample, star_size):
-    """One ensemble member: oversampled ePSF -> the same full image-scale, pedestal-
-    subtracted, unit-sum kernel the primary build produces (oversampled_to_kernel +
-    subtract_pedestal), so members are directly comparable to psf_kernel.fits."""
+def _kernel_from_epsf(epsf_data, oversample, star_size, level=None, pedestal=True):
+    """One ensemble member: oversampled ePSF -> the same full image-scale, unit-sum kernel
+    the primary build produces (oversampled_to_kernel, then subtract_pedestal(level) for an
+    empirical member; `pedestal=False` for a noiseless model member), so members are directly
+    comparable to psf_kernel.fits."""
     kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
-    kernel, _ = subtract_pedestal(kernel)
+    if pedestal:
+        kernel, _ = subtract_pedestal(kernel, level)
     return kernel
 
 
-def build_epsf_ensemble(data, stars_tbl, star_size, oversample, maxiters, n_boot, rng=None):
+def build_epsf_ensemble(data, stars_tbl, star_size, oversample, maxiters, n_boot, rng=None,
+                        level=None):
     """Resample the star sample and rebuild the ePSF per draw for a PSF-uncertainty estimate.
 
     len(stars_tbl) >= JACKKNIFE_MAX_STARS: bootstrap-with-replacement, `n_boot` draws.
@@ -616,7 +720,7 @@ def build_epsf_ensemble(data, stars_tbl, star_size, oversample, maxiters, n_boot
             epsf, _, _ = build_epsf(data, stars_tbl[idx], star_size, oversample, maxiters)
             cand = np.asarray(epsf.data, dtype=float)
             if validate_epsf(cand, oversample):
-                kernels.append(_kernel_from_epsf(cand, oversample, star_size))
+                kernels.append(_kernel_from_epsf(cand, oversample, star_size, level))
         except Exception:
             continue                       # a degenerate resample is dropped, not fatal
     return kernels, method, len(kernels)
@@ -798,12 +902,155 @@ def lens_products_rootnames(sample, lens, filt_key):
     Used by the ACS focus-diverse ePSF model to retrieve a focus-matched ePSF per exposure.
     Returns [] if the file or entry is absent.
     """
-    data = info_json.load(os.path.join(ws_path, 'info', 'provenance', 'lens_products.json'))
+    data = info_json.load(os.path.join(_INFO_ROOT, 'provenance', 'lens_products.json'))
     val = data.get(sample, {}).get(lens, {}).get(filt_key)
     return list(val) if val else []
 
 
 # ── Main ────────────────────────────────────────────────────────────────────────
+HYBRID_TAPER = 2.0   # px: the model->ePSF switch is a linear ramp over wing_radius +- this
+
+
+def hybrid_kernel(model, emp, wing_radius, taper=HYBRID_TAPER):
+    """Model core, empirical wing (Sam's call, 2026-11-03). Inside `wing_radius` the injected
+    model (the faint-source PSF at the lens: unbiased core, but no wing beyond ~0.6" and a
+    6-48% wing deficit); outside it the field-star ePSF (real wing, but a core deformed by the
+    stars' ERR weights, which the closure tests show is confined inside wing_radius). The
+    weight w(r) ramps linearly from 1 to 0 over wing_radius +- taper. The model is unit-
+    normalised over its own weighted footprint and scaled by (1 - f_wing), f_wing being the
+    ePSF's flux in the wing, so the kernel sums to 1 with the ePSF's own wing fraction.
+    Returns (kernel, w, f_wing) on the larger of the two grids (the smaller zero-padded)."""
+    n = max(model.shape[0], emp.shape[0])
+    m = _crop_centered(np.asarray(model, float), n, model.shape[1] // 2, model.shape[0] // 2)
+    e = _crop_centered(np.asarray(emp, float), n, emp.shape[1] // 2, emp.shape[0] // 2)
+    m, e = m / m.sum(), e / e.sum()
+    yy, xx = np.mgrid[:n, :n]
+    r = np.hypot(xx - n // 2, yy - n // 2)
+    w = np.clip((wing_radius + taper - r) / (2 * taper), 0.0, 1.0)
+    f_wing = float(((1 - w) * e).sum())
+    core = w * m
+    k = core / core.sum() * (1 - f_wing) + (1 - w) * e
+    return k / k.sum(), w, f_wing
+
+
+EE_RADII = (1, 2, 3, 5)
+
+
+def compare_kernels(kernel, ref):
+    """The empirical check on a model kernel: FWHM (measure_fwhm, px), encircled energy within
+    EE_RADII px of both, and the core L1 sum |k - ref| within 5 px, on unit-sum kernels cropped
+    to the smaller one (ported from the JWST repo, 2026-11-03)."""
+    n = min(kernel.shape[0], ref.shape[0])
+    k = _crop_centered(kernel, n, kernel.shape[1] // 2, kernel.shape[0] // 2)
+    r = _crop_centered(ref, n, ref.shape[1] // 2, ref.shape[0] // 2)
+    k, r = k / k.sum(), r / r.sum()
+    yy, xx = np.mgrid[:n, :n]
+    rad = np.hypot(xx - n // 2, yy - n // 2)
+    fw, fr = measure_fwhm(k), measure_fwhm(r)
+    return dict(fwhm_pix=round(fw, 4) if fw else None, fwhm_pix_model=round(fr, 4) if fr else None,
+                ee=[round(float(k[rad <= R].sum()), 4) for R in EE_RADII],
+                ee_model=[round(float(r[rad <= R].sum()), 4) for R in EE_RADII],
+                ee_radii_px=list(EE_RADII), l1_core=round(float(np.abs(k - r)[rad <= 5].sum()), 4),
+                peak_ratio=round(float(k.max() / r.max()), 4))
+
+
+def prepare_field(sample, lens, filt, cli=None, drizzle_pass='auto', quiet=False):
+    """The band as the empirical build sees it: the mosaic of the star pass, background-
+    subtracted, masked, with the PSF stars selected -- everything main() needs before a
+    kernel is built, and what psf_star_check.py needs to put a twin at every star. Returns a
+    dict (sci_hdr, data, wht, wcs, inst_key, scale, params, star_size, oversample,
+    catalogue_coord, stars_tbl, qa, star_pass, drizzle_pass, sci_file, overrides, method,
+    drizzled_dir), or None when the band has no drizzled products."""
+    class _NoCli:
+        def __getattr__(self, k):
+            return None
+    a = cli if cli is not None else _NoCli()
+    drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(sample, lens), filt)
+    if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
+        return None
+    _print = (lambda *x, **k: None) if quiet else print
+    # Per-lens overrides (loaded before the pass resolution: an override can redirect
+    # which drizzle pass the empirical build reads).
+    overrides_all = info_json.load(os.path.join(_INFO_ROOT, 'overrides', 'psf_stars.json'))
+    overrides = overrides_all.get(sample, {}).get(lens, {}).get(filt, {})
+
+    # Output pass -- the science stamp's pass, recorded in the kernel header (PSFPASS).
+    # auto -> cr where a CR pass exists. The kernel file is psf.fits either way.
+    if drizzle_pass == 'auto':
+        has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
+        drizzle_pass = 'cr' if has_cr else 'nocrrej'
+
+    # Star-detection pass -- the mosaic the *empirical* ePSF is actually built from.
+    # The LACosmic CR pass flags sharp field-star cores as cosmic rays and masks them,
+    # punching a hole in the ePSF core and dropping stars below the SNR/shape gates
+    # (stark on star-poor fields, e.g. J0008-0004: 3 usable stars + a core hole from the
+    # CR pass vs 11 clean stars from no-CR). So build the empirical ePSF from the
+    # least-CR-rejected mosaic available: prefer a no-CR ('*_nocrrej_*') pass when it is
+    # on disk (all ACS once drizzled with --nocrrej; WFC3/IR is nocrrej-named already),
+    # else the output pass (WFPC2 keeps its cr pass -- no no-CR exists). The point-source
+    # PSF shape is pass-independent, so a no-CR-built PSF stays correct for the CR science
+    # stamp, whose name still follows the output pass above. A per-lens "psf_star_pass"
+    # override forces a specific pass (e.g. "cr" to opt back out).
+    if 'psf_star_pass' in overrides:
+        star_pass = overrides['psf_star_pass']
+    else:
+        has_nocr = bool(glob.glob(os.path.join(drizzled_dir, '*_nocrrej_*_sci.fits')))
+        star_pass = 'nocrrej' if has_nocr else drizzle_pass
+    sci_file, wht_file = find_products(drizzled_dir, star_pass)
+    if star_pass == drizzle_pass:
+        _print(f'{lens} {filt}  [{drizzle_pass} pass]')
+    else:
+        _print(f'{lens} {filt}  [build from {star_pass} pass, name as {drizzle_pass}]')
+    _print(f'  sci: {os.path.basename(sci_file)}')
+
+    with fits.open(sci_file) as hdul:
+        sci_hdr = hdul[0].header
+        sci_data = np.array(hdul[0].data, dtype=float)
+    with fits.open(wht_file) as hdul:
+        wht_data = np.array(hdul[0].data, dtype=float)
+    wcs = WCS(sci_hdr)
+
+    inst_key = instrument_key(sci_hdr)
+    scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
+    _print(f'  instrument: {inst_key}   pixel scale: {scale:.4f}"/pix')
+
+    # Resolved parameters.
+    method = overrides.get('method', 'auto') if (getattr(a, 'method', None) in (None, 'auto')) else a.method
+    params = resolve_params(inst_key, overrides, a)
+    params['max_peak'] = saturation_peak(inst_key, sci_hdr, overrides)
+    if params['max_peak'] is not None:
+        _print(f'  saturation gate: mosaic peak > {params["max_peak"]:.1f} rejected')
+    star_size = int(params['star_size'])
+    oversample = int(params['oversample'])
+    kernel_size = int(params['kernel_size'])
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+
+    ra, dec = catalogue_coord_for(lens)   # any sample, via info/coords/lens_coords.py
+    catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
+
+    # ── Background subtraction and star selection ──────────────────────────────
+    mask = build_mask(sci_data.shape, wht_data, wcs, catalogue_coord, scale,
+                      params['lens_mask_radius'], edge_margin=(star_size - 1) // 2)
+    box = max(32, min(sci_data.shape) // 40)
+    try:
+        bkg = Background2D(sci_data, box, coverage_mask=mask, exclude_percentile=90.0,
+                          bkg_estimator=MedianBackground()).background
+        data = sci_data - bkg
+    except Exception as exc:
+        _print(f'  WARNING: Background2D failed ({exc}); using median subtraction')
+        _, med, _ = sigma_clipped_stats(sci_data, mask=mask, sigma=3.0)
+        data = sci_data - med
+
+    stars_tbl, qa = select_stars(data, mask, params, overrides, star_size)
+    return dict(sci_hdr=sci_hdr, data=data, wht=wht_data, wcs=wcs, inst_key=inst_key, scale=scale,
+                params=params, star_size=star_size, oversample=oversample,
+                catalogue_coord=catalogue_coord, stars_tbl=stars_tbl, qa=qa, star_pass=star_pass,
+                drizzle_pass=drizzle_pass, sci_file=sci_file, overrides=overrides, method=method,
+                drizzled_dir=drizzled_dir, mask=mask)
+
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -864,7 +1111,7 @@ def main():
 
     drizzled_dir = os.path.join(ws_path, 'data', 'drizzled', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
     output_dir = a.output or os.path.join(ws_path, 'data', 'psf', stamp_paths.lens_rel(a.sample, a.lens), a.filt)
-    psf_json = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
+    psf_json = os.path.join(_INFO_ROOT, 'provenance', 'lens_psf.json')
 
     # No-data outcome: matches the drizzle/stamp scripts -- record null, exit 0.
     if not os.path.isdir(drizzled_dir) or not _has_products(drizzled_dir):
@@ -874,85 +1121,12 @@ def main():
 
     os.makedirs(output_dir, exist_ok=True)
 
-    # Per-lens overrides (loaded before the pass resolution: an override can redirect
-    # which drizzle pass the empirical build reads).
-    overrides_all = info_json.load(os.path.join(ws_path, 'info', 'overrides', 'psf_stars.json'))
-    overrides = overrides_all.get(a.sample, {}).get(a.lens, {}).get(a.filt, {})
-
-    # Output pass -- the science stamp's pass, recorded in the kernel header (PSFPASS).
-    # auto -> cr where a CR pass exists. The kernel file is psf.fits either way.
-    if a.drizzle_pass == 'auto':
-        has_cr = bool(glob.glob(os.path.join(drizzled_dir, '*_cr_*_sci.fits')))
-        drizzle_pass = 'cr' if has_cr else 'nocrrej'
-    else:
-        drizzle_pass = a.drizzle_pass
-
-    # Star-detection pass -- the mosaic the *empirical* ePSF is actually built from.
-    # The LACosmic CR pass flags sharp field-star cores as cosmic rays and masks them,
-    # punching a hole in the ePSF core and dropping stars below the SNR/shape gates
-    # (stark on star-poor fields, e.g. J0008-0004: 3 usable stars + a core hole from the
-    # CR pass vs 11 clean stars from no-CR). So build the empirical ePSF from the
-    # least-CR-rejected mosaic available: prefer a no-CR ('*_nocrrej_*') pass when it is
-    # on disk (all ACS once drizzled with --nocrrej; WFC3/IR is nocrrej-named already),
-    # else the output pass (WFPC2 keeps its cr pass -- no no-CR exists). The point-source
-    # PSF shape is pass-independent, so a no-CR-built PSF stays correct for the CR science
-    # stamp, whose name still follows the output pass above. A per-lens "psf_star_pass"
-    # override forces a specific pass (e.g. "cr" to opt back out).
-    if 'psf_star_pass' in overrides:
-        star_pass = overrides['psf_star_pass']
-    else:
-        has_nocr = bool(glob.glob(os.path.join(drizzled_dir, '*_nocrrej_*_sci.fits')))
-        star_pass = 'nocrrej' if has_nocr else drizzle_pass
-    sci_file, wht_file = find_products(drizzled_dir, star_pass)
-    if star_pass == drizzle_pass:
-        print(f'{a.lens} {a.filt}  [{drizzle_pass} pass]')
-    else:
-        print(f'{a.lens} {a.filt}  [build from {star_pass} pass, name as {drizzle_pass}]')
-    print(f'  sci: {os.path.basename(sci_file)}')
-
-    with fits.open(sci_file) as hdul:
-        sci_hdr = hdul[0].header
-        sci_data = np.array(hdul[0].data, dtype=float)
-    with fits.open(wht_file) as hdul:
-        wht_data = np.array(hdul[0].data, dtype=float)
-    wcs = WCS(sci_hdr)
-
-    inst_key = instrument_key(sci_hdr)
-    scale = proj_plane_pixel_scales(wcs.celestial)[0] * 3600.0
-    print(f'  instrument: {inst_key}   pixel scale: {scale:.4f}"/pix')
-
-    # Resolved parameters.
-    if a.method == 'auto' and 'method' in overrides:
-        method = overrides['method']
-    else:
-        method = a.method
-    params = resolve_params(inst_key, overrides, a)
-    params['max_peak'] = saturation_peak(inst_key, sci_hdr, overrides)
-    if params['max_peak'] is not None:
-        print(f'  saturation gate: mosaic peak > {params["max_peak"]:.1f} rejected')
-    star_size = int(params['star_size'])
-    oversample = int(params['oversample'])
-    kernel_size = int(params['kernel_size'])
-    if kernel_size % 2 == 0:
-        kernel_size += 1
-
-    ra, dec = catalogue_coord_for(a.lens)   # any sample, via info/coords/lens_coords.py
-    catalogue_coord = SkyCoord(ra, dec, unit=(u.hourangle, u.deg), frame='icrs')
-
-    # ── Background subtraction and star selection ──────────────────────────────
-    mask = build_mask(sci_data.shape, wht_data, wcs, catalogue_coord, scale,
-                      params['lens_mask_radius'], edge_margin=(star_size - 1) // 2)
-    box = max(32, min(sci_data.shape) // 40)
-    try:
-        bkg = Background2D(sci_data, box, coverage_mask=mask, exclude_percentile=90.0,
-                          bkg_estimator=MedianBackground()).background
-        data = sci_data - bkg
-    except Exception as exc:
-        print(f'  WARNING: Background2D failed ({exc}); using median subtraction')
-        _, med, _ = sigma_clipped_stats(sci_data, mask=mask, sigma=3.0)
-        data = sci_data - med
-
-    stars_tbl, qa = select_stars(data, mask, params, overrides, star_size)
+    fld = prepare_field(a.sample, a.lens, a.filt, cli=a, drizzle_pass=a.drizzle_pass)
+    sci_hdr, data, wht_data, wcs = fld['sci_hdr'], fld['data'], fld['wht'], fld['wcs']
+    inst_key, scale, params = fld['inst_key'], fld['scale'], fld['params']
+    star_size, oversample = fld['star_size'], fld['oversample']
+    catalogue_coord, stars_tbl, qa = fld['catalogue_coord'], fld['stars_tbl'], fld['qa']
+    star_pass, drizzle_pass, overrides, method = fld['star_pass'], fld['drizzle_pass'], fld['overrides'], fld['method']
     n_stars = len(stars_tbl)
     print(f'  stars: {qa["n_detected"]} detected -> {qa["n_auto"]} auto-kept'
           f' + {qa["n_included"]} forced = {n_stars}'
@@ -960,61 +1134,62 @@ def main():
           f'{qa["n_saturated_rejected"]} saturated)')
 
     too_few = n_stars < params['min_stars']
-    use_model = (method == 'model') or (method == 'auto' and too_few)
     if method == 'empirical' and too_few:
         raise SystemExit(
             f'ERROR: only {n_stars} usable stars for {a.lens} {a.filt} '
             f'(need >= {params["min_stars"]}). Loosen cuts, add include stars to '
             f'info/overrides/psf_stars.json, or use --method model.')
 
-    star_stamps = []
-    method_used = None
-    epsf_data = None
-
-    # Empirical build first (unless forced to model). Validate it: a diverged ePSF (peak
-    # drifted to a corner on a star-poor field) falls back to the model under --method auto.
-    if not use_model:
-        print(f'  method: EMPIRICAL  oversample={oversample} star_size={star_size}')
+    # ── The empirical ePSF from the field stars ──────────────────────────────────────
+    # Shipped with --method empirical, or when the band has no model (WFC3/UVIS F475X and
+    # F600LP); otherwise built beside the model as its CHECK (written as
+    # psf_kernel_empirical.fits, compared in the record's `empirical_check`). Since 2026-11-03
+    # the model is canonical wherever one exists: a kernel built from bright field stars is
+    # not the PSF a faint, extended source sees in a drizzled image. Their cores carry ERR
+    # weights ~100x below the sky's that differ frame to frame with sub-pixel phase, so the
+    # resample takes a star's core from the frames where it is sharpest; the ePSF then
+    # registers the phases on top. Against the model injected at the lens on the lens's own
+    # frames and weights (make_psf_inject), a point-sampled ePSF's core is 11-21% too peaked
+    # (ACS, UVIS, IR closure tests), and a Sersic lens galaxy drizzled through the real frames
+    # is recovered by the injected kernel with its true size and index where every star-built
+    # kernel biases R_e by 10-35% (AGENTS.md *PSF generation*; the JWST repo's finding 4).
+    emp = None
+    star_stamps, epsf_data, method_used = [], None, None
+    if not too_few and method != 'model':
+        print(f'  empirical ePSF: {n_stars} stars, oversample={oversample} star_size={star_size}')
         epsf, stars, fitted = build_epsf(data, stars_tbl, star_size, oversample,
                                          params['maxiters'])
         cand = np.asarray(epsf.data, dtype=float)
         if validate_epsf(cand, oversample):
-            # Hybrid quality gate: a validated ePSF can still have a noisy / pedestalled wing
-            # (star-poor oversampled fields, esp. F160W). Measure the wing and, under auto,
-            # fall back to the model rather than ship a poor empirical kernel.
-            k_prov = oversampled_to_kernel(cand, oversample, star_size)
-            ped_frac, scat_frac = wing_stats(k_prov)
+            k_emp = oversampled_to_kernel(cand, oversample, star_size)
+            ped_frac, scat_frac = wing_stats(k_emp)
             poor = ped_frac > params['pedestal_bad'] or scat_frac > params['scatter_bad']
-            if poor and method == 'auto':
+            if poor:
                 print(f'  WARNING: empirical ePSF wings poor (pedestal={ped_frac:.1e}, '
-                      f'scatter={scat_frac:.1e} > {params["pedestal_bad"]:.0e}); '
-                      f'falling back to the model')
-                use_model = True
-            else:
-                if poor:
-                    print(f'  WARNING: keeping forced-empirical ePSF despite poor wings '
-                          f'(pedestal={ped_frac:.1e}, scatter={scat_frac:.1e})')
-                epsf_data = cand
-                star_stamps = [np.asarray(s.data, dtype=float) for s in stars]
-                method_used = 'empirical'
-        elif method == 'empirical':
+                      f'scatter={scat_frac:.1e} > {params["pedestal_bad"]:.0e})')
+            sky_level = sky_residual_level(data, stars_tbl, star_size)
+            k_emp, ped_emp = subtract_pedestal(k_emp, sky_level)
+            emp = dict(kernel=k_emp, epsf=cand, pedestal_frac=ped_emp, poor=poor,
+                       sky_level=sky_level, annulus_frac=ped_frac,
+                       star_stamps=[np.asarray(s.data, dtype=float) for s in stars])
+        else:
+            print(f'  WARNING: the empirical ePSF diverged ({n_stars} stars)')
+    if method == 'empirical' and (emp is None or emp['poor']):
+        if emp is None:
             raise SystemExit(
                 f'ERROR: the empirical ePSF for {a.lens} {a.filt} diverged ({n_stars} '
                 f'stars). Add cleaner include stars to info/overrides/psf_stars.json or use '
                 f'--method model.')
-        else:
-            print(f'  WARNING: empirical ePSF diverged with {n_stars} stars; '
-                  f'falling back to the STDPSF model')
-            use_model = True
+        print('  WARNING: keeping the forced-empirical ePSF despite poor wings')
 
     # Model-tier PSF error ensemble (ACS focus-diverse: per-exposure; WFPC2 DB: bootstrap
     # over the shared archival stars). None for STDPSF, which has no natural per-lens
     # ensemble. Populated below, consumed by the psf-err block after the kernel is built.
     model_ensemble = model_err_method = err_source = None
 
-    if method_used is None:
+    if method != 'empirical':
         tag = 'forced' if method == 'model' else \
-              (f'{n_stars} stars < {params["min_stars"]}' if too_few else 'empirical failed')
+              (f'{n_stars} stars < {params["min_stars"]}' if too_few else 'canonical; ePSF is the check')
         # Detector CD for rotating the (detector-frame) model PSF into the North-up drizzle
         # frame. ACS focus-diverse reads per-exposure CDs itself, so this is only used by the
         # WFPC2 DB and STDPSF paths below.
@@ -1056,19 +1231,38 @@ def main():
                 print(f'  WARNING: WFPC2 {db_filt} PSF-DB unavailable ({exc}); '
                       f'falling back to STDPSF')
         if method_used is None:
-            print(f'  method: MODEL (STDPSF)  [{tag}]')
-            epsf_data = psf_models.model_psf(inst_key, a.filt, oversample=oversample,
-                                             size=star_size, out_scale=scale,
-                                             cd_detector=cd_det)
-            method_used = 'model'
+            try:
+                epsf_data = psf_models.model_psf(inst_key, a.filt, oversample=oversample,
+                                                 size=star_size, out_scale=scale,
+                                                 cd_detector=cd_det)
+                method_used = 'model'
+                print(f'  method: MODEL (STDPSF)  [{tag}]')
+            except Exception as exc:
+                print(f'  no model PSF for {inst_key} {a.filt} ({exc}); '
+                      f'the empirical ePSF ships')
+
+
+    if method_used is None:
+        # no model for this band (or --method empirical): the ePSF ships
+        if emp is None:
+            raise SystemExit(f'ERROR: {a.lens} {a.filt} has no model PSF and no usable '
+                             f'empirical ePSF ({n_stars} stars).')
+        epsf_data, star_stamps, method_used = emp['epsf'], emp['star_stamps'], 'empirical'
+        print(f'  method: EMPIRICAL{"" if method == "empirical" else " (no model for this band)"}')
 
     # Full kernel (whole ePSF footprint binned to image scale) is the archival product in
     # data/psf/. The trimmed, amplitude-sized kernel for modelling goes next to the science
     # stamp (see trim_kernel_to_amplitude / the --trim-threshold flag).
-    kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
-    kernel, pedestal_frac = subtract_pedestal(kernel)
-    if abs(pedestal_frac) >= 1e-4:
-        print(f'  pedestal removed: {pedestal_frac:.2e} of peak (flat ePSF-wing floor)')
+    # Pedestal: only the EMPIRICAL kernel carries one (the residual background under its
+    # stars, measured outside their cutouts by sky_residual_level); a model kernel is
+    # noiseless and is left alone. See subtract_pedestal for the old annulus rule it replaces.
+    sky_level = pedestal_frac = 0.0
+    if method_used == 'empirical':
+        kernel, pedestal_frac, sky_level = emp['kernel'], emp['pedestal_frac'], emp['sky_level']
+        print(f'  pedestal removed: {pedestal_frac:.2e} of peak (sky residual outside the '
+              f'star cutouts; the ePSF annulus itself reads {emp["annulus_frac"]:.2e}, mostly wing)')
+    else:
+        kernel = oversampled_to_kernel(epsf_data, oversample, star_size)
     trimmed, trim_size = trim_kernel_to_amplitude(kernel, a.trim_threshold)
     fwhm_pix = measure_fwhm(kernel)
     if fwhm_pix is not None:
@@ -1094,13 +1288,15 @@ def main():
         mode = 'jackknife' if n_stars < JACKKNIFE_MAX_STARS else f'bootstrap x{n_boot}'
         print(f'  PSF uncertainty: resampling {n_stars} stars ({mode}) ...')
         kernels, err_method, n_boot_valid = build_epsf_ensemble(
-            data, stars_tbl, star_size, oversample, params['maxiters'], n_boot)
+            data, stars_tbl, star_size, oversample, params['maxiters'], n_boot,
+            level=sky_level)
         err_source = 'stars'
     elif (do_psf_err and method_used in ('model_acs_fdpsf', 'model_wfpc2_psfdb')
           and model_ensemble):
         print(f'  PSF uncertainty: {len(model_ensemble)} {err_source} ensemble members '
               f'({model_err_method}) ...')
-        kernels = [_kernel_from_epsf(m, oversample, star_size) for m in model_ensemble]
+        kernels = [_kernel_from_epsf(m, oversample, star_size, pedestal=False)
+                   for m in model_ensemble]
         err_method, n_boot_valid = model_err_method, len(kernels)
 
     if kernels is not None:
@@ -1170,6 +1366,8 @@ def main():
         'trimmed_kernel_size': int(trim_size),
         'trim_threshold': a.trim_threshold,
         'pedestal_frac': round(pedestal_frac, 6),
+        'sky_level': round(sky_level, 9) if method_used == 'empirical' else None,
+        'kernel_sampling': 'point',
         'fwhm_pix_err': round(fwhm_err, 4) if fwhm_err is not None else None,
         'psf_err_frac': round(err_frac, 8) if err_frac is not None else None,
         'err_method': err_method,
@@ -1207,6 +1405,100 @@ def main():
             except Exception as exc2:
                 print(f'  WARNING: analytic broadening fallback also failed ({exc2}); '
                       f'canonical PSF stays the un-broadened analytic model ({method_used})')
+
+    # ── The empirical check on a model-tier product ──────────────────────────────────
+    # The field-star ePSF (where there were enough stars) beside the canonical kernel now on
+    # disk, as psf_kernel_empirical.fits plus `empirical_check` in the record. Expect its
+    # core 10-20% more peaked than the model's (the ERR-weight effect, see above) and a
+    # fuller wing: the model ePSFs are ~0.6" wide, the real star has light beyond that.
+    if method_used.startswith('model') and emp is not None:
+        canon = fits.getdata(os.path.join(output_dir, 'psf_kernel.fits')).astype(float)
+        check = compare_kernels(emp['kernel'], canon)
+        check.update(n_stars=n_stars, pedestal_frac=round(emp['pedestal_frac'], 6),
+                     poor_wings=bool(emp['poor']))
+        vhdr = fits.Header()
+        vhdr['PSFMETH'] = ('empirical', 'field-star ePSF: the check on the shipped model')
+        vhdr['PSFNSTAR'] = (n_stars, 'stars used')
+        vhdr['PSFPXSCL'] = (round(scale, 5), 'kernel pixel scale (arcsec)')
+        vhdr['PSFPED'] = (round(emp['pedestal_frac'], 6), 'sky residual removed (fraction of peak)')
+        write_fits(emp['kernel'], vhdr, os.path.join(output_dir, 'psf_kernel_empirical.fits'))
+        info_json.update(psf_json, a.sample, a.lens, a.filt,
+                         dict(info_json.load(psf_json)[a.sample][a.lens][a.filt], empirical_check=check))
+        print(f'  check: empirical ({n_stars} stars) FWHM {check["fwhm_pix"]} px vs model '
+              f'{check["fwhm_pix_model"]} px, peak ratio {check["peak_ratio"]:.3f}, core L1 {check["l1_core"]:.3f}')
+    elif method_used.startswith('model'):
+        f = os.path.join(output_dir, 'psf_kernel_empirical.fits')
+        if os.path.exists(f):
+            os.remove(f)                       # no check this time; do not leave a stale one
+
+    # ── The HYBRID kernel: model core + empirical wing (canonical where both exist) ────
+    # The canonical file at this point is the injected (or analytically broadened) model.
+    # With a usable ePSF and a wing_radius for the camera, the shipped kernel becomes the
+    # hybrid; the pure model is kept as psf_kernel_model.fits, the blend weight as
+    # psf_kernel_blend.fits, and the ePSF's bootstrap/jackknife error map as
+    # psf_kernel_empirical_err.fits (make_psf_err_injected.py combines them).
+    wing_r = params.get('wing_radius')
+    for stale in ('psf_kernel_model.fits', 'psf_kernel_blend.fits', 'psf_kernel_empirical_err.fits'):
+        if os.path.exists(os.path.join(output_dir, stale)):
+            os.remove(os.path.join(output_dir, stale))
+    if method_used.startswith('model') and emp is not None and not emp['poor'] and wing_r:
+        rec = info_json.load(psf_json)[a.sample][a.lens][a.filt]
+        model_method = rec['method']
+        canon_path = os.path.join(output_dir, 'psf_kernel.fits')
+        with fits.open(canon_path) as hdul:
+            model_kernel = np.asarray(hdul[0].data, float)
+            model_hdr = hdul[0].header.copy()
+        shutil.copy(canon_path, os.path.join(output_dir, 'psf_kernel_model.fits'))
+        hyb, w_blend, f_wing = hybrid_kernel(model_kernel, emp['kernel'], float(wing_r))
+        trimmed_h, trim_h = trim_kernel_to_amplitude(hyb, a.trim_threshold)
+        fwhm_h = measure_fwhm(hyb)
+        hhdr = model_hdr.copy()
+        hhdr['PSFMETH'] = (f'hybrid_{model_method}', 'model core + empirical wing')
+        hhdr['PSFMODEL'] = (model_method, 'the model the core comes from (psf_kernel_model.fits)')
+        hhdr['PSFNSTAR'] = (n_stars, 'stars in the empirical wing')
+        hhdr['PSFWINGR'] = (float(wing_r), 'model->ePSF switch radius (px), +-%g px ramp' % HYBRID_TAPER)
+        hhdr['PSFWINGF'] = (round(f_wing, 6), 'flux fraction in the empirical wing')
+        hhdr['PSFFWHM'] = (round(fwhm_h, 4) if fwhm_h else 0.0, 'fitted kernel FWHM (pixels)')
+        hhdr['PSFKIND'] = ('full', 'full kernel (trimmed copy in the psf stamp dir)')
+        write_fits(hyb, hhdr, canon_path)
+        bhdr = fits.Header()
+        bhdr['PSFKIND'] = ('blend', 'hybrid weight of the model core (1) vs the ePSF wing (0)')
+        write_fits(w_blend, bhdr, os.path.join(output_dir, 'psf_kernel_blend.fits'))
+        plot_psf(hyb, emp['epsf'], emp['star_stamps'], scale, fwhm_h, os.path.join(output_dir, 'psf.png'),
+                 title=f'{a.lens}  {a.filt}  [hybrid: {model_method} core + ePSF wing ({n_stars} stars)]')
+        thdr = hhdr.copy()
+        thdr['PSFKIND'] = ('trimmed', 'amplitude-trimmed modelling kernel')
+        thdr['PSFTRIM'] = (a.trim_threshold, 'azimuthal PSF < this x peak sets the radius')
+        thdr['PSFPASS'] = (drizzle_pass, 'drizzle pass the PSF matches')
+        if star_pass != drizzle_pass:
+            thdr['PSFSTARP'] = (star_pass, 'drizzle pass the ePSF wing was built from')
+        write_fits(trimmed_h, thdr, os.path.join(stamps_dir, 'psf.fits'))
+        for stale in ('psf_kernel_err.fits', os.path.join(stamps_dir, 'psf_err.fits')):
+            f = stale if os.path.isabs(stale) else os.path.join(output_dir, stale)
+            if os.path.exists(f):
+                os.remove(f)             # described the pure model; make_psf_err_injected rewrites it
+        # the ePSF wing's own uncertainty: the star-resample ensemble, as for an empirical build
+        emp_err_frac = None
+        if do_psf_err and n_stars >= 2:
+            n_boot = a.n_boot if a.n_boot is not None else int(overrides.get('n_boot', 100))
+            print(f'  ePSF wing uncertainty: resampling {n_stars} stars '
+                  f'({"jackknife" if n_stars < JACKKNIFE_MAX_STARS else f"bootstrap x{n_boot}"}) ...')
+            ks, emeth, nvalid = build_epsf_ensemble(data, stars_tbl, star_size, oversample, params['maxiters'],
+                                                    n_boot, level=emp['sky_level'])
+            if nvalid >= 2:
+                e_full, _, emp_err_frac, _ = psf_error_map(ks, emeth, (trim_h - 1) // 2)
+                ehdr = fits.Header()
+                ehdr['PSFKIND'] = ('empirical_err', 'per-pixel std of the ePSF (star resample)')
+                ehdr['PSFERR'] = (emeth, 'bootstrap or jackknife')
+                ehdr['PSFNVALD'] = (nvalid, 'valid ensemble members')
+                write_fits(e_full, ehdr, os.path.join(output_dir, 'psf_kernel_empirical_err.fits'))
+        rec.update(method=f'hybrid_{model_method}', model_method=model_method,
+                   fwhm_pix=round(fwhm_h, 4) if fwhm_h else None, kernel_size=int(hyb.shape[0]),
+                   trimmed_kernel_size=int(trim_h), wing_radius_px=float(wing_r), wing_frac=round(f_wing, 6),
+                   wing_n_stars=n_stars, wing_err_frac=round(emp_err_frac, 8) if emp_err_frac else None)
+        info_json.update(psf_json, a.sample, a.lens, a.filt, rec)
+        print(f'  HYBRID shipped: {model_method} core inside {wing_r:g} px, ePSF wing beyond '
+              f'({f_wing:.3f} of the flux; {n_stars} stars); FWHM {fwhm_h:.2f} px, trimmed {trim_h} px')
 
 
 if __name__ == '__main__':
