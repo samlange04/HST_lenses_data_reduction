@@ -44,6 +44,9 @@ import numpy as np
 from photutils.psf import GriddedPSFModel
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# HST_INFO_DIR: per-shard private info dir for parallel kernel rebuilds
+# (concurrent info_json.update calls tear shared JSONs); unset = the checkout's info/.
+_INFO_ROOT = os.environ.get('HST_INFO_DIR') or os.path.join(ws_path, 'info')
 _CACHE = os.path.join(ws_path, 'data', 'reference_files', 'stdpsf')
 _STDPSF_BASE = 'https://www.stsci.edu/~jayander/HST1PASS/LIB/PSFs/STDPSFs'
 
@@ -183,7 +186,7 @@ def _load_grid(inst_key, stdpsf_filt):
     return _GRID_CACHE[ck]
 
 
-def model_psf(inst_key, filt, oversample, size, out_scale, cd_detector=None):
+def model_psf(inst_key, filt, oversample, size, out_scale, cd_detector=None, blur_sigma_det=None):
     """Oversampled model-PSF stamp for (inst_key, filt) at the detector grid centre.
 
     Returns an array on a grid `oversample` times finer than the drizzled output scale
@@ -222,6 +225,11 @@ def model_psf(inst_key, filt, oversample, size, out_scale, cd_detector=None):
         xx, yy = np.meshgrid(xc + offs, yc + offs)
 
     stamp = np.asarray(grid.evaluate(xx, yy, flux=1.0, x_0=xc, y_0=yc), dtype=float)
+    # the calibrated extra blur (detector px; model_blur_sigma): isotropic, so it is applied
+    # on this output-scale fine grid at sigma x det_scale / (out_scale / oversample)
+    blur = model_blur_sigma(inst_key, filt) if blur_sigma_det is None else blur_sigma_det
+    if blur and blur > 0:
+        stamp = np.clip(gaussian_blur(stamp, blur * _DET_SCALE[inst_key] / (out_scale / oversample)), 0.0, None)
     if stamp.sum() > 0:
         stamp /= stamp.sum()
     return stamp
@@ -631,6 +639,86 @@ def _resample_centered(src, src_scale, out_scale, oversample, size,
     return stamp
 
 
+_ACS_FD_GRID_SHAPE = (90, 101, 101)   # 90 fiducials x a 101x101, 4x-supersampled ePSF
+
+# ── Model width calibration (2026-11-03; the JWST repo's finding 3, in HST form) ────────
+# info/overrides/psf_model_calibration.json: {"blur_sigma_det_px": {inst_key: {FILT: sigma}}}
+# -- an extra Gaussian blur, in DETECTOR pixels, applied to the model PSF before it is
+# injected or resampled, calibrated by scripts/psf_star_check.py --calibrate against the real
+# PSF stars (each star against its noiseless twin at the same position, frames and weights).
+# The model ePSFs are built from stars and need none in principle; measured, ACS/WFC's
+# focus-diverse ePSF and STDPSF F814W match their stars to 1%, but WFC3/IR F160W's STDPSF is
+# 6-7% narrower than its stars. A missing entry means no blur.
+CALIBRATION_JSON = os.path.join(_INFO_ROOT, 'overrides', 'psf_model_calibration.json')
+
+
+def model_blur_sigma(inst_key, filt):
+    """The calibrated extra blur (detector px) for (inst_key, filt), or 0.0."""
+    if not os.path.isfile(CALIBRATION_JSON):
+        return 0.0
+    with open(CALIBRATION_JSON) as f:
+        cal = json.load(f)
+    return float(cal.get('blur_sigma_det_px', {}).get(inst_key, {}).get(_base_filter(filt).upper(), 0.0) or 0.0)
+
+
+def gaussian_blur(img, sigma_px):
+    """`img` convolved with a Gaussian of `sigma_px`, exactly, through its Fourier transfer
+    function. scipy.ndimage.gaussian_filter truncates its kernel at 4 sigma and so does
+    nothing below sigma ~0.13 px and only crudely below ~0.5 px (the JWST repo's first
+    calibration mistook that for a 0.33 px blur)."""
+    if sigma_px is None or sigma_px <= 0:
+        return img
+    img = np.asarray(img, float)
+    ky = np.fft.fftfreq(img.shape[0])[:, None]
+    kx = np.fft.fftfreq(img.shape[1])[None, :]
+    return np.real(np.fft.ifft2(np.fft.fft2(img) * np.exp(-2 * np.pi ** 2 * sigma_px ** 2 * (kx ** 2 + ky ** 2))))
+
+
+
+def acs_fd_grid(root, retries=3):
+    """The focus-diverse ePSF grid of exposure `root` (acstools psf_retriever, cached under
+    _ACS_FD_CACHE), read and CHECKED. psf_retriever reuses any file present under the
+    expected name, so an interrupted download (one left 4 truncated files in the cache on
+    2026-11-03, two concurrent runs and a dropped connection) was read back as a corrupt
+    grid and silently sent the whole lens to the STDPSF fallback. A file that does not read
+    as a (90, 101, 101) grid is deleted and fetched again, up to `retries` times."""
+    from acstools.focus_diverse_epsfs import psf_retriever
+    from astropy.io import fits
+    os.makedirs(_ACS_FD_CACHE, exist_ok=True)
+    import time
+    last = None
+    for attempt in range(retries):
+        try:
+            # psf_retriever downloads via urllib with NO timeout: a silently dropped
+            # connection hangs forever (2026-11-05: two make_psf bands wedged at 0% CPU
+            # in ssl read). A default socket timeout turns the stall into socket.timeout,
+            # which the retry loop below handles.
+            import socket as _socket
+            _socket.setdefaulttimeout(180)
+            try:
+                path = psf_retriever(root, _ACS_FD_CACHE)
+            finally:
+                _socket.setdefaulttimeout(None)
+        except Exception as exc:            # the STScI service drops connections now and then
+            last = f'{exc.__class__.__name__}: {exc}'
+            print(f'    {root}: focus-diverse fetch failed ({last}); retrying')
+            time.sleep(5 * (attempt + 1))
+            continue
+        try:
+            grid = np.asarray(fits.getdata(path, ext=0), float)
+            if grid.shape == _ACS_FD_GRID_SHAPE and np.all(np.isfinite(grid)):
+                return grid
+            last = f'bad grid {grid.shape} in {os.path.basename(path)}'
+        except Exception as exc:
+            last = f'{exc.__class__.__name__}: {exc}'
+        print(f'    {root}: focus-diverse cache file unreadable ({last}); re-fetching')
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+    raise RuntimeError(f'focus-diverse ePSF for {root} unusable after {retries} fetches ({last})')
+
+
 def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord,
                           oversample, size, out_scale, return_ensemble=False):
     """Focus-diverse ACS/WFC ePSF model stamp, averaged over the contributing exposures.
@@ -663,11 +751,10 @@ def acs_focus_diverse_psf(lens, filt, rootnames, calibrated_dir, catalogue_coord
     northup = []
     for root in rootnames:
         try:
-            path = psf_retriever(root, _ACS_FD_CACHE)
+            grid = acs_fd_grid(root)
         except Exception as exc:
             print(f'    focus-diverse ePSF retrieval failed for {root}: {exc}')
             continue
-        grid = fits.getdata(path, ext=0)
         pos = _fd_detector_position(root, calibrated_dir, catalogue_coord)
         if pos is None:
             x, y, chip, cd = 2048.0, 1024.0, 'WFC1', None   # grid centre, no rotation

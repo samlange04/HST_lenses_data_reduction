@@ -64,7 +64,8 @@ def find_psf_path(filt_dir):
 def method_tag(method):
     """'emp' for the empirical ePSF (cut from the North-up mosaic, the drizzled truth);
     'mod' for any model tier (STDPSF, ACS focus-diverse, WFPC2 MAST-DB, injected)."""
-    return 'emp' if str(method).startswith('empirical') else 'mod'
+    m = str(method)
+    return 'hyb' if m.startswith('hybrid') else ('emp' if m.startswith('empirical') else 'mod')
 
 
 def build_group(sample, precedence):

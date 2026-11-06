@@ -65,7 +65,8 @@ PSF_JSON = os.path.join(ws_path, 'info', 'provenance', 'lens_psf.json')
 
 # ── Target selection ────────────────────────────────────────────────────────────
 def injected_products(samples=None, filts=None):
-    """(sample, lens, filt, entry) for every product whose canonical kernel is injected."""
+    """(sample, lens, filt, entry) for every product whose canonical kernel is injected, a
+    hybrid of one, or the analytically broadened fallback."""
     data = info_json.load(PSF_JSON)
     out = []
     for sample, lenses in data.items():
@@ -73,7 +74,7 @@ def injected_products(samples=None, filts=None):
             continue
         for lens, per_filt in (lenses or {}).items():
             for filt, entry in (per_filt or {}).items():
-                if not entry or not str(entry.get('method', '')).startswith('inject'):
+                if not entry or not str(entry.get('method', '')).startswith(('inject', 'hybrid', 'broadened')):
                     continue
                 if filts and filt not in filts:
                     continue
@@ -221,6 +222,30 @@ def calibrated_err(calib, shape):
 
 
 # ── Write ───────────────────────────────────────────────────────────────────────
+def instrument_of(sample, lens, filt):
+    """'INSTRUME/DETECTOR' of the band from lens_instrument.json (WFPC2 keyed on INSTRUME)."""
+    rec = info_json.load(os.path.join(ws_path, 'info', 'provenance', 'lens_instrument.json'))
+    inst = str(rec.get(sample, {}).get(lens, {}).get(filt) or '')
+    return 'WFPC2' if inst.startswith('WFPC2') else inst
+
+
+def model_vs_stars_map(entry, shape):
+    """(map, source) from data/psf/_model_error/<INST>_<FILT>.fits (psf_star_check.py
+    --error-maps) for this product's camera and filter, cropped/zero-padded to `shape`; None
+    if it has not been measured."""
+    inst = str(entry.get('instrument') or '')
+    filt = str(entry.get('filter') or '')
+    if not inst or not filt:
+        return None
+    f = os.path.join(ws_path, 'data', 'psf', '_model_error', f'{inst.replace("/", "")}_{filt}.fits')
+    if not os.path.isfile(f):
+        return None
+    em = np.asarray(fits.getdata(f), float)
+    n = shape[0]
+    em = make_psf._crop_centered(em, n, em.shape[1] // 2, em.shape[0] // 2)
+    return em, f'model_vs_stars/{os.path.basename(f)}'
+
+
 def write_maps(psf_dir, stamps_dir, err_full, trim_half, meta, dry_run):
     """Write the full + trimmed error maps; returns (err_frac, core, wing, trim_size)."""
     ny, nx = err_full.shape
@@ -241,7 +266,7 @@ def write_maps(psf_dir, stamps_dir, err_full, trim_half, meta, dry_run):
                  os.path.join(stamps_dir, f'psf_err.fits'))):
             hdr = fits.Header()
             hdr['PSFKIND'] = (kind, 'per-pixel PSF std for the injected kernel')
-            hdr['PSFERR'] = (meta['err_method'], 'error-map construction')
+            hdr['PSFERR'] = (meta['err_method'], 'error-map construction (+phase: sub-pixel term added)')
             hdr['PSFESRC'] = (meta['err_source'], 'ensemble / empirical-calibration source')
             hdr['PSFEBND'] = (meta['lower_bound'],
                               'True = ensemble scatter only, a LOWER BOUND')
@@ -283,10 +308,21 @@ def main():
             n_skipped.append(f'{sample}/{lens}/{filt} (no psf_kernel.fits)')
             continue
         kernel = np.asarray(fits.getdata(kernel_path), dtype=float)
+        khdr = fits.getheader(kernel_path)
+        entry = dict(entry, instrument=khdr.get('PSFINST') or instrument_of(sample, lens, filt),
+                     filter=str(khdr.get('PSFFILT', filt)).split('_')[0].upper())
 
         err_full, meta = None, None
-        ens, ens_meta = ensemble_err(psf_dir, sample, lens, filt)
-        if ens is not None:
+        # The model term, by preference: (1) the measured model-vs-star residual for the
+        # camera+filter (psf_star_check.py --error-maps: real stars about their injected
+        # twins, beyond their noise), (2) the analytic ensemble broadened by the drop (a lower
+        # bound), (3) the old group calibration against empirical builds.
+        mvs = model_vs_stars_map(entry, kernel.shape)
+        ens, ens_meta = (None, None) if mvs is not None else ensemble_err(psf_dir, sample, lens, filt)
+        if mvs is not None:
+            err_full, mvs_meta = mvs
+            meta = dict(err_method='model_vs_stars', err_source=mvs_meta, lower_bound=False)
+        elif ens is not None:
             err_full = ens
             meta = dict(err_method='ensemble_broadened',
                         err_source=f'analytic_ensemble/box={ens_meta["box"]:.3f}',
@@ -302,6 +338,38 @@ def main():
                         err_source=f'empirical_calibration/{calib["source"]}',
                         lower_bound=False, calib_group=g, calib_n=calib['n_lens'])
 
+        # The sub-pixel-phase term (make_psf_inject writes psf_kernel_phase_std.fits since
+        # 2026-11-03): the per-pixel std of the injected grid stars about their mean. The
+        # kernel is the mean, the PSF of extended emission; a compact source sees one phase's
+        # PSF, which scatters about the mean by this much. Added in quadrature, as the JWST
+        # repo does (err_method '+phase').
+        phase_path = os.path.join(psf_dir, 'psf_kernel_phase_std.fits')
+        phase_frac = None
+        if os.path.isfile(phase_path):
+            ph = np.asarray(fits.getdata(phase_path), dtype=float)
+            if ph.shape == err_full.shape:
+                phase_frac = float(np.sqrt((ph ** 2).sum()))
+                err_full = np.sqrt(err_full ** 2 + ph ** 2)
+                meta['err_method'] += '+phase'
+        # A HYBRID kernel (model core + ePSF wing, make_psf.hybrid_kernel): the model term
+        # weighted by the blend w, the ePSF's star-resample map by (1 - w), in quadrature.
+        wing_frac = None
+        if str(entry.get('method', '')).startswith('hybrid'):
+            bl = os.path.join(psf_dir, 'psf_kernel_blend.fits')
+            ee_ = os.path.join(psf_dir, 'psf_kernel_empirical_err.fits')
+            if os.path.isfile(bl) and os.path.isfile(ee_):
+                w = np.asarray(fits.getdata(bl), float)
+                we = np.asarray(fits.getdata(ee_), float)
+                n_ = w.shape[0]
+                mcore = make_psf._crop_centered(err_full, n_, err_full.shape[1] // 2, err_full.shape[0] // 2)
+                wecrop = make_psf._crop_centered(we, n_, we.shape[1] // 2, we.shape[0] // 2)
+                err_full = np.sqrt((w * mcore) ** 2 + ((1 - w) * wecrop) ** 2)
+                wing_frac = float(np.sqrt((((1 - w) * wecrop) ** 2).sum()))
+                meta['err_method'] += '+wing'
+                kernel = np.asarray(fits.getdata(kernel_path), dtype=float)
+            else:
+                n_skipped.append(f'{sample}/{lens}/{filt} (hybrid without blend/empirical_err maps)')
+                continue
         trim_size = int(entry.get('trimmed_kernel_size') or kernel.shape[0])
         trim_half = (trim_size - 1) // 2
         os.makedirs(stamps_dir, exist_ok=True)
@@ -315,7 +383,9 @@ def main():
                         'psf_err_frac_wing': round(wing, 8),
                         'err_method': meta['err_method'],
                         'err_source': meta['err_source'],
-                        'err_lower_bound': meta['lower_bound']})
+                        'err_lower_bound': meta['lower_bound'],
+                        'phase_err_frac': round(phase_frac, 8) if phase_frac is not None else None,
+                        'wing_err_frac': round(wing_frac, 8) if wing_frac is not None else None})
             info_json.update(PSF_JSON, sample, lens, filt, rec)
 
         tag = 'ensemble' if meta['lower_bound'] else 'calibrated'

@@ -48,7 +48,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import info_json
 import stamp_paths
 # make_psf's work is under main(), so importing it only brings in the helpers.
-from make_psf import trim_kernel_to_amplitude, subtract_pedestal, measure_fwhm, write_fits
+from make_psf import trim_kernel_to_amplitude, measure_fwhm, write_fits
 
 
 def donor_kernels(filt, target_lens, scale, psf_json, pool_samples=None):
@@ -62,14 +62,36 @@ def donor_kernels(filt, target_lens, scale, psf_json, pool_samples=None):
         if lens == target_lens or (pool_samples and sample not in pool_samples):
             continue
         r = (rec.get(sample, {}).get(lens) or {}).get(filt) or {}
-        if r.get('method') != 'empirical':
-            continue
-        with fits.open(path) as h:
-            k, hdr = h[0].data.astype(float), h[0].header
-        if abs(float(hdr.get('PSFPXSCL', -1)) - scale) > 1e-4:
-            continue
+        if r.get('method') == 'empirical':
+            with fits.open(path) as h:
+                k, hdr = h[0].data.astype(float), h[0].header
+            if abs(float(hdr.get('PSFPXSCL', -1)) - scale) > 1e-4:
+                continue
+        else:
+            # A rebuilt lens may no longer ship method 'empirical' (a hybrid build keeps the
+            # field-star ePSF as psf_kernel_empirical.fits); that sidecar IS its empirical kernel.
+            sidecar = donor_sidecar_empirical(f'{sample}/{lens}', filt, scale)
+            if not sidecar:
+                continue
+            k = sidecar[0]
         out.append((sample, lens, k / k.sum()))
     return out
+
+
+def donor_sidecar_empirical(donor, filt, scale):
+    """The donor's psf_kernel_empirical.fits when its shipped record is no longer empirical
+    (a hybrid build keeps the field-star ePSF as that sidecar, same ePSF point-sampled)."""
+    sample, lens = donor.split('/', 1)
+    hits = glob.glob(os.path.join(ws_path, 'data', 'psf', sample, '*', '*', lens, filt,
+                                  'psf_kernel_empirical.fits'))
+    if not hits:
+        return []
+    with fits.open(hits[0]) as h:
+        k, hdr = h[0].data.astype(float), h[0].header
+    if abs(float(hdr.get('PSFPXSCL', -1)) - scale) > 1e-4:
+        return []
+    print(f'  donor {donor}: shipped kernel is not empirical; using its psf_kernel_empirical.fits sidecar')
+    return [k / k.sum()]
 
 
 def main():
@@ -111,14 +133,19 @@ def main():
     if a.donor:
         pick = [k for s_, l_, k in donors if f'{s_}/{l_}' == a.donor]
         if not pick:
-            sys.exit(f'--donor {a.donor} is not an empirical {a.filt} kernel in the pool')
+            # A rebuilt donor may no longer be method 'empirical' (a hybrid ships the ePSF
+            # as psf_kernel_empirical.fits); that sidecar IS the donor the choice was made on.
+            pick = donor_sidecar_empirical(a.donor, a.filt, scale)
+        if not pick:
+            sys.exit(f'--donor {a.donor} is not an empirical {a.filt} kernel in the pool '
+                     f'(and has no psf_kernel_empirical.fits sidecar)')
         kernel = pick[0].copy()
         method = 'empirical_donor'
     else:
         kernel = np.median(stack, axis=0)
         method = 'empirical_median'
     kernel /= kernel.sum()
-    kernel, pedestal_frac = subtract_pedestal(kernel)
+    pedestal_frac = 0.0            # the donors are already pedestal-corrected (2026-11-03)
     trimmed, trim_size = trim_kernel_to_amplitude(kernel, a.trim_threshold)
     trim_half = trim_size // 2
     fwhm_pix = measure_fwhm(kernel)
