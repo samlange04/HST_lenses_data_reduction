@@ -1,15 +1,25 @@
 """
-The repo's one image look (ported from JWST_lenses_data_reduction 2026-11-10): the 'inferno'
-colormap with PercentileInterval(99.0) limits and AsinhStretch(0.1) -- the look the pipeline's
-stamp, PSF and QC-grid PNGs already use.
+The one image look of both reduction repos (merged 2026-11-28; born in the JWST repo, extended
+in the HST one): the 'inferno' colormap with PercentileInterval(99.0) limits and
+AsinhStretch(0.1) -- the look the pipelines' stamp, PSF and QC-grid PNGs already use.
 
-Used by the band overview (make_band_overview.py) and the best-band GUI (choose_best_band.py).
-Signed residual panels (the isophote-subtracted views) stay on a diverging red-blue map: a
-stretch onto inferno would hide which pixels are negative.
+Used by the mask GUIs (make_masks.py, make_arc_masks.py: al.Scribbler takes SCRIBBLER as its
+`cmap`), the positions GUI and its PNGs, the arc-mask QC PNG, the band overview
+(make_band_overview.py) and the best-band GUI (choose_best_band.py). Signed residual panels
+(the isophote-subtracted views) stay on a diverging red-blue map: a stretch onto inferno would
+hide which pixels are negative.
 
 `shared_norm`/`normalised_with` give several panels ONE common stretch (the band overview's S/N
 rows, where a per-panel stretch would hide the differences between bands).
 Light on purpose (numpy + astropy only): the band overview and the GUIs import it.
+
+**One orientation in everything (2026-11-27): ORIGIN = 'upper'.** The stamps' WCS has
++row = North and +col = West, so with imshow's row-0-at-top default North appears DOWN and East
+appears LEFT -- a vertical flip of the usual astronomy display, NOT a rotation. Every panel,
+GUI and QC render draws this way; anything that draws with an extent or overlays pixels must
+pass the same origin or it lands vertically mirrored. (The JWST repo drew its band overview and
+arc-mask QC PNG North-up until the merge, while its mask/positions GUIs drew North-down; the
+mix bit mid-review, so it flipped to this convention rather than keeping its own.)
 """
 import numpy as np
 from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterval
@@ -17,6 +27,9 @@ from astropy.visualization import AsinhStretch, ImageNormalize, PercentileInterv
 CMAP = 'inferno'
 PERCENTILE = 99.0
 ASINH_A = 0.1
+
+# The one imshow origin everywhere: row 0 at the top (see the module docstring).
+ORIGIN = 'upper'
 
 
 def norm(values, pct=PERCENTILE, vmax=None):
@@ -75,3 +88,17 @@ def normalised_with(values, norm, exclude=None):
     out = np.clip(np.ma.filled(norm(np.nan_to_num(a)), 0.0), 0.0, 1.0)
     out[hide] = 0.0
     return out
+
+
+class ScribblerLook:
+    """al.Scribbler's `cmap` hook: an object with `norm_from(array=...)` and `cmap_name` makes
+    the Scribbler normalise EACH panel with that norm (its own limits) and draw it on that
+    colormap, instead of its default median/MAD arcsinh on autoarray's colormap. NaN-safe,
+    since the Scribbler passes the raw panel."""
+    cmap_name = CMAP
+
+    def norm_from(self, array):
+        return norm(array)
+
+
+SCRIBBLER = ScribblerLook()

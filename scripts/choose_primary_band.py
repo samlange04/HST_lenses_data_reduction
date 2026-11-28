@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """
+Merged 2026-11-28 across the HST and JWST repos: the file is identical in both (the repo
+profile is the import seam below).
+
 Choose each lens's PRIMARY band: the one where a lensed image's position is best defined. The
 mask and arc-mask GUIs draw it first (every other band starts from its mask), positions are
 clicked on it, and it is the band to model first.
@@ -61,18 +64,26 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import info_json
 import make_band_overview
-import mast_target_names
 import stamp_paths
+try:
+    import lens_samples as mast_target_names   # the JWST repo's profile module
+except ImportError:
+    import mast_target_names                   # the HST repo's
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 R0 = 5.0               # theta_E >= R0 PSF FWHMs: resolution no longer limits the position
 MIN_ARC_SNR = 15.0     # below this in every band the measurement is the lens-profile error
-# Fallback PSF FWHM (arcsec) when the band has no lens_psf.json record. Values are the drizzled
-# kernels' typical FWHM: ACS/WFC + WFC3/UVIS ~2 px at 0.05/0.0396", WFPC2/WF3 ~4.5 px at 0.05",
-# WFC3/IR ~3.45 px at 0.06". A WFPC2 f814W reads the WFPC2 value, so key on the instrument where
-# the filter is ambiguous (the caller passes the stamp header).
-FALLBACK_FWHM = {'ACS': 0.10, 'WFC3_UVIS': 0.085, 'WFPC2': 0.23, 'WFC3_IR': 0.21}
+# Fallback PSF FWHM (arcsec) when the band has no lens_psf.json record. The per-filter table
+# (the JWST repo's, from the JDox nominal values) is tried first, then the per-instrument one
+# (the HST repo's: its filters recur across cameras, so key on the instrument where the filter
+# is ambiguous -- a WFPC2 f814W must not read the ACS value). HST values are the drizzled
+# kernels' typical FWHM: ACS/WFC + WFC3/UVIS ~2 px at 0.05/0.0396", WFPC2/WF3 ~4.5 px at
+# 0.05", WFC3/IR ~3.45 px at 0.06".
+JDOX_FWHM = {'F070W': 0.030, 'F090W': 0.034, 'F115W': 0.040, 'F150W': 0.050, 'F200W': 0.066,
+             'F277W': 0.092, 'F356W': 0.116, 'F444W': 0.145}
+FALLBACK_FWHM = {'ACS': 0.10, 'WFC3_UVIS': 0.085, 'WFPC2': 0.23, 'WFC3_IR': 0.21,
+                 'NIRCAM_SW': 0.045, 'NIRCAM_LW': 0.12}
 
 
 def _instrument_key(hdr):
@@ -84,6 +95,10 @@ def _instrument_key(hdr):
         return 'ACS'
     if inst == 'WFC3':
         return 'WFC3_IR' if det == 'IR' else 'WFC3_UVIS'
+    if inst == 'NIRCAM':
+        from make_band_overview import FILTER_UM
+        um = FILTER_UM.get(str(hdr.get('FILTER', '')).strip(), 99.0)
+        return 'NIRCAM_SW' if um < 2.4 else 'NIRCAM_LW'
     return 'ACS'
 
 
@@ -120,8 +135,8 @@ def measure(sample, lens):
     prefix = stamp_paths.stamp_prefix(stamp_paths.modelling_size(lens, sample))
     lens_dir = stamp_paths.lens_dir(ws_path, 'stamps', sample, lens)
     scores = {}
-    for d in sorted(glob.glob(os.path.join(lens_dir, 'f*'))):
-        if not os.path.isdir(d):
+    for d in sorted(glob.glob(os.path.join(lens_dir, '*'))):
+        if not os.path.isdir(d) or not os.path.basename(d).startswith(('f', 'F')):
             continue
         filt = os.path.basename(d)
         sci_f = stamp_paths.find_stamp(d, prefix, 'sci')
@@ -135,7 +150,11 @@ def measure(sample, lens):
         mask_f = os.path.join(d, f'{prefix}_mask.fits')
         mask = fits.getdata(mask_f).astype(bool) if os.path.exists(mask_f) else None
         rec_psf = psf.get(filt) or psf.get(filt.split('_')[0]) or {}
-        fwhm = (rec_psf.get('fwhm_pix') or 0) * scale or FALLBACK_FWHM[_instrument_key(hdr)]
+        # lens_psf.json records fwhm_pix in the HST repo, fwhm_arcsec in the JWST one
+        fwhm = ((rec_psf.get('fwhm_pix') or 0) * scale
+                or rec_psf.get('fwhm_arcsec')
+                or JDOX_FWHM.get(filt.upper().split('_')[0], 0)
+                or FALLBACK_FWHM[_instrument_key(hdr)])
         snr = arc_snr(sci, noise, scale, te, fwhm, mask)
         res = min(1.0, te / (R0 * fwhm))
         scores[filt] = dict(arc_snr=None if snr is None else round(snr, 2),
@@ -171,7 +190,7 @@ def record(sample, lens, rerender=True):
     info_json.update(out_json, sample, lens, 'primary_band', band)
     info_json.update(out_json, sample, lens, 'primary_band_source', source)
     info_json.update(out_json, sample, lens, 'reviewed', reviewed)
-    visual = mast_target_names._entry(lens, sample).get('best_band_visual')
+    visual = mast_target_names.entry(lens, sample).get('best_band_visual')
     info_json.update(out_json, sample, lens, 'best_band_visual', visual)
     rec.update(primary_band=band, primary_band_source=source, reviewed=reviewed)
     stamp_rec = dict(lens=lens, sample=sample, primary_band=band, primary_band_source=source,
@@ -220,9 +239,11 @@ def set_reviewed(sample, lens, reviewed=True, note=None):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default=None, help='default: every sample')
+    p.add_argument('--sample', type=mast_target_names.sample_arg, default=None,
+                   help='default: every sample')
     p.add_argument('--lens', default=None)
     a = p.parse_args()
+    mast_target_names.resolve_sample(p, a)          # validates the lens, fills a.sample
     warnings.simplefilter('ignore')
     samples = [a.sample] if a.sample else mast_target_names.samples()
     for sample in samples:

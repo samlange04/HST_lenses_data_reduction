@@ -953,6 +953,49 @@ noise FITS (from the weight map), and a 3-panel PNG.
     `info/provenance/lens_masks.json`, `info/provenance/lens_arc_masks.json` and
     `info/provenance/lens_dataset_subplots.json` carry the same `bcfill` key, for the same reason.
 
+## The 2026-11-28 GUI merge with the JWST repo
+
+The GUI stack and its support modules are now BYTE-IDENTICAL files in both repos
+(`cmp`-verified): `make_masks.py`, `make_arc_masks.py`, `make_positions.py`,
+`choose_best_band.py`, `choose_primary_band.py`, `make_band_overview.py`, `display_look.py`,
+`isophote_model.py`, `info_json.py`, `positions_io.py`. The repo profile is the single import
+seam (a try/except: `import lens_samples as mast_target_names` in the JWST repo, else
+`import mast_target_names` here); the filter tables are carried jointly; the stamp layout and
+variants stay each repo's own `stamp_paths.py`. **Edit one and copy to the other — never let
+them drift.** The per-file verdicts behind the merge:
+`local/restructure/divergence_inventory_2026-11-27.md`.
+
+What changed HERE on 2026-11-28:
+- `mast_target_names.resolve_sample(parser, args, ...)` is the JWST argparse-integrated form
+  (typo suggestions, multi-lens `--lens`); the old `resolve_sample(sample, lens)` is gone.
+  `sample_arg` (argparse `type` for `--sample`) added; `entry` is a public alias of `_entry`;
+  `redshift_pair`/`redshift_kinds`/`redshift_text` and `deflector_radec` are the seam the
+  merged files call (the JWST profile answers the same calls from its own stores).
+- Positions: the snap is `snap_click` — the brightest pixel in a `--snap-radius` DISC
+  (default 1; `--search-box-size` is kept as an alias), replacing al.Clicker's snap, which
+  rounded the click to a pixel corner and searched an asymmetric box. The record key is
+  `snap_radius_px`. The band tie is `band_tie` (compact FIELD sources, with a lens-core
+  fallback), replacing the deflector-centroid tie (`deflector_tie_*` records stand; new
+  records carry `band_tie_mas/px/scatter_mas/n_sources/method`).
+- The per-band positions overlay PNGs are no longer drawn inline after the GUI closes: they
+  are rebuilt from the just-written JSONs by ONE detached process at the end of the run
+  (`background_renders`; make_masks' subplot + band-overview renders go the same way,
+  `rerender_overviews`). An isophote fit per band between one GUI and the next froze the
+  window ~20 s a lens.
+- The mask GUIs' Scribbler now takes `display_look.SCRIBBLER` as its `cmap` — the
+  dataset-subplot look per panel (inferno, PercentileInterval(99) + AsinhStretch(0.1)) —
+  not the Scribbler's own arcsinh; its mask-overlay edge markers are recoloured cyan (black
+  vanished on inferno's dark sky).
+- `discover_targets`' gitignore guard tests the prospective `{prefix}_mask.fits` path, NOT
+  the sci stamp: the sci FITS is Zenodo-shipped and ALWAYS gitignored since 2026-11-27, so
+  the old test skipped every band. A band whose mask would be ignored (a non-modelling size)
+  is still skipped.
+- `isophote_model.deflector_pixel` returns `(col, row, refine)` or None; an explicit measured
+  centre (JWST) is NOT centroid-refined (the iteration creeps toward arc light), an
+  approximate catalogue one (the group stamps) still is.
+- The band overview gained the JWST extras: extra-galaxy centres marked (cyan x), the
+  measured-centre offset line in the header, and the θ_E circle centred on the deflector.
+
 ## Masks (`scripts/make_masks.py`)
 
 ```bash
@@ -1568,7 +1611,7 @@ bash scripts/run_positions_all.sh slacs --force                      # one sampl
 Interactive, manual tool (the positions analogue of `make_masks.py`). For each lens it opens
 PyAutoLens's `al.Clicker` GUI over the lens's best stamp; you **double-click** each lensed
 image of the source (2 for a double, 4 for a quad), each click snapping to the brightest pixel
-within `--search-box-size` (default 2). The clicks are saved as an `al.Grid2DIrregular` in
+within a `--snap-radius` disc (default 1). The clicks are saved as an `al.Grid2DIrregular` in
 `stamp12_positions.json` (via `al.output_to_json`) — the file a modelling script loads to
 build a positions likelihood penalty (`al.PositionsLH`) that rejects mass models mapping the
 images too far apart in the source plane — plus a `stamp12_positions.png` QC overlay per
@@ -1713,7 +1756,8 @@ right) with the band's contaminant mask outlined (blanked in the subtracted pane
 (2026-11-02):** the positions GUI and PNG, the mask and arc-mask Scribbler GUIs and the
 arc-mask QC PNG all use the dataset QC subplots' inferno colour map with an asinh stretch
 (the Clicker panels and PNGs exactly: 0.5–99.5 percentile limits, `AsinhStretch(0.1)`; the
-Scribbler keeps its own arcsinh stretch about the sky level). Only the isophote residual stays
+Scribbler has taken `display_look.SCRIBBLER` — the same look per panel — since the
+2026-11-28 merge). Only the isophote residual stays
 on a red-blue diverging map, since its sign matters. On a group-centred multi_galaxy stamp
 the isophote fit starts at the catalogue deflector (`isophote_model.deflector_pixel`), so
 only the main galaxy is subtracted and its companions stay visible. Where no isophote fit

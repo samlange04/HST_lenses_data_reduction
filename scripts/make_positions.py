@@ -2,11 +2,16 @@
 """
 Interactive GUI for marking multiply-imaged (lensed) source positions, per lens.
 
-For each lens in a sample this launches PyAutoLens's `al.Clicker` GUI over the lens's
-best-available stamp -- the same tool as
-autolens_workspace:scripts/imaging/data_preparation/gui/positions.py -- so you can
+Merged 2026-11-28 across the HST and JWST repos: the file is identical in both (the repo
+profile is the import seam below; the stamp layout is each repo's own `stamp_paths`). North
+is DOWN and East LEFT in every panel (display_look.ORIGIN; the JWST side drew North-up until
+the merge, and its positions GUI dropped the y-flip here).
+
+For each lens in a sample this opens a window over the lens's
+best-available stamp -- PyAutoLens's `al.Clicker`'s panel layout, with the repo's own snap --
+so you can
 DOUBLE-CLICK each lensed image of the source (2 for a double, 4 for a quad, ...). Each
-click snaps to the brightest pixel within `--search-box-size` and is recorded in
+click snaps to the brightest pixel within a `--snap-radius` DISC (snap_click) and is recorded in
 arcsec relative to the stamp centre; the collected clicks are saved as an
 `al.Grid2DIrregular` in `stamp12_positions.json` (via `al.output_to_json`), the file a
 modelling script loads to build a positions likelihood penalty (`al.PositionsLH`) that
@@ -93,7 +98,10 @@ import autolens as al
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import mast_target_names
+try:
+    import lens_samples as mast_target_names   # the JWST repo's profile module
+except ImportError:
+    import mast_target_names                   # the HST repo's
 import info_json
 import stamp_paths
 import positions_io
@@ -153,71 +161,133 @@ def reproject_positions(positions, src_hdr, dst_hdr):
     return out
 
 
-DEFLECTOR_SEARCH_R = 0.3     # arcsec: peak search radius about the stamp centre
-DEFLECTOR_WINDOW_SIGMA = 0.1  # arcsec: Gaussian window of the centroid
-DEFLECTOR_MIN_SNR = 10.0      # below this the deflector is not detected; tie unmeasured
+SNAP_RADIUS_DEFAULT = 1   # px: the click snap's disc radius (brightest pixel, true flux)
+
+TIE_EXCLUDE_ARCSEC = 2.5   # field sources only: lens, ring and arcs live inside this radius
+TIE_APERTURE_ARCSEC = 0.24 # centroid window, the same SKY size in every band
+TIE_MIN_SOURCES = 3
 
 
-def deflector_sky(stamp_dir, prefix):
-    """Sky position of the deflector in this band, by windowed centroid at the stamp centre.
+def snap_click(sci_native, pixel_scales, y, x, radius):
+    """The click at (y, x) arcsec moved to the centre of the brightest pixel (true flux) within
+    `radius` px of the clicked pixel, a DISC, so no direction is favoured; radius 0 keeps the
+    clicked pixel. Returns (y, x) arcsec.
 
-    Used only to CHECK the band tie: every stamp is recentred on the deflector, so the same
-    galaxy should land on the same sky coordinate in every band. Where it does not, the
-    bands are misregistered and a broadcast position will miss the lensed images in that
-    band by the same amount, however it is computed.
+    Replaces al.Clicker's snap (the JWST repo, 2026-11-02; adopted by the merge 2026-11-28),
+    which rounded the click to a pixel CORNER on these even-sided stamps before picking a
+    pixel, and searched an asymmetric box (-b .. b-1 px), so a click could move further one
+    way than the other."""
+    img = np.asarray(sci_native, dtype=float)
+    row, col = arcsec_to_pixel(y, x, img.shape, pixel_scales)
+    r0, c0 = int(round(row)), int(round(col))
+    best, br, bc = -np.inf, r0, c0
+    rad = int(max(radius, 0))
+    for dr in range(-rad, rad + 1):
+        for dc in range(-rad, rad + 1):
+            r_, c_ = r0 + dr, c0 + dc
+            if dr * dr + dc * dc > radius * radius or not (0 <= r_ < img.shape[0] and 0 <= c_ < img.shape[1]):
+                continue
+            v = img[r_, c_]
+            if np.isfinite(v) and v > best:
+                best, br, bc = v, r_, c_
+    return pixel_to_arcsec(br, bc, img.shape, pixel_scales)
 
-    Returns (None, ps) when the deflector is not detected (windowed S/N below
-    DEFLECTOR_MIN_SNR): the tie is then unmeasured, not zero.
 
-    Two traps the earlier version (peak within 1.2", flux centroid in a 0.6" box) fell
-    into, both in bands where the arcs outshine the deflector (2026-10-24):
-      - SL2S F475X: the peak landed on an arc knot 0.5-1.4" out, so J0217, J1406, J1359,
-        J0904 and J2203 recorded 0.4-1.4" "misregistrations" against red bands tied to
-        within ~25 mas. Hence the 0.3" search, and the Gaussian window (XWIN-style
-        iteration) in place of the box, which still pulled 30-120 mas toward the arcs.
-      - GALLERY F438W: the deflector is invisible (windowed S/N 3-7.5 against >= 18 in
-        every other band), so the centroid was noise (100-300 mas even after the search
-        fix). Hence the S/N floor.
+def _windowed_centroid(img, x, y, r_px, n_iter=5):
+    """Iterated flux centroid in a circle of r_px about (x, y); None if it walks off."""
+    ny, nx = img.shape
+    b = int(np.ceil(r_px))
+    for _ in range(n_iter):
+        ix, iy = int(round(x)), int(round(y))
+        if ix - b < 0 or iy - b < 0 or ix + b >= nx or iy + b >= ny:
+            return None
+        yy, xx = np.mgrid[iy-b:iy+b+1, ix-b:ix+b+1]
+        box = img[iy-b:iy+b+1, ix-b:ix+b+1]
+        w = np.clip(box - np.median(box), 0, None) * (np.hypot(xx - x, yy - y) <= r_px)
+        if not np.isfinite(w).all() or w.sum() <= 0:
+            return None
+        x, y = (xx*w).sum()/w.sum(), (yy*w).sum()/w.sum()
+    return x, y
+
+
+def band_tie(marked_dir, marked_prefix, band_dir, band_prefix):
+    """How far this band's pixels sit from the marked band's on SKY, from FIELD sources.
+
+    Compact sources outside TIE_EXCLUDE_ARCSEC are detected on the coarser of the two
+    stamps, centroided in the same sky aperture in both, and the median (dRA*, dDec) offset
+    is returned as {'mas', 'scatter_mas', 'n', 'method': 'field sources'}.
+
+    A 12" stamp of a shallow field can hold no compact source at all (the SPT stamps: 0-1).
+    Then, and only then, it falls back to the lens core: both bands centroided in the same
+    TIE_APERTURE_ARCSEC window, iterated from the SAME sky point (the marked stamp's centre,
+    which make_stamps puts on the deflector). Starting both from one sky point, not from each
+    band's own brightest pixel, is what keeps a ring that outshines its lens in one band from
+    being taken for the lens; it still assumes the core is the local light peak in both
+    bands, so the result is labelled 'lens core (fallback)'. 'mas' is None if that fails too.
+
+    WHY NOT THE DEFLECTOR. Centroiding "the brightest thing near the stamp centre" in each
+    band assumes that thing is the same object in both. On B1938+666 (2026-10-04) it was not:
+    the stamps were 0.52" off the lens and in F277W the Einstein ring outshines the galaxy,
+    so the check found the lens core in F115W and the top of the ring in F277W and reported
+    a 281 mas misregistration between bands that field sources tie to 10 mas. (The HST repo
+    hit the same failure on its SL2S F475X and GALLERY F438W bands, where the arcs outshine
+    the deflector.) Any lens whose arcs rival its light in one band fails the same way.
     """
     from scipy import ndimage
-    sci_path = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
-    hdr = fits.getheader(sci_path)
-    sci = np.asarray(fits.getdata(sci_path), float)
-    noise = np.asarray(fits.getdata(stamp_paths.find_stamp(stamp_dir, prefix, 'noise')), float)
-    ps = make_masks.pixel_scale_from_header(hdr)
-    n_y, n_x = sci.shape
-    cy, cx = (n_y - 1) / 2.0, (n_x - 1) / 2.0
-    yy, xx = np.mgrid[:n_y, :n_x]
-    smooth = ndimage.gaussian_filter(np.nan_to_num(sci), 1.0)
-    smooth[np.hypot(yy - cy, xx - cx) > DEFLECTOR_SEARCH_R / ps] = -np.inf
-    iy, ix = np.unravel_index(np.argmax(smooth), smooth.shape)
 
-    b = int(round(0.6 / ps))
-    box = np.s_[iy-b:iy+b+1, ix-b:ix+b+1]
-    s = sci[box] - np.nanmedian(sci[box])
-    nz = noise[box]
-    good = np.isfinite(s) & np.isfinite(nz)
-    s, nz = np.where(good, s, 0.0), np.where(good, nz, 0.0)
-    ly, lx = np.mgrid[iy-b:iy+b+1, ix-b:ix+b+1].astype(float)
-    sig = DEFLECTOR_WINDOW_SIGMA / ps
+    def load(d, prefix):
+        path = stamp_paths.find_stamp(d, prefix, 'sci')
+        hdr = fits.getheader(path)
+        img = np.nan_to_num(np.asarray(fits.getdata(path), float))
+        return img, WCS(hdr), make_masks.pixel_scale_from_header(hdr)
 
-    def window(y0, x0):
-        r = np.hypot(ly - y0, lx - x0)
-        return np.where(r <= 4 * sig, np.exp(-0.5 * (r / sig) ** 2), 0.0)
+    stamps = [load(marked_dir, marked_prefix), load(band_dir, band_prefix)]
+    det, det_wcs, det_ps = max(stamps, key=lambda t: t[2])
+    ny, nx = det.shape
+    med = np.median(det)
+    sig = 1.4826 * np.median(np.abs(det - med))
+    lab, _ = ndimage.label(ndimage.gaussian_filter(det, 1.5) > med + 8.0 * sig)
+    r_det = TIE_APERTURE_ARCSEC / det_ps
+    offsets = []
+    for sl in ndimage.find_objects(lab):
+        cy = (sl[0].start + sl[0].stop - 1) / 2.0
+        cx = (sl[1].start + sl[1].stop - 1) / 2.0
+        size = (sl[0].stop - sl[0].start) * (sl[1].stop - sl[1].start)
+        if (np.hypot(cx - (nx - 1) / 2.0, cy - (ny - 1) / 2.0) * det_ps < TIE_EXCLUDE_ARCSEC
+                or size * det_ps**2 > 0.5):            # extended: no well-defined centroid
+            continue
+        sky = []
+        for img, w, ps in stamps:
+            if not sky:
+                guess = (cx, cy) if img is det else tuple(float(v) for v in w.world_to_pixel(
+                    det_wcs.pixel_to_world(cx, cy)))
+            else:
+                guess = tuple(float(v) for v in w.world_to_pixel(sky[0]))
+            c = _windowed_centroid(img, guess[0], guess[1], TIE_APERTURE_ARCSEC / ps)
+            if c is None:
+                break
+            sky.append(w.pixel_to_world(*c))
+        if len(sky) == 2:
+            dra, ddec = sky[0].spherical_offsets_to(sky[1])
+            offsets.append((dra.arcsec * 1e3, ddec.arcsec * 1e3))
+    if len(offsets) >= TIE_MIN_SOURCES:
+        off = np.asarray(offsets)
+        med_off = np.median(off, axis=0)
+        scatter = 1.4826 * np.median(np.hypot(*(off - med_off).T))
+        return {'mas': float(np.hypot(*med_off)), 'scatter_mas': float(scatter),
+                'n': len(offsets), 'method': 'field sources'}
 
-    y0, x0 = float(iy), float(ix)
-    for _ in range(100):
-        w = s * window(y0, x0)
-        if w.sum() <= 0:
-            return None, ps
-        dy, dx = (ly * w).sum() / w.sum() - y0, (lx * w).sum() / w.sum() - x0
-        y0, x0 = y0 + 2 * dy, x0 + 2 * dx
-        if np.hypot(dy, dx) < 1e-4:
-            break
-    g = window(y0, x0)
-    if (s * g).sum() / np.sqrt(((nz * g) ** 2).sum()) < DEFLECTOR_MIN_SNR:
-        return None, ps
-    return WCS(hdr).pixel_to_world(x0, y0), ps
+    img0, w0, ps0 = stamps[0]
+    start = w0.pixel_to_world((img0.shape[1] - 1) / 2.0, (img0.shape[0] - 1) / 2.0)
+    core = []
+    for img, w, ps in stamps:
+        gx, gy = (float(v) for v in w.world_to_pixel(start))
+        c = _windowed_centroid(img, gx, gy, TIE_APERTURE_ARCSEC / ps)
+        if c is None:
+            return {'mas': None, 'scatter_mas': None, 'n': len(offsets), 'method': None}
+        core.append(w.pixel_to_world(*c))
+    return {'mas': float(core[0].separation(core[1]).arcsec * 1e3), 'scatter_mas': None,
+            'n': len(offsets), 'method': 'lens core (fallback)'}
 
 
 # One colour per position set (source 1, 2, ...), each drawn with a black edge so it reads
@@ -259,9 +329,10 @@ def save_overlay_png(sci_native, pixel_scales, sets, out_path,
     ext = [-hw, hw, -hw, hw]
     panels = [('as-observed (S/N)', None)]
     if subtract == 'isophote':
+        got = isophote_model.deflector_pixel(stamp_paths.find_stamp(stamp_dir, prefix, 'sci'))
         res, vmax_div = isophote_model.isophote_display(
             base, pixel_scales, exclude=cont if cont.any() else None,
-            centre=isophote_model.deflector_pixel(stamp_paths.find_stamp(stamp_dir, prefix, 'sci')))
+            centre=got[:2] if got else None, refine_centre=got[2] if got else None)
         panels.append(('isophote-subtracted (smoothed)', (res, vmax_div)))
     fig, axes = plt.subplots(1, len(panels), figsize=(7 * len(panels), 7), squeeze=False)
     for ax, (name, sub) in zip(axes[0], panels):
@@ -331,6 +402,7 @@ def load_band_panel_info(lens, filt, stamp_dir, drizzle_pass, display, hide_mask
             'hdr': hdr, 'ps': ps, 'sci': sci_native, 'noise': noise, 'psf': psf,
             'base': base,
             'source_label': source_label, 'contaminants': contaminants,
+            # (col, row, refine) or None: the profile's deflector position, where known
             'deflector': isophote_model.deflector_pixel(sci_path)}
 
 
@@ -338,7 +410,7 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
                        display='snr', stretch='asinh',
                        vmin_percent=0.5, vmax_percent=99.5, asinh_a=0.1,
                        mask_center=0.0, vmax_value=None, subtract='isophote',
-                       side_by_side=True, zoom_width=None, colour=True):
+                       side_by_side=True, zoom_width=None, colour=True, prompt=None):
     """Run the Clicker GUI once and return the clicked position SETS, [[(y, x), ...], ...]
     arcsec IN THE MARKED BAND'S FRAME, one list per source, plus the per-position record of
     which band each click was made on.
@@ -347,9 +419,10 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
     (--all-bands, 2026-11-17), so the band where an image is clearest can be the one it is
     clicked in (an arc invisible in f814W can be obvious in f555W). One row of panels per
     view (as-observed, and the subtracted view with --subtract), one COLUMN per band. A
-    double-click on any panel snaps on THAT band's true flux (one al.Clicker per band), is
-    converted into the marked band's frame through the two bands' WCS (pixel -> world ->
-    pixel, the same hop the broadcast uses), stored there, and drawn back onto every panel.
+    double-click on any panel snaps on THAT band's true flux (snap_click on that band's sci
+    array), is converted into the marked band's frame through the two bands' WCS (pixel ->
+    world -> pixel, the same hop the broadcast uses), stored there, and drawn back onto
+    every panel.
 
     NUMBER KEYS SELECT THE SOURCE BEING MARKED (2026-11-01): the window opens on source 1;
     press 2 and every following double-click goes to source 2, press 1 to go back. Use a set
@@ -357,17 +430,16 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
     OWN source-plane point; the title names the active set and each set is drawn in its own
     colour. Empty sets are dropped, so pressing 3 and marking nothing changes nothing.
     **'z' (or Backspace) UNDOES the last click**, whichever source and band it was on
-    (markers removed from every panel, the band's Clicker list popped too; ported from the
-    JWST repo 2026-11-17).
+    (markers removed from every panel; 2026-11-17).
 
     PANELS ARE REAL AXES HERE, NOT A COMPOSITED ARRAY -- the opposite of the Scribbler, and
     deliberately. The Scribbler reads one array back, so there the panels are hstacked into a
     single image and the scribble folded up afterwards (al.Scribbler does that itself now:
     `autogalaxy.gui.display_util.composite_panels` / `fold_panels`).
-    al.Clicker takes only `event.xdata/ydata`, so a click needs no folding at all if every
+    A click carries only `event.xdata/ydata`, so it needs no folding at all if every
     panel is its own axes over that band's arcsec extent: a double-click anywhere already
-    carries panel-local sky coordinates and is forwarded to that band's `clicker.onclick`
-    untouched. Nothing is translated within a band, so what you click is what gets snapped;
+    carries panel-local sky coordinates and is snapped on that band's flux there.
+    Nothing is translated within a band, so what you click is what gets snapped;
     the only conversion is the WCS hop from the clicked band to the marked band's frame.
 
     `zoom_width` (arcsec, from --zoom, default 7) crops every panel to the central square --
@@ -387,9 +459,10 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
     inside/adjacent to a blanked region can still snap onto a hidden pixel within
     `search_box_size` -- process_lens checks the result and warns if one did.
     """
-    clickers = {b['filt']: al.Clicker(image=b['sci'], pixel_scales=b['ps'],
-                                      search_box_size=search_box_size)
-                for b in bands}
+    # The snap is our own brightest-pixel disc (snap_click), not al.Clicker's: the Clicker
+    # rounded the click to a pixel corner on these even-sided stamps and searched an
+    # asymmetric box, so a click could move further one way than the other (2026-11-02, the
+    # JWST repo's fix; adopted across both repos in the 2026-11-28 merge).
 
     # Rows are the views (as-observed, then the subtracted view), columns the bands.
     views = []
@@ -480,8 +553,10 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
                     disp[make_masks.mask_boundary(cont)] = 1.0
                 im = ax.imshow(disp, cmap=DISPLAY_CMAP, extent=ext)
             elif view == 'isophote-subtracted (smoothed)':
+                dp = b['deflector']
                 res, vmax_div = isophote_model.isophote_display(
-                    base, b['ps'], exclude=exclude, centre=b['deflector'])
+                    base, b['ps'], exclude=exclude,
+                    centre=dp[:2] if dp else None, refine_centre=dp[2] if dp else None)
                 iso_res[b['filt']] = np.array(res, dtype=float)
                 disp = iso_res[b['filt']].copy()
                 if cont is not None:
@@ -588,11 +663,13 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
 
     def title():
         colour = SET_COLOURS[active[0] % len(SET_COLOURS)]
-        fig.suptitle(f"{lens}  --  marking SOURCE {active[0] + 1} ({colour})\n"
-                     f"DOUBLE-CLICK each of its images on ANY panel (snap: that band's "
-                     f"flux; stored in the {marked_filt} frame)\n"
-                     f"Keys 1-9 switch source;  z undoes the last click;  "
-                     f"Esc (or close the window) when done",
+        fig.suptitle((prompt or
+                      f"{lens}  --  marking SOURCE {active[0] + 1} ({colour})\n"
+                      f"DOUBLE-CLICK each of its images on ANY panel (snap: that band's "
+                      f"flux; stored in the {marked_filt} frame)\n"
+                      f"Keys 1-9 switch source;  z undoes the last click;  "
+                      f"Esc (or close the window) when done")
+                     + "   [North down, East left]",
                      fontsize=max(9.0, min(11.0, fs + 3.0)))
         fig.canvas.draw_idle()
 
@@ -601,16 +678,12 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
 
     def onclick(event):
         b = ax_band.get(event.inaxes)
-        if b is None:
+        if b is None or not event.dblclick:
             # Clicks outside the panels (margins, colourbars) are dropped rather than
-            # snapped to a nonsense pixel.
+            # snapped to a nonsense pixel; single clicks do nothing.
             return
-        clicker = clickers[b['filt']]
-        before = len(clicker.click_list)
-        clicker.onclick(event)
-        if len(clicker.click_list) == before:
-            return
-        sy, sx = clicker.click_list[-1]          # snapped, clicked band's arcsec frame
+        sy, sx = snap_click(b['sci'], b['ps'], event.ydata, event.xdata,
+                            search_box_size)      # snapped, clicked band's arcsec frame
         if b['filt'] == marked_filt:
             my, mx = sy, sx
         else:
@@ -641,16 +714,14 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
         d_as = float(np.hypot(sy - event.ydata, sx - event.xdata))
         moved.append(d_as)                        # arcsec; process_lens divides by the
         note = ('   <-- LARGE, check it'          # marked band's pixel scale
-                if d_as > 1.5 * search_box_size * b['ps'] else '')
+                if d_as > (search_box_size + 0.75) * b['ps'] else '')
         band_note = '' if b['filt'] == marked_filt else f'  [{b["filt"]} panel]'
         print(f"    snap moved {d_as/b['ps']:4.1f} px ({d_as:.3f}\") "
               f"-> ({my:+.3f}, {mx:+.3f})\"{band_note}{note}")
 
     def undo():
-        """Drop the last click, whichever source and band it was on (ported from the JWST
-        repo, 2026-11-17): remove its markers from every panel, pop the set entry, the
-        clicked-band record, the snap-distance log, and the band Clicker's own list so the
-        next click's before/after count stays in step."""
+        """Drop the last click, whichever source and band it was on: remove its markers
+        from every panel and pop the set entry, the clicked-band record and the snap log."""
         if not history:
             print("    nothing to undo")
             return
@@ -658,7 +729,6 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
         y_, x_ = sets[k].pop()
         clicked_filts[k].pop()
         moved.pop()
-        clickers[filt_].click_list.pop()
         for a_ in artists:
             a_.remove()
         print(f"    undone: source {k + 1} image {len(sets[k])} at ({y_:+.3f}, {x_:+.3f})\"")
@@ -691,11 +761,38 @@ def mark_positions_gui(bands, marked_filt, lens, search_box_size,
         marked_ps = next(b['ps'] for b in bands if b['filt'] == marked_filt)
         print(f"  snap distances: max {max(moved)/marked_ps:.1f} px, "
               f"mean {sum(moved)/len(moved)/marked_ps:.1f} px of the marked band "
-              f"(--search-box-size {search_box_size})")
+              f"(--snap-radius {search_box_size})")
     keep = [i for i, s in enumerate(sets) if s]
     return ([sets[i] for i in keep],
             [clicked_filts[i] for i in keep],
             moved)   # each set a list of (y_arcsec, x_arcsec) in the marked band's frame
+
+
+def background_renders(sample, lenses, vmax_value=None):
+    """Draw the changed lenses' positions QC overlays (--overlays-only) in ONE detached
+    background process, at the end of the run, so the GUI never waits on them (the overlay
+    is an isophote fit per band, ~20 s a lens -- drawn inline, it left the closed GUI window
+    frozen between lenses; make_masks.rerender_overviews explains the same problem). Log in
+    data/run_logs/. The band overview does not show positions, so it is not re-rendered."""
+    if not lenses:
+        return
+    import shlex
+    import subprocess
+    import time
+    plt.close('all')
+    here = os.path.dirname(os.path.abspath(__file__))
+    py = shlex.quote(sys.executable)
+    steps = [f'{py} {shlex.quote(os.path.join(here, "make_positions.py"))} --sample {sample} '
+             f'--lens {shlex.quote(l)} --overlays-only'
+             + (f' --vmax-value {vmax_value}' if vmax_value is not None else '') for l in lenses]
+    log = os.path.join(ws_path, 'data', 'run_logs', f'positions_renders_{sample}_{time.strftime("%Y%m%d_%H%M%S")}.log')
+    os.makedirs(os.path.dirname(log), exist_ok=True)
+    with open(log, 'w') as fh:
+        subprocess.Popen(['/bin/sh', '-c', '; '.join(steps) + '; echo "=== renders done"'],
+                         stdout=fh, stderr=subprocess.STDOUT, start_new_session=True,
+                         env=dict(os.environ, MPLBACKEND='Agg'))
+    print(f"\npositions overlays of {len(lenses)} lens(es) rendering IN THE BACKGROUND "
+          f"(~20 s each); log: {os.path.relpath(log, ws_path)}")
 
 
 def rebuild_overlays(lens, filt_dirs, drizzle_pass, stretch, vmin_percent,
@@ -874,8 +971,8 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
     if contaminants is not None:
         source_label += ' (contaminants blanked)'
 
-    print(f"  display: {source_label}, {stretch} stretch  |  snap search box "
-          f"= {search_box_size}px")
+    print(f"  display: {source_label}, {stretch} stretch  |  snap disc radius "
+          f"= {search_box_size} px")
     if zoom_arcsec:
         print(f"  panels zoomed to the central {zoom_arcsec:g}\" (--no-zoom for the full "
               f"stamp); display only, the snap sees the whole frame")
@@ -940,7 +1037,6 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
 
     sci_path = marked['sci_path']
     marked_hdr = fits.getheader(sci_path)
-    marked_sky, _ = deflector_sky(display_dir, display_prefix)
 
     # Broadcast THROUGH SKY, not by copying arcsec (see reproject_positions). Each band gets
     # its own Grid2DIrregular in its own frame, one file per band into that band's stamp
@@ -963,35 +1059,34 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
                                                                  positions))
 
         # Does this band's own image actually sit where the marked band says it does? A
-        # broadcast cannot fix a misregistered band; it can only be honest about it.
-        tie_mas = None
-        if marked_sky is not None and filt != display_filt:
-            band_sky, _ = deflector_sky(stamp_dir, prefix)
-            if band_sky is None:
-                print(f"  {filt}: deflector not detected (windowed S/N < "
-                      f"{DEFLECTOR_MIN_SNR:g}), band tie unmeasured")
-            else:
-                tie_mas = float(band_sky.separation(marked_sky).arcsec * 1000.0)
-                if tie_mas / (band_ps * 1000.0) > 1.0:
-                    print(f"  WARNING: {filt} is MISREGISTERED against {display_filt} by "
-                          f"{tie_mas:.0f} mas = {tie_mas/(band_ps*1000.0):.2f} {filt} px "
-                          f"(deflector centroid). The broadcast positions are correct on "
-                          f"SKY but will sit that far off this band's images. Fix the "
-                          f"astrometry, don't re-mark.")
+        # broadcast cannot fix a misregistered band; it can only be honest about it. The
+        # check is FIELD SOURCES (band_tie), not a deflector centroid: a deflector estimate
+        # reads arc light as an offset wherever the arcs rival the lens light.
+        tie = None
+        if filt != display_filt:
+            tie = band_tie(display_dir, display_prefix, stamp_dir, prefix)
+            if tie['mas'] is None:
+                print(f"  {filt}: band tie unmeasured (too few field sources and the core "
+                      f"centroid failed)")
+            elif tie['mas'] / (band_ps * 1000.0) > 1.0:
+                print(f"  WARNING: {filt} is MISREGISTERED against {display_filt} by "
+                      f"{tie['mas']:.0f} mas = {tie['mas']/(band_ps*1000.0):.2f} {filt} px "
+                      f"({tie['method']}, n={tie['n']}). The broadcast positions are correct "
+                      f"on SKY but will sit that far off this band's images. Fix the "
+                      f"astrometry, don't re-mark.")
 
         json_path = os.path.join(stamp_dir, f'{prefix}_positions.json')
         positions_io.write_sets(band_sets, json_path)
-        band_native = al.Array2D.from_fits(file_path=band_sci, pixel_scales=band_ps).native
-        save_overlay_png(band_native, band_ps, band_sets,
-                         os.path.join(stamp_dir, f'{prefix}_positions.png'),
-                         stretch=stretch, vmin_percent=vmin_percent,
-                         vmax_percent=vmax_percent, asinh_a=asinh_a,
-                         vmax_value=vmax_value)
+        # The QC overlay PNGs are NOT drawn here: an isophote fit per band between one GUI
+        # and the next froze the window ~20 s a lens. They are rebuilt from the JSONs just
+        # written, in one detached process at the end of the run (background_renders).
         written.append({'filt': filt, 'prefix': prefix,
                         'reprojection_shift_mas': round(shift_mas, 2),
-                        'deflector_tie_mas': None if tie_mas is None else round(tie_mas, 1),
-                        'deflector_tie_px': (None if tie_mas is None
-                                             else round(tie_mas / (band_ps*1000.0), 3))})
+                        'band_tie_mas': (None if not tie else tie['mas']),
+                        'band_tie_px': (None if not tie or tie['mas'] is None
+                                        else round(tie['mas'] / (band_ps * 1000.0), 3)),
+                        'band_tie_method': (None if not tie else tie['method']),
+                        'band_tie_n_sources': (None if not tie else tie['n'])})
         extra = '' if filt == display_filt else f'  (+{shift_mas:.0f} mas vs a raw copy)'
         print(f"  wrote {json_path}{extra}")
 
@@ -1012,7 +1107,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
         'marked_prefix': display_prefix,
         'drizzle_pass': make_masks.stamp_pass_of(display_dir, display_prefix),
         'pixel_scale_arcsec': round(pixel_scales, 6),
-        'search_box_size': search_box_size,
+        'snap_radius_px': search_box_size,
         'snap_moved_px_max': (round(max(moved)/pixel_scales, 2) if moved else None),
         'snap_moved_px_mean': (round(sum(moved)/len(moved)/pixel_scales, 2) if moved else None),
         'broadcast': 'sky (WCS pixel->world->pixel per band)',
@@ -1040,7 +1135,7 @@ def process_lens(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default=None,
+    p.add_argument('--sample', type=mast_target_names.sample_arg, default=None,
                    help='sample subdirectory of data/stamps/. Default: with --lens, the '
                         'lens\'s own sample (each lens is in exactly one); without --lens, '
                         f'{mast_target_names.DEFAULT_SAMPLE}')
@@ -1062,12 +1157,13 @@ def main():
                         'tracked, so another size is skipped unless --include-ignored')
     p.add_argument('--force', action='store_true', default=False,
                    help='re-mark a lens that already has positions (default: skip it)')
-    p.add_argument('--search-box-size', type=int, default=1,
-                   help='half-width in pixels of the brightest-pixel snap around each click '
-                        '(al.Clicker search_box_size; default 1 since 2026-11-17 -- on the '
-                        'zoomed all-bands panels clicks land precisely, and 2 still moved '
-                        'some clicks up to ~2.2 px onto a brighter neighbour; lowered from 2, '
-                        'which was lowered from 5 on 2026-09-17). 1 snaps only to the '
+    p.add_argument('--snap-radius', '--search-box-size', dest='snap_radius', type=int,
+                   default=SNAP_RADIUS_DEFAULT,
+                   help='radius in pixels of the brightest-pixel snap DISC around each '
+                        'double-click (snap_click; default 1). The snap was al.Clicker\'s '
+                        'box until 2026-11-28: it rounded the click to a pixel corner on '
+                        'these even-sided stamps and searched an asymmetric box, so a click '
+                        'could move further one way than the other. 1 snaps only to the '
                         'immediate neighbours; use 2 to catch the peak from a coarse click, '
                         'or 0 to take the click as-is. Each click prints how far it actually '
                         'moved, and the per-lens max is recorded in the provenance')
@@ -1180,7 +1276,8 @@ def main():
                         'was MARKED on its SNAP f814W band and broadcast from there across a '
                         '688 mas (13.8 px) misregistration; both copies were deleted 2026-09-22.')
     a = p.parse_args()
-    sample = mast_target_names.resolve_sample(a.sample, a.lens)
+    mast_target_names.resolve_sample(p, a, default=mast_target_names.DEFAULT_SAMPLE)
+    sample = a.sample
 
     make_masks.STAMP_SIZE = a.size
     root = stamp_paths.stamps_root(ws_path)
@@ -1223,18 +1320,21 @@ def main():
                 else 'none' if a.subtract_radial is False else 'isophote')
     subtract = None if subtract == 'none' else subtract
     made = skipped = 0
+    changed = []
     for lens in sorted(lens_filts):
         if process_lens(lens, lens_filts[lens], sample, a.filt, a.drizzle_pass, a.force,
-                        a.search_box_size, a.display, a.stretch,
+                        a.snap_radius, a.display, a.stretch,
                         a.vmin_percent, a.vmax_percent, a.asinh_a,
                         a.mask_center, a.vmax_value, subtract,
                         a.side_by_side, a.hide_masked, a.all_bands, a.zoom, a.zoom_width,
                         a.colour):
             made += 1
+            changed.append(lens)
         else:
             skipped += 1
 
     print(f"\nDone: {made} lens(es) marked, {skipped} skipped")
+    background_renders(sample, changed, a.vmax_value)
 
 
 if __name__ == '__main__':

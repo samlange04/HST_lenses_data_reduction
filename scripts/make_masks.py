@@ -2,12 +2,17 @@
 """
 Interactive GUI mask-making, ONE draw per band, seeded by a REVIEWED mask from another band.
 
+Merged 2026-11-28 across the HST and JWST repos: the file is identical in both. The repo
+profile (lens_samples / mast_target_names) is the import seam below; the stamp layout is each
+repo's own `stamp_paths`. On screen North is DOWN and East is LEFT in every panel, the one
+convention of both repos (display_look.ORIGIN; the JWST side drew North-up until the merge).
+
 For each lens in a sample, launches PyAutoLens's `Scribbler` GUI over the lens's
 best-available stamp -- the same tool as
 autolens_workspace:scripts/imaging/data_preparation/gui/mask.py -- so you can scribble the
 areas to REMOVE from the fit (painted = excluded, everything unpainted = kept; this is the
 opposite polarity to the autolens_workspace GUI, which scribbles the region to keep), then
-writes the result as stamp12_mask.fits alongside that stamp's sci/noise/psf products.
+writes the result as stamp<S>_mask.fits alongside that stamp's sci/noise/psf products.
 
 ONE DRAW PER BAND. Each run draws on ONE band -- the lens's PRIMARY band (its
 `best_band_visual` / `best_band_arc_snr`, see choose_primary_band.py; the fixed order below is
@@ -27,39 +32,45 @@ about to be drawn and OUTLINED for approval over the usual two panels:
 
 The outline is all the review needs; a filled-in "mask applied" panel was tried and dropped,
 since it showed nothing the boundary does not already carry while hiding the pixels being
-judged. You then edit the proposal with two brushes --
+judged. A multi-band lens also gets a COLOUR-INDEX panel in the same window (log10 of the
+bluest/reddest band ratio against the deflector's own, PSF-matched; blue = bluer than the
+deflector): the lensed-source vs contaminant discriminant made visible. You then edit the
+proposal with two brushes --
 '1' WHITE adds to the mask, '2' BLACK erases from it, scribbling on whichever panel you like --
 and on closing the GUI choose to [a]pply proposal+edits, keep only what you [d]rew (rejecting
 the proposal outright), or [s]kip the band. Source: the band's own existing mask when
---force-redrawing it (so refining a mask does not mean redrawing it), else the highest-priority
-other band that has one. --propose-from <band> forces the source, --propose-from none draws on
-a blank canvas.
+--force-redrawing it (so refining a mask does not mean redrawing it); for a split-visit band
+the primary visit's mask in the SAME filter; else the lens's primary band's mask, then the
+highest-priority other band that has one. --propose-from <band> forces the source,
+--propose-from none draws on a blank canvas.
 
 --broadcast (mutually exclusive with the above) is the old unreviewed route: write the one
 drawn mask to every band of the lens, sight-unseen. Both share the same transfer -- a rigorous
 per-pixel WCS reprojection (nearest-neighbour, source sci-header WCS -> target sci-header WCS),
-NOT an array-index copy: the 0.05" optical bands (f814W/f606W/f555W) share a grid to <1px so it
-is nearly identity, but f160W is a genuinely different grid (0.06"/px, 200px vs 240px for a 12"
-stamp -- a common sky point sits ~20px away by index), and only reprojection places the mask
-correctly there.
+NOT an array-index copy: bands that share a plate scale share a grid to <1px so it is nearly
+identity, but a genuinely different grid (HST's f160W at 0.06"/px vs the 0.05" optical bands;
+JWST's SW/LW 2:1 nesting) needs the reprojection to place the mask on the same sky.
 
-Defaults to the pipeline's standard 12" stamp tree (data/stamps/, stamp_paths.DEFAULT_SIZE)
--- the tree these hand-drawn masks are meant for and the only size-variant tree tracked in
-git (see .gitignore) precisely because it carries them, which no script can regenerate.
-Pass --size 20 to mask the (untracked, regenerable) 20" tree instead.
+Defaults to each lens's MODELLING-SIZE stamp (stamp_paths.modelling_size) -- the size the
+hand-drawn masks are meant for and the size tracked in git (see .gitignore) precisely because
+it carries them, which no script can regenerate. (The stamp pixels themselves ship through
+Zenodo in the HST repo; a fresh clone fetches them with scripts/fetch_data.py, which the tools
+print when they find no stamps.) Pass --size 20 to mask another size instead.
 
 One stamp dir per band, so one mask per band, written beside the sci it was drawn on.
-On `main` that sci is the standard drizzle; the bad-column-filled variant lives only on the
-`bcfill` branch, under a tagged stamp name in the same dir (stamp_paths.py), and shares the
-grid to <1e-3 px, so a mask drawn on either is valid on both. Either way there is nothing
-to choose and no second copy of the mask to keep in step. A (lens, filt) with a mask already on disk is SKIPPED;
---force redraws it.
+On the HST repo's `main` that sci is the standard drizzle; the bad-column-filled variant lives
+only on its `bcfill` branch, under a tagged stamp name in the same dir (stamp_paths.py), and
+shares the grid to <1e-3 px, so a mask drawn on either is valid on both. Either way there is
+nothing to choose and no second copy of the mask to keep in step. A (lens, filt) with a mask
+already on disk is SKIPPED; --force redraws it.
 
-Every mask written also REGENERATES that band's `{prefix}_dataset.png` QC subplot
-(scripts/make_dataset_subplots.py), so the one PNG that shows the mask laid over
-data/noise/S-N always describes the mask currently on disk instead of a previous draw. It is
-best-effort: a failure (e.g. no PSF kernel for that band yet) is reported and the mask is
-kept. --no-dataset-subplot skips it.
+Every mask written queues that band's `{prefix}_dataset.png` QC subplot and, at the END of the
+run, the dataset subplots and the changed lenses' band overviews are re-rendered in ONE
+DETACHED background process (rerender_overviews; log in data/run_logs/). Inline rendering put
+an isophote fit between one GUI and the next, and -- worse -- a pyplot figure after a Scribbler
+has run flashes up as a blank window (the Scribbler switches pyplot to interactive mode).
+--no-dataset-subplot skips the queue. The renders are best-effort QC: the mask is the product
+and is never lost to a plotting error.
 
 This is a manual, one-lens-at-a-time tool (not a batch driver): each lens blocks on its own
 Tk window until you press Esc. A lens that already has a mask is skipped so a run resumes
@@ -103,11 +114,19 @@ from autogalaxy.gui.display_util import radial_median_subtract, mask_boundary  #
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import mast_target_names
+import display_look
 import info_json
 import stamp_paths
+try:
+    import lens_samples as mast_target_names   # the JWST repo's profile module
+except ImportError:
+    import mast_target_names                   # the HST repo's
 
 MASKS_JSON = os.path.join(ws_path, 'info', 'provenance', 'lens_masks.json')
+
+
+#: blank columns between al.Scribbler's two side-by-side display panels (its `panel_gap`).
+_PANEL_GAP = 6
 
 
 # The GUI itself is al.Scribbler, unmodified. Everything this file once had to build around
@@ -132,12 +151,11 @@ def stretched_display(data_native, pixel_scales, stretch='asinh',
     """Return an al.Array2D holding a contrast-stretched COPY of `data_native`, for
     display in make_positions.py's Clicker and in the QC PNGs only.
 
-    NOT used by the Scribbler GUIs any more: al.Scribbler applies its own arcsinh stretch
-    (median / MAD-scaled, clipped at the 0.5 / 99.5 percentiles of the stretched values --
-    `autogalaxy.gui.display_util.arcsinh_stretch`) to each panel it shows, so draw_mask_gui
-    hands it the raw base array. This percentile + astropy AsinhStretch(a) version is kept
-    for the Clicker, which imshows its own axes, and for the arc-mask QC PNG, so those
-    products render exactly as before.
+    NOT used by the Scribbler GUIs any more: al.Scribbler takes display_look.SCRIBBLER as its
+    `cmap` (each panel normalised with its own PercentileInterval(99) + AsinhStretch(0.1) on
+    inferno), so draw_mask_gui hands it the raw base array. This percentile + astropy
+    AsinhStretch(a) version is kept for the Clicker, which imshows its own axes, and for the
+    QC PNGs, so those products render exactly as before.
 
     Positions are built from click coordinates, never from pixel values, so remapping the
     displayed values cannot change the saved product -- this is purely so bright cores and
@@ -228,34 +246,52 @@ def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
     """Yield (lens, filt, stamp_dir) per band with a stamp under `root` -- the dir both
     scribbled on and written to -- sorted for a reproducible run order.
 
-    GITIGNORED CUTOUT DIRS ARE SKIPPED (2026-09-22, and this is the guard the repo was
-    missing). A band whose directory is gitignored is, by construction, not a science
-    product -- the three 420 s SLACS SNAP f814W diagnostics (J1134+6027, J1403+0006,
-    J1538+5817) are the reason the rule exists. Before this, the sweep tools happily offered
-    them, and a hand-drawn mask or a set of hand-marked positions would be written into a
-    directory git refuses to store: non-regenerable work that no clone would ever see. It
-    already happened -- J1538+5817's image positions were MARKED on its SNAP f814W band and
-    broadcast from there to f606W across a 688 mas (13.8 px) band misregistration, and both
-    had to be deleted on 2026-09-22.
+    GITIGNORED PRODUCT DIRS ARE SKIPPED (2026-09-22, and this is the guard the repo was
+    missing; test updated 2026-11-28). A band whose hand-made product would be gitignored
+    is, by construction, not a science product -- the three 420 s SLACS SNAP f814W
+    diagnostics (J1134+6027, J1403+0006, J1538+5817) are the reason the rule exists.
+    Before this, the sweep tools happily offered them, and a hand-drawn mask or a set of
+    hand-marked positions would be written into a directory git refuses to store:
+    non-regenerable work that no clone would ever see. It already happened -- J1538+5817's
+    image positions were MARKED on its SNAP f814W band and broadcast from there to f606W
+    across a 688 mas (13.8 px) band misregistration, and both had to be deleted on
+    2026-09-22.
+
+    The test is the prospective `{prefix}_mask.fits` path, not the sci stamp (2026-11-28):
+    the sci FITS is regenerable -- in the HST repo it ships through Zenodo and is ALWAYS
+    gitignored since the 2026-11-27 untracking, so testing it would skip everything -- while
+    a mask written into a gitignored directory (a non-modelling stamp size) is exactly the
+    product that must be tracked.
 
     `include_ignored=True` opts back in, for deliberately working on a diagnostic product.
     The skip is announced, never silent, so a short target list is explicable.
     """
-    found, sci_of = {}, {}
-    pattern = os.path.join(stamp_paths.lens_glob(root, sample, lens or '*'), filt or '*')
-    for stamp_dir in sorted(glob.glob(pattern)):
-        prefix = find_prefix(stamp_dir, 'auto')
-        if prefix is None:
-            continue
-        this_filt = os.path.basename(stamp_dir)
-        this_lens = os.path.basename(os.path.dirname(stamp_dir))
-        found[(this_lens, this_filt)] = stamp_dir
-        sci_of[(this_lens, this_filt)] = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
+    found, sci_of, prefixes = {}, {}, {}
+    # Lenses come from the roster, so every stamp layout is found; the band dirs are each
+    # repo's own (stamp_paths.lens_dir).
+    names = [lens] if lens else mast_target_names.lenses(sample)
+    for this_lens in sorted(names):
+        lens_dir = stamp_paths.lens_dir(ws_path, 'stamps', sample, this_lens)
+        for stamp_dir in sorted(glob.glob(os.path.join(lens_dir, filt or '*'))):
+            if not os.path.isdir(stamp_dir):
+                continue
+            prefix = find_prefix(stamp_dir, 'auto')
+            if prefix is None:
+                continue
+            this_filt = os.path.basename(stamp_dir)
+            found[(this_lens, this_filt)] = stamp_dir
+            prefixes[(this_lens, this_filt)] = prefix
+            sci_of[(this_lens, this_filt)] = stamp_paths.find_stamp(stamp_dir, prefix, 'sci')
     if not include_ignored:
-        # Checked on the sci STAMP, not the directory: every size shares one directory and
-        # only the 12" files are tracked, so a stamp20_* band is skipped here too.
-        ignored = gitignored(list(sci_of.values()))
-        skipped = sorted(k for k, v in sci_of.items() if os.path.abspath(v) in ignored)
+        # Test the prospective hand-made product (the contaminant-mask path), NOT the sci
+        # stamp: the sci FITS is regenerable -- in the HST repo it ships through Zenodo and is
+        # ALWAYS gitignored since 2026-11-27, so testing it skips everything -- while a mask
+        # or positions file written into a gitignored dir is non-regenerable work no clone
+        # would see (in the JWST repo a non-modelling stamp size is exactly that). The guard
+        # the 2026-09-22 rule meant, kept honest about what is actually tracked.
+        prospect = {k: os.path.join(v, f'{prefixes[k]}_mask.fits') for k, v in found.items()}
+        ignored = gitignored(list(prospect.values()))
+        skipped = sorted(k for k, v in prospect.items() if os.path.abspath(v) in ignored)
         for key in skipped:
             del found[key]
         if skipped:
@@ -263,12 +299,14 @@ def discover_targets(root, sample, lens=None, filt=None, include_ignored=False):
                   + ', '.join(f'{l}/{f}' for l, f in skipped)
                   + "  (--include-ignored to use them anyway)")
     if not found:
-        # A fresh clone carries no data products (they live on Zenodo, not in git). Say so
-        # with the next step, instead of an empty run that reads like a bug.
+        # A fresh clone of the HST repo carries no data products (they live on Zenodo, not in
+        # git). Say so with the next step, instead of an empty run that reads like a bug.
         what = lens or f"sample {sample}"
         print(f"  no stamps found for {what} under {root}")
-        print(f"  if {what} has data products, fetch them from Zenodo with:")
-        print(f"      {stamp_paths.fetch_hint(sample, filt)}")
+        hint = stamp_paths.fetch_hint(sample, filt)
+        if hint:
+            print(f"  if {what} has data products, fetch them from Zenodo with:")
+            print(f"      {hint}")
     for key in sorted(found):
         yield key[0], key[1], found[key]
 
@@ -308,12 +346,16 @@ def load_display_base(display_dir, prefix, display, pixel_scales):
 # own 2-band recipe); >3 bands average the middle ones into G. Display only, everywhere.
 
 def band_pivot_wavelength(filt):
-    """Pivot wavelength (nm) of a band key, split-visit suffixes stripped (f606W_visit2 ->
-    f606W). From psf_models._PIVOT (locally imported: make_masks must not grow a top-level
-    dependency cycle)."""
+    """Pivot wavelength (um) of a band key, split-visit suffixes stripped (f606W_visit2 ->
+    f606W), for wavelength ordering. The table is make_band_overview's FILTER_UM (one table for
+    both repos' filters; locally imported: keep the module graph one-directional)."""
     import re as _re
-    from psf_models import _PIVOT
-    return _PIVOT[_re.sub(r'_visit\d+$', '', filt).upper()]
+    from make_band_overview import FILTER_UM
+    key = _re.sub(r'_visit\d+$', '', filt)
+    if key not in FILTER_UM:
+        raise KeyError(f'unknown filter {filt!r}; add its pivot wavelength to '
+                       f'make_band_overview.FILTER_UM')
+    return FILTER_UM[key]
 
 
 def lupton_rgb(bands, stretch_scale=0.15, Q=8.0, balance=False):
@@ -379,6 +421,36 @@ def lupton_rgb(bands, stretch_scale=0.15, Q=8.0, balance=False):
     return rgb, base
 
 
+def centre_kernel(psf):
+    """Return `psf` shifted so its own centre sits on the array centre, renormalised.
+
+    REQUIRED before convolving one band with another's kernel, because these kernels are NOT
+    centred (measured over the HST stamp PSFs: median offset 0.2-0.5 px by band, the worst
+    ~1.7 px). Convolving with an off-centre kernel TRANSLATES the image by that offset, and a
+    kernel swap then prints a bright-plus-hole dipole at the core (the fictitious "2.2 px
+    astrometric offset" of detect_arcs.py was exactly this). Anything that convolves these
+    kernels should centre them first or know why it does not. (Same algorithm as
+    detect_arcs.centre_kernel; carried here so the GUIs do not depend on the detector, which
+    is a placeholder in the JWST repo.)
+    """
+    from photutils.centroids import centroid_com
+    from scipy.ndimage import shift as ndshift
+    k = np.nan_to_num(np.asarray(psf, dtype=float))
+    ny, nx = k.shape
+    py, px = np.unravel_index(np.argmax(k), k.shape)
+    h = 3
+    y0, x0 = max(py - h, 0), max(px - h, 0)
+    box = np.clip(k[y0:py + h + 1, x0:px + h + 1], 0, None)
+    if box.sum() <= 0:
+        return k / k.sum()
+    bx, by = centroid_com(box)
+    dy, dx = (y0 + by) - (ny - 1) / 2.0, (x0 + bx) - (nx - 1) / 2.0
+    if np.hypot(dy, dx) > 0.02 and np.isfinite(dy) and np.isfinite(dx):
+        k = ndshift(k, (-dy, -dx), order=3, mode='constant', cval=0.0)
+    total = k.sum()
+    return k / total if total else k
+
+
 def colour_index_map(bands, deflector_radius=0.3, snr_floor=3.0, smooth_px=1.0):
     """Log colour-ratio map of the BLUEST over the REDDEST band, relative to the deflector.
 
@@ -397,7 +469,6 @@ def colour_index_map(bands, deflector_radius=0.3, snr_floor=3.0, smooth_px=1.0):
     (returns (None, None) otherwise)."""
     from scipy.ndimage import map_coordinates, gaussian_filter
     from scipy.signal import fftconvolve
-    import detect_arcs
 
     usable = [b for b in bands if b is not None and b.get('psf') is not None]
     if len(usable) < 2:
@@ -430,7 +501,7 @@ def colour_index_map(bands, deflector_radius=0.3, snr_floor=3.0, smooth_px=1.0):
             k = map_coordinates(k, [c[0] + (ky - c_new[0]) * zoom,
                                     c[1] + (kx - c_new[1]) * zoom],
                                 order=3, mode='constant', cval=0.0)
-        k = detect_arcs.centre_kernel(k)
+        k = centre_kernel(k)
         return k / k.sum()
 
     kb, kr = kernel_onto(blue), kernel_onto(red)
@@ -469,14 +540,15 @@ def colour_index_map(bands, deflector_radius=0.3, snr_floor=3.0, smooth_px=1.0):
 
 # FALLBACK order for "best band to draw the mask on" when --filt is not given, used when the
 # lens has no primary band set (mast_target_names.primary_band: no best_band_visual and no
-# measured best_band_arc_snr). f814W is the highest-S/N SLACS band, the stamp --center-band and
-# BELLS's only band; f606W is the gallery primary; the rest follow by typical arc S/N. f475X
-# leads (2026-10-05): only SL2S has it, and there it is the deep GO-17130 band (2366 s, UVIS
-# sampling, bright blue arcs), so every Dinos lens -- including J0959+0206, which also has
-# F814W -- opens on F475X; snapshot-only lenses open on F475X over F600LP. No SLACS, GALLERY
-# or BELLS lens has either band, so their primary is unchanged.
-_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_visit2', 'f555W', 'f160W', 'f438W', 'f450W', 'f275W',
-                  'f225W', 'f600LP']
+# measured best_band_arc_snr). The union of both repos' orders; a repo only ever holds its own
+# filters, so the cross-ordering never bites. HST: f814W is the highest-S/N SLACS band, the
+# stamp --center-band and BELLS's only band; f606W is the gallery primary; f475X leads
+# (2026-10-05): only SL2S has it, and there it is the deep GO-17130 band. JWST: reddest first
+# (the arcs are red sources; a fixed order alone picked the wrong band for 13 of 20 lenses).
+_BAND_PRIORITY = ['f475X', 'f814W', 'f606W', 'f606W_visit2', 'f555W', 'f160W', 'f438W', 'f450W',
+                  'f275W', 'f225W', 'f600LP',
+                  'F444W', 'F356W', 'F410M', 'F277W', 'F200W', 'F150W', 'F115W', 'F090W',
+                  'F070W']
 
 
 def _band_rank(filt):
@@ -486,21 +558,30 @@ def _band_rank(filt):
         return len(_BAND_PRIORITY)
 
 
+def band_order(filts, lens=None, sample=None):
+    """`filts` in preference order: the lens's primary band first (if it has one and it is
+    among `filts`), then _BAND_PRIORITY. make_positions and make_arc_masks share it, so the
+    GUIs agree on which band is primary."""
+    order = sorted(filts, key=lambda f: (_band_rank(f), f))
+    if lens is not None:
+        primary, _ = mast_target_names.primary_band(lens, sample)
+        if primary in order:
+            order.remove(primary)
+            order.insert(0, primary)
+    return order
+
+
 def pick_display_filt(filts, requested, lens=None, sample=None):
     """Choose which band to draw on. `requested` (--filt) wins if present among `filts`;
     else the lens's PRIMARY band (mast_target_names.primary_band: the by-eye
     `best_band_visual`, else choose_primary_band.py's measured `best_band_arc_snr`) when it is
-    among `filts`; else the highest-priority available band (_BAND_PRIORITY). Returns None if
+    among `filts`; else the highest-priority available band (band_order). Returns None if
     the requested band is absent. Shared with make_positions and make_arc_masks so all three
     GUIs pick the same primary band per lens.
     """
     if requested is not None:
         return requested if requested in filts else None
-    if lens is not None:
-        band, _source = mast_target_names.primary_band(lens, sample)
-        if band in filts:
-            return band
-    return sorted(filts, key=lambda f: (_band_rank(f), f))[0]
+    return band_order(filts, lens, sample)[0]
 
 
 def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
@@ -532,7 +613,7 @@ def reproject_mask_bool(src_bool, src_wcs, dst_wcs, dst_shape):
 
 
 def find_proposal_mask(filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from,
-                       force=False):
+                       force=False, lens=None, sample=None):
     """Find a mask already drawn for this lens to PROPOSE as the starting point for the band
     about to be drawn, reprojected onto that band's grid. Returns (source_filt, bool array)
     or (None, None).
@@ -545,20 +626,19 @@ def find_proposal_mask(filt_dirs, display_filt, display_hdr, drizzle_pass, propo
       2. for a split-visit band (`f450W_visit2`), the PRIMARY visit's mask in the SAME
          filter (`f450W`): same field, same PSF, same depth -- only the grid moved, and the
          WCS reprojection below lands it exactly. Beats the cross-filter primary band
-         (Sam, 2026-11-25);
-      3. otherwise the highest-priority OTHER band of this lens that has a mask
-         (`_BAND_PRIORITY`, so f814W's mask is what usually seeds f555W/f160W).
+         (2026-11-25);
+      3. otherwise the lens's primary band, then the highest-priority OTHER band that has a
+         mask (band_order).
     An explicit `propose_from='<band>'` restricts the search to that band; 'none' is handled
     by the caller (no search at all).
 
     The transfer is the same rigorous per-pixel WCS reprojection `--broadcast` uses -- near
-    identity across the 0.05" optical bands, a real ~20px regrid onto f160W's 0.06" grid.
+    identity across the bands that share a plate scale, a real regrid onto a different one.
     """
     if propose_from in (None, 'none'):
         return None, None
     if propose_from == 'auto':
-        others = sorted((f for f in filt_dirs if f != display_filt),
-                        key=lambda f: (_band_rank(f), f))
+        others = [f for f in band_order(filt_dirs, lens, sample) if f != display_filt]
         base_filt = display_filt.split('_visit')[0]
         if base_filt != display_filt and base_filt in others:
             others.remove(base_filt)
@@ -683,10 +763,12 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     Scribble on EITHER; strokes land on the one mask at the same sky position.
 
     STRETCH. The raw base array (S/N or signal, --display) is handed over untouched and the
-    Scribbler maps each panel through its own arcsinh stretch about the panel's sky level
-    (median / MAD-scaled, clipped at the 0.5 / 99.5 percentiles of the stretched values).
-    The repo's `stretched_display` and its --stretch/--asinh-a/--vmin-percent/--vmax-percent
-    levers no longer apply to this GUI; they remain for the Clicker and the QC PNGs.
+    Scribbler maps each panel through display_look.SCRIBBLER -- the dataset-subplot look:
+    inferno with the panel's own PercentileInterval(99) + AsinhStretch(0.1) (2026-11-28; before
+    the merge the HST side passed bare cmap='inferno' with the Scribbler's own median/MAD
+    arcsinh). The repo's `stretched_display` and its
+    --stretch/--asinh-a/--vmin-percent/--vmax-percent levers no longer apply to this GUI; they
+    remain for the Clicker and the QC PNGs.
 
     `positions` (list of (y, x) arcsec, e.g. make_positions.py's) are marked with a small
     '+' cross on every panel (`position_marker_size` px arms; None = the Scribbler's own,
@@ -763,11 +845,18 @@ def draw_mask_gui(display_dir, display_prefix, lens, filt, brush_radius, brush_w
     # Blocks at start() until Esc / q closes the window.
     scribbler = al.Scribbler(
         image=base, brush_width=brush_width, proposal=proposal,
-        subtract_radial=subtract_radial, side_by_side=side_by_side,
+        subtract_radial=subtract_radial, side_by_side=side_by_side, panel_gap=_PANEL_GAP,
         positions=positions or None, position_marker_size=position_marker_size,
         mask_overlay=mask_overlay, title=title, block=False,
         figsize=((20, 10) if cmap_data is not None else (15, 15)),
-        cmap='inferno')   # the dataset QC subplots' colour map (2026-11-02); the Scribbler's own arcsinh stretch
+        cmap=display_look.SCRIBBLER)   # the dataset-subplot look (inferno, per-panel 99% asinh)
+    # The Scribbler scatters the mask-overlay edge in black, invisible on inferno's dark sky --
+    # recolour it cyan.
+    from matplotlib.collections import PathCollection
+    for coll in scribbler.ax.collections:
+        if type(coll) is PathCollection:
+            coll.set_color('cyan')
+    scribbler.ax.set_title(scribbler.title_text + '\nNorth down, East left', fontsize=10)
     if cmap_data is not None:
         names = sorted((b['filt'] for b in colour_bands), key=band_pivot_wavelength)
         n_y, n_x = cmap_data.shape
@@ -822,6 +911,54 @@ def _drain_tk():
         pass
 
 
+#: (lens, filt, size) of every band whose mask this run wrote: their dataset subplots are drawn
+#: by rerender_overviews' background process at the end of the run.
+PENDING_SUBPLOTS = []
+
+
+def rerender_overviews(sample, lenses, subplots=()):
+    """Re-render, at the END of the run and in ONE DETACHED background process, the dataset
+    subplot of every band in `subplots` ((lens, filt, size); make_dataset_subplots.py --force)
+    and then the band overview (make_band_overview.py) of every lens in `lenses`.
+
+    Neither may run in the GUI process. Done after each lens, the overview put an isophote fit
+    (~10 s) between one GUI and the next; done in this process at the end, it left the GUI app
+    alive but busy and not answering macOS, which showed as a blank window and a spinning
+    cursor, like a hang. The dataset subplot drawn inline also flashed up as a blank window:
+    al.Scribbler switches pyplot to interactive mode (plt.ion), so any later pyplot figure,
+    autolens's subplot included, is shown as it is made. Both are best-effort QC renders (the
+    mask is the product); the log says what failed."""
+    lenses = list(lenses)
+    subplots = list(subplots)
+    if not lenses and not subplots:
+        return
+    import shlex
+    import subprocess
+    import time
+    try:
+        import matplotlib.pyplot as plt
+        plt.close('all')
+    except Exception:
+        pass
+    here = os.path.dirname(os.path.abspath(__file__))
+    py = shlex.quote(sys.executable)
+    steps = [f'{py} {shlex.quote(os.path.join(here, "make_dataset_subplots.py"))} --sample {sample} '
+             f'--lens {shlex.quote(l)} --filt {f} --force' + (f' --size {s:g}' if s is not None else '')
+             for l, f, s in subplots]
+    if lenses:
+        steps.append(f'{py} {shlex.quote(os.path.join(here, "make_band_overview.py"))} --sample {sample} --lens '
+                     + ' '.join(shlex.quote(l) for l in lenses))
+    log = os.path.join(ws_path, 'data', 'run_logs', f'band_overview_{sample}_{time.strftime("%Y%m%d_%H%M%S")}.log')
+    os.makedirs(os.path.dirname(log), exist_ok=True)
+    with open(log, 'w') as fh:
+        subprocess.Popen(['/bin/sh', '-c', '; '.join(steps) + '; echo "=== renders done"'],
+                         stdout=fh, stderr=subprocess.STDOUT, start_new_session=True,
+                         env=dict(os.environ, MPLBACKEND='Agg'))
+    what = ' + '.join(x for x in (f'{len(subplots)} dataset subplot(s)' if subplots else '',
+                                  f'{len(lenses)} band overview(s)' if lenses else '') if x)
+    print(f"\n{what} rendering IN THE BACKGROUND; log: {os.path.relpath(log, ws_path)}")
+
+
 def scribbles_from(scribbler, proposal=None):
     """Read a closed Scribbler back as (painted, erased, drawn_only, reviewed), all bool
     arrays on the band grid:
@@ -837,32 +974,6 @@ def scribbles_from(scribbler, proposal=None):
     erased = np.asarray(segments[al.Scribbler.ERASE_SEGMENT], dtype=bool)
     reviewed = np.asarray(scribbler.mask_from(proposal), dtype=bool)
     return painted, erased, painted & ~erased, reviewed
-
-
-def regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass):
-    """Rebuild this band's `{prefix}_dataset.png` (scripts/make_dataset_subplots.py) so the
-    QC subplot -- the only pipeline PNG that shows the MASK laid over the data/noise/S-N a
-    fit actually consumes -- always matches the mask just written, rather than silently
-    continuing to describe the previous draw.
-
-    Best-effort and never fatal. The hand-drawn mask is the non-regenerable product here and
-    the subplot is not, so any failure (missing PSF kernel for that band, an autolens
-    plotting error) is reported with the command to retry and then swallowed -- it must never
-    cost a mask that has just been drawn by hand.
-
-    """
-    try:
-        import make_dataset_subplots as mds
-        mds.STAMP_SIZE = size
-        root = stamp_paths.stamps_root(ws_path)
-        for t_lens, t_filt, stamp_dir in mds.discover_targets(root, sample, lens, filt):
-            mds.process(t_lens, t_filt, sample, stamp_dir, drizzle_pass,
-                        force=True, check_noise_map=False)
-    except Exception as exc:                    # deliberately broad -- see docstring
-        print(f"  NOTE: dataset subplot not regenerated for {lens} {filt} ({exc!r}). "
-              f"The mask is written; rebuild the subplot with\n"
-              f"    uv run python scripts/make_dataset_subplots.py "
-              f"--sample {sample} --lens {lens} --filt {filt} --force")
 
 
 def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, force,
@@ -904,7 +1015,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
 
     display_hdr = fits.getheader(stamp_paths.find_stamp(display_dir, display_prefix, 'sci'))
     proposal_from, proposal = find_proposal_mask(
-        filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from, force=force)
+        filt_dirs, display_filt, display_hdr, drizzle_pass, propose_from, force=force,
+        lens=lens, sample=sample)
     if proposal is not None:
         print(f"{lens} {display_filt}: reviewing the mask from {proposal_from} "
               f"({int(proposal.sum())}px) -- edit it in the GUI, then apply/reject")
@@ -976,7 +1088,7 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
               f", {n_excl}px excluded)")
         entry = {
             'prefix': prefix,
-            'drizzle_pass': stamp_pass_of(stamp_dir, prefix),
+            'drizzle_pass': stamp_pass_of(stamp_dir, prefix) or 'single',
             'pixel_scale_arcsec': round(band_ps, 6),
             'display': source_label,
             # Which reduction the stamp was drawn on, from its own header (stamp_paths.py).
@@ -984,6 +1096,8 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
             'source': source_tag if is_draw else f'reprojected_from_{display_filt}',
             'n_excluded_px': n_excl,
         }
+        if band_hdr.get('REDUCVAR'):            # the JWST repo's variant card
+            entry['variant'] = str(band_hdr['REDUCVAR'])
         if is_draw:
             entry['brush_width'] = round(brush_width, 6)
             entry['brush_radius_px'] = start_radius
@@ -997,14 +1111,14 @@ def process_lens_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass, for
                 entry['n_erased_px'] = n_erase
         info_json.update(MASKS_JSON, sample, lens, filt, entry)
         if dataset_subplot:
-            regenerate_dataset_subplot(lens, filt, sample, size, drizzle_pass)
+            PENDING_SUBPLOTS.append((lens, filt, size))   # drawn in the background at the end
     return True
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default=None,
+    p.add_argument('--sample', type=mast_target_names.sample_arg, default=None,
                    help='sample subdirectory of data/stamps/. Default: with --lens, the '
                         'lens\'s own sample (each lens is in exactly one); without --lens, '
                         f'{mast_target_names.DEFAULT_SAMPLE}')
@@ -1032,12 +1146,11 @@ def main():
                         'key 2) parts of it before choosing to apply, reject, or skip -- the '
                         'reviewed alternative to --broadcast')
     p.add_argument('--colour', action=argparse.BooleanOptionalAction, default=True,
-                   help='open a non-interactive Lupton RGB colour companion window beside the '
-                        'Scribbler, built from every band the lens has (default on, '
-                        '2026-11-17; inactive for single-band lenses). Colour is the '
-                        'discriminant between blue lensed images and red contaminants. '
-                        'Reference only -- paint in the Scribbler; the window closes with it. '
-                        '--no-colour disables')
+                   help='show a COLOUR-INDEX panel in the mask window (default on, '
+                        '2026-11-25; inactive for single-band lenses): log10(bluest/reddest '
+                        'band vs the deflector\'s own ratio, PSF-matched) -- the discriminant '
+                        'between blue lensed images and red contaminants. Reference only -- '
+                        'paint on the data panels. --no-colour disables')
     p.add_argument('--pass', dest='drizzle_pass', choices=['auto', 'cr', 'nocrrej'],
                    default='auto',
                    help="which stamp pass to mask, matching make_stamps.py's --pass: "
@@ -1091,7 +1204,7 @@ def main():
                         'work written there is non-regenerable and invisible to every clone. '
                         'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()
-    sample = mast_target_names.resolve_sample(a.sample, a.lens)
+    mast_target_names.resolve_sample(p, a, default=mast_target_names.DEFAULT_SAMPLE)
 
     # --broadcast writes one draw to every band unseen; --propose-from reviews another band's
     # mask in the band it is landing on. They are two answers to the same question, and
@@ -1108,18 +1221,19 @@ def main():
     # discover_targets yields per (lens, filt); regroup to filt -> stamp_dir per lens so we
     # know every band of a lens (filt=None: consider all bands; pick_display_filt picks one).
     lens_filts = {}
-    for lens, filt, stamp_dir in discover_targets(root, sample, a.lens, None,
+    for lens, filt, stamp_dir in discover_targets(root, a.sample, a.lens, None,
                                                    include_ignored=a.include_ignored):
         lens_filts.setdefault(lens, {})[filt] = stamp_dir
 
     if not lens_filts:
-        raise SystemExit(f"no stamps found under {root} for sample {sample} matching "
+        raise SystemExit(f"no stamps found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")
     made = skipped = 0
+    changed = []
     for lens in sorted(lens_filts):
-        if process_lens_mask(lens, lens_filts[lens], sample, a.filt, a.drizzle_pass,
+        if process_lens_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
                              a.force, a.broadcast, brush_radius=a.brush_radius,
                              brush_width=a.brush_width, display=a.display,
                              subtract_radial=a.subtract_radial,
@@ -1127,10 +1241,12 @@ def main():
                              dataset_subplot=a.dataset_subplot,
                              propose_from=a.propose_from, colour=a.colour):
             made += 1
+            changed.append(lens)
         else:
             skipped += 1
 
     print(f"\nDone: {made} lens(es) masked, {skipped} skipped")
+    rerender_overviews(a.sample, changed, PENDING_SUBPLOTS)
 
 
 if __name__ == '__main__':

@@ -69,6 +69,8 @@ overrides are all on Etherington Gold lenses, and every other SLACS lens resolve
 full designations as ``mast_target``.
 """
 
+import argparse
+import difflib
 import json
 import os
 
@@ -133,19 +135,61 @@ def sample_of(lens):
     return None
 
 
-def resolve_sample(sample, lens):
-    """Resolve a CLI ``--sample``/``--lens`` pair. An explicit ``--sample`` wins; with
-    ``--lens`` and no ``--sample`` the lens's own sample is used (each lens sits in exactly
-    one sample, so it is never ambiguous); with neither, the default sample. A ``--lens``
-    that is in no sample is an error, not a silent fallthrough to the default."""
-    if sample is not None:
-        return sample
-    if lens is not None:
-        owner = sample_of(lens)
-        if owner is None:
-            raise SystemExit(f'{lens} is not in any sample of {SAMPLES_JSON}')
-        return owner
-    return DEFAULT_SAMPLE
+def sample_arg(name):
+    """argparse ``type`` for --sample: ``name`` if it is a defined sample, else an error naming
+    the closest one. Without it a mistyped sample reads as a real sample with no stamps, and a
+    GUI reports "no stamps found" instead of the typo. (Shared with the JWST repo's
+    ``lens_samples`` -- the profile seam of the merged GUI tools.)"""
+    known = samples()
+    if name in known:
+        return name
+    close = difflib.get_close_matches(name.replace('-', '_'), known, n=1, cutoff=0.5)
+    raise argparse.ArgumentTypeError(f'unknown sample {name!r}'
+                                     + (f" (did you mean '{close[0]}'?)" if close else '')
+                                     + f'; defined samples: {", ".join(known)}')
+
+
+def resolve_sample(parser, args, required=False, default=None):
+    """The sample a script works on, from its parsed ``args`` (``args.sample``, ``args.lens``:
+    one name or a list), so --sample is never needed alongside --lens.
+
+      * --lens given: the sample is the one the lens is in (lens_samples.json; a lens is in one
+        sample only). An unknown lens is an error naming the closest one; --sample, if also
+        given, must agree; lenses from different samples are an error.
+      * no --lens: --sample, else ``default`` (the script's old default sample; None for "every
+        sample"), or an error when ``required``.
+
+    Errors go through ``parser.error``, so they print the usage line and exit 2. The result is
+    also written back to ``args.sample``. (The JWST repo's signature and behaviour, adopted
+    2026-11-28 as the shared GUI seam; it replaces the old ``resolve_sample(sample, lens)``.)"""
+    names = args.lens if isinstance(args.lens, (list, tuple)) else ([args.lens] if args.lens else [])
+    sample = args.sample
+    if names:
+        found = {}
+        for lens in names:
+            s = sample_of(lens)
+            if s is None:
+                every = [l for b in _load().values() for l in b['lenses']]
+                close = difflib.get_close_matches(lens, every, n=1, cutoff=0.6)
+                parser.error(f'unknown lens {lens!r}' + (f" (did you mean '{close[0]}'?)" if close else '')
+                             + f'; it is in no sample of {SAMPLES_JSON}')
+            found[lens] = s
+        if sample is not None:
+            wrong = [f'{l} is in {s!r}' for l, s in found.items() if s != sample]
+            if wrong:
+                parser.error(f'{"; ".join(wrong)}, not --sample {sample!r} (leave --sample out: it '
+                             f'is found from --lens)')
+        elif len(set(found.values())) > 1:
+            parser.error('the lenses are in different samples ('
+                         + ', '.join(f'{l}: {s}' for l, s in found.items()) + '); run one sample at a time')
+        else:
+            sample = next(iter(found.values()))
+    elif sample is None:
+        if required:
+            parser.error('give --lens, or --sample for every lens of a sample')
+        sample = default
+    args.sample = sample
+    return sample
 
 
 def _entry(lens, sample=None):
@@ -156,6 +200,11 @@ def _entry(lens, sample=None):
         if lens in block['lenses']:
             return block['lenses'][lens]
     return {}
+
+
+# Public name of _entry, for the merged GUI tools (the JWST repo's profile calls it ``entry``).
+# Behaviour differs from JWST's on an UNKNOWN lens only: this one returns {}, theirs raises.
+entry = _entry
 
 
 def band_mode(lens, sample=None):
@@ -250,6 +299,32 @@ def stamp_center(lens, sample=None):
     return tuple(c) if c else None
 
 
+def deflector_radec(lens, sample=None):
+    """(ra, dec, exact) of the deflector when it is NOT the stamp centre, else None.
+
+    Only the group-centred multi_galaxy stamps (``stamp_center``) qualify: every other stamp
+    is cut on the deflector itself, and the isophote fit refines from the stamp centre instead.
+    The position is the catalogue one (``info/coords/lens_coords.py``), parsed as plain units
+    -- the caller builds the SkyCoord in the stamp WCS's own frame (the FK5/ICRS trap,
+    AGENTS.md *Orientation*) -- so ``exact`` is False: the fit should centroid-refine from it
+    (a catalogue position can sit ~1" off the core on a group stamp). Profile seam of the
+    merged GUI tools (isophote_model.deflector_pixel).
+    """
+    if not stamp_center(lens, sample):
+        return None
+    import sys
+    coords_dir = os.path.join(_INFO_DIR, 'coords')
+    if coords_dir not in sys.path:
+        sys.path.insert(0, coords_dir)
+    from lens_coords import lens_coords
+    if lens not in lens_coords:
+        return None
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(*lens_coords[lens], unit=(u.hourangle, u.deg), frame='icrs')
+    return (float(c.ra.deg), float(c.dec.deg), False)
+
+
 RADII_JSON = os.path.join(_INFO_DIR, 'catalogues', 'lens_einstein_radii.json')
 PRIMARY_BAND_JSON = os.path.join(_INFO_DIR, 'provenance', 'lens_primary_band.json')
 
@@ -277,6 +352,53 @@ def redshifts(lens, sample=None):
     After the 2026-11-06 audit every non-null value is spectroscopic ('spec')."""
     row = _radii().get(lens, {})
     return (row.get('zlens'), row.get('zsrc'), row.get('zlens_kind'), row.get('zsrc_kind'))
+
+
+def redshift_pair(lens, sample=None):
+    """(z_lens, z_source), None where unknown -- the JWST repo's ``redshifts`` arity, for the
+    merged GUI tools. (This repo's ``redshifts`` returns the kinds too; the JWST catalogue
+    keeps them in the sample file.)"""
+    zl, zs, _, _ = redshifts(lens, sample)
+    return zl, zs
+
+
+def redshift_kind_of(kind_text):
+    """'spectroscopic' or 'photometric' from a ``zlens_kind``/``zsrc_kind`` string ('spec',
+    'photo-z (...)'), else None. Shared with the JWST repo's ``lens_samples``."""
+    k = (kind_text or '').strip().lower()
+    if k.startswith('spec'):
+        return 'spectroscopic'
+    if k.startswith('photo'):
+        return 'photometric'
+    return None
+
+
+def redshift_kinds(lens, sample=None):
+    """(kind_lens, kind_source): 'spectroscopic', 'photometric', or None (no redshift).
+
+    Only a SPECTROSCOPIC redshift is a confirmed redshift (the 2026-11-06 audit; Sam's rule).
+    A photometric one may be shown, but always labelled as photometric. A redshift without a
+    recognisable kind is an error, not silently 'confirmed'."""
+    zl, zs, kl, ks = redshifts(lens, sample)
+    out = []
+    for z, k in ((zl, kl), (zs, ks)):
+        if z is None:
+            out.append(None)
+            continue
+        kind = redshift_kind_of(k)
+        if kind is None:
+            raise ValueError(f'{lens}: redshift {z} has no recognisable kind ({k!r}); '
+                             f'it must start with "spec" or "photo-z"')
+        out.append(kind)
+    return tuple(out)
+
+
+def redshift_text(z, kind, fmt='{:g}'):
+    """A redshift for display, as precise as recorded: '0.587' (spectroscopic), '0.577 (photo-z)'
+    (photometric), '?' (none). Shared with the JWST repo's ``lens_samples``."""
+    if z is None:
+        return '?'
+    return fmt.format(z) + ('' if kind == 'spectroscopic' else ' (photo-z)')
 
 
 def primary_band(lens, sample=None):
@@ -337,7 +459,6 @@ def target_patterns(lens, sample=None):
 
 
 if __name__ == '__main__':
-    import argparse
     p = argparse.ArgumentParser(description='Print the lenses in a sample, one per line.')
     p.add_argument('sample', nargs='?', default=DEFAULT_SAMPLE,
                    help=f'sample name (default {DEFAULT_SAMPLE}); '

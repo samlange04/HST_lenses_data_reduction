@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """
+Merged 2026-11-28 across the HST and JWST repos: the file is identical in both. North is DOWN
+and East LEFT in the GUI and the QC PNG (display_look.ORIGIN; the JWST side drew its QC PNG
+North-up until the merge). The JWST repo's detect_arcs is a placeholder -- 'auto' proposals
+there degrade to the other sources with a note.
+
 Interactive GUI ARC mask-making: paint the arcs / multiple images, keep only those.
 
 The second of the two hand-drawn mask tools, and the OPPOSITE polarity to `make_masks.py`:
@@ -98,11 +103,16 @@ warnings.filterwarnings('ignore', category=UserWarning, module='autonerves')
 
 import autolens as al
 import autolens.plot as aplt
-from matplotlib import pyplot as plt
+# A plain Figure, never pyplot, for the QC PNG: after al.Scribbler has run, pyplot is in
+# interactive mode (plt.ion), so a pyplot figure would flash up as a blank window.
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import mast_target_names
+try:
+    import lens_samples as mast_target_names   # the JWST repo's profile module
+except ImportError:
+    import mast_target_names                   # the HST repo's
+import display_look
 import info_json
 import stamp_paths
 # Every display/tree/discovery/broadcast helper is make_masks'. This script contributes the
@@ -131,8 +141,14 @@ def _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs, dst_shape, lens,
                  stamp edge.
     """
     if source == 'detect':
-        region, components, maps = detect_arcs.propose(filt_dirs, prefixes, lens,
-                                                       **(detect_kw or {}))
+        try:
+            region, components, maps = detect_arcs.propose(filt_dirs, prefixes, lens,
+                                                           **(detect_kw or {}))
+        except NotImplementedError as exc:
+            # The JWST repo's detect_arcs is a placeholder (its lenses have RED sources, so
+            # the colour-sign detector needs re-deriving): degrade to the other sources.
+            print(f'  NOTE: detector unavailable here ({exc}); continuing without it')
+            return None, {}
         extra = {'detector_components': components,
                  'detector_bands': f"{maps['blue_filt']}-{maps['red_filt']}",
                  'detector_theta_e_arcsec': round(maps['theta_e'], 3),
@@ -158,7 +174,7 @@ def _one_arc_source(filt_dirs, prefixes, display_filt, dst_wcs, dst_shape, lens,
                                           dst_wcs, dst_shape), {}
 
 
-def resolve_arc_sources(filt_dirs, display_filt, propose_from, force=False):
+def resolve_arc_sources(filt_dirs, display_filt, propose_from, force=False, lens=None, sample=None):
     """Expand `--propose-from` into an ordered, de-duplicated list of concrete sources.
 
     'none'   -> []            (blank canvas)
@@ -173,8 +189,7 @@ def resolve_arc_sources(filt_dirs, display_filt, propose_from, force=False):
         return []
     if propose_from != 'auto':
         return [t.strip() for t in str(propose_from).split(',') if t.strip()]
-    others = sorted((f for f in filt_dirs if f != display_filt),
-                    key=lambda f: (make_masks._band_rank(f), f))
+    others = [f for f in make_masks.band_order(filt_dirs, lens, sample) if f != display_filt]
     return (['detect'] + ([display_filt] if force else []) + others)
 
 
@@ -195,7 +210,8 @@ def find_arc_proposal(filt_dirs, prefixes, display_filt, display_hdr, lens, prop
     after it gets the detector plus your own reviewed region, with the per-source breakdown
     printed so you can see which part came from where.
     """
-    sources = resolve_arc_sources(filt_dirs, display_filt, propose_from, force=force)
+    sources = resolve_arc_sources(filt_dirs, display_filt, propose_from, force=force,
+                                  lens=lens, sample=sample)
     if not sources:
         return None, None, {}
     dst_wcs = WCS(display_hdr).celestial
@@ -270,8 +286,11 @@ def save_arc_qc_png(stamp_dir, prefix, arc_bool, pixel_scales, out_path, lens, f
                     stretch='asinh', vmin_percent=0.5, vmax_percent=99.5, asinh_a=0.1):
     """QC overlay: the arc region outlined over the band's own (radial-subtracted) image.
 
-    Written per band, so a broadcast can be checked where it actually matters -- the f160W
-    regrid (0.06"/px), where an array-index copy would land the region ~20px off.
+    Written per band, so a broadcast can be checked where it actually matters -- a regridded
+    band, where an array-index copy would land the region off the sky. Shown exactly as the
+    GUI's left panel is (radial_median_subtract on the display_look stretch and colormap), so
+    the PNG shows what was drawn on. North DOWN, East left (display_look.ORIGIN), the one
+    convention of both repos since 2026-11-27.
     """
     base, _ = make_masks.load_display_base(stamp_dir, prefix, 'snr', pixel_scales)
     disp = make_masks.stretched_display(make_masks.radial_median_subtract(base), pixel_scales,
@@ -280,20 +299,24 @@ def save_arc_qc_png(stamp_dir, prefix, arc_bool, pixel_scales, out_path, lens, f
     a = np.asarray(disp.native)
     hw = int(a.shape[1] / 2) * pixel_scales
     ext = [-hw, hw, -hw, hw]
-    fig = plt.figure(figsize=(7, 7))
-    plt.imshow(a, cmap='inferno', extent=ext)
-    # origin='upper' is REQUIRED: with an extent, imshow draws row 0 at the top but
-    # contour defaults to row 0 at the BOTTOM, so without it the outline is drawn
+    # origin='upper' is REQUIRED on the contour too: with an extent, imshow draws row 0 at the
+    # top but contour defaults to row 0 at the BOTTOM, so without it the outline is drawn
     # vertically mirrored -- a QC image that looks fine and checks nothing (verified).
-    cs = plt.contour(np.asarray(arc_bool, dtype=float), levels=[0.5], colors='white',
-                     linewidths=1.2, extent=ext, origin='upper')
+    # A plain Figure, never pyplot: after al.Scribbler has run, pyplot is in interactive mode
+    # (plt.ion), so a pyplot figure would flash up as a blank window (2026-11-02).
+    from matplotlib.figure import Figure
     from matplotlib import patheffects
+    fig = Figure(figsize=(7, 7))
+    ax = fig.subplots()
+    ax.imshow(a, cmap=display_look.CMAP, vmin=0.0, vmax=1.0, extent=ext,
+              origin=display_look.ORIGIN)
+    cs = ax.contour(np.asarray(arc_bool, dtype=float), levels=[0.5], colors='white',
+                    linewidths=1.2, extent=ext, origin=display_look.ORIGIN)
     cs.set(path_effects=[patheffects.withStroke(linewidth=2.6, foreground='black')])
-    plt.title(f'{lens}  {filt}  --  arc mask region (white outline)')
-    plt.xlabel('arcsec'); plt.ylabel('arcsec')
-    plt.tight_layout()
+    ax.set_title(f'{lens}  {filt}  --  arc mask region (white outline), North down East left')
+    ax.set_xlabel('arcsec (West to the right)'); ax.set_ylabel('arcsec')
+    fig.tight_layout()
     fig.savefig(out_path, dpi=110)
-    plt.close(fig)
 
 
 def write_arc_mask(arc_bool, pixel_scales, path):
@@ -467,7 +490,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
               f"{n_arc}px in the arc region, everything else masked out)")
         entry = {
             'prefix': prefix,
-            'drizzle_pass': make_masks.stamp_pass_of(stamp_dir, prefix),
+            'drizzle_pass': make_masks.stamp_pass_of(stamp_dir, prefix) or 'single',
             'pixel_scale_arcsec': round(band_ps, 6),
             'display': source_label,
             # Which reduction the stamp was drawn on, from its own header (stamp_paths.py).
@@ -476,6 +499,8 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
             'n_arc_px': n_arc,
             'polarity': 'saved True=excluded (al.Mask2D); ~mask = arc region',
         }
+        if band_hdr.get('REDUCVAR'):            # the JWST repo's variant card
+            entry['variant'] = str(band_hdr['REDUCVAR'])
         if is_draw:
             entry['brush_width'] = round(brush_width, 6)
             entry['brush_radius_px'] = start_radius
@@ -497,7 +522,7 @@ def process_lens_arc_mask(lens, filt_dirs, sample, requested_filt, drizzle_pass,
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default=None,
+    p.add_argument('--sample', type=mast_target_names.sample_arg, default=None,
                    help='sample subdirectory of data/stamps/. Default: with --lens, the '
                         'lens\'s own sample (each lens is in exactly one); without --lens, '
                         f'{mast_target_names.DEFAULT_SAMPLE}')
@@ -557,11 +582,11 @@ def main():
                         'one is where their real extent against the galaxy envelope is '
                         '(default on)')
     p.add_argument('--colour', action=argparse.BooleanOptionalAction, default=True,
-                   help='open a non-interactive Lupton RGB colour companion window beside the '
-                        'Scribbler, built from every band the lens has (default on, '
-                        '2026-11-17; inactive for single-band lenses). Reference only -- '
-                        'paint in the Scribbler; the window closes with it. --no-colour '
-                        'disables')
+                   help='show a COLOUR-INDEX panel in the window (default on, 2026-11-25; '
+                        'inactive for single-band lenses): log10(bluest/reddest band vs the '
+                        "deflector's own ratio, PSF-matched) -- blue = bluer than the "
+                        'deflector. Reference only -- paint on the data panels. '
+                        '--no-colour disables')
     p.add_argument('--show-positions', action=argparse.BooleanOptionalAction, default=True,
                    help="mark the images already marked by make_positions.py with a '+' "
                         "cross in the display (al.Scribbler's positions=), as a guide for "
@@ -597,7 +622,7 @@ def main():
                         'work written there is non-regenerable and invisible to every clone. '
                         'Use only to work on a diagnostic deliberately.')
     a = p.parse_args()
-    sample = mast_target_names.resolve_sample(a.sample, a.lens)
+    mast_target_names.resolve_sample(p, a, default=mast_target_names.DEFAULT_SAMPLE)
 
     # Same rule as make_masks.py: --broadcast writes one draw to every band unseen, which is
     # the opposite of reviewing a proposal per band. Combining them would push a region
@@ -612,17 +637,17 @@ def main():
 
     lens_filts = {}
     for lens, filt, stamp_dir in make_masks.discover_targets(
-            root, sample, a.lens, None, include_ignored=a.include_ignored):
+            root, a.sample, a.lens, None, include_ignored=a.include_ignored):
         lens_filts.setdefault(lens, {})[filt] = stamp_dir
 
     if not lens_filts:
-        raise SystemExit(f"no stamps found under {root} for sample {sample} matching "
+        raise SystemExit(f"no stamps found under {root} for sample {a.sample} matching "
                          f"lens={a.lens!r}")
 
     print(f"{len(lens_filts)} lens(es) to process")
     made = skipped = 0
     for lens in sorted(lens_filts):
-        if process_lens_arc_mask(lens, lens_filts[lens], sample, a.filt, a.drizzle_pass,
+        if process_lens_arc_mask(lens, lens_filts[lens], a.sample, a.filt, a.drizzle_pass,
                                  a.force, a.broadcast, a.brush_radius, a.brush_width,
                                  a.display, a.stretch, a.vmin_percent, a.vmax_percent,
                                  a.asinh_a, a.subtract_radial, a.side_by_side,

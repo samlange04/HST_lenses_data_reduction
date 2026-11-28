@@ -1,27 +1,29 @@
 #!/usr/bin/env python
 """
-Sample-nested tracking-JSON helpers shared by the drizzle and PSF scripts.
+Sample-nested tracking-JSON helpers shared by the drizzle/reduce and PSF scripts.
 
 Every tracking JSON in info/ (lens_products.json, lens_exptime.json,
-lens_instrument.json, lens_psf.json, lens_psf_injected.json, wfpc2_alignment.json,
-psf_stars.json) is nested {sample: {lens: {key: value}}}, mirroring both
-info/samples/lens_samples.json's own top-level-by-sample layout and the
-data/<tree>/<sample>/.../<lens>/<filt>/ directories (the band_mode and category levels in
-between, added 2026-11-02, are not in the JSON keys: a reclassification moves directories, not
-records). Before
-this module, the tracking JSONs were flat {lens: {...}} with no sample namespace --
-harmless only because no lens name has ever collided across the SLACS and
-gallery samples; nesting by sample removes that latent trap and lets a JSON diff show which
-sample changed.
+lens_instrument.json, lens_psf.json, lens_psf_injected.json, psf_stars.json) is nested
+{sample: {lens: {key: value}}}, mirroring both info/samples/lens_samples.json's own
+top-level-by-sample layout and the data/<tree>/<sample>/.../<lens>/<filt>/ directories (the
+band_mode and category levels in between are not in the JSON keys: a reclassification moves
+directories, not records). Before this module, the tracking JSONs were flat {lens: {...}} with
+no sample namespace -- harmless only because no lens name has ever collided across samples;
+nesting by sample removes that latent trap and lets a JSON diff show which sample changed.
 
 **Where each file lives (2026-10-26).** info/ is split by who writes a file, and `path()`
 below is the one place that knows which subfolder:
 
     samples/      lens_samples.json                         the sample definition
-    coords/       lens_coords.py + one *_coords.py per sample
-    catalogues/   lens_einstein_radii.json                  literature values per lens
+    coords/       lens_coords.py + one *_coords.py per sample (HST repo only)
+    catalogues/   lens_einstein_radii.json                  literature values per lens (HST repo)
     overrides/    hand-edited per-lens settings the scripts consult
     provenance/   records the pipeline writes as it runs
+
+Merged 2026-11-28 across the HST and JWST repos (the file is identical in both): INFO_LAYOUT
+is the union of both repos' file sets -- a name mapped here but never written in a repo costs
+nothing -- and update() holds an exclusive lock (the JWST repo's fix: parallel 4-band batches
+were dropping each other's records).
 """
 import json
 import os
@@ -30,12 +32,14 @@ INFO_LAYOUT = {
     'samples': ('lens_samples.json',),
     'catalogues': ('lens_einstein_radii.json',),
     'overrides': ('lens_cr_params.json', 'psf_stars.json', 'noise_corr_factors.json',
-                  'wfpc2_alignment.json', 'lens_crfill.json'),
+                  'wfpc2_alignment.json', 'lens_crfill.json', 'psf_model_calibration.json'),
     'provenance': ('lens_products.json', 'lens_instrument.json', 'lens_exptime.json',
                    'lens_stamp_qc.json', 'lens_masks.json', 'lens_arc_masks.json',
                    'lens_positions.json', 'lens_psf.json', 'lens_psf_injected.json',
+                   'lens_psf_pooled.json', 'lens_psf_starcheck.json',
                    'lens_field_ties.json', 'lens_dataset_subplots.json',
-                   'lens_primary_band.json'),
+                   'lens_primary_band.json', 'lens_downloads.json', 'lens_exports.json',
+                   'lens_extra_galaxies.json'),
 }
 _SUBFOLDER = {name: sub for sub, names in INFO_LAYOUT.items() for name in names}
 
@@ -59,15 +63,20 @@ def load(path):
 
 
 def update(path, sample, lens, key, value):
-    """Merge {sample: {lens: {key: value}}} into `path`, sorted at every level."""
-    data = load(path)
-    sample_data = data.setdefault(sample, {})
-    lens_entry = sample_data.setdefault(lens, {})
-    lens_entry[key] = value
-    sample_data[lens] = dict(sorted(lens_entry.items()))
-    data[sample] = dict(sorted(sample_data.items()))
-    with open(path, 'w') as f:
-        json.dump(dict(sorted(data.items())), f, indent=4)
+    """Merge {sample: {lens: {key: value}}} into `path`, sorted at every level. Holds an
+    exclusive lock on `path`.lock for the read-modify-write, so parallel runs (4 bands at a
+    time, as the COWLS batches do) cannot drop each other's records."""
+    import fcntl
+    with open(path + '.lock', 'w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        data = load(path)
+        sample_data = data.setdefault(sample, {})
+        lens_entry = sample_data.setdefault(lens, {})
+        lens_entry[key] = value
+        sample_data[lens] = dict(sorted(lens_entry.items()))
+        data[sample] = dict(sorted(sample_data.items()))
+        with open(path, 'w') as f:
+            json.dump(dict(sorted(data.items())), f, indent=4)
 
 
 def prune_lens_keys(path, sample, lens, keep):
@@ -94,7 +103,7 @@ def band_owner_conflict(path, sample, lens, key, instrument_prefix):
     """The instrument recorded for this lens's band in `path` (lens_instrument.json) if it is
     a DIFFERENT instrument from `instrument_prefix`, else None.
 
-    The pipeline keys products by filter alone (data/<tree>/<sample>/<band_mode>/<category>/<lens>/<filt>/, and
+    The pipeline keys products by filter alone (data/<tree>/<sample>/.../<lens>/<filt>/, and
     every tracking JSON), so one filter can hold one instrument's product per lens. On
     2026-10-04 the UVIS runner, looping F814W over SL2S, found J0959+0206's ACS F814W FLCs in
     that band's calibrated dir, took them as its own download and replaced the ACS product,

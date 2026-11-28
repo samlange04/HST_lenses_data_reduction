@@ -2,6 +2,9 @@
 """
 Choose each lens's best (primary) band BY EYE: a GUI over the lens's band overview.
 
+Merged 2026-11-28 across the HST and JWST repos: the file is identical in both (the repo
+profile is the import seam below).
+
     uv run python scripts/choose_best_band.py --sample swells                      # every lens
     uv run python scripts/choose_best_band.py --sample swells --unreviewed
     uv run python scripts/choose_best_band.py --lens J0841+3824
@@ -45,8 +48,11 @@ import warnings
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import choose_primary_band
 import make_band_overview
-import mast_target_names
 import stamp_paths
+try:
+    import lens_samples as mast_target_names   # the JWST repo's profile module
+except ImportError:
+    import mast_target_names                   # the HST repo's
 
 ws_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PICK = '#d62728'
@@ -125,24 +131,23 @@ def n_bands(sample, lens):
     lens_dir = stamp_paths.lens_dir(ws_path, 'stamps', sample, lens)
     prefix = stamp_paths.stamp_prefix(stamp_paths.modelling_size(lens, sample))
     n = 0
-    for d in glob.glob(os.path.join(lens_dir, 'f*')):
-        if os.path.isdir(d) and stamp_paths.find_stamp(d, prefix, 'sci'):
+    for d in glob.glob(os.path.join(lens_dir, '*')):
+        if (os.path.isdir(d) and os.path.basename(d).startswith(('f', 'F'))
+                and stamp_paths.find_stamp(d, prefix, 'sci')):
             n += 1
     return n
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--sample', default=None,
+    p.add_argument('--sample', type=mast_target_names.sample_arg, default=None,
                    help='every lens of this sample (not needed with --lens: its sample is found)')
     p.add_argument('--lens', default=None)
     p.add_argument('--unreviewed', action='store_true', help='only lenses without a best_band_visual')
     a = p.parse_args()
     warnings.simplefilter('ignore')
-    sample = (mast_target_names.resolve_sample(a.sample, a.lens)
-              if (a.sample or a.lens) else None)
-    if sample is None:
-        p.error('--sample is required without --lens')
+    mast_target_names.resolve_sample(p, a, required=True)
+    sample = a.sample
     lenses = [a.lens] if a.lens else mast_target_names.lenses(sample)
     pb = choose_primary_band.info_json.load(
         choose_primary_band.info_json.path(ws_path, 'lens_primary_band.json')).get(sample, {})
