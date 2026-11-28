@@ -2972,6 +2972,18 @@ Findings and verdicts:
   pool** — the never-rejected healthy empiricals (10 F475X donors, 4 F600LP) — so all medians
   of a band now share one kernel and one donor-scatter error map, the consistent end state.
   The F600LP rebuilds use `--min-donors 4` (the depleted pool).
+- **Is 4 donors enough — measured, yes (Sam's question, same day).** Leave-one-out on the
+  healthy 10-donor F475X pool: a 4-donor median sits within ~1% of the 10-donor median in
+  enclosed energy (median 0.008–0.012 at r = 2–12 px, worst subset 0.03–0.04), and its
+  donor-scatter error map reads the same scatter (err_frac 0.019 vs 0.022 for 10 donors).
+  That is at or below the per-twin phase scatter and the calibration residuals, so the
+  median location is fine; the error map is a 3-dof lower bound, which is the documented
+  stance on these error maps already. The F600LP 4-donor pool is also the *tighter* one
+  (donor FWHM spread 0.054 vs 0.121 for F475X). Alternatives all measured worse or
+  unavailable: a wrong-filter F625W STDPSF model (uncalibratable — these fields are
+  star-poor by construction), including the rejected moaty kernels as donors (a
+  majority-moaty pool would put the floor into the median), and median-of-medians (the
+  medians are identical — adds no diversity).
 - **Estimator lessons for any future audit:** EE monotonicity is monotone only to ±1e-3 in
   real kernels (wing noise), so gate at −0.005; a per-twin FWHM ratio is ±0.25 of pure
   estimator noise on sharp kernels (interpolated half-radius swings on undersampled
