@@ -2966,6 +2966,12 @@ Findings and verdicts:
   negative ring at r=8 px (0.7% of flux, at the trimmed window's edge — cosmetic); J0217-0513,
   J0849-0412 f475X, J1419+5117 f600LP and J1420+5630 ×2 keep the known cosmetic outer-wing
   floor (EE deficits −0.005..−0.019 at r≈0.8–0.9″, all beyond their trim windows).
+- **Donor-pool consistency (Sam's catch, 2026-11-28):** the median kernels had been built
+  from a progressively shrinking pool as each bad donor was itself median-replaced (F600LP:
+  9→8→7→7→6→5→4 donors per run). **Every median kernel was then rebuilt from the same final
+  pool** — the never-rejected healthy empiricals (10 F475X donors, 4 F600LP) — so all medians
+  of a band now share one kernel and one donor-scatter error map, the consistent end state.
+  The F600LP rebuilds use `--min-donors 4` (the depleted pool).
 - **Estimator lessons for any future audit:** EE monotonicity is monotone only to ±1e-3 in
   real kernels (wing noise), so gate at −0.005; a per-twin FWHM ratio is ±0.25 of pure
   estimator noise on sharp kernels (interpolated half-radius swings on undersampled
